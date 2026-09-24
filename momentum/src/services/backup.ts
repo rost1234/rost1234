@@ -1,10 +1,12 @@
 import { Platform } from 'react-native';
-import { File, Paths } from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { getLocalDeviceDate } from '@/core/localDate';
 import { parseBackup, type BackupError, type BackupFile, type BackupTables } from '@/data/backup/backupFormat';
 import { LATEST_SCHEMA_VERSION, type TableName } from '@/data/db/schema';
 import { inTransaction, repositories } from '@/data/repositories';
+import { isAutoBackupDue } from '@/domain/autoBackup';
+import { useDevicePrefsStore } from '@/state/devicePrefsStore';
 
 export async function buildBackup(): Promise<BackupFile> {
   return {
@@ -37,6 +39,46 @@ export async function exportBackup(): Promise<ExportResult> {
     return { kind: 'shared', uri: file.uri };
   }
   return { kind: 'saved', uri: file.uri };
+}
+
+/** Asks for a folder once (Android's folder picker); the weekly backup goes there. */
+export async function chooseBackupFolder(): Promise<boolean> {
+  let folder: Directory;
+  try {
+    folder = await Directory.pickDirectoryAsync();
+  } catch {
+    return false; // canceled
+  }
+  useDevicePrefsStore.getState().update({ backupFolderUri: folder.uri, lastAutoBackup: null, autoBackupFailed: false });
+  await backUpToFolder();
+  return true;
+}
+
+/** Writes today's backup into the chosen folder. */
+export async function backUpToFolder(): Promise<void> {
+  const prefs = useDevicePrefsStore.getState();
+  if (!prefs.backupFolderUri) return;
+  const today = getLocalDeviceDate();
+  try {
+    const file = new Directory(prefs.backupFolderUri).createFile(`momentum-backup-${today}.json`, 'application/json');
+    file.write(JSON.stringify(await buildBackup(), null, 2));
+    prefs.update({ lastAutoBackup: today, autoBackupFailed: false });
+  } catch (error) {
+    prefs.update({ autoBackupFailed: true });
+    throw error;
+  }
+}
+
+/** Called on app open: runs the weekly backup when it's due. Never throws. */
+export async function runAutoBackupIfDue(): Promise<void> {
+  const prefs = useDevicePrefsStore.getState();
+  if (Platform.OS !== 'android' || !prefs.backupFolderUri) return;
+  if (!isAutoBackupDue(prefs.lastAutoBackup, getLocalDeviceDate())) return;
+  try {
+    await backUpToFolder();
+  } catch {
+    // Shown in Settings via `autoBackupFailed`.
+  }
 }
 
 export interface PendingImport {

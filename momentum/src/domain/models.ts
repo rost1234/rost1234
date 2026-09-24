@@ -114,9 +114,15 @@ export interface FocusSession {
   endTime: string;
   durationMinutes: number;
   createdAt: string;
+  /** Sound mix that played, e.g. "rain+brown"; null = silence (or logged before v7). */
+  soundId: string | null;
+  targetMinutes: number | null;
+  /** Ran to the planned end; null for sessions logged before v7. */
+  completed: boolean | null;
 }
 
-export type NewFocusSession = Omit<FocusSession, 'id' | 'createdAt'>;
+export type NewFocusSession = Omit<FocusSession, 'id' | 'createdAt' | 'soundId' | 'targetMinutes' | 'completed'> &
+  Partial<Pick<FocusSession, 'soundId' | 'targetMinutes' | 'completed'>>;
 
 export type MoodScore = 1 | 2 | 3 | 4 | 5;
 

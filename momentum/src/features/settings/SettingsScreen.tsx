@@ -10,6 +10,7 @@ import { reloadAllData } from '@/state/reloadAll';
 import { AppearanceSetting } from './AppearanceSetting';
 import { DataTransparency } from './DataTransparency';
 import { PauseSetting } from './PauseSetting';
+import { AutoBackupSetting, ReflectionLockSetting } from './PrivacySetting';
 import { ReminderSetting } from './ReminderSetting';
 import { useSettingsStore } from '@/state/settingsStore';
 import { type TranslationKey, useT } from '@/i18n';
@@ -108,6 +109,10 @@ export function SettingsScreen() {
           <Button label={t('set.export')} variant="secondary" onPress={() => void runExport()} loading={isExporting} />
           <Button label={t('set.restore')} variant="ghost" onPress={() => void runImport()} loading={isImporting} />
         </Card>
+        <View style={{ height: spacing.md }} />
+        <AutoBackupSetting />
+        <View style={{ height: spacing.md }} />
+        <ReflectionLockSetting />
 
         <SectionTitle>{t('set.breaks')}</SectionTitle>
         <PauseSetting />

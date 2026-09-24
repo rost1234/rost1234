@@ -1,6 +1,9 @@
 import type { WidgetTaskHandlerProps } from 'react-native-android-widget';
 import { toErrorMessage } from '@/core/errors';
 import { usePrefsStore } from '@/state/prefsStore';
+import { FOCUS_WIDGET_NAME, renderFocusWidget, START_FOCUS_ACTION } from './FocusWidget';
+import { loadFocusWidgetModel, startFocusFromWidget } from './focusWidgetData';
+import { QUICK_FOCUS_MINUTES } from '@/services/quickActionConfig';
 import { renderTodayWidget, TODAY_WIDGET_NAME, TOGGLE_HABIT_ACTION } from './TodayWidget';
 import { loadTodayWidgetModel, tapHabitFromWidget } from './widgetData';
 import { rowsForHeight } from './widgetModel';
@@ -11,6 +14,7 @@ import { rowsForHeight } from './widgetModel';
  */
 export async function widgetTaskHandler(props: WidgetTaskHandlerProps): Promise<void> {
   const { widgetInfo, widgetAction, clickAction, clickActionData, renderWidget } = props;
+  if (widgetInfo.widgetName === FOCUS_WIDGET_NAME) return focusWidgetTask(props);
   if (widgetInfo.widgetName !== TODAY_WIDGET_NAME) return;
 
   try {
@@ -34,5 +38,16 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps): Promise<
     renderWidget(renderTodayWidget(await loadTodayWidgetModel(rowsForHeight(widgetInfo.height))));
   } catch (error) {
     if (__DEV__) console.warn('[Momentum widget]', toErrorMessage(error));
+  }
+}
+
+async function focusWidgetTask({ widgetAction, clickAction, renderWidget }: WidgetTaskHandlerProps): Promise<void> {
+  try {
+    if (widgetAction === 'WIDGET_DELETED') return;
+    if (!usePrefsStore.getState().isHydrated) await usePrefsStore.getState().hydrate();
+    if (widgetAction === 'WIDGET_CLICK' && clickAction === START_FOCUS_ACTION) await startFocusFromWidget();
+    renderWidget(renderFocusWidget(await loadFocusWidgetModel(), QUICK_FOCUS_MINUTES));
+  } catch (error) {
+    if (__DEV__) console.warn('[Momentum focus widget]', toErrorMessage(error));
   }
 }

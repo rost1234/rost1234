@@ -82,6 +82,13 @@ src/
   agent (`.claude/agents/`).
 - **Rhythm**: weekly summary (`domain/weekly.ts`), milestone celebrations and time-of-day ordering (`domain/rhythm.ts`),
   smart reminders with a "Done ✓" action (`services/habitReminders.ts`); side effects live in `state/habitEffects.ts`.
+- **Focus extras**: up to two layered sounds with separate volumes (`services/focusSoundPlayer.ts` — one faded player per
+  layer). Each session stores the sound mix, planned length and whether it ran to the end (schema v7), and Insights
+  compares with/without sound (`domain/soundExperiment.ts`, needs 5+ sessions per group).
+- **Shortcuts & Focus widget**: app-icon shortcuts via `expo-quick-actions` (`services/quickActions.ts`, icons from
+  `scripts/generate_shortcut_icons.py`); the Focus widget starts a session headlessly through the same persisted timer.
+- **Privacy**: weekly auto-backup to a user-chosen folder (Storage Access Framework, runs on app open) and an optional
+  fingerprint/PIN lock for reflections (`expo-local-authentication`). Both are per-device prefs (`state/devicePrefsStore.ts`).
 - **Midnight**: the dashboard reloads automatically at local midnight and whenever the app returns to the foreground on a new day.
 
 ## Releases & updates

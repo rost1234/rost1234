@@ -61,6 +61,9 @@ export interface FocusSessionRow {
   end_time: string;
   duration_minutes: number;
   created_at: string;
+  sound_id: string | null;
+  target_minutes: number | null;
+  completed: SqlBoolean | null;
 }
 
 export interface DailyReflectionRow {

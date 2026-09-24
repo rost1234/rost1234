@@ -3,6 +3,7 @@ import { parseBackup } from '../backup/backupFormat';
 import { SqliteBackupRepository } from '../repositories/sqliteBackupRepository';
 import { SqliteHabitLogRepository } from '../repositories/sqliteHabitLogRepository';
 import { SqliteHabitRepository } from '../repositories/sqliteHabitRepository';
+import { SqliteFocusSessionRepository } from '../repositories/sqliteFocusSessionRepository';
 import { SqliteDayModeRepository, SqlitePauseRepository, SqliteShownInsightRepository } from '../repositories/sqlitePlanningRepositories';
 import { SqliteReflectionRepository } from '../repositories/sqliteReflectionRepository';
 import { SqliteSettingsRepository } from '../repositories/sqliteSettingsRepository';
@@ -24,6 +25,7 @@ function repos(executor: SqlExecutor) {
     reflections: new SqliteReflectionRepository(provider),
     usage: new SqliteUsageRepository(provider),
     backup: new SqliteBackupRepository(provider),
+    focus: new SqliteFocusSessionRepository(provider),
   };
 }
 
@@ -48,6 +50,21 @@ describe('migrations', () => {
     expect((await r.tasks.getOverdue('2026-09-24')).map((t) => t.title)).toEqual(['kept']);
     expect(LATEST_SCHEMA_VERSION).toBeGreaterThanOrEqual(4);
     expect((await r.habits.create({ ...newHabit, why: ' energy ' })).why).toBe('energy');
+  });
+});
+
+describe('focus sessions (v7 experiment fields)', () => {
+  it('keeps pre-v7 sessions as untracked and stores new fields', async () => {
+    const { db, executor } = createTestDatabase({ upToVersion: 6 });
+    db.exec("INSERT INTO focus_sessions (id, habit_id, task_id, start_time, end_time, duration_minutes, created_at) VALUES ('old', NULL, NULL, '2026-09-20T10:00:00Z', '2026-09-20T10:25:00Z', 25, 'x')");
+    applyRemainingMigrations(db, 6);
+    const r = repos(executor);
+    await r.focus.create({ habitId: null, taskId: null, startTime: '2026-09-21T10:00:00Z', endTime: '2026-09-21T10:10:00Z', durationMinutes: 10, soundId: 'rain+brown', targetMinutes: 25, completed: false });
+    const all = await r.focus.getAll();
+    expect(all.map((s) => [s.soundId, s.targetMinutes, s.completed])).toEqual([
+      [null, null, null],
+      ['rain+brown', 25, false],
+    ]);
   });
 });
 

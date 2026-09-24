@@ -14,12 +14,15 @@ export class SqliteFocusSessionRepository implements FocusSessionRepository {
       const session: FocusSession = {
         ...input,
         durationMinutes: Math.max(0, Math.round(input.durationMinutes)),
+        soundId: input.soundId ?? null,
+        targetMinutes: input.targetMinutes ?? null,
+        completed: input.completed ?? null,
         id: createId(),
         createdAt: nowIso(),
       };
       await db.runAsync(
-        `INSERT INTO focus_sessions (id, habit_id, task_id, start_time, end_time, duration_minutes, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO focus_sessions (id, habit_id, task_id, start_time, end_time, duration_minutes, created_at, sound_id, target_minutes, completed)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           session.id,
           session.habitId,
@@ -28,6 +31,9 @@ export class SqliteFocusSessionRepository implements FocusSessionRepository {
           session.endTime,
           session.durationMinutes,
           session.createdAt,
+          session.soundId,
+          session.targetMinutes,
+          session.completed === null ? null : session.completed ? 1 : 0,
         ],
       );
       return session;

@@ -3,6 +3,7 @@ import { toErrorMessage } from '@/core/errors';
 import { addDays, lastNDays, parseLocalDate, type LocalDateString } from '@/core/localDate';
 import { repositories } from '@/data/repositories';
 import { averageOf, buildHeatmap, buildTrend, type HeatRow, type TrendPoint } from '@/domain/analytics';
+import { compareSoundSessions, type SoundExperiment } from '@/domain/soundExperiment';
 import { summarizeUsage, type UsageSummary } from '@/domain/usage';
 
 export type AnalyticsRange = 'week' | 'month';
@@ -18,6 +19,8 @@ export interface AnalyticsData {
   focusMinutes: number;
   freezesAvailable: number;
   usage: UsageSummary;
+  /** All-time, not per range: the experiment needs every session it can get. */
+  soundExperiment: SoundExperiment;
 }
 
 interface AnalyticsState {
@@ -35,7 +38,7 @@ async function fetchAnalytics(today: LocalDateString, range: AnalyticsRange): Pr
   const startIso = new Date(parseLocalDate(start).setHours(0, 0, 0, 0)).toISOString();
   const endIso = new Date(parseLocalDate(addDays(today, 1)).setHours(0, 0, 0, 0)).toISOString();
 
-  const [habits, logs, reflections, sessions, settings, usage, pauses] = await Promise.all([
+  const [habits, logs, reflections, sessions, settings, usage, pauses, allSessions] = await Promise.all([
     repositories.habits.getAll(),
     repositories.habitLogs.getInRange(start, today),
     repositories.reflections.getInRange(start, today),
@@ -43,6 +46,7 @@ async function fetchAnalytics(today: LocalDateString, range: AnalyticsRange): Pr
     repositories.settings.get(),
     repositories.usage.getInRange(start, today),
     repositories.pauses.getAll(),
+    repositories.focusSessions.getAll(),
   ]);
 
   const trend = buildTrend(habits, logs, reflections, dates);
@@ -55,6 +59,7 @@ async function fetchAnalytics(today: LocalDateString, range: AnalyticsRange): Pr
     focusMinutes: sessions.reduce((sum, s) => sum + s.durationMinutes, 0),
     freezesAvailable: settings.streakFreezesAvailable,
     usage: summarizeUsage(usage, today),
+    soundExperiment: compareSoundSessions(allSessions),
   };
 }
 

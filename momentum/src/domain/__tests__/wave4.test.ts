@@ -1,4 +1,4 @@
-import { makeHabit } from '@/testing/fixtures';
+import { makeHabit, makeSession } from '@/testing/fixtures';
 import type { HabitLog } from '../models';
 import { crossedMilestone, orderByTimeOfDay, reminderDates, usualReminderMinutes } from '../rhythm';
 import { buildWeeklySummary, previousWeek, weekStart } from '../weekly';
@@ -24,7 +24,7 @@ describe('weekly summary', () => {
     const week = { start: '2026-09-13', end: '2026-09-19' };
     const days = ['2026-09-13', '2026-09-14', '2026-09-15', '2026-09-16', '2026-09-17', '2026-09-18', '2026-09-19'];
     const logs = [...days.map((d) => log('read', d, 'completed')), log('run', '2026-09-13', 'completed')];
-    const sessions = [{ id: 's', habitId: null, taskId: null, startTime: '2026-09-15T10:00:00Z', endTime: 'x', durationMinutes: 25, createdAt: 'x' }];
+    const sessions = [makeSession()];
     const summary = buildWeeklySummary([read, run], logs, sessions, week);
     expect(summary.wins.map((w) => w.habitId)).toEqual(['read', 'run']);
     expect(summary.toImprove?.habitId).toBe('run');

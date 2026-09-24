@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { I18nManager, Text, View } from 'react-native';
+import { AppState, I18nManager, Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Stack, type ErrorBoundaryProps } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -10,6 +10,9 @@ import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { configureNotifications } from '@/services/notifications';
 import { startUsageTracking } from '@/services/usageTracker';
 import { registerReminderCategory } from '@/services/habitReminders';
+import { registerQuickActions } from '@/services/quickActions';
+import { runAutoBackupIfDue } from '@/services/backup';
+import { useDevicePrefsStore } from '@/state/devicePrefsStore';
 import { startNotificationResponses } from '@/services/notificationResponses';
 import { startHabitEffects } from '@/state/habitEffects';
 import { useFocusSoundStore } from '@/state/focusSoundStore';
@@ -51,6 +54,7 @@ function Bootstrap() {
           I18nManager.allowRTL(true);
           if (I18nManager.isRTL !== wantRTL) I18nManager.forceRTL(wantRTL);
           // Button titles are translated, so register them once the language is known.
+          runDetached(registerQuickActions());
           return registerReminderCategory();
         }),
     );
@@ -61,7 +65,18 @@ function Bootstrap() {
     runDetached(useSettingsStore.getState().load());
     runDetached(useFocusSoundStore.getState().hydrate());
     runDetached(useFocusStore.getState().hydrate());
-    return stopResponses;
+    // Weekly backup to the user's folder, if they set one up.
+    runDetached(useDevicePrefsStore.getState().hydrate().then(runAutoBackupIfDue));
+    // A session may have been started from the Focus widget while we were away.
+    const appState = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') return;
+      runDetached(useFocusStore.getState().syncFromStorage());
+      runDetached(runAutoBackupIfDue());
+    });
+    return () => {
+      stopResponses();
+      appState.remove();
+    };
   }, []);
 
   if (status === 'error') {
@@ -102,6 +117,7 @@ function Bootstrap() {
       <Stack.Screen name="habit/new" options={{ presentation: 'modal', headerShown: true, title: t('nav.newHabit') }} />
       <Stack.Screen name="habit/[id]" options={{ presentation: 'modal', headerShown: true, title: t('nav.editHabit') }} />
       <Stack.Screen name="review" options={{ presentation: 'modal', headerShown: true, title: t('nav.unfinished') }} />
+      <Stack.Screen name="task-new" options={{ presentation: 'modal', headerShown: true, title: t('quick.addTask') }} />
       <Stack.Screen name="weekly" options={{ presentation: 'modal', headerShown: true, title: t('weekly.nav') }} />
     </Stack>
   );

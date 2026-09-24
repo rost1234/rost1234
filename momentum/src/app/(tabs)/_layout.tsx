@@ -1,7 +1,9 @@
 import { Redirect } from 'expo-router';
 import TopTabs from 'expo-router/js-top-tabs';
+import { useQuickActionRouting } from 'expo-quick-actions/router';
 import { SwipeTabBar, type TabItem } from '@/components/SwipeTabBar';
 import { useTheme } from '@/components/theme';
+import { handleQuickAction } from '@/services/quickActions';
 import { useSettingsStore } from '@/state/settingsStore';
 
 const TABS: readonly TabItem[] = [
@@ -23,6 +25,8 @@ interface TabBarRenderProps {
 export default function TabsLayout() {
   const isOnboarded = useSettingsStore((s) => s.settings?.isOnboardingCompleted ?? false);
   const { colors } = useTheme();
+  // App-icon shortcuts; handled here (not in the root layout) so navigation is ready.
+  useQuickActionRouting((action) => (isOnboarded ? handleQuickAction(action) : true));
   if (!isOnboarded) return <Redirect href="/onboarding" />;
 
   return (

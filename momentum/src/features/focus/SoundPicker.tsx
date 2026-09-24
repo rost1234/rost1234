@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { focusColors, radius, spacing } from '@/components/theme';
 import { runDetached } from '@/core/errors';
 import { haptics } from '@/core/haptics';
-import { playFocusSound, setFocusSoundVolume, stopFocusSound } from '@/services/focusSoundPlayer';
+import { playFocusMix, setFocusSoundVolume } from '@/services/focusSoundPlayer';
 import { useFocusSoundStore } from '@/state/focusSoundStore';
 import { FocusLabel } from './focusUi';
 import { FOCUS_SOUNDS, VOLUME_LEVELS, findSound, type FocusSoundId } from './sounds';
@@ -49,73 +49,111 @@ function SoundTile({
   );
 }
 
-/** Optional background sound for focus sessions. */
+function VolumeRow({ volume, label, onChange }: { volume: number; label: string; onChange: (value: number) => void }) {
+  const t = useT();
+  return (
+    <View style={styles.volumeRow} accessibilityRole="radiogroup" accessibilityLabel={label}>
+      <Ionicons name="volume-low-outline" size={18} color={focusColors.textMuted} />
+      {VOLUME_LEVELS.map((level) => {
+        const active = volume === level.value;
+        return (
+          <Pressable
+            key={level.label}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: active }}
+            accessibilityLabel={t('sound.volumeA11y', { level: t(level.label) })}
+            onPress={() => onChange(level.value)}
+            style={[styles.volume, active && styles.volumeSelected]}
+          >
+            <Text style={[styles.volumeText, active && styles.volumeTextSelected]}>{t(level.label)}</Text>
+          </Pressable>
+        );
+      })}
+      <Ionicons name="volume-high-outline" size={18} color={focusColors.textMuted} />
+    </View>
+  );
+}
+
+/** Optional background sound for focus sessions, with an optional second layer. */
 export function SoundPicker({ isPlaying }: SoundPickerProps) {
   const t = useT();
-  const soundId = useFocusSoundStore((s) => s.soundId);
-  const volume = useFocusSoundStore((s) => s.volume);
+  const layers = useFocusSoundStore((s) => s.layers);
   const setSound = useFocusSoundStore((s) => s.setSound);
+  const setSecondLayer = useFocusSoundStore((s) => s.setSecondLayer);
   const setVolume = useFocusSoundStore((s) => s.setVolume);
-  const selected = findSound(soundId);
+  const [first, second] = layers;
+  const selected = first ? findSound(first.id) : undefined;
+
+  // Changes apply to what's playing right away.
+  const replay = () => {
+    if (isPlaying) runDetached(playFocusMix(useFocusSoundStore.getState().layers));
+  };
 
   const choose = (id: FocusSoundId) => {
     haptics.select();
     setSound(id);
-    if (!isPlaying) return;
-    if (id === 'off') stopFocusSound();
-    else runDetached(playFocusSound(id, volume));
+    replay();
   };
 
-  const chooseVolume = (value: number) => {
+  const chooseSecond = (id: FocusSoundId) => {
     haptics.select();
-    setVolume(value);
-    if (isPlaying) setFocusSoundVolume(value);
+    setSecondLayer(second?.id === id ? 'off' : id);
+    replay();
+  };
+
+  const chooseVolume = (index: number, value: number) => {
+    haptics.select();
+    setVolume(index, value);
+    if (isPlaying) setFocusSoundVolume(index, value);
   };
 
   return (
     <View style={styles.container}>
       <FocusLabel>{t('sound.title')}</FocusLabel>
       <View style={styles.grid} accessibilityRole="radiogroup">
-        <SoundTile label={t('sound.silence')} icon="volume-mute-outline" tint="#9C9DC6" selected={soundId === 'off'} onPress={() => choose('off')} />
+        <SoundTile label={t('sound.silence')} icon="volume-mute-outline" tint="#9C9DC6" selected={!first} onPress={() => choose('off')} />
         {FOCUS_SOUNDS.map((sound) => (
           <SoundTile
             key={sound.id}
             label={t(sound.label)}
             icon={sound.icon}
             tint={sound.tint}
-            selected={soundId === sound.id}
+            selected={first?.id === sound.id}
             badge={sound.needsHeadphones ? '🎧' : undefined}
             onPress={() => choose(sound.id)}
           />
         ))}
       </View>
 
-      {selected ? (
+      {first && selected ? (
         <View style={styles.details}>
           <Text style={styles.description}>{t(selected.description)}</Text>
           <View style={styles.evidenceRow}>
             <Ionicons name="information-circle-outline" size={14} color={focusColors.textMuted} />
             <Text style={styles.evidence}>{t(selected.evidence)}</Text>
           </View>
-          <View style={styles.volumeRow} accessibilityRole="radiogroup" accessibilityLabel={t('sound.volume')}>
-            <Ionicons name="volume-low-outline" size={18} color={focusColors.textMuted} />
-            {VOLUME_LEVELS.map((level) => {
-              const active = volume === level.value;
+          <VolumeRow volume={first.volume} label={t('sound.volume')} onChange={(v) => chooseVolume(0, v)} />
+
+          <Text style={styles.layerTitle}>{t('sound.layerTitle')}</Text>
+          <View style={styles.chips}>
+            {FOCUS_SOUNDS.filter((s) => s.id !== first.id).map((sound) => {
+              const active = second?.id === sound.id;
               return (
                 <Pressable
-                  key={level.label}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: active }}
-                  accessibilityLabel={t('sound.volumeA11y', { level: t(level.label) })}
-                  onPress={() => chooseVolume(level.value)}
-                  style={[styles.volume, active && styles.volumeSelected]}
+                  key={sound.id}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: active }}
+                  accessibilityLabel={t('sound.layerA11y', { sound: t(sound.label) })}
+                  onPress={() => chooseSecond(sound.id)}
+                  style={[styles.chip, active && styles.chipSelected]}
                 >
-                  <Text style={[styles.volumeText, active && styles.volumeTextSelected]}>{t(level.label)}</Text>
+                  <Ionicons name={active ? 'checkmark' : 'add'} size={14} color={active ? '#FFFFFF' : sound.tint} />
+                  <Text style={[styles.chipText, active && styles.volumeTextSelected]}>{t(sound.label)}</Text>
                 </Pressable>
               );
             })}
-            <Ionicons name="volume-high-outline" size={18} color={focusColors.textMuted} />
           </View>
+          {second ? <VolumeRow volume={second.volume} label={t('sound.layerVolume')} onChange={(v) => chooseVolume(1, v)} /> : null}
         </View>
       ) : null}
     </View>
@@ -156,4 +194,19 @@ const styles = StyleSheet.create({
   volumeSelected: { backgroundColor: focusColors.surfaceActive },
   volumeText: { color: focusColors.textMuted, fontSize: 13, fontWeight: '600' },
   volumeTextSelected: { color: focusColors.text },
+  layerTitle: { color: focusColors.textMuted, fontSize: 12, fontWeight: '700', marginTop: spacing.sm, textTransform: 'uppercase', letterSpacing: 0.6 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 2,
+    borderRadius: radius.pill,
+    backgroundColor: focusColors.surface,
+    borderWidth: 1,
+    borderColor: focusColors.border,
+  },
+  chipSelected: { backgroundColor: focusColors.surfaceActive, borderColor: focusColors.ringStart },
+  chipText: { color: focusColors.textMuted, fontSize: 12, fontWeight: '600' },
 });

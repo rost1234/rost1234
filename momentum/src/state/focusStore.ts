@@ -3,17 +3,17 @@ import { toErrorMessage } from '@/core/errors';
 import { repositories } from '@/data/repositories';
 import { computeSnapshot, createTimer, focusedMinutes, pauseTimer, resumeTimer, type PersistedTimer } from '@/domain/focusTimer';
 import { CLASSIC_POMODORO, advanceFinishedPhases, firstPhase } from '@/domain/pomodoro';
-import { pauseFocusSound, playFocusSound, stopFocusSound } from '@/services/focusSoundPlayer';
+import { pauseFocusSound, playFocusMix, stopFocusSound } from '@/services/focusSoundPlayer';
 import { cancelTimerNotifications, scheduleTimerNotifications } from '@/services/timerNotifications';
 import { clearTimer, loadTimer, saveTimer } from '@/services/timerStorage';
+import { refreshFocusWidget } from '@/widget/refreshWidget';
 import { useFocusSoundStore } from './focusSoundStore';
 import { t } from '@/i18n';
 
 /** Plays the preferred focus sound (if any) — never lets audio errors break the timer. */
 async function startPreferredSound(): Promise<void> {
-  const { soundId, volume } = useFocusSoundStore.getState();
   try {
-    await playFocusSound(soundId, volume);
+    await playFocusMix(useFocusSoundStore.getState().layers);
   } catch {
     // Audio is optional.
   }
@@ -37,6 +37,8 @@ interface FocusState {
   error: string | null;
 
   hydrate: () => Promise<void>;
+  /** Picks up a session started elsewhere (the Focus widget) while the app was in the background. */
+  syncFromStorage: () => Promise<void>;
   start: (minutes: number, link: FocusLink, options?: { pomodoro?: boolean }) => Promise<void>;
   pause: () => Promise<void>;
   resume: () => Promise<void>;
@@ -50,15 +52,40 @@ interface FocusState {
 
 let busy = false;
 
-async function logWork(timer: PersistedTimer, startTime: string, endTime: string, minutes: number): Promise<void> {
-  if (minutes <= 0) return;
-  await repositories.focusSessions.create({ habitId: timer.habitId, taskId: timer.taskId, startTime, endTime, durationMinutes: minutes });
+/** The mix that is playing, as stored with each session ("rain+brown"); null = silence. */
+function currentSoundId(): string | null {
+  const ids = useFocusSoundStore.getState().layers.map((l) => l.id);
+  return ids.length > 0 ? ids.join('+') : null;
+}
+
+interface WorkLog {
+  startTime: string;
+  endTime: string;
+  minutes: number;
+  targetMinutes: number;
+  /** Ran to the planned end (for the sound experiment). */
+  completed: boolean;
+}
+
+async function logWork(timer: PersistedTimer, work: WorkLog): Promise<void> {
+  if (work.minutes <= 0) return;
+  await repositories.focusSessions.create({
+    habitId: timer.habitId,
+    taskId: timer.taskId,
+    startTime: work.startTime,
+    endTime: work.endTime,
+    durationMinutes: work.minutes,
+    soundId: currentSoundId(),
+    targetMinutes: work.targetMinutes,
+    completed: work.completed,
+  });
 }
 
 export const useFocusStore = create<FocusState>((set, get) => {
   const persist = async (timer: PersistedTimer): Promise<void> => {
     set({ timer });
     await saveTimer(timer);
+    refreshFocusWidget();
   };
 
   const withError = async (task: () => Promise<void>): Promise<void> => {
@@ -74,6 +101,7 @@ export const useFocusStore = create<FocusState>((set, get) => {
     set({ timer: null });
     stopFocusSound();
     await clearTimer();
+    refreshFocusWidget();
   };
 
   /** Sound only plays during focus phases, not during Pomodoro breaks. */
@@ -98,6 +126,12 @@ export const useFocusStore = create<FocusState>((set, get) => {
         if (timer && computeSnapshot(timer).isFinished) await get().onPhaseElapsed();
         else if (timer) await syncSound(timer);
       }).finally(() => set({ isHydrated: true })),
+
+    syncFromStorage: async () => {
+      if (busy || !get().isHydrated) return;
+      const stored = await loadTimer();
+      if (stored?.startTime !== get().timer?.startTime) await get().hydrate();
+    },
 
     start: (minutes, link, options = {}) =>
       withError(async () => {
@@ -150,7 +184,13 @@ export const useFocusStore = create<FocusState>((set, get) => {
         const isBreak = timer.pomodoro?.phase === 'break';
         const minutes = isBreak ? 0 : focusedMinutes(snapshot);
         const endTime = new Date(new Date(timer.startTime).getTime() + timer.pausedAccumulatedMs + snapshot.elapsedSeconds * 1000);
-        await logWork(timer, timer.startTime, endTime.toISOString(), minutes);
+        await logWork(timer, {
+          startTime: timer.startTime,
+          endTime: endTime.toISOString(),
+          minutes,
+          targetMinutes: timer.targetDurationMinutes,
+          completed: snapshot.isFinished,
+        });
         // On-time single sessions are announced by the scheduled notification; everything else is cancelled.
         if (!snapshot.isFinished || timer.pomodoro) await cancelTimerNotifications(timer);
         const previous = get().lastSummary;
@@ -175,7 +215,9 @@ export const useFocusStore = create<FocusState>((set, get) => {
       busy = true;
       try {
         const { timer: next, completedWork } = advanceFinishedPhases(timer);
-        for (const work of completedWork) await logWork(timer, work.startTime, work.endTime, work.minutes);
+        for (const work of completedWork) {
+          await logWork(timer, { ...work, targetMinutes: work.minutes, completed: true });
+        }
         const minutes = completedWork.reduce((sum, w) => sum + w.minutes, 0);
         const previous = get().lastSummary;
         const summary = { minutes: (previous?.minutes ?? 0) + minutes, blocks: (previous?.blocks ?? 0) + completedWork.length };

@@ -142,6 +142,16 @@ CREATE TABLE IF NOT EXISTS shown_insights (
 );
 `;
 
+/**
+ * v7: the focus "personal experiment" — which sound played, the planned
+ * length, and whether the session ran to the end.
+ */
+const MIGRATION_7 = `
+ALTER TABLE focus_sessions ADD COLUMN sound_id TEXT NULL;
+ALTER TABLE focus_sessions ADD COLUMN target_minutes INTEGER NULL;
+ALTER TABLE focus_sessions ADD COLUMN completed INTEGER NULL;
+`;
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, statements: MIGRATION_1 },
   { version: 2, statements: MIGRATION_2 },
@@ -149,6 +159,7 @@ export const MIGRATIONS: readonly Migration[] = [
   { version: 4, statements: MIGRATION_4 },
   { version: 5, statements: MIGRATION_5 },
   { version: 6, statements: MIGRATION_6 },
+  { version: 7, statements: MIGRATION_7 },
 ];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS.reduce((max, m) => Math.max(max, m.version), 0);
@@ -231,6 +242,9 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     end_time: 'text',
     duration_minutes: 'integer',
     created_at: 'text',
+    sound_id: 'nullable_text',
+    target_minutes: 'nullable_integer',
+    completed: 'nullable_integer',
   },
   daily_reflections: {
     id: 'text',

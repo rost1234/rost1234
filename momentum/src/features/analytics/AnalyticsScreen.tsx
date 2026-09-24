@@ -10,6 +10,7 @@ import { useLocalDate } from '@/hooks/useLocalDate';
 import { useAnalyticsStore, type AnalyticsRange } from '@/state/analyticsStore';
 import { Heatmap } from './Heatmap';
 import { TrendCharts } from './TrendCharts';
+import { SoundExperimentCard } from './SoundExperimentCard';
 import { UsageCard } from './UsageCard';
 import { useT } from '@/i18n';
 
@@ -87,6 +88,9 @@ export function AnalyticsScreen() {
 
             <SectionTitle>{t('ins.screenTime')}</SectionTitle>
             <UsageCard usage={data.usage} rangeLabel={range === 'week' ? t('ins.range7') : t('ins.range30')} />
+
+            <SectionTitle>{t('exp.title')}</SectionTitle>
+            <SoundExperimentCard experiment={data.soundExperiment} />
           </>
         ) : null}
       </ScrollView>

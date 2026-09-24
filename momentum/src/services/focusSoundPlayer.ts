@@ -1,17 +1,21 @@
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
+import { MAX_LAYERS, type SoundLayer } from '@/features/focus/soundLayers';
 import { findSound, type FocusSoundId } from '@/features/focus/sounds';
 import { t } from '@/i18n';
 
 const FADE_IN_MS = 1500;
 const FADE_OUT_MS = 700;
 const FADE_STEP_MS = 40;
+/** One independently faded player. Slot 0 owns the lock-screen media session. */
+interface Slot {
+  player: AudioPlayer | null;
+  currentId: FocusSoundId;
+  /** Bumped on every command so an older fade never overrides a newer action. */
+  generation: number;
+}
 
-let player: AudioPlayer | null = null;
-let currentId: FocusSoundId = 'off';
-let targetVolume = 0.5;
+const slots: Slot[] = Array.from({ length: MAX_LAYERS }, () => ({ player: null, currentId: 'off', generation: 0 }));
 let modeConfigured = false;
-/** Bumped on every command so an older fade never overrides a newer action. */
-let generation = 0;
 
 async function ensureAudioMode(): Promise<void> {
   if (modeConfigured) return;
@@ -21,23 +25,23 @@ async function ensureAudioMode(): Promise<void> {
 }
 
 /** Smoothly moves the volume; resolves false if a newer command took over. */
-function fadeTo(target: number, durationMs: number, token: number): Promise<boolean> {
+function fadeTo(slot: Slot, target: number, durationMs: number, token: number): Promise<boolean> {
   return new Promise((resolve) => {
-    const p = player;
+    const p = slot.player;
     if (!p) return resolve(false);
     const from = p.volume;
     const steps = Math.max(1, Math.round(durationMs / FADE_STEP_MS));
     let step = 0;
     const id = setInterval(() => {
-      if (token !== generation || player !== p) {
+      if (token !== slot.generation || slot.player !== p) {
         clearInterval(id);
         resolve(false);
         return;
       }
       step += 1;
       // Ease-in-out curve sounds smoother than a linear ramp.
-      const t = step / steps;
-      const eased = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+      const x = step / steps;
+      const eased = x < 0.5 ? 2 * x * x : 1 - (-2 * x + 2) ** 2 / 2;
       p.volume = from + (target - from) * eased;
       if (step >= steps) {
         clearInterval(id);
@@ -47,60 +51,73 @@ function fadeTo(target: number, durationMs: number, token: number): Promise<bool
   });
 }
 
-function release(): void {
-  if (!player) return;
-  player.pause();
-  player.clearLockScreenControls();
-  player.remove();
-  player = null;
-  currentId = 'off';
+function release(slot: Slot): void {
+  if (!slot.player) return;
+  slot.player.pause();
+  slot.player.clearLockScreenControls();
+  slot.player.remove();
+  slot.player = null;
+  slot.currentId = 'off';
 }
 
-/** Starts (or crossfades to) a looping focus sound. `off` fades out and stops. */
-export async function playFocusSound(id: FocusSoundId, volume: number): Promise<void> {
-  const token = ++generation;
-  targetVolume = volume;
-  const sound = findSound(id);
+async function stopSlot(slot: Slot, token: number): Promise<void> {
+  if (!slot.player) return;
+  const done = await fadeTo(slot, 0, FADE_OUT_MS, token);
+  if (done && token === slot.generation) release(slot);
+}
+
+async function playSlot(index: number, layer: SoundLayer, lockScreenTitle: string): Promise<void> {
+  const slot = slots[index]!;
+  const token = ++slot.generation;
+  const sound = findSound(layer.id);
   if (!sound) {
-    await stopFocusSoundAsync(token);
+    await stopSlot(slot, token);
     return;
   }
   await ensureAudioMode();
-  if (token !== generation) return;
+  if (token !== slot.generation) return;
 
-  if (!player) {
-    player = createAudioPlayer(sound.source);
-    player.volume = 0;
-  } else if (currentId !== id) {
-    if (player.playing && !(await fadeTo(0, FADE_OUT_MS, token))) return;
-    player.replace(sound.source);
+  if (!slot.player) {
+    slot.player = createAudioPlayer(sound.source);
+    slot.player.volume = 0;
+  } else if (slot.currentId !== layer.id) {
+    if (slot.player.playing && !(await fadeTo(slot, 0, FADE_OUT_MS, token))) return;
+    slot.player.replace(sound.source);
   }
-  currentId = id;
-  player.loop = true;
-  player.play();
+  slot.currentId = layer.id;
+  slot.player.loop = true;
+  slot.player.play();
   // Android stops background audio after ~3 min unless it is the active media session.
-  player.setActiveForLockScreen(true, { title: t('sound.lockTitle'), artist: `Momentum · ${t(sound.label)}` });
-  await fadeTo(targetVolume, FADE_IN_MS, token);
+  if (index === 0) slot.player.setActiveForLockScreen(true, { title: t('sound.lockTitle'), artist: `Momentum · ${lockScreenTitle}` });
+  await fadeTo(slot, layer.volume, FADE_IN_MS, token);
 }
 
-export function setFocusSoundVolume(volume: number): void {
-  targetVolume = volume;
-  if (player) void fadeTo(volume, 300, ++generation);
+/** Starts, crossfades or stops each layer so the mix matches `layers`. */
+export async function playFocusMix(layers: readonly SoundLayer[]): Promise<void> {
+  const active = layers.filter((l) => findSound(l.id)).slice(0, MAX_LAYERS);
+  const title = active.map((l) => t(findSound(l.id)!.label)).join(' + ');
+  await Promise.all(
+    slots.map((_, index) => {
+      const layer = active[index];
+      return layer ? playSlot(index, layer, title) : stopSlot(slots[index]!, ++slots[index]!.generation);
+    }),
+  );
+}
+
+export function setFocusSoundVolume(index: number, volume: number): void {
+  const slot = slots[index];
+  if (slot?.player) void fadeTo(slot, volume, 300, ++slot.generation);
 }
 
 export function pauseFocusSound(): void {
-  const token = ++generation;
-  void fadeTo(0, FADE_OUT_MS, token).then((done) => {
-    if (done && token === generation) player?.pause();
-  });
-}
-
-async function stopFocusSoundAsync(token: number): Promise<void> {
-  if (!player) return;
-  const done = await fadeTo(0, FADE_OUT_MS, token);
-  if (done && token === generation) release();
+  for (const slot of slots) {
+    const token = ++slot.generation;
+    void fadeTo(slot, 0, FADE_OUT_MS, token).then((done) => {
+      if (done && token === slot.generation) slot.player?.pause();
+    });
+  }
 }
 
 export function stopFocusSound(): void {
-  void stopFocusSoundAsync(++generation);
+  for (const slot of slots) void stopSlot(slot, ++slot.generation);
 }

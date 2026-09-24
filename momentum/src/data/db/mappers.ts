@@ -119,6 +119,9 @@ export const mapFocusSession = (row: FocusSessionRow): FocusSession => ({
   endTime: row.end_time,
   durationMinutes: row.duration_minutes,
   createdAt: row.created_at,
+  soundId: row.sound_id,
+  targetMinutes: row.target_minutes,
+  completed: row.completed === null ? null : row.completed === 1,
 });
 
 export const mapReflection = (row: DailyReflectionRow): DailyReflection => ({

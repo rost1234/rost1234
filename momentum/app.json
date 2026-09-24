@@ -42,6 +42,17 @@
               "targetCellHeight": 2,
               "resizeMode": "horizontal|vertical",
               "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "Focus",
+              "label": "Momentum — Focus",
+              "description": "Start a 25-minute focus session from your home screen",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
             }
           ]
         }
@@ -71,6 +82,31 @@
             "image": "./assets/splash-icon.png",
             "backgroundColor": "#1B1C3A"
           }
+        }
+      ],
+      [
+        "expo-quick-actions",
+        {
+          "androidIcons": {
+            "shortcut_focus": {
+              "foregroundImage": "./assets/shortcuts/shortcut_focus.png",
+              "backgroundColor": "#5B5BD6"
+            },
+            "shortcut_reflection": {
+              "foregroundImage": "./assets/shortcuts/shortcut_reflection.png",
+              "backgroundColor": "#5B5BD6"
+            },
+            "shortcut_task": {
+              "foregroundImage": "./assets/shortcuts/shortcut_task.png",
+              "backgroundColor": "#5B5BD6"
+            }
+          }
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Momentum uses Face ID to keep your reflections private."
         }
       ]
     ],

@@ -1,4 +1,4 @@
-import type { Habit } from '@/domain/models';
+import type { FocusSession, Habit } from '@/domain/models';
 
 /** A complete Habit with defaults, for tests. */
 export function makeHabit(overrides: Partial<Habit> = {}): Habit {
@@ -23,6 +23,22 @@ export function makeHabit(overrides: Partial<Habit> = {}): Habit {
     afterHabitId: null,
     timeOfDay: 'any',
     reminder: 'off',
+    ...overrides,
+  };
+}
+
+export function makeSession(overrides: Partial<FocusSession> = {}): FocusSession {
+  return {
+    id: 's',
+    habitId: null,
+    taskId: null,
+    startTime: '2026-09-15T10:00:00Z',
+    endTime: '2026-09-15T10:25:00Z',
+    durationMinutes: 25,
+    createdAt: 'x',
+    soundId: null,
+    targetMinutes: 25,
+    completed: true,
     ...overrides,
   };
 }

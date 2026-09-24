@@ -96,6 +96,19 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Habit form → Smart reminder on (permission asked): a reminder arrives around the usual time with a "Done ✓" button;
       tapping it marks the habit done (app closed too — at the latest when the app next opens); no reminder once done
 
+## Wave 5 — focus extras, shortcuts, focus widget, privacy
+- [ ] Focus → pick Rain, then "Layer a second sound" → Brown noise: both play; each has its own Low/Medium/High volume;
+      tapping the second sound again removes it; the old single-sound choice was kept after the update
+- [ ] Insights → "Your sound experiment": after sessions with and without sound it shows % finished as planned and
+      average minutes; under 5 sessions per group it says there isn't enough data yet
+- [ ] Long-press the app icon → Focus 25 min (opens Focus and starts), Evening reflection, Add task (quick form)
+- [ ] Add the "Momentum — Focus" widget → ▶ starts 25 min without opening the app (notification at the end);
+      the widget shows "Focusing · until HH:MM"; opening the app shows the running timer and starts the sound
+- [ ] Settings → Weekly auto-backup → choose a folder: a backup file appears there right away; "Back up now" adds
+      today's file; a week later, opening the app writes a new one
+- [ ] Settings → Lock reflections (confirms with fingerprint/PIN): opening the reflection asks to unlock; it stays
+      unlocked until the app goes to the background
+
 ## Core loop
 - [ ] Fresh install shows onboarding; completing it lands on Today with the chosen habits
 - [ ] Tapping a binary habit toggles instantly; a count habit goes 1/4 → 4/4 and turns green
