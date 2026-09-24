@@ -3,7 +3,8 @@ name: Momentum Android APK
 on:
   push:
     branches: [claude/momentum-local-first-app-i5yhju]
-    paths: ['momentum/**', '.github/workflows/momentum-android-apk.yml']
+    # Docs-only changes (e.g. IDEAS.md) don't need a new APK.
+    paths: ['momentum/**', '!momentum/**/*.md', '.github/workflows/momentum-android-apk.yml']
   workflow_dispatch:
 
 permissions:
