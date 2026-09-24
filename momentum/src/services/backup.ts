@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { getLocalDeviceDate } from '@/core/localDate';
-import { parseBackup, type BackupFile, type BackupTables } from '@/data/backup/backupFormat';
+import { parseBackup, type BackupError, type BackupFile, type BackupTables } from '@/data/backup/backupFormat';
 import { LATEST_SCHEMA_VERSION, type TableName } from '@/data/db/schema';
 import { inTransaction, repositories } from '@/data/repositories';
 
@@ -47,7 +47,7 @@ export interface PendingImport {
 export type PickImportResult =
   | { kind: 'ready'; pending: PendingImport }
   | { kind: 'canceled' }
-  | { kind: 'invalid'; error: string };
+  | { kind: 'invalid'; error: BackupError };
 
 /** Lets the user choose a backup file and validates it without touching data. */
 export async function pickBackupFile(): Promise<PickImportResult> {

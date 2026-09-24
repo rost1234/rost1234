@@ -5,19 +5,23 @@ import { runDetached, toErrorMessage } from '@/core/errors';
 import { getLocalDeviceDate, type LocalDateString } from '@/core/localDate';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { Banner, Button } from '@/components/ui';
-import { colors, radius, spacing, typography } from '@/components/theme';
+import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import type { DailyReflection, MoodScore } from '@/domain/models';
 import { useReflectionStore } from '@/state/reflectionStore';
 import { MOOD_OPTIONS } from './mood';
+import { type TranslationKey, useT } from '@/i18n';
 
 type Step = 1 | 2 | 3;
 
-const PROMPTS: Record<Exclude<Step, 1>, { title: string; placeholder: string }> = {
-  2: { title: "One thing you're grateful for today.", placeholder: 'A person, a moment, a small win…' },
-  3: { title: 'One lesson or improvement for tomorrow.', placeholder: 'Next time I will…' },
+const PROMPTS: Record<Exclude<Step, 1>, { title: TranslationKey; placeholder: TranslationKey }> = {
+  2: { title: 'refl.gratitude', placeholder: 'refl.gratitudePh' },
+  3: { title: 'refl.lesson', placeholder: 'refl.lessonPh' },
 };
 
 function MoodPicker({ value, onChange }: { value: MoodScore | null; onChange: (score: MoodScore) => void }) {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.moodRow} accessibilityRole="radiogroup">
       {MOOD_OPTIONS.map((option) => {
@@ -27,12 +31,12 @@ function MoodPicker({ value, onChange }: { value: MoodScore | null; onChange: (s
             key={option.score}
             accessibilityRole="radio"
             accessibilityState={{ selected }}
-            accessibilityLabel={`${option.label}, ${option.score} of 5`}
+            accessibilityLabel={t('refl.moodA11y', { label: t(option.label), score: option.score })}
             onPress={() => onChange(option.score)}
             style={[styles.mood, selected && styles.moodSelected]}
           >
             <Text style={styles.moodEmoji}>{option.emoji}</Text>
-            <Text style={[typography.caption, selected && { color: colors.primary, fontWeight: '700' }]}>{option.label}</Text>
+            <Text style={[typography.caption, selected && { color: colors.primary, fontWeight: '700' }]}>{t(option.label)}</Text>
           </Pressable>
         );
       })}
@@ -41,6 +45,7 @@ function MoodPicker({ value, onChange }: { value: MoodScore | null; onChange: (s
 }
 
 export function ReflectionScreen() {
+  const styles = useStyles();
   // The reflection belongs to the day it was opened on, even if saved after midnight.
   const [logDate] = useState(() => getLocalDeviceDate());
   const existing = useReflectionStore((s) => s.byDate[logDate]);
@@ -63,6 +68,9 @@ export function ReflectionScreen() {
 }
 
 function ReflectionForm({ logDate, initial }: { logDate: LocalDateString; initial: DailyReflection | null }) {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
   const save = useReflectionStore((s) => s.save);
   const [step, setStep] = useState<Step>(1);
   const [mood, setMood] = useState<MoodScore | null>(initial?.moodScore ?? null);
@@ -78,7 +86,7 @@ function ReflectionForm({ logDate, initial }: { logDate: LocalDateString; initia
       await save({ logDate, moodScore: mood, gratitudeText: gratitude, lessonText: lesson });
       router.back();
     } catch (e) {
-      setError(`Couldn't save reflection. ${toErrorMessage(e)}`);
+      setError(t('refl.saveError', { error: toErrorMessage(e) }));
       setIsSaving(false);
     }
   };
@@ -88,47 +96,47 @@ function ReflectionForm({ logDate, initial }: { logDate: LocalDateString; initia
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={typography.caption}>Step {step} of 3</Text>
+        <Text style={typography.caption}>{t('refl.stepOf', { step })}</Text>
         {error ? <Banner message={error} onDismiss={() => setError(null)} /> : null}
 
         {step === 1 ? (
           <>
-            <Text style={typography.title}>How was today?</Text>
+            <Text style={typography.title}>{t('refl.howWasToday')}</Text>
             <MoodPicker value={mood} onChange={setMood} />
           </>
         ) : (
           <>
-            <Text style={typography.title}>{PROMPTS[step].title}</Text>
+            <Text style={typography.title}>{t(PROMPTS[step].title)}</Text>
             <TextInput
               key={step}
               value={step === 2 ? gratitude : lesson}
               onChangeText={step === 2 ? setGratitude : setLesson}
-              placeholder={PROMPTS[step].placeholder}
+              placeholder={t(PROMPTS[step].placeholder)}
               placeholderTextColor={colors.textMuted}
               multiline
               autoFocus
               maxLength={280}
               style={styles.input}
-              accessibilityLabel={PROMPTS[step].title}
+              accessibilityLabel={t(PROMPTS[step].title)}
             />
           </>
         )}
       </ScrollView>
 
       <View style={styles.footer}>
-        {step > 1 ? <Button label="Back" variant="ghost" onPress={() => setStep((s) => (s - 1) as Step)} /> : null}
+        {step > 1 ? <Button label={t('common.back')} variant="ghost" onPress={() => setStep((s) => (s - 1) as Step)} /> : null}
         <View style={{ flex: 1 }} />
         {step < 3 ? (
-          <Button label="Next" onPress={() => setStep((s) => (s + 1) as Step)} disabled={!canContinue} />
+          <Button label={t('common.next')} onPress={() => setStep((s) => (s + 1) as Step)} disabled={!canContinue} />
         ) : (
-          <Button label="Save reflection" onPress={() => void submit()} loading={isSaving} disabled={mood === null} />
+          <Button label={t('refl.save')} onPress={() => void submit()} loading={isSaving} disabled={mood === null} />
         )}
       </View>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors, typography }) => ({
   flex: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.xl, gap: spacing.lg },
   moodRow: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.xs },
@@ -161,4 +169,4 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     backgroundColor: colors.surface,
   },
-});
+}));

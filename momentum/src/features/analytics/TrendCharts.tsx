@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
+import { Pressable, Text, View, type LayoutChangeEvent } from 'react-native';
 import Svg, { Circle, Line, Polyline, Rect } from 'react-native-svg';
-import { colors, spacing, typography } from '@/components/theme';
+import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { formatFriendlyDate } from '@/core/localDate';
 import type { TrendPoint } from '@/domain/analytics';
 import { MOOD_OPTIONS } from '@/features/reflection/mood';
+import { useT } from '@/i18n';
 
 const CHART_HEIGHT = 90;
 const PAD = 6;
@@ -14,6 +15,9 @@ const PAD = 6;
  * axis (never a dual-axis chart). Tap a day to inspect both values.
  */
 export function TrendCharts({ points }: { points: readonly TrendPoint[] }) {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
   const [width, setWidth] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);
@@ -40,14 +44,16 @@ export function TrendCharts({ points }: { points: readonly TrendPoint[] }) {
     <View style={{ gap: spacing.sm }}>
       <Text style={styles.readout} accessibilityLiveRegion="polite">
         {active
-          ? `${formatFriendlyDate(active.date)} · Mood ${activeMood ? `${activeMood.emoji} ${activeMood.label}` : '—'} · Habits ${
-              active.completionPercent === null ? '—' : `${active.completionPercent}%`
-            }`
-          : 'Tap a day to compare mood and habits'}
+          ? t('trend.readout', {
+              date: formatFriendlyDate(active.date, t.locale),
+              mood: activeMood ? `${activeMood.emoji} ${t(activeMood.label)}` : '—',
+              habits: active.completionPercent === null ? '—' : `${active.completionPercent}%`,
+            })
+          : t('trend.tapHint')}
       </Text>
 
-      <Pressable onLayout={onLayout} onPress={(e) => selectAt(e.nativeEvent.locationX)} accessibilityLabel="Mood and completion trend">
-        <Text style={typography.label}>Mood (1–5)</Text>
+      <Pressable onLayout={onLayout} onPress={(e) => selectAt(e.nativeEvent.locationX)} accessibilityLabel={t('trend.a11y')}>
+        <Text style={typography.label}>{t('trend.mood')}</Text>
         <Svg width={width} height={CHART_HEIGHT}>
           {[1, 3, 5].map((m) => (
             <Line key={m} x1={0} x2={width} y1={moodY(m)} y2={moodY(m)} stroke={colors.surfaceMuted} strokeWidth={1} />
@@ -65,7 +71,7 @@ export function TrendCharts({ points }: { points: readonly TrendPoint[] }) {
           )}
         </Svg>
 
-        <Text style={[typography.label, { marginTop: spacing.md }]}>Habits completed (%)</Text>
+        <Text style={[typography.label, { marginTop: spacing.md }]}>{t('trend.habits')}</Text>
         <Svg width={width} height={CHART_HEIGHT}>
           <Line x1={0} x2={width} y1={CHART_HEIGHT - 0.5} y2={CHART_HEIGHT - 0.5} stroke={colors.border} strokeWidth={1} />
           {points.map((p, i) => {
@@ -90,6 +96,6 @@ export function TrendCharts({ points }: { points: readonly TrendPoint[] }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ typography }) => ({
   readout: { ...typography.caption, minHeight: 18 },
-});
+}));

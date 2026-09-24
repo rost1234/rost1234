@@ -1,4 +1,5 @@
 import { getLocalDeviceDate } from '@/core/localDate';
+import { currentLocale, t } from '@/i18n';
 import { repositories } from '@/data/repositories';
 import { applyPrimaryAction, progressOf } from '@/domain/habitProgress';
 import { isHabitDueOn } from '@/domain/habitSchedule';
@@ -12,7 +13,10 @@ export async function loadTodayWidgetModel(maxRows: number): Promise<TodayWidget
     repositories.habits.getAll(),
     repositories.habitLogs.getForDate(today),
   ]);
-  return buildTodayWidgetModel(habits, logs, today, maxRows, settings.isOnboardingCompleted);
+  return buildTodayWidgetModel(habits, logs, today, maxRows, settings.isOnboardingCompleted, {
+    locale: currentLocale(),
+    labels: { done: t('habit.done'), skipped: t('heat.skipped') },
+  });
 }
 
 /** Same rule as a tap in the app: +1 for count habits, toggle for binary ones. */

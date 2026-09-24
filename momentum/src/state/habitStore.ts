@@ -10,6 +10,7 @@ import { historyStart, reconcileStreakFreezes, statusesByHabit } from '@/service
 import { refreshTodayWidget } from '@/widget/refreshWidget';
 import { usePlanningStore } from './planningStore';
 import { useSettingsStore } from './settingsStore';
+import { t } from '@/i18n';
 
 type LoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -53,11 +54,11 @@ export interface LastChange {
 }
 
 function describeChange(before: LogProgress, after: LogProgress, unit: string): string {
-  if (after.status === 'skipped') return 'Skipped for today';
-  if (after.status === 'completed' && before.status !== 'completed') return 'Done ✓';
-  if (after.currentCount > before.currentCount) return `+1${unit ? ` ${unit}` : ''}`;
-  if (after.currentCount < before.currentCount || before.status === 'completed') return 'Undone';
-  return 'Updated';
+  if (after.status === 'skipped') return t('undo.skipped');
+  if (after.status === 'completed' && before.status !== 'completed') return t('undo.done');
+  if (after.currentCount > before.currentCount) return t('undo.plusOne', { unit }).trim();
+  if (after.currentCount < before.currentCount || before.status === 'completed') return t('undo.undone');
+  return t('undo.updated');
 }
 
 function indexLogs(logs: readonly HabitLog[]): LogIndex {
@@ -91,7 +92,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
     const previous = logs[habitId]?.[today];
     if (options.recordUndo) {
       const before = progressOf(previous);
-      set({ lastChange: { habitId, previous: before, label: `${habit.title}: ${describeChange(before, next, habit.unit)}`, at: Date.now() } });
+      set({ lastChange: { habitId, previous: before, label: t('undo.label', { title: habit.title, change: describeChange(before, next, habit.unit) }), at: Date.now() } });
     }
     const optimistic: HabitLog = {
       id: previous?.id ?? `pending-${habitId}-${today}`,
@@ -125,7 +126,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
         set({
           logs: rolledBack,
           streaks: { ...get().streaks, [habitId]: streakFor(habit, rolledBack, today) },
-          error: `Couldn't save progress. ${toErrorMessage(error)}`,
+          error: t('err.saveProgress', { error: toErrorMessage(error) }),
         });
       },
     );
@@ -244,7 +245,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
         await repositories.habits.setArchived(habitId, true);
         refreshTodayWidget();
       } catch (error) {
-        set({ habits: before, error: `Couldn't archive habit. ${toErrorMessage(error)}` });
+        set({ habits: before, error: t('err.archive', { error: toErrorMessage(error) }) });
       }
     },
 

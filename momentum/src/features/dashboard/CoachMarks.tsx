@@ -1,20 +1,25 @@
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, radius, spacing, typography } from '@/components/theme';
+import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { runDetached } from '@/core/errors';
+import type { TranslationKey } from '@/i18n';
+import { useT } from '@/i18n';
 
 const KEY = 'momentum.coach.v1';
 
 const TIPS = [
-  { icon: 'hand-left-outline', text: 'Tap a habit to check it off — or +1 for counted habits.' },
-  { icon: 'ellipsis-horizontal-circle-outline', text: 'Long-press a habit to skip, edit or archive it.' },
-  { icon: 'swap-horizontal-outline', text: 'Swipe left or right to move between Today, Focus, Insights and Settings.' },
-] as const;
+  { icon: 'hand-left-outline', text: 'coach.tap' },
+  { icon: 'ellipsis-horizontal-circle-outline', text: 'coach.longPress' },
+  { icon: 'swap-horizontal-outline', text: 'coach.swipe' },
+] as const satisfies readonly { icon: string; text: TranslationKey }[];
 
 /** Three one-time tips on first use. Remembered per device. */
 export function CoachMarks() {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
   const [step, setStep] = useState<number | null>(null);
 
   useEffect(() => {
@@ -36,17 +41,17 @@ export function CoachMarks() {
   return (
     <View style={styles.card} accessibilityRole="alert">
       <Ionicons name={tip.icon} size={22} color={colors.primary} />
-      <Text style={[typography.body, { flex: 1 }]}>{tip.text}</Text>
+      <Text style={[typography.body, { flex: 1 }]}>{t(tip.text)}</Text>
       <View style={styles.actions}>
         <Text style={typography.caption}>
           {step + 1}/{TIPS.length}
         </Text>
         <Pressable accessibilityRole="button" onPress={next} hitSlop={8}>
-          <Text style={styles.next}>{step + 1 < TIPS.length ? 'Next' : 'Got it'}</Text>
+          <Text style={styles.next}>{step + 1 < TIPS.length ? t('common.next') : t('common.gotIt')}</Text>
         </Pressable>
         {step + 1 < TIPS.length ? (
-          <Pressable accessibilityRole="button" accessibilityLabel="Skip tips" onPress={finish} hitSlop={8}>
-            <Text style={typography.caption}>Skip</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel={t('coach.skipA11y')} onPress={finish} hitSlop={8}>
+            <Text style={typography.caption}>{t('common.skip')}</Text>
           </Pressable>
         ) : null}
       </View>
@@ -54,7 +59,7 @@ export function CoachMarks() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors, typography }) => ({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -66,4 +71,4 @@ const styles = StyleSheet.create({
   },
   actions: { alignItems: 'flex-end', gap: spacing.xs },
   next: { ...typography.label, color: colors.primary },
-});
+}));

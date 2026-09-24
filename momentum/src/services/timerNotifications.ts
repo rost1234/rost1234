@@ -1,6 +1,7 @@
 import { projectedEndDate, type PersistedTimer } from '@/domain/focusTimer';
 import { upcomingPhaseEnds } from '@/domain/pomodoro';
 import { cancelNotification, scheduleFocusCompleteNotification, scheduleFocusNotification } from './notifications';
+import { t } from '@/i18n';
 
 type TimerNotifications = Pick<PersistedTimer, 'notificationId' | 'extraNotificationIds'>;
 
@@ -17,10 +18,10 @@ export async function scheduleTimerNotifications(timer: PersistedTimer): Promise
   for (const { at, ending } of upcomingPhaseEnds(timer)) {
     const isLast = ending.phase === 'work' && ending.cycle >= ending.totalCycles;
     const id = isLast
-      ? await scheduleFocusNotification(at, 'Pomodoro complete 🎉', `${ending.totalCycles} focus blocks done. Great work.`)
+      ? await scheduleFocusNotification(at, t('notif.pomoDone'), t('notif.pomoDoneBody', { cycles: ending.totalCycles }))
       : ending.phase === 'work'
-        ? await scheduleFocusNotification(at, `Break time ☕ (${ending.cycle}/${ending.totalCycles})`, `Step away for ${ending.breakMinutes} minutes.`)
-        : await scheduleFocusNotification(at, 'Back to focus 🎯', `Block ${ending.cycle + 1} of ${ending.totalCycles} starts now.`);
+        ? await scheduleFocusNotification(at, t('notif.break', { cycle: ending.cycle, total: ending.totalCycles }), t('notif.breakBody', { minutes: ending.breakMinutes }))
+        : await scheduleFocusNotification(at, t('notif.backToFocus'), t('notif.backToFocusBody', { next: ending.cycle + 1, total: ending.totalCycles }));
     if (id) ids.push(id);
   }
   const [first, ...rest] = ids;

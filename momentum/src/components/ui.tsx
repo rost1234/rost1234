@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { haptics } from '@/core/haptics';
-import { colors, radius, shadow, spacing, typography } from './theme';
+import { makeStyles, radius, spacing, useTheme, type Theme } from './theme';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
@@ -15,15 +15,23 @@ interface ButtonProps {
   accessibilityHint?: string;
 }
 
-const BUTTON_COLORS: Record<ButtonVariant, { bg: string; fg: string }> = {
-  primary: { bg: colors.primary, fg: colors.onPrimary },
-  secondary: { bg: colors.primarySoft, fg: colors.primary },
-  ghost: { bg: 'transparent', fg: colors.textMuted },
-  danger: { bg: colors.dangerSoft, fg: colors.danger },
-};
+function buttonColors(variant: ButtonVariant, colors: Theme['colors']): { bg: string; fg: string } {
+  switch (variant) {
+    case 'primary':
+      return { bg: colors.primary, fg: colors.onPrimary };
+    case 'secondary':
+      return { bg: colors.primarySoft, fg: colors.primary };
+    case 'ghost':
+      return { bg: 'transparent', fg: colors.textMuted };
+    case 'danger':
+      return { bg: colors.dangerSoft, fg: colors.danger };
+  }
+}
 
 export function Button({ label, onPress, variant = 'primary', disabled, loading, style, accessibilityHint }: ButtonProps) {
-  const palette = BUTTON_COLORS[variant];
+  const styles = useStyles();
+  const { colors } = useTheme();
+  const palette = buttonColors(variant, colors);
   const inactive = disabled === true || loading === true;
   return (
     <Pressable
@@ -52,10 +60,14 @@ export function Button({ label, onPress, variant = 'primary', disabled, loading,
 }
 
 export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
+  const styles = useStyles();
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
-export function ProgressBar({ value, color = colors.primary, height = 8 }: { value: number; color?: string; height?: number }) {
+export function ProgressBar({ value, color: colorProp, height = 8 }: { value: number; color?: string; height?: number }) {
+  const styles = useStyles();
+  const { colors } = useTheme();
+  const color = colorProp ?? colors.primary;
   const clamped = Math.max(0, Math.min(1, value));
   return (
     <View
@@ -69,6 +81,8 @@ export function ProgressBar({ value, color = colors.primary, height = 8 }: { val
 }
 
 export function SectionTitle({ children, action }: { children: string; action?: ReactNode }) {
+  const { typography } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.sectionRow}>
       <Text style={typography.overline}>{children}</Text>
@@ -78,6 +92,8 @@ export function SectionTitle({ children, action }: { children: string; action?: 
 }
 
 export function Banner({ message, tone = 'danger', onDismiss }: { message: string; tone?: 'danger' | 'info'; onDismiss?: () => void }) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const isDanger = tone === 'danger';
   return (
     <Pressable
@@ -92,6 +108,7 @@ export function Banner({ message, tone = 'danger', onDismiss }: { message: strin
 }
 
 export function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityRole="button"
@@ -107,7 +124,7 @@ export function Chip({ label, selected, onPress }: { label: string; selected: bo
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors, typography, shadow }) => ({
   button: {
     minHeight: 50,
     paddingHorizontal: spacing.xl,
@@ -152,4 +169,4 @@ const styles = StyleSheet.create({
   chipSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
   chipLabel: { ...typography.label, color: colors.textMuted },
   chipLabelSelected: { color: colors.onPrimary },
-});
+}));

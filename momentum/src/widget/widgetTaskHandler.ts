@@ -1,5 +1,6 @@
 import type { WidgetTaskHandlerProps } from 'react-native-android-widget';
 import { toErrorMessage } from '@/core/errors';
+import { usePrefsStore } from '@/state/prefsStore';
 import { renderTodayWidget, TODAY_WIDGET_NAME, TOGGLE_HABIT_ACTION } from './TodayWidget';
 import { loadTodayWidgetModel, tapHabitFromWidget } from './widgetData';
 import { rowsForHeight } from './widgetModel';
@@ -13,6 +14,8 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps): Promise<
   if (widgetInfo.widgetName !== TODAY_WIDGET_NAME) return;
 
   try {
+    // Headless runs don't go through app start-up: load the language preference first.
+    if (!usePrefsStore.getState().isHydrated) await usePrefsStore.getState().hydrate();
     switch (widgetAction) {
       case 'WIDGET_DELETED':
         return;

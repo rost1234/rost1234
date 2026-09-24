@@ -1,7 +1,9 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing, typography } from '@/components/theme';
-import { GOALS, PRESETS, type GoalId } from '@/domain/presets';
+import { Pressable, Text, View } from 'react-native';
+import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
+import { goals, presetsForGoal, type GoalId } from '@/domain/presets';
+import type { TranslationKey } from '@/i18n';
 import type { WizardState } from './wizardState';
+import { useT } from '@/i18n';
 
 function SelectableRow({
   title,
@@ -16,6 +18,8 @@ function SelectableRow({
   selected: boolean;
   onPress: () => void;
 }) {
+  const { typography } = useTheme();
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityRole="checkbox"
@@ -35,11 +39,14 @@ function SelectableRow({
 }
 
 export function GoalStep({ goal, onSelect }: { goal: GoalId | null; onSelect: (goal: GoalId) => void }) {
+  const t = useT();
+  const { typography } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.list}>
-      <Text style={typography.title}>What do you want to improve?</Text>
-      <Text style={styles.lead}>Pick one focus. You can add more habits later.</Text>
-      {GOALS.map((g) => (
+      <Text style={typography.title}>{t('onb.goalTitle')}</Text>
+      <Text style={styles.lead}>{t('onb.goalLead')}</Text>
+      {goals(t.language).map((g) => (
         <SelectableRow
           key={g.id}
           title={g.title}
@@ -54,16 +61,19 @@ export function GoalStep({ goal, onSelect }: { goal: GoalId | null; onSelect: (g
 }
 
 export function PresetStep({ state, onToggle }: { state: WizardState; onToggle: (key: string) => void }) {
-  const presets = state.goal ? PRESETS[state.goal] : [];
+  const t = useT();
+  const { typography } = useTheme();
+  const styles = useStyles();
+  const presets = state.goal ? presetsForGoal(state.goal, t.language) : [];
   return (
     <View style={styles.list}>
-      <Text style={typography.title}>Start with small wins</Text>
-      <Text style={styles.lead}>Each habit comes with a tiny first step so starting takes seconds.</Text>
+      <Text style={typography.title}>{t('onb.presetTitle')}</Text>
+      <Text style={styles.lead}>{t('onb.presetLead')}</Text>
       {presets.map((preset) => (
         <SelectableRow
           key={preset.key}
           title={`${preset.habit.title} – ${preset.summary}`}
-          subtitle={`First step: ${preset.habit.microStep}`}
+          subtitle={t('onb.firstStep', { step: preset.habit.microStep })}
           leading={preset.habit.isQuantitative ? '🔢' : '✅'}
           selected={state.selectedPresetKeys.includes(preset.key)}
           onPress={() => onToggle(preset.key)}
@@ -73,29 +83,32 @@ export function PresetStep({ state, onToggle }: { state: WizardState; onToggle: 
   );
 }
 
-const PERMISSION_COPY: Record<WizardState['notificationStatus'], string> = {
-  unknown: 'Allow notifications for focus-timer alerts and a gentle evening reflection reminder.',
-  granted: 'Notifications are on. We’ll only ping you for timers and one evening check-in.',
-  denied: 'No problem — Momentum works fully without notifications. You can enable them later in system settings.',
-  unavailable: 'Notifications aren’t available on this device. Everything else works offline.',
+const PERMISSION_COPY: Record<WizardState['notificationStatus'], TranslationKey> = {
+  unknown: 'onb.perm.unknown',
+  granted: 'onb.perm.granted',
+  denied: 'onb.perm.denied',
+  unavailable: 'onb.perm.unavailable',
 };
 
 export function NotificationStep({ state, habitCount }: { state: WizardState; habitCount: number }) {
+  const t = useT();
+  const { typography } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.list}>
-      <Text style={typography.title}>You’re all set</Text>
+      <Text style={typography.title}>{t('onb.allSet')}</Text>
       <Text style={styles.lead}>
-        {habitCount} habit{habitCount === 1 ? '' : 's'} ready. Everything stays on this device — no account, no cloud.
+        {t.plural('onb.ready', habitCount)}
       </Text>
       <View style={styles.infoBox}>
         <Text style={styles.infoEmoji}>🔔</Text>
-        <Text style={[typography.body, { flex: 1 }]}>{PERMISSION_COPY[state.notificationStatus]}</Text>
+        <Text style={[typography.body, { flex: 1 }]}>{t(PERMISSION_COPY[state.notificationStatus])}</Text>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors, typography }) => ({
   list: { gap: spacing.md },
   lead: { ...typography.body, color: colors.textMuted, marginBottom: spacing.sm },
   row: {
@@ -130,4 +143,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   infoEmoji: { fontSize: 28 },
-});
+}));

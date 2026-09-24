@@ -5,13 +5,13 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#6B5CE0",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -34,7 +34,7 @@
           "widgets": [
             {
               "name": "Today",
-              "label": "Momentum \u2014 Today",
+              "label": "Momentum — Today",
               "description": "Tick off today's habits from your home screen",
               "minWidth": "250dp",
               "minHeight": "110dp",
@@ -52,6 +52,25 @@
           "microphonePermission": false,
           "recordAudioAndroid": false,
           "enableBackgroundPlayback": true
+        }
+      ],
+      [
+        "expo-localization",
+        {
+          "supportsRTL": true
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#5B5BD6",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#1B1C3A"
+          }
         }
       ]
     ],

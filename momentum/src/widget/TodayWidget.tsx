@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { FlexWidget, TextWidget, type HexColor } from 'react-native-android-widget';
+import { t } from '@/i18n';
 import type { TodayWidgetModel, WidgetHabitRow } from './widgetModel';
 
 export const TODAY_WIDGET_NAME = 'Today';
@@ -88,7 +89,7 @@ function TodayWidgetView({ model, p }: { model: TodayWidgetModel; p: Palette }) 
       <Frame p={p}>
         <FlexWidget clickAction="OPEN_APP" style={{ width: 'match_parent', height: 'match_parent', justifyContent: 'center' }}>
           <TextWidget text="Momentum" style={{ fontSize: 16, fontWeight: 'bold', color: p.text }} />
-          <TextWidget text="Tap to set up your habits" style={{ fontSize: 13, color: p.muted }} />
+          <TextWidget text={t('widget.setup')} style={{ fontSize: 13, color: p.muted }} />
         </FlexWidget>
       </Frame>
     );
@@ -107,13 +108,13 @@ function TodayWidgetView({ model, p }: { model: TodayWidgetModel; p: Palette }) 
         />
       </FlexWidget>
       {model.rows.length === 0 ? (
-        <TextWidget text="Nothing scheduled today 🌿" style={{ fontSize: 13, color: p.muted, marginTop: 8, marginLeft: 4 }} />
+        <TextWidget text={t('widget.nothing')} style={{ fontSize: 13, color: p.muted, marginTop: 8, marginLeft: 4 }} />
       ) : (
         model.rows.map((row) => <HabitRow key={row.habitId} row={row} p={p} />)
       )}
       {model.hiddenCount > 0 ? (
         <TextWidget
-          text={`+${model.hiddenCount} more — open app`}
+          text={t('widget.more', { count: model.hiddenCount })}
           clickAction="OPEN_APP"
           style={{ fontSize: 12, color: p.muted, marginTop: 4, marginLeft: 4 }}
         />

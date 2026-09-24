@@ -3,6 +3,7 @@ import { spacing } from '@/components/theme';
 import type { Habit, Task } from '@/domain/models';
 import type { FocusLink } from '@/state/focusStore';
 import { FocusChip, FocusLabel } from './focusUi';
+import { useT } from '@/i18n';
 
 interface LinkSelectorProps {
   habits: readonly Habit[];
@@ -14,13 +15,14 @@ interface LinkSelectorProps {
 const NONE: FocusLink = { habitId: null, taskId: null };
 
 export function LinkSelector({ habits, tasks, value, onChange }: LinkSelectorProps) {
+  const t = useT();
   const openTasks = tasks.filter((t) => !t.isCompleted && !t.id.startsWith('pending-'));
   const isNone = value.habitId === null && value.taskId === null;
   return (
     <View style={styles.container}>
-      <FocusLabel>Working on</FocusLabel>
+      <FocusLabel>{t('focus.workingOn')}</FocusLabel>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-        <FocusChip label="Just focus" selected={isNone} onPress={() => onChange(NONE)} />
+        <FocusChip label={t('focus.justFocus')} selected={isNone} onPress={() => onChange(NONE)} />
         {habits.map((habit) => (
           <FocusChip
             key={habit.id}

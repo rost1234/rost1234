@@ -1,14 +1,15 @@
 import { memo, useEffect, useRef, useState } from 'react';
-import { ActionSheetIOS, Alert, Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActionSheetIOS, Alert, Animated, Platform, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ProgressBar } from '@/components/ui';
-import { colors, radius, shadow, spacing, typography } from '@/components/theme';
+import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { haptics } from '@/core/haptics';
 import { completionRatio, progressOf } from '@/domain/habitProgress';
 import type { Habit } from '@/domain/models';
 import { hasCompletionBefore } from '@/domain/streaks';
 import { useHabitStore } from '@/state/habitStore';
+import { t, useT } from '@/i18n';
 
 interface HabitCardProps {
   habit: Habit;
@@ -16,20 +17,20 @@ interface HabitCardProps {
 
 function openHabitMenu(habit: Habit, isSkipped: boolean) {
   const { skipHabit, archiveHabit, undoHabitStep } = useHabitStore.getState();
-  const skipLabel = isSkipped ? 'Unskip today' : 'Skip today';
+  const skipLabel = isSkipped ? t('habit.unskipToday') : t('habit.skipToday');
   const actions: { label: string; run: () => void; destructive?: boolean }[] = [
     { label: skipLabel, run: () => skipHabit(habit.id) },
-    { label: 'Edit habit', run: () => router.push({ pathname: '/habit/[id]', params: { id: habit.id } }) },
-    { label: 'Reset today', run: () => undoHabitStep(habit.id) },
-    { label: 'Archive habit', destructive: true, run: () => void archiveHabit(habit.id) },
+    { label: t('habit.edit'), run: () => router.push({ pathname: '/habit/[id]', params: { id: habit.id } }) },
+    { label: t('habit.resetToday'), run: () => undoHabitStep(habit.id) },
+    { label: t('habit.archive'), destructive: true, run: () => void archiveHabit(habit.id) },
   ];
 
   if (Platform.OS === 'ios') {
     ActionSheetIOS.showActionSheetWithOptions(
       {
         title: habit.title,
-        message: habit.why ? `Why: ${habit.why}` : undefined,
-        options: [...actions.map((a) => a.label), 'Cancel'],
+        message: habit.why ? t('habit.why', { why: habit.why }) : undefined,
+        options: [...actions.map((a) => a.label), t('common.cancel')],
         destructiveButtonIndex: actions.findIndex((a) => a.destructive),
         cancelButtonIndex: actions.length,
       },
@@ -37,9 +38,9 @@ function openHabitMenu(habit: Habit, isSkipped: boolean) {
     );
     return;
   }
-  Alert.alert(habit.title, habit.why ? `Why: ${habit.why}` : undefined, [
+  Alert.alert(habit.title, habit.why ? t('habit.why', { why: habit.why }) : undefined, [
     ...actions.map((a) => ({ text: a.label, onPress: a.run, style: a.destructive ? ('destructive' as const) : ('default' as const) })),
-    { text: 'Cancel', style: 'cancel' as const },
+    { text: t('common.cancel'), style: 'cancel' as const },
   ]);
 }
 
@@ -58,6 +59,9 @@ function useDonePop(isDone: boolean): Animated.Value {
 }
 
 function HabitCardComponent({ habit }: HabitCardProps) {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
   // Each card subscribes only to its own slice, so a tap re-renders one card.
   const log = useHabitStore((s) => (s.today ? s.logs[habit.id]?.[s.today] : undefined));
   const streak = useHabitStore((s) => s.streaks[habit.id] ?? 0);
@@ -79,8 +83,8 @@ function HabitCardComponent({ habit }: HabitCardProps) {
   const countLabel = habit.isQuantitative
     ? `${progress.currentCount}/${habit.targetCount}${habit.unit ? ` ${habit.unit}` : ''}`
     : isDone
-      ? 'Done'
-      : 'Tap to complete';
+      ? t('habit.done')
+      : t('habit.tapToComplete');
 
   const onTap = () => {
     const willComplete = habit.isQuantitative ? progress.currentCount + 1 >= habit.targetCount && !isDone : !isDone;
@@ -100,8 +104,8 @@ function HabitCardComponent({ habit }: HabitCardProps) {
         delayLongPress={350}
         accessibilityRole={habit.isQuantitative ? 'adjustable' : 'checkbox'}
         accessibilityState={habit.isQuantitative ? undefined : { checked: isDone }}
-        accessibilityLabel={`${habit.title}, ${countLabel}${streak > 0 ? `, ${streak} day streak` : ''}`}
-        accessibilityHint={habit.isQuantitative ? 'Tap to add one. Long press for options.' : 'Tap to toggle. Long press for options.'}
+        accessibilityLabel={`${habit.title}, ${countLabel}${streak > 0 ? t('habit.streakA11y', { count: streak }) : ''}`}
+        accessibilityHint={habit.isQuantitative ? t('habit.hintCount') : t('habit.hintBinary')}
         style={({ pressed }) => [styles.main, pressed && { opacity: 0.75 }]}
       >
         <Animated.View style={[styles.checkCircle, isDone && styles.checkCircleDone, { transform: [{ scale: pop }] }]}>
@@ -124,15 +128,15 @@ function HabitCardComponent({ habit }: HabitCardProps) {
             ) : isComeback && !isDone ? (
               <View style={[styles.streak, styles.comeback]}>
                 <Ionicons name="leaf" size={12} color={colors.success} />
-                <Text style={[styles.streakText, { color: colors.success }]}>Fresh start</Text>
+                <Text style={[styles.streakText, { color: colors.success }]}>{t('habit.freshStart')}</Text>
               </View>
             ) : null}
           </View>
           <Text style={typography.caption} numberOfLines={1}>
             {isSkipped
-              ? 'Skipped today'
+              ? t('habit.skipped')
               : anchorTitle
-                ? `↳ after ${anchorTitle}${habit.microStep ? ` · ${habit.microStep}` : ''}`
+                ? `${t('habit.after', { anchor: anchorTitle })}${habit.microStep ? ` · ${habit.microStep}` : ''}`
                 : habit.cue
                   ? `${habit.cue}${habit.microStep ? ` · ${habit.microStep}` : ''}`
                   : habit.microStep
@@ -154,7 +158,7 @@ function HabitCardComponent({ habit }: HabitCardProps) {
         {habit.isQuantitative && progress.currentCount > 0 ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Undo one ${habit.unit || 'step'} for ${habit.title}`}
+            accessibilityLabel={t('habit.undoOne', { unit: habit.unit || t('habit.step'), title: habit.title })}
             hitSlop={8}
             onPress={() => {
               haptics.tap();
@@ -167,7 +171,7 @@ function HabitCardComponent({ habit }: HabitCardProps) {
         ) : null}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Start focus session for ${habit.title}`}
+          accessibilityLabel={t('habit.startFocus', { title: habit.title })}
           hitSlop={8}
           onPress={() => router.push({ pathname: '/focus', params: { habitId: habit.id } })}
           style={[styles.iconButton, styles.focusButton]}
@@ -181,7 +185,7 @@ function HabitCardComponent({ habit }: HabitCardProps) {
 
 export const HabitCard = memo(HabitCardComponent);
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors, typography, shadow }) => ({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -233,4 +237,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   focusButton: { backgroundColor: colors.primarySoft },
-});
+}));

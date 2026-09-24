@@ -16,16 +16,23 @@ export type TodayWidgetModel =
   | { kind: 'setup' }
   | { kind: 'ready'; dateLabel: string; percent: number; rows: WidgetHabitRow[]; hiddenCount: number };
 
-function detailFor(habit: Habit, log: HabitLog | undefined): Pick<WidgetHabitRow, 'detail' | 'isDone' | 'isSkipped'> {
+export interface WidgetLabels {
+  done: string;
+  skipped: string;
+}
+
+const ENGLISH_LABELS: WidgetLabels = { done: 'Done', skipped: 'Skipped' };
+
+function detailFor(habit: Habit, log: HabitLog | undefined, labels: WidgetLabels): Pick<WidgetHabitRow, 'detail' | 'isDone' | 'isSkipped'> {
   const progress = progressOf(log);
   const isDone = progress.status === 'completed';
   const isSkipped = progress.status === 'skipped';
-  if (isSkipped) return { detail: 'Skipped', isDone, isSkipped };
+  if (isSkipped) return { detail: labels.skipped, isDone, isSkipped };
   if (habit.isQuantitative) {
     const unit = habit.unit ? ` ${habit.unit}` : '';
     return { detail: `${progress.currentCount}/${habit.targetCount}${unit}`, isDone, isSkipped };
   }
-  return { detail: isDone ? 'Done' : '', isDone, isSkipped };
+  return { detail: isDone ? labels.done : '', isDone, isSkipped };
 }
 
 /**
@@ -38,19 +45,21 @@ export function buildTodayWidgetModel(
   today: LocalDateString,
   maxRows: number,
   isOnboarded: boolean,
+  options: { locale?: string; labels?: WidgetLabels } = {},
 ): TodayWidgetModel {
+  const labels = options.labels ?? ENGLISH_LABELS;
   if (!isOnboarded) return { kind: 'setup' };
   const logByHabit = new Map(todayLogs.map((log) => [log.habitId, log] as const));
   const due = habitsDueOn(habits, today);
 
   const rows = due
-    .map((habit) => ({ habitId: habit.id, title: habit.title, ...detailFor(habit, logByHabit.get(habit.id)) }))
+    .map((habit) => ({ habitId: habit.id, title: habit.title, ...detailFor(habit, logByHabit.get(habit.id), labels) }))
     .sort((a, b) => Number(a.isDone || a.isSkipped) - Number(b.isDone || b.isSkipped));
 
   const visible = Math.max(0, Math.floor(maxRows));
   return {
     kind: 'ready',
-    dateLabel: formatFriendlyDate(today),
+    dateLabel: formatFriendlyDate(today, options.locale),
     percent: dailyProgressPercent(due.map((habit) => ({ habit, progress: progressOf(logByHabit.get(habit.id)) }))),
     rows: rows.slice(0, visible),
     hiddenCount: Math.max(0, rows.length - visible),

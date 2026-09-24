@@ -8,6 +8,7 @@ import { playFocusSound, setFocusSoundVolume, stopFocusSound } from '@/services/
 import { useFocusSoundStore } from '@/state/focusSoundStore';
 import { FocusLabel } from './focusUi';
 import { FOCUS_SOUNDS, VOLUME_LEVELS, findSound, type FocusSoundId } from './sounds';
+import { useT } from '@/i18n';
 
 interface SoundPickerProps {
   /** When a session is running, changes apply to what's playing right away. */
@@ -50,6 +51,7 @@ function SoundTile({
 
 /** Optional background sound for focus sessions. */
 export function SoundPicker({ isPlaying }: SoundPickerProps) {
+  const t = useT();
   const soundId = useFocusSoundStore((s) => s.soundId);
   const volume = useFocusSoundStore((s) => s.volume);
   const setSound = useFocusSoundStore((s) => s.setSound);
@@ -72,13 +74,13 @@ export function SoundPicker({ isPlaying }: SoundPickerProps) {
 
   return (
     <View style={styles.container}>
-      <FocusLabel>Focus sound</FocusLabel>
+      <FocusLabel>{t('sound.title')}</FocusLabel>
       <View style={styles.grid} accessibilityRole="radiogroup">
-        <SoundTile label="Silence" icon="volume-mute-outline" tint="#9C9DC6" selected={soundId === 'off'} onPress={() => choose('off')} />
+        <SoundTile label={t('sound.silence')} icon="volume-mute-outline" tint="#9C9DC6" selected={soundId === 'off'} onPress={() => choose('off')} />
         {FOCUS_SOUNDS.map((sound) => (
           <SoundTile
             key={sound.id}
-            label={sound.label}
+            label={t(sound.label)}
             icon={sound.icon}
             tint={sound.tint}
             selected={soundId === sound.id}
@@ -90,12 +92,12 @@ export function SoundPicker({ isPlaying }: SoundPickerProps) {
 
       {selected ? (
         <View style={styles.details}>
-          <Text style={styles.description}>{selected.description}</Text>
+          <Text style={styles.description}>{t(selected.description)}</Text>
           <View style={styles.evidenceRow}>
             <Ionicons name="information-circle-outline" size={14} color={focusColors.textMuted} />
-            <Text style={styles.evidence}>{selected.evidence}</Text>
+            <Text style={styles.evidence}>{t(selected.evidence)}</Text>
           </View>
-          <View style={styles.volumeRow} accessibilityRole="radiogroup" accessibilityLabel="Volume">
+          <View style={styles.volumeRow} accessibilityRole="radiogroup" accessibilityLabel={t('sound.volume')}>
             <Ionicons name="volume-low-outline" size={18} color={focusColors.textMuted} />
             {VOLUME_LEVELS.map((level) => {
               const active = volume === level.value;
@@ -104,11 +106,11 @@ export function SoundPicker({ isPlaying }: SoundPickerProps) {
                   key={level.label}
                   accessibilityRole="radio"
                   accessibilityState={{ selected: active }}
-                  accessibilityLabel={`${level.label} volume`}
+                  accessibilityLabel={t('sound.volumeA11y', { level: t(level.label) })}
                   onPress={() => chooseVolume(level.value)}
                   style={[styles.volume, active && styles.volumeSelected]}
                 >
-                  <Text style={[styles.volumeText, active && styles.volumeTextSelected]}>{level.label}</Text>
+                  <Text style={[styles.volumeText, active && styles.volumeTextSelected]}>{t(level.label)}</Text>
                 </Pressable>
               );
             })}

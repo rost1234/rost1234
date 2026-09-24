@@ -1,29 +1,34 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Button, Card, Chip } from '@/components/ui';
-import { colors, spacing, typography } from '@/components/theme';
+import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { runDetached, toErrorMessage } from '@/core/errors';
 import { addDays, formatFriendlyDate, getLocalDeviceDate } from '@/core/localDate';
 import type { PauseReason } from '@/domain/models';
+import type { TranslationKey } from '@/i18n';
 import { useHabitStore } from '@/state/habitStore';
 import { usePlanningStore } from '@/state/planningStore';
+import { useT } from '@/i18n';
 
-const REASONS: { id: PauseReason; label: string }[] = [
-  { id: 'vacation', label: '🏖 Vacation' },
-  { id: 'sick', label: '🤒 Sick' },
-  { id: 'other', label: '⏸ Other' },
+const REASONS: { id: PauseReason; label: TranslationKey }[] = [
+  { id: 'vacation', label: 'pause.vacation' },
+  { id: 'sick', label: 'pause.sick' },
+  { id: 'other', label: 'pause.other' },
 ];
 
-const LENGTHS = [
-  { days: 1, label: '1 day' },
-  { days: 3, label: '3 days' },
-  { days: 7, label: '1 week' },
-  { days: 14, label: '2 weeks' },
+const LENGTHS: { days: number; label: TranslationKey | null }[] = [
+  { days: 1, label: null },
+  { days: 3, label: null },
+  { days: 7, label: 'pause.week' },
+  { days: 14, label: 'pause.weeks2' },
 ];
 
 /** Planned breaks: streaks are paused (not broken) and no freezes are spent. */
 export function PauseSetting() {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
   const pauses = usePlanningStore((s) => s.pauses);
   const addPause = usePlanningStore((s) => s.addPause);
   const removePause = usePlanningStore((s) => s.removePause);
@@ -42,7 +47,7 @@ export function PauseSetting() {
         setNote(null);
         reloadStreaks();
       }),
-      (error) => setNote(`Couldn't save the pause. ${toErrorMessage(error)}`),
+      (error) => setNote(t('pause.saveError', { error: toErrorMessage(error) })),
     );
 
   return (
@@ -50,19 +55,19 @@ export function PauseSetting() {
       <View style={styles.header}>
         <Ionicons name="airplane-outline" size={20} color={colors.freeze} />
         <View style={{ flex: 1 }}>
-          <Text style={typography.label}>Vacation & sick days</Text>
-          <Text style={typography.caption}>Pause streaks for a while — they won’t break and no freezes are used.</Text>
+          <Text style={typography.label}>{t('pause.title')}</Text>
+          <Text style={typography.caption}>{t('pause.lead')}</Text>
         </View>
       </View>
 
       {current.map((p) => (
         <View key={p.id} style={styles.pauseRow}>
           <Text style={[typography.body, { flex: 1 }]}>
-            {REASONS.find((r) => r.id === p.reason)?.label} · {formatFriendlyDate(p.startDate)} → {formatFriendlyDate(p.endDate)}
+            {t(REASONS.find((r) => r.id === p.reason)?.label ?? 'pause.other')} · {formatFriendlyDate(p.startDate, t.locale)} → {formatFriendlyDate(p.endDate, t.locale)}
           </Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="End this pause"
+            accessibilityLabel={t('pause.endA11y')}
             onPress={() => runDetached(removePause(p.id).then(reloadStreaks))}
             hitSlop={8}
           >
@@ -73,27 +78,27 @@ export function PauseSetting() {
 
       <View style={styles.chips}>
         {REASONS.map((r) => (
-          <Chip key={r.id} label={r.label} selected={reason === r.id} onPress={() => setReason(r.id)} />
+          <Chip key={r.id} label={t(r.label)} selected={reason === r.id} onPress={() => setReason(r.id)} />
         ))}
       </View>
       <View style={styles.chips}>
-        <Chip label="From today" selected={!startTomorrow} onPress={() => setStartTomorrow(false)} />
-        <Chip label="From tomorrow" selected={startTomorrow} onPress={() => setStartTomorrow(true)} />
+        <Chip label={t('pause.fromToday')} selected={!startTomorrow} onPress={() => setStartTomorrow(false)} />
+        <Chip label={t('pause.fromTomorrow')} selected={startTomorrow} onPress={() => setStartTomorrow(true)} />
       </View>
       <View style={styles.chips}>
         {LENGTHS.map((l) => (
-          <Chip key={l.days} label={l.label} selected={days === l.days} onPress={() => setDays(l.days)} />
+          <Chip key={l.days} label={l.label ? t(l.label) : t.plural('pause.days', l.days)} selected={days === l.days} onPress={() => setDays(l.days)} />
         ))}
       </View>
-      <Button label="Pause streaks" variant="secondary" onPress={create} />
+      <Button label={t('pause.button')} variant="secondary" onPress={create} />
       {note ? <Text style={[typography.caption, { color: colors.danger }]}>{note}</Text> : null}
     </Card>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(() => ({
   card: { gap: spacing.md },
   header: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
   pauseRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-});
+}));

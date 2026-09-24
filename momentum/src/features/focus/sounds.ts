@@ -1,6 +1,7 @@
 import type { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import type { AudioSource } from 'expo-audio';
+import type { TranslationKey } from '@/i18n';
 import rainSound from '../../../assets/sounds/rain.ogg';
 import oceanSound from '../../../assets/sounds/ocean.ogg';
 import brownNoise from '../../../assets/sounds/brown-noise.ogg';
@@ -14,10 +15,10 @@ export type FocusSoundId = 'off' | 'rain' | 'ocean' | 'brown' | 'pink' | 'white'
 
 export interface FocusSound {
   id: Exclude<FocusSoundId, 'off'>;
-  label: string;
-  description: string;
+  label: TranslationKey;
+  description: TranslationKey;
   /** Honest one-liner about the research, shown in the picker. */
-  evidence: string;
+  evidence: TranslationKey;
   needsHeadphones: boolean;
   icon: IconName;
   /** Accent used for the sound's card. */
@@ -36,9 +37,9 @@ export interface FocusSound {
 export const FOCUS_SOUNDS: readonly FocusSound[] = [
   {
     id: 'rain',
-    label: 'Rain',
-    description: 'Soft rain on a window',
-    evidence: 'Pleasant masking. Many people find it calming; benefits vary.',
+    label: 'sound.rain.label',
+    description: 'sound.rain.desc',
+    evidence: 'sound.evNature',
     needsHeadphones: false,
     icon: 'rainy-outline',
     tint: '#3B82F6',
@@ -46,9 +47,9 @@ export const FOCUS_SOUNDS: readonly FocusSound[] = [
   },
   {
     id: 'ocean',
-    label: 'Ocean',
-    description: 'Slow, distant waves',
-    evidence: 'Pleasant masking. Many people find it calming; benefits vary.',
+    label: 'sound.ocean.label',
+    description: 'sound.ocean.desc',
+    evidence: 'sound.evNature',
     needsHeadphones: false,
     icon: 'water-outline',
     tint: '#0EA5E9',
@@ -56,9 +57,9 @@ export const FOCUS_SOUNDS: readonly FocusSound[] = [
   },
   {
     id: 'brown',
-    label: 'Brown noise',
-    description: 'Deep, soft rumble — like a waterfall',
-    evidence: 'Masks distractions. Small, person-dependent benefit.',
+    label: 'sound.brown.label',
+    description: 'sound.brown.desc',
+    evidence: 'sound.evNoise',
     needsHeadphones: false,
     icon: 'cloudy-outline',
     tint: '#A16207',
@@ -66,9 +67,9 @@ export const FOCUS_SOUNDS: readonly FocusSound[] = [
   },
   {
     id: 'pink',
-    label: 'Pink noise',
-    description: 'Balanced and even, like steady rain',
-    evidence: 'Masks distractions. Small, person-dependent benefit.',
+    label: 'sound.pink.label',
+    description: 'sound.pink.desc',
+    evidence: 'sound.evNoise',
     needsHeadphones: false,
     icon: 'leaf-outline',
     tint: '#DB2777',
@@ -76,9 +77,9 @@ export const FOCUS_SOUNDS: readonly FocusSound[] = [
   },
   {
     id: 'white',
-    label: 'White noise',
-    description: 'Brighter hiss, strongest masking (softened highs)',
-    evidence: 'Best studied for attention, mostly with ADHD symptoms.',
+    label: 'sound.white.label',
+    description: 'sound.white.desc',
+    evidence: 'sound.evWhite',
     needsHeadphones: false,
     icon: 'radio-outline',
     tint: '#64748B',
@@ -86,9 +87,9 @@ export const FOCUS_SOUNDS: readonly FocusSound[] = [
   },
   {
     id: 'binaural40',
-    label: '40 Hz binaural',
-    description: '200 / 240 Hz tones over warm noise',
-    evidence: 'Experimental — research is mixed. Needs headphones.',
+    label: 'sound.binaural40.label',
+    description: 'sound.binaural40.desc',
+    evidence: 'sound.evBinaural',
     needsHeadphones: true,
     icon: 'headset-outline',
     tint: '#7C3AED',
@@ -97,9 +98,9 @@ export const FOCUS_SOUNDS: readonly FocusSound[] = [
 ];
 
 export const VOLUME_LEVELS = [
-  { label: 'Low', value: 0.25 },
-  { label: 'Medium', value: 0.5 },
-  { label: 'High', value: 0.85 },
+  { label: 'sound.vol.low', value: 0.25 },
+  { label: 'sound.vol.medium', value: 0.5 },
+  { label: 'sound.vol.high', value: 0.85 },
 ] as const;
 
 export function findSound(id: FocusSoundId): FocusSound | undefined {

@@ -13,7 +13,15 @@ export interface BackupFile {
 
 export type BackupValidation =
   | { ok: true; backup: BackupFile; counts: Record<TableName, number> }
-  | { ok: false; error: string };
+  | { ok: false; error: BackupError };
+
+export type BackupErrorCode = 'invalid_json' | 'not_momentum' | 'no_version' | 'newer_version' | 'no_tables' | 'malformed_table' | 'invalid_row';
+
+/** Machine-readable reason; the UI turns it into a translated message. */
+export interface BackupError {
+  code: BackupErrorCode;
+  detail?: string;
+}
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -50,29 +58,29 @@ export function parseBackup(json: string): BackupValidation {
   try {
     data = JSON.parse(json);
   } catch {
-    return { ok: false, error: 'The file is not valid JSON.' };
+    return { ok: false, error: { code: 'invalid_json' } };
   }
   if (!isRecord(data) || data.app !== 'momentum') {
-    return { ok: false, error: 'This is not a Momentum backup file.' };
+    return { ok: false, error: { code: 'not_momentum' } };
   }
   const schemaVersion = data.schemaVersion;
   if (typeof schemaVersion !== 'number' || !Number.isInteger(schemaVersion) || schemaVersion < 1) {
-    return { ok: false, error: 'The backup has no valid schema version.' };
+    return { ok: false, error: { code: 'no_version' } };
   }
   if (schemaVersion > LATEST_SCHEMA_VERSION) {
-    return { ok: false, error: 'This backup was made by a newer version of Momentum. Update the app first.' };
+    return { ok: false, error: { code: 'newer_version' } };
   }
-  if (!isRecord(data.tables)) return { ok: false, error: 'The backup contains no tables.' };
+  if (!isRecord(data.tables)) return { ok: false, error: { code: 'no_tables' } };
 
   const tables = {} as BackupTables;
   const counts = {} as Record<TableName, number>;
   for (const table of TABLES) {
     const rawRows = data.tables[table] ?? [];
-    if (!Array.isArray(rawRows)) return { ok: false, error: `Table "${table}" is malformed.` };
+    if (!Array.isArray(rawRows)) return { ok: false, error: { code: 'malformed_table', detail: table } };
     const rows: BackupRow[] = [];
     for (let i = 0; i < rawRows.length; i += 1) {
       const result = validateRow(table, rawRows[i], i);
-      if (typeof result === 'string') return { ok: false, error: `Invalid data: ${result}.` };
+      if (typeof result === 'string') return { ok: false, error: { code: 'invalid_row', detail: result } };
       rows.push(result);
     }
     tables[table] = rows;

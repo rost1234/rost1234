@@ -31,7 +31,7 @@ const valid = {
 describe('parseBackup', () => {
   it('accepts an export and keeps only whitelisted columns', () => {
     const result = parseBackup(JSON.stringify(valid));
-    if (!result.ok) throw new Error(result.error);
+    if (!result.ok) throw new Error(result.error.code);
     expect(result.counts.habits).toBe(1);
     expect(result.counts.tasks).toBe(1);
     expect(result.backup.tables.habits[0]).not.toHaveProperty('extra_column');

@@ -5,6 +5,7 @@ import type { LocalDateString } from '@/core/localDate';
 import { repositories } from '@/data/repositories';
 import type { Task } from '@/domain/models';
 import { hasRoomToday, placementForNewTask } from '@/domain/taskPlanning';
+import { t } from '@/i18n';
 
 /** Where a task lives relative to today. */
 type Bucket = 'today' | 'overdue' | 'later';
@@ -98,7 +99,7 @@ export const useTaskStore = create<TaskState>((set, get) => {
         repositories.tasks.create({ title: trimmed, habitId: null, dueDate }).then((saved) => {
           set({ [key]: get()[key].map((t) => (t.id === placeholder.id ? saved : t)) });
         }),
-        rollback(before, "Couldn't add task."),
+        rollback(before, t('err.addTask')),
       );
       return dueDate ? 'today' : 'later';
     },
@@ -110,12 +111,12 @@ export const useTaskStore = create<TaskState>((set, get) => {
       const isCompleted = !task.isCompleted;
       // Re-opening a task must respect the daily cap.
       if (!isCompleted && !hasRoomToday(tasks, today)) {
-        set({ error: 'Today already has 3 open tasks. Finish or move one first.' });
+        set({ error: t('err.todayFull') });
         return;
       }
       const before = snapshot();
       set({ tasks: tasks.map((t) => (t.id === taskId ? { ...t, isCompleted } : t)) });
-      runDetached(repositories.tasks.setCompleted(taskId, isCompleted, today), rollback(before, "Couldn't update task."));
+      runDetached(repositories.tasks.setCompleted(taskId, isCompleted, today), rollback(before, t('err.updateTask')));
     },
 
     deleteTask: (taskId) => get().decide(taskId, 'drop'),
@@ -125,7 +126,7 @@ export const useTaskStore = create<TaskState>((set, get) => {
       const found = findTask(taskId);
       if (!today || !found || isPending(taskId)) return;
       if (decision === 'today' && found.bucket !== 'today' && !hasRoomToday(get().tasks, today)) {
-        set({ error: 'Today already has 3 open tasks. Finish or move one first.' });
+        set({ error: t('err.todayFull') });
         return;
       }
       const before = snapshot();
@@ -133,13 +134,13 @@ export const useTaskStore = create<TaskState>((set, get) => {
 
       if (decision === 'drop') {
         set(rest);
-        runDetached(repositories.tasks.delete(taskId), rollback(before, "Couldn't drop task."));
+        runDetached(repositories.tasks.delete(taskId), rollback(before, t('err.dropTask')));
         return;
       }
       const dueDate = decision === 'today' ? today : null;
       const moved: Task = { ...found.task, dueDate };
       set(decision === 'today' ? { ...rest, tasks: [...rest.tasks, moved] } : { ...rest, later: [...rest.later, moved] });
-      runDetached(repositories.tasks.setDueDate(taskId, dueDate), rollback(before, "Couldn't move task."));
+      runDetached(repositories.tasks.setDueDate(taskId, dueDate), rollback(before, t('err.moveTask')));
     },
 
     clearError: () => set({ error: null }),

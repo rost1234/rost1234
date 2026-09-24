@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Animated, Pressable, StyleSheet, Text } from 'react-native';
-import { radius, shadow, spacing } from './theme';
+import { Animated, Pressable, Text } from 'react-native';
+import { makeStyles, radius, spacing } from './theme';
 
 interface ToastProps {
   /** Changing this restarts the toast. */
@@ -14,6 +14,7 @@ interface ToastProps {
 
 /** Small bottom toast with an optional action (e.g. Undo). */
 export function Toast({ id, message, actionLabel, onAction, onHide, durationMs = 4000 }: ToastProps) {
+  const styles = useStyles();
   const [opacity] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
@@ -39,7 +40,7 @@ export function Toast({ id, message, actionLabel, onAction, onHide, durationMs =
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ shadow }) => ({
   toast: {
     position: 'absolute',
     left: spacing.lg,
@@ -57,4 +58,4 @@ const styles = StyleSheet.create({
   },
   message: { flex: 1, color: '#FFFFFF', fontSize: 14, fontWeight: '500' },
   action: { color: '#A5B4FC', fontSize: 14, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 },
-});
+}));

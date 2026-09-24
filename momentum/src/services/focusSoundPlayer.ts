@@ -1,5 +1,6 @@
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { findSound, type FocusSoundId } from '@/features/focus/sounds';
+import { t } from '@/i18n';
 
 const FADE_IN_MS = 1500;
 const FADE_OUT_MS = 700;
@@ -78,7 +79,7 @@ export async function playFocusSound(id: FocusSoundId, volume: number): Promise<
   player.loop = true;
   player.play();
   // Android stops background audio after ~3 min unless it is the active media session.
-  player.setActiveForLockScreen(true, { title: 'Focus session', artist: `Momentum · ${sound.label}` });
+  player.setActiveForLockScreen(true, { title: t('sound.lockTitle'), artist: `Momentum · ${t(sound.label)}` });
   await fadeTo(targetVolume, FADE_IN_MS, token);
 }
 

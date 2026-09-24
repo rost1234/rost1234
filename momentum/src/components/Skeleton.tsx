@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Animated, StyleSheet, View, type DimensionValue } from 'react-native';
-import { colors, radius, spacing } from './theme';
+import { makeStyles, radius, spacing, useTheme } from './theme';
+import { useT } from '@/i18n';
 
 export function SkeletonBlock({ width = '100%', height = 16, rounded = radius.sm }: { width?: DimensionValue; height?: number; rounded?: number }) {
+  const { colors } = useTheme();
   const [opacity] = useState(() => new Animated.Value(0.45));
 
   useEffect(() => {
@@ -21,8 +23,10 @@ export function SkeletonBlock({ width = '100%', height = 16, rounded = radius.sm
 
 /** Placeholder matching the habit card layout. */
 export function HabitCardSkeleton() {
+  const t = useT();
+  const styles = useStyles();
   return (
-    <View style={styles.card} accessibilityLabel="Loading habit">
+    <View style={styles.card} accessibilityLabel={t('skel.habit')}>
       <SkeletonBlock width="55%" height={18} />
       <SkeletonBlock width="35%" height={12} />
       <SkeletonBlock height={8} rounded={4} />
@@ -31,8 +35,10 @@ export function HabitCardSkeleton() {
 }
 
 export function DashboardSkeleton() {
+  const t = useT();
+  const styles = useStyles();
   return (
-    <View style={styles.container} accessibilityLabel="Loading dashboard">
+    <View style={styles.container} accessibilityLabel={t('skel.dashboard')}>
       <SkeletonBlock width="45%" height={28} />
       <SkeletonBlock height={10} rounded={5} />
       <View style={{ height: spacing.lg }} />
@@ -43,7 +49,7 @@ export function DashboardSkeleton() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors }) => ({
   container: { gap: spacing.md, padding: spacing.lg },
   card: {
     gap: spacing.sm,
@@ -53,4 +59,4 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
   },
-});
+}));

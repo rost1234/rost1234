@@ -7,6 +7,7 @@ import { pauseFocusSound, playFocusSound, stopFocusSound } from '@/services/focu
 import { cancelTimerNotifications, scheduleTimerNotifications } from '@/services/timerNotifications';
 import { clearTimer, loadTimer, saveTimer } from '@/services/timerStorage';
 import { useFocusSoundStore } from './focusSoundStore';
+import { t } from '@/i18n';
 
 /** Plays the preferred focus sound (if any) — never lets audio errors break the timer. */
 async function startPreferredSound(): Promise<void> {
@@ -158,7 +159,7 @@ export const useFocusStore = create<FocusState>((set, get) => {
           error: null,
         });
       } catch (error) {
-        set({ error: `Couldn't log focus session. ${toErrorMessage(error)}` });
+        set({ error: t('err.logFocus', { error: toErrorMessage(error) }) });
       } finally {
         busy = false;
       }
@@ -188,7 +189,7 @@ export const useFocusStore = create<FocusState>((set, get) => {
           set({ lastSummary: summary });
         }
       } catch (error) {
-        set({ error: `Couldn't log focus session. ${toErrorMessage(error)}` });
+        set({ error: t('err.logFocus', { error: toErrorMessage(error) }) });
       } finally {
         busy = false;
       }

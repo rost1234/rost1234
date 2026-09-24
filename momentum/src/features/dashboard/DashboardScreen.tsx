@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import { AppState, Pressable, RefreshControl, ScrollView, StyleSheet, Text } from 'react-native';
+import { AppState, Pressable, RefreshControl, ScrollView, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { runDetached } from '@/core/errors';
 import { DashboardSkeleton } from '@/components/Skeleton';
 import { Toast } from '@/components/Toast';
 import { Banner, Button, SectionTitle } from '@/components/ui';
-import { colors, spacing, typography } from '@/components/theme';
+import { makeStyles, spacing } from '@/components/theme';
 import { dailyProgressPercent, progressOf } from '@/domain/habitProgress';
 import { habitsDueOn } from '@/domain/habitSchedule';
 import { orderByStacking } from '@/domain/stacking';
@@ -26,6 +26,7 @@ import { HabitCard } from './HabitCard';
 import { MoreSection } from './MoreSection';
 import { ReflectionPrompt } from './ReflectionPrompt';
 import { TaskList } from './TaskList';
+import { useT } from '@/i18n';
 
 const EVENING_HOUR = 17;
 
@@ -45,6 +46,8 @@ function useDashboardData(today: string) {
 }
 
 export function DashboardScreen() {
+  const t = useT();
+  const styles = useStyles();
   // Re-renders (and reloads) automatically when the local date rolls over.
   const today = useLocalDate();
   const status = useHabitStore((s) => s.status);
@@ -108,26 +111,26 @@ export function DashboardScreen() {
         <LevelCard today={today} />
         {error ? <Banner message={error} onDismiss={clearError} /> : null}
         {taskError ? <Banner message={taskError} onDismiss={clearTaskError} /> : null}
-        {freezeAwarded ? <Banner tone="info" message="🧊 Perfect week! You earned a streak freeze." /> : null}
+        {freezeAwarded ? <Banner tone="info" message={t('today.perfectWeek')} /> : null}
         {forgivenDays > 0 ? (
           <Banner
             tone="info"
-            message={`🧊 Streak freeze used for ${forgivenDays} missed day${forgivenDays === 1 ? '' : 's'} — your streaks are safe.`}
+            message={t.plural('today.freezeUsed', forgivenDays)}
           />
         ) : null}
 
         <SectionTitle
           action={
             <Pressable accessibilityRole="button" onPress={() => router.push('/habit/new')} hitSlop={8}>
-              <Text style={styles.link}>＋ Habit</Text>
+              <Text style={styles.link}>{t('today.addHabit')}</Text>
             </Pressable>
           }
         >
-          Habits
+          {t('today.habits')}
         </SectionTitle>
 
         {status === 'error' && dueToday.length === 0 ? (
-          <Button label="Retry" variant="secondary" onPress={reload} />
+          <Button label={t('common.retry')} variant="secondary" onPress={reload} />
         ) : dueToday.length === 0 ? (
           <EmptyHabits hasAnyHabits={restCount > 0} />
         ) : (
@@ -136,12 +139,12 @@ export function DashboardScreen() {
 
         <DecideCard />
 
-        <SectionTitle>Today’s 3</SectionTitle>
+        <SectionTitle>{t('today.todays3')}</SectionTitle>
         <TaskList />
 
         {isEvening ? (
           <>
-            <SectionTitle>Wind down</SectionTitle>
+            <SectionTitle>{t('today.windDown')}</SectionTitle>
             <ReflectionPrompt reflection={reflection} />
           </>
         ) : null}
@@ -152,7 +155,7 @@ export function DashboardScreen() {
         <Toast
           id={lastChange.at}
           message={lastChange.label}
-          actionLabel="Undo"
+          actionLabel={t('common.undo')}
           onAction={undoLast}
           onHide={dismissLastChange}
         />
@@ -161,8 +164,8 @@ export function DashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors, typography }) => ({
   safe: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
   link: { ...typography.label, color: colors.primary },
-});
+}));

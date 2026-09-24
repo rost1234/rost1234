@@ -4,19 +4,23 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { toErrorMessage } from '@/core/errors';
 import { Banner, Button } from '@/components/ui';
-import { colors, radius, spacing, typography } from '@/components/theme';
+import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { requestNotificationPermission, scheduleReflectionReminder } from '@/services/notifications';
 import { useSettingsStore } from '@/state/settingsStore';
 import { GoalStep, NotificationStep, PresetStep } from './OnboardingSteps';
 import { canAdvance, initialWizardState, selectedPresets, wizardReducer } from './wizardState';
+import { useT } from '@/i18n';
 
 export function OnboardingWizard() {
+  const t = useT();
+  const { typography } = useTheme();
+  const styles = useStyles();
   const [state, dispatch] = useReducer(wizardReducer, initialWizardState);
   const [isSaving, setIsSaving] = useState(false);
   const [isAsking, setIsAsking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const completeOnboarding = useSettingsStore((s) => s.completeOnboarding);
-  const presets = selectedPresets(state);
+  const presets = selectedPresets(state, t.language);
 
   const askPermission = async () => {
     setIsAsking(true);
@@ -36,7 +40,7 @@ export function OnboardingWizard() {
       await completeOnboarding(presets.map((p) => p.habit));
       router.replace('/(tabs)');
     } catch (e) {
-      setError(`Couldn't save your habits. ${toErrorMessage(e)}`);
+      setError(t('onb.saveError', { error: toErrorMessage(e) }));
       setIsSaving(false);
     }
   };
@@ -47,7 +51,7 @@ export function OnboardingWizard() {
         {[1, 2, 3].map((n) => (
           <View key={n} style={[styles.dot, n <= state.step && styles.dotActive]} />
         ))}
-        <Text style={[typography.caption, { marginLeft: 'auto' }]}>Step {state.step} of 3</Text>
+        <Text style={[typography.caption, { marginLeft: 'auto' }]}>{t('onb.stepOf', { step: state.step })}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -61,25 +65,25 @@ export function OnboardingWizard() {
 
       <View style={styles.footer}>
         {state.step > 1 ? (
-          <Button label="Back" variant="ghost" onPress={() => dispatch({ type: 'back' })} disabled={isSaving} />
+          <Button label={t('common.back')} variant="ghost" onPress={() => dispatch({ type: 'back' })} disabled={isSaving} />
         ) : null}
         <View style={{ flex: 1 }} />
         {state.step < 3 ? (
-          <Button label="Continue" onPress={() => dispatch({ type: 'next' })} disabled={!canAdvance(state)} />
+          <Button label={t('onb.continue')} onPress={() => dispatch({ type: 'next' })} disabled={!canAdvance(state)} />
         ) : state.notificationStatus === 'unknown' ? (
           <View style={styles.finalActions}>
-            <Button label="Skip" variant="ghost" onPress={() => void finish()} disabled={isAsking} loading={isSaving} />
-            <Button label="Allow notifications" onPress={() => void askPermission()} loading={isAsking} />
+            <Button label={t('common.skip')} variant="ghost" onPress={() => void finish()} disabled={isAsking} loading={isSaving} />
+            <Button label={t('onb.allowNotifications')} onPress={() => void askPermission()} loading={isAsking} />
           </View>
         ) : (
-          <Button label="Start Momentum" onPress={() => void finish()} loading={isSaving} />
+          <Button label={t('onb.start')} onPress={() => void finish()} loading={isSaving} />
         )}
       </View>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors }) => ({
   safe: { flex: 1, backgroundColor: colors.background },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.xl, paddingTop: spacing.lg },
   dot: { width: 28, height: 6, borderRadius: radius.pill, backgroundColor: colors.border },
@@ -94,4 +98,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   finalActions: { flexDirection: 'row', gap: spacing.sm },
-});
+}));

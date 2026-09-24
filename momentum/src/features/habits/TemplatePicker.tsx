@@ -1,20 +1,25 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { Chip } from '@/components/ui';
-import { colors, radius, spacing, typography } from '@/components/theme';
+import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { haptics } from '@/core/haptics';
-import { TEMPLATE_GROUPS, type HabitPreset } from '@/domain/presets';
+import { templateGroups, type HabitPreset } from '@/domain/presets';
+import { useT } from '@/i18n';
 
 /** "Start from a template": pick a group, then a habit to pre-fill the form. */
 export function TemplatePicker({ onPick }: { onPick: (preset: HabitPreset) => void }) {
+  const t = useT();
+  const { typography } = useTheme();
+  const styles = useStyles();
   const [groupId, setGroupId] = useState<string | null>(null);
-  const group = TEMPLATE_GROUPS.find((g) => g.id === groupId);
+  const groups = templateGroups(t.language);
+  const group = groups.find((g) => g.id === groupId);
 
   return (
     <View style={styles.container}>
-      <Text style={typography.overline}>Start from a template</Text>
+      <Text style={typography.overline}>{t('tmpl.title')}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-        {TEMPLATE_GROUPS.map((g) => (
+        {groups.map((g) => (
           <Chip
             key={g.id}
             label={`${g.emoji} ${g.title}`}
@@ -45,7 +50,7 @@ export function TemplatePicker({ onPick }: { onPick: (preset: HabitPreset) => vo
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors }) => ({
   container: { gap: spacing.sm },
   row: { gap: spacing.sm, paddingVertical: spacing.xs },
   item: {
@@ -56,4 +61,4 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     gap: 2,
   },
-});
+}));

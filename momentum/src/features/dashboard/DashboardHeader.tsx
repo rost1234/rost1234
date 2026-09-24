@@ -1,9 +1,11 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ProgressRing } from '@/components/ProgressRing';
-import { heroGradient, radius, shadow, spacing } from '@/components/theme';
+import { heroGradient, makeStyles, radius, spacing } from '@/components/theme';
 import { formatFriendlyDate, type LocalDateString } from '@/core/localDate';
+import type { TranslationKey } from '@/i18n';
+import { useT } from '@/i18n';
 
 interface DashboardHeaderProps {
   today: LocalDateString;
@@ -14,38 +16,40 @@ interface DashboardHeaderProps {
   freezes: number;
 }
 
-function greetingFor(hour: number): string {
-  if (hour < 5) return 'Good night';
-  if (hour < 12) return 'Good morning';
-  if (hour < 18) return 'Good afternoon';
-  return 'Good evening';
+function greetingKey(hour: number): TranslationKey {
+  if (hour < 5) return 'today.greeting.night';
+  if (hour < 12) return 'today.greeting.morning';
+  if (hour < 18) return 'today.greeting.afternoon';
+  return 'today.greeting.evening';
 }
 
 export function DashboardHeader({ today, hour, percent, doneCount, totalCount, freezes }: DashboardHeaderProps) {
+  const t = useT();
+  const styles = useStyles();
   const message =
     totalCount === 0
-      ? 'A quiet day.'
+      ? t('today.quietDay')
       : percent >= 100
-        ? 'All done. Beautiful work ✨'
-        : `${doneCount} of ${totalCount} habits done`;
+        ? t('today.allDone')
+        : t('today.doneOf', { done: doneCount, total: totalCount });
 
   return (
     <LinearGradient colors={heroGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
       <View style={{ flex: 1, gap: spacing.xs }}>
-        <Text style={styles.greeting}>{greetingFor(hour)}</Text>
+        <Text style={styles.greeting}>{t(greetingKey(hour))}</Text>
         <Text style={styles.date} accessibilityRole="header">
-          {formatFriendlyDate(today)}
+          {formatFriendlyDate(today, t.locale)}
         </Text>
         <Text style={styles.message}>{message}</Text>
-        <View style={styles.freeze} accessibilityLabel={`${freezes} streak freezes available`}>
+        <View style={styles.freeze} accessibilityLabel={t('today.freezesA11y', { count: freezes })}>
           <Ionicons name="snow" size={13} color="#FFFFFF" />
           <Text style={styles.freezeText}>
-            {freezes} freeze{freezes === 1 ? '' : 's'}
+            {t.plural('today.freezes', freezes)}
           </Text>
         </View>
       </View>
       <ProgressRing value={percent / 100} size={92} stroke={9} track="rgba(255,255,255,0.22)" from="#FFFFFF" to="#C7D2FE">
-        <Text style={styles.percent} accessibilityLabel={`${percent} percent of today done`}>
+        <Text style={styles.percent} maxFontSizeMultiplier={1.2} accessibilityLabel={t('today.percentA11y', { percent })}>
           {percent}%
         </Text>
       </ProgressRing>
@@ -53,7 +57,7 @@ export function DashboardHeader({ today, hour, percent, doneCount, totalCount, f
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ shadow }) => ({
   hero: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -80,4 +84,4 @@ const styles = StyleSheet.create({
   },
   freezeText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
   percent: { color: '#FFFFFF', fontSize: 22, fontWeight: '800' },
-});
+}));

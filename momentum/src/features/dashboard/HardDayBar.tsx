@@ -1,17 +1,21 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { colors, radius, spacing, typography } from '@/components/theme';
+import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { runDetached } from '@/core/errors';
 import { haptics } from '@/core/haptics';
 import { formatFriendlyDate, type LocalDateString } from '@/core/localDate';
 import { activePause } from '@/domain/pauses';
 import { usePlanningStore } from '@/state/planningStore';
+import { useT } from '@/i18n';
 
-const REASON_LABEL = { vacation: 'Vacation', sick: 'Rest & recovery', other: 'Pause' } as const;
+const REASON_KEY = { vacation: 'pause.reason.vacation', sick: 'pause.reason.sick', other: 'pause.reason.other' } as const;
 
 /** Low-energy toggle + an active-pause banner, for the days that aren't ideal. */
 export function HardDayBar({ today }: { today: LocalDateString }) {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
   const dayMode = usePlanningStore((s) => s.dayMode);
   const pauses = usePlanningStore((s) => s.pauses);
   const toggleMinimumDay = usePlanningStore((s) => s.toggleMinimumDay);
@@ -24,14 +28,14 @@ export function HardDayBar({ today }: { today: LocalDateString }) {
         <Pressable accessibilityRole="button" onPress={() => router.push('/settings')} style={[styles.banner, styles.pause]}>
           <Ionicons name="airplane-outline" size={18} color={colors.freeze} />
           <Text style={[typography.body, styles.bannerText]}>
-            {REASON_LABEL[pause.reason]} until {formatFriendlyDate(pause.endDate)} — streaks are paused, nothing is lost.
+            {t('hardDay.pauseBanner', { reason: t(REASON_KEY[pause.reason]), date: formatFriendlyDate(pause.endDate, t.locale) })}
           </Text>
         </Pressable>
       ) : null}
       <Pressable
         accessibilityRole="switch"
         accessibilityState={{ checked: isMinimum }}
-        accessibilityHint="On a low-energy day, doing just the tiny first step counts as done"
+        accessibilityHint={t('hardDay.hint')}
         onPress={() => {
           haptics.select();
           runDetached(toggleMinimumDay());
@@ -40,14 +44,14 @@ export function HardDayBar({ today }: { today: LocalDateString }) {
       >
         <Ionicons name={isMinimum ? 'battery-half' : 'battery-half-outline'} size={16} color={isMinimum ? colors.onPrimary : colors.textMuted} />
         <Text style={[styles.toggleText, isMinimum && { color: colors.onPrimary }]}>
-          {isMinimum ? 'Low-energy day: the tiny step counts' : 'Low-energy day?'}
+          {isMinimum ? t('hardDay.on') : t('hardDay.off')}
         </Text>
       </Pressable>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors, typography }) => ({
   container: { gap: spacing.sm, marginBottom: spacing.sm },
   banner: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.md, borderRadius: radius.md },
   pause: { backgroundColor: colors.freezeSoft },
@@ -64,4 +68,4 @@ const styles = StyleSheet.create({
   },
   toggleOn: { backgroundColor: colors.warning },
   toggleText: { ...typography.caption, fontWeight: '600' },
-});
+}));

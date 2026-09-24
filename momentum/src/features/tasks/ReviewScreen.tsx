@@ -1,14 +1,18 @@
 import { useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Banner, Button, Card } from '@/components/ui';
-import { colors, spacing, typography } from '@/components/theme';
+import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { formatFriendlyDate } from '@/core/localDate';
 import { MAX_OPEN_TASKS_PER_DAY, hasRoomToday } from '@/domain/taskPlanning';
 import { useTaskStore } from '@/state/taskStore';
+import { useT } from '@/i18n';
 
 /** Bullet-journal style migration: every unfinished task gets a conscious decision. */
 export function ReviewScreen() {
+  const t = useT();
+  const { typography } = useTheme();
+  const styles = useStyles();
   const overdue = useTaskStore((s) => s.overdue);
   const tasks = useTaskStore((s) => s.tasks);
   const today = useTaskStore((s) => s.today);
@@ -24,31 +28,31 @@ export function ReviewScreen() {
   return (
     <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
       <Text style={typography.body}>
-        Decide for each: bring it to today (max {MAX_OPEN_TASKS_PER_DAY}), park it for Later, or let it go.
+        {t('review.intro', { max: MAX_OPEN_TASKS_PER_DAY })}
       </Text>
       {error ? <Banner message={error} onDismiss={clearError} /> : null}
       {overdue.map((task) => (
         <Card key={task.id} style={styles.card}>
           <Text style={typography.label}>{task.title}</Text>
-          {task.dueDate ? <Text style={typography.caption}>Planned for {formatFriendlyDate(task.dueDate)}</Text> : null}
+          {task.dueDate ? <Text style={typography.caption}>{t('review.plannedFor', { date: formatFriendlyDate(task.dueDate, t.locale) })}</Text> : null}
           <View style={styles.actions}>
-            <Button label="Today" onPress={() => decide(task.id, 'today')} disabled={!roomToday} style={styles.action} />
-            <Button label="Later" variant="secondary" onPress={() => decide(task.id, 'later')} style={styles.action} />
-            <Button label="Drop" variant="danger" onPress={() => decide(task.id, 'drop')} style={styles.action} />
+            <Button label={t('review.today')} onPress={() => decide(task.id, 'today')} disabled={!roomToday} style={styles.action} />
+            <Button label={t('review.later')} variant="secondary" onPress={() => decide(task.id, 'later')} style={styles.action} />
+            <Button label={t('review.drop')} variant="danger" onPress={() => decide(task.id, 'drop')} style={styles.action} />
           </View>
         </Card>
       ))}
       {!roomToday && overdue.length > 0 ? (
-        <Text style={typography.caption}>Today is full. Finish or move a task to bring more in.</Text>
+        <Text style={typography.caption}>{t('review.full')}</Text>
       ) : null}
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors }) => ({
   flex: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, gap: spacing.md },
   card: { gap: spacing.sm },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
   action: { flex: 1, paddingHorizontal: spacing.sm },
-});
+}));

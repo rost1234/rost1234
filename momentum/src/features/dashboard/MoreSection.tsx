@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, shadow, spacing, typography } from '@/components/theme';
+import { Pressable, Text, View } from 'react-native';
+import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import type { DailyReflection } from '@/domain/models';
 import { useTaskStore } from '@/state/taskStore';
 import { ReflectionPrompt } from './ReflectionPrompt';
+import { useT } from '@/i18n';
 
 interface MoreSectionProps {
   unscheduledCount: number;
@@ -14,13 +15,16 @@ interface MoreSectionProps {
 
 /** Everything that isn't "today's paper" lives behind one collapsed row. */
 export function MoreSection({ unscheduledCount, reflection, showReflection }: MoreSectionProps) {
+  const t = useT();
+  const { typography } = useTheme();
+  const styles = useStyles();
   const [open, setOpen] = useState(false);
   const later = useTaskStore((s) => s.later);
   const decide = useTaskStore((s) => s.decide);
 
   const summary = [
-    later.length > 0 ? `${later.length} later` : null,
-    unscheduledCount > 0 ? `${unscheduledCount} habit${unscheduledCount === 1 ? '' : 's'} rest today` : null,
+    later.length > 0 ? t('more.laterCount', { count: later.length }) : null,
+    unscheduledCount > 0 ? t.plural('more.restingHabits', unscheduledCount) : null,
   ]
     .filter((part): part is string => part !== null)
     .join(' · ');
@@ -40,9 +44,9 @@ export function MoreSection({ unscheduledCount, reflection, showReflection }: Mo
 
       {open ? (
         <View style={styles.body}>
-          <Text style={typography.label}>Later</Text>
+          <Text style={typography.label}>{t('more.later')}</Text>
           {later.length === 0 ? (
-            <Text style={typography.caption}>Nothing parked. Tasks beyond today’s 3 land here.</Text>
+            <Text style={typography.caption}>{t('more.laterEmpty')}</Text>
           ) : (
             later.map((task) => (
               <View key={task.id} style={styles.laterRow}>
@@ -51,16 +55,16 @@ export function MoreSection({ unscheduledCount, reflection, showReflection }: Mo
                 </Text>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Move ${task.title} to today`}
+                  accessibilityLabel={t('more.moveToday', { title: task.title })}
                   onPress={() => decide(task.id, 'today')}
                   hitSlop={8}
                   style={styles.pill}
                 >
-                  <Text style={styles.pillText}>→ Today</Text>
+                  <Text style={styles.pillText}>{t('more.toToday')}</Text>
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Drop ${task.title}`}
+                  accessibilityLabel={t('more.dropA11y', { title: task.title })}
                   onPress={() => decide(task.id, 'drop')}
                   hitSlop={8}
                 >
@@ -76,7 +80,7 @@ export function MoreSection({ unscheduledCount, reflection, showReflection }: Mo
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors, shadow }) => ({
   container: { marginTop: spacing.xl },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: spacing.sm },
   body: { gap: spacing.md, paddingTop: spacing.sm },
@@ -92,4 +96,4 @@ const styles = StyleSheet.create({
   pill: { paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: radius.pill, backgroundColor: colors.primarySoft },
   pillText: { fontSize: 13, fontWeight: '700', color: colors.primary },
   drop: { fontSize: 16, color: colors.textMuted, paddingHorizontal: spacing.xs },
-});
+}));

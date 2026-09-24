@@ -3,13 +3,16 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { haptics } from '@/core/haptics';
-import { colors, radius, spacing } from './theme';
+import type { TranslationKey } from '@/i18n';
+import { makeStyles, radius, spacing, useTheme } from './theme';
+import { useT } from '@/i18n';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
 export interface TabItem {
   name: string;
-  title: string;
+  /** Translation key for the label. */
+  title: TranslationKey;
   icon: IconName;
   iconActive: IconName;
 }
@@ -24,6 +27,9 @@ interface SwipeTabBarProps {
 
 /** Bottom tab bar for the swipeable pager (the pager itself handles swipes). */
 export function SwipeTabBar({ items, activeIndex, dark = false, onPress }: SwipeTabBarProps) {
+  const t = useT();
+  const { colors } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   return (
     <View
@@ -38,7 +44,7 @@ export function SwipeTabBar({ items, activeIndex, dark = false, onPress }: Swipe
             key={item.name}
             accessibilityRole="tab"
             accessibilityState={{ selected: focused }}
-            accessibilityLabel={item.title}
+            accessibilityLabel={t(item.title)}
             onPress={() => {
               if (!focused) haptics.select();
               onPress(item.name, focused);
@@ -48,7 +54,9 @@ export function SwipeTabBar({ items, activeIndex, dark = false, onPress }: Swipe
             <View style={[styles.pill, focused && (dark ? styles.pillActiveDark : styles.pillActive)]}>
               <Ionicons name={focused ? item.iconActive : item.icon} size={22} color={color} />
             </View>
-            <Text style={[styles.label, { color }]}>{item.title}</Text>
+            <Text style={[styles.label, { color }]} maxFontSizeMultiplier={1.3}>
+              {t(item.title)}
+            </Text>
           </Pressable>
         );
       })}
@@ -56,7 +64,7 @@ export function SwipeTabBar({ items, activeIndex, dark = false, onPress }: Swipe
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors }) => ({
   bar: {
     flexDirection: 'row',
     backgroundColor: colors.surface,
@@ -70,4 +78,4 @@ const styles = StyleSheet.create({
   pillActive: { backgroundColor: colors.primarySoft },
   pillActiveDark: { backgroundColor: 'rgba(139,139,255,0.22)' },
   label: { fontSize: 12, fontWeight: '600' },
-});
+}));

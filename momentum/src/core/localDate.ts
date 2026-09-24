@@ -79,12 +79,26 @@ const MONTH_SHORT = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ] as const;
 
-export function weekdayLabel(day: Weekday): string {
-  return WEEKDAY_SHORT[day];
+/** Locale-aware formatting with an English fallback if Intl is unavailable. */
+function intlFormat(date: Date, locale: string, options: Intl.DateTimeFormatOptions): string | null {
+  try {
+    return new Intl.DateTimeFormat(locale, options).format(date);
+  } catch {
+    return null;
+  }
 }
 
-/** e.g. "Thu, Sep 24" */
-export function formatFriendlyDate(value: LocalDateString): string {
+/** Short weekday name, e.g. "Mon" / "ב׳". 2026-09-20 is a Sunday. */
+export function weekdayLabel(day: Weekday, locale = 'en-US'): string {
+  const reference = new Date(2026, 8, 20 + day, 12);
+  return intlFormat(reference, locale, { weekday: 'short' }) ?? WEEKDAY_SHORT[day];
+}
+
+/** e.g. "Thu, Sep 24" / "יום ה׳, 24 בספט׳" */
+export function formatFriendlyDate(value: LocalDateString, locale = 'en-US'): string {
   const date = parseLocalDate(value);
-  return `${WEEKDAY_SHORT[date.getDay()]}, ${MONTH_SHORT[date.getMonth()]} ${date.getDate()}`;
+  return (
+    intlFormat(date, locale, { weekday: 'short', month: 'short', day: 'numeric' }) ??
+    `${WEEKDAY_SHORT[date.getDay()]}, ${MONTH_SHORT[date.getMonth()]} ${date.getDate()}`
+  );
 }

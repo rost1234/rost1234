@@ -76,6 +76,17 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Settings → Breaks: pause 3 days from today → Today shows the vacation banner; missed days don't break streaks,
       no freezes are used, and the heatmap shows them as "–"; ✕ ends the pause
 
+## Wave 3 — Hebrew/English, dark mode, icon
+- [ ] New app icon on the launcher (purple gradient, rising bars) and a purple splash screen (dark splash in dark mode)
+- [ ] Phone in Hebrew → the app opens in Hebrew and right-to-left (tabs, chips, habit cards mirrored)
+- [ ] Settings → Appearance → Language: switch to English/עברית; text changes at once; if direction must change,
+      a "close and reopen" note appears — after reopening the layout direction matches
+- [ ] Dates and weekday names follow the language (e.g. "יום ה׳, 24 בספט׳")
+- [ ] Settings → Appearance → Theme: System / Light / Dark switch instantly; system dark mode is followed live
+- [ ] Dark mode: all screens readable (cards, chips, heatmap, charts, modals' headers, status bar)
+- [ ] Notifications, widget texts and template habits appear in the chosen language
+- [ ] Large system font: timer, tab labels and header percent stay inside their space
+
 ## Core loop
 - [ ] Fresh install shows onboarding; completing it lands on Today with the chosen habits
 - [ ] Tapping a binary habit toggles instantly; a count habit goes 1/4 → 4/4 and turns green

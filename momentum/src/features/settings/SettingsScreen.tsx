@@ -1,18 +1,23 @@
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { toErrorMessage } from '@/core/errors';
 import { Banner, Button, Card, SectionTitle } from '@/components/ui';
-import { colors, spacing, typography } from '@/components/theme';
+import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { exportBackup, pickBackupFile, restoreBackup, type PendingImport } from '@/services/backup';
 import { reloadAllData } from '@/state/reloadAll';
+import { AppearanceSetting } from './AppearanceSetting';
 import { DataTransparency } from './DataTransparency';
 import { PauseSetting } from './PauseSetting';
 import { ReminderSetting } from './ReminderSetting';
 import { useSettingsStore } from '@/state/settingsStore';
+import { type TranslationKey, useT } from '@/i18n';
 
 export function SettingsScreen() {
+  const t = useT();
+  const { typography } = useTheme();
+  const styles = useStyles();
   const freezes = useSettingsStore((s) => s.settings?.streakFreezesAvailable ?? 0);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -23,9 +28,9 @@ export function SettingsScreen() {
     setMessage(null);
     try {
       const result = await exportBackup();
-      setMessage({ tone: 'info', text: result.kind === 'shared' ? 'Backup exported.' : `Backup saved to ${result.uri}` });
+      setMessage({ tone: 'info', text: result.kind === 'shared' ? t('set.exported') : t('set.savedTo', { uri: result.uri }) });
     } catch (error) {
-      setMessage({ tone: 'danger', text: `Export failed. ${toErrorMessage(error)}` });
+      setMessage({ tone: 'danger', text: t('set.exportFailed', { error: toErrorMessage(error) }) });
     } finally {
       setIsExporting(false);
     }
@@ -36,10 +41,10 @@ export function SettingsScreen() {
     try {
       await restoreBackup(pending);
       await reloadAllData();
-      setMessage({ tone: 'info', text: 'Backup restored. A copy of your previous data was kept on this device.' });
+      setMessage({ tone: 'info', text: t('set.restored') });
       router.replace('/');
     } catch (error) {
-      setMessage({ tone: 'danger', text: `Restore failed — nothing was changed. ${toErrorMessage(error)}` });
+      setMessage({ tone: 'danger', text: t('set.restoreFailed', { error: toErrorMessage(error) }) });
     } finally {
       setIsImporting(false);
     }
@@ -52,23 +57,28 @@ export function SettingsScreen() {
       const picked = await pickBackupFile();
       if (picked.kind === 'canceled') return;
       if (picked.kind === 'invalid') {
-        setMessage({ tone: 'danger', text: picked.error });
+        setMessage({ tone: 'danger', text: t(`backup.err.${picked.error.code}` as TranslationKey, { detail: picked.error.detail ?? '' }) });
         return;
       }
       const { counts, backup } = picked.pending;
-      const exported = backup.exportedAt ? ` from ${backup.exportedAt.slice(0, 10)}` : '';
+      const exported = backup.exportedAt ? t('set.backupFrom', { date: backup.exportedAt.slice(0, 10) }) : '';
       Alert.alert(
-        'Replace all data?',
-        `This backup${exported} has ${counts.habits} habits, ${counts.habit_logs} habit logs, ${counts.tasks} tasks, ` +
-          `${counts.focus_sessions} focus sessions and ${counts.daily_reflections} reflections.\n\n` +
-          'Everything currently in the app will be replaced. A safety copy of your current data is saved first.',
+        t('set.replaceTitle'),
+        t('set.replaceBody', {
+          from: exported,
+          habits: counts.habits,
+          logs: counts.habit_logs,
+          tasks: counts.tasks,
+          sessions: counts.focus_sessions,
+          reflections: counts.daily_reflections,
+        }),
         [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Replace', style: 'destructive', onPress: () => void applyImport(picked.pending) },
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('set.replace'), style: 'destructive', onPress: () => void applyImport(picked.pending) },
         ],
       );
     } catch (error) {
-      setMessage({ tone: 'danger', text: `Couldn't read the file. ${toErrorMessage(error)}` });
+      setMessage({ tone: 'danger', text: t('set.readFailed', { error: toErrorMessage(error) }) });
     } finally {
       setIsImporting(false);
     }
@@ -78,33 +88,35 @@ export function SettingsScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={typography.title} accessibilityRole="header">
-          Settings
+          {t('set.title')}
         </Text>
         {message ? <Banner tone={message.tone} message={message.text} onDismiss={() => setMessage(null)} /> : null}
 
-        <SectionTitle>Reminder</SectionTitle>
+        <SectionTitle>{t('app.title')}</SectionTitle>
+        <AppearanceSetting />
+
+        <SectionTitle>{t('set.reminder')}</SectionTitle>
         <ReminderSetting />
 
-        <SectionTitle>Your data</SectionTitle>
+        <SectionTitle>{t('set.yourData')}</SectionTitle>
         <DataTransparency />
         <View style={{ height: spacing.md }} />
         <Card style={styles.card}>
           <Text style={typography.body}>
-            Everything lives only on this device. No account, no servers, no tracking.
+            {t('set.dataLead')}
           </Text>
-          <Button label="Export backup (JSON)" variant="secondary" onPress={() => void runExport()} loading={isExporting} />
-          <Button label="Restore from backup" variant="ghost" onPress={() => void runImport()} loading={isImporting} />
+          <Button label={t('set.export')} variant="secondary" onPress={() => void runExport()} loading={isExporting} />
+          <Button label={t('set.restore')} variant="ghost" onPress={() => void runImport()} loading={isImporting} />
         </Card>
 
-        <SectionTitle>Breaks</SectionTitle>
+        <SectionTitle>{t('set.breaks')}</SectionTitle>
         <PauseSetting />
 
-        <SectionTitle>Streak freezes</SectionTitle>
+        <SectionTitle>{t('set.freezes')}</SectionTitle>
         <Card style={styles.card}>
-          <Text style={typography.heading}>🧊 {freezes} available</Text>
+          <Text style={typography.heading}>{t('set.freezesAvailable', { count: freezes })}</Text>
           <Text style={typography.caption}>
-            Miss a scheduled day and a freeze is used automatically to keep your streak alive — one freeze per missed day.
-            Every perfect week (7 days in a row with all habits done) earns a new freeze, up to 3.
+            {t('set.freezesBody')}
           </Text>
         </Card>
       </ScrollView>
@@ -112,8 +124,8 @@ export function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors }) => ({
   safe: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
   card: { gap: spacing.md },
-});
+}));

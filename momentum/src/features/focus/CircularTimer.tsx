@@ -2,6 +2,7 @@ import { StyleSheet, Text } from 'react-native';
 import { ProgressRing } from '@/components/ProgressRing';
 import { focusColors } from '@/components/theme';
 import { formatClock } from '@/domain/focusTimer';
+import { useT } from '@/i18n';
 
 interface CircularTimerProps {
   remainingSeconds: number;
@@ -14,6 +15,7 @@ interface CircularTimerProps {
 }
 
 export function CircularTimer({ remainingSeconds, progress, isPaused, caption, size = 270, isBreak = false }: CircularTimerProps) {
+  const t = useT();
   const clock = formatClock(remainingSeconds);
   return (
     <ProgressRing
@@ -26,12 +28,13 @@ export function CircularTimer({ remainingSeconds, progress, isPaused, caption, s
     >
       <Text
         style={[styles.clock, { fontSize: size > 240 ? 60 : 50 }]}
+        maxFontSizeMultiplier={1.2}
         accessibilityRole="timer"
-        accessibilityLabel={`${clock} ${isPaused ? 'paused' : 'remaining'}`}
+        accessibilityLabel={`${clock} ${isPaused ? t('timer.paused') : t('timer.remaining')}`}
       >
         {clock}
       </Text>
-      <Text style={styles.caption}>{caption ?? (isPaused ? 'Paused' : 'Remaining')}</Text>
+      <Text style={styles.caption}>{caption ?? (isPaused ? t('timer.paused') : t('timer.remaining'))}</Text>
     </ProgressRing>
   );
 }

@@ -1,32 +1,36 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { colors, radius, spacing, typography } from '@/components/theme';
+import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { useTaskStore } from '@/state/taskStore';
+import { useT } from '@/i18n';
 
 /** Unfinished tasks never silently pile up: the user decides what happens to them. */
 export function DecideCard() {
+  const t = useT();
+  const { typography } = useTheme();
+  const styles = useStyles();
   const count = useTaskStore((s) => s.overdue.length);
   if (count === 0) return null;
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${count} unfinished tasks from earlier days. Decide what to do with them.`}
+      accessibilityLabel={t('decide.a11y', { count })}
       onPress={() => router.push('/review')}
       style={({ pressed }) => [styles.card, pressed && { opacity: 0.85 }]}
     >
       <Text style={styles.emoji}>📋</Text>
       <View style={{ flex: 1 }}>
         <Text style={typography.label}>
-          {count} unfinished task{count === 1 ? '' : 's'} from earlier
+          {t.plural('decide.title', count)}
         </Text>
-        <Text style={typography.caption}>Today, Later or let it go — 30 seconds</Text>
+        <Text style={typography.caption}>{t('decide.subtitle')}</Text>
       </View>
       <Text style={styles.chevron}>›</Text>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors }) => ({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -38,4 +42,4 @@ const styles = StyleSheet.create({
   },
   emoji: { fontSize: 24 },
   chevron: { fontSize: 28, color: colors.textMuted },
-});
+}));

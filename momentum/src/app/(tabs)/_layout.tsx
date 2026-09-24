@@ -1,14 +1,14 @@
 import { Redirect } from 'expo-router';
 import TopTabs from 'expo-router/js-top-tabs';
 import { SwipeTabBar, type TabItem } from '@/components/SwipeTabBar';
-import { colors } from '@/components/theme';
+import { useTheme } from '@/components/theme';
 import { useSettingsStore } from '@/state/settingsStore';
 
 const TABS: readonly TabItem[] = [
-  { name: 'index', title: 'Today', icon: 'sunny-outline', iconActive: 'sunny' },
-  { name: 'focus', title: 'Focus', icon: 'timer-outline', iconActive: 'timer' },
-  { name: 'analytics', title: 'Insights', icon: 'stats-chart-outline', iconActive: 'stats-chart' },
-  { name: 'settings', title: 'Settings', icon: 'settings-outline', iconActive: 'settings' },
+  { name: 'index', title: 'tabs.today', icon: 'sunny-outline', iconActive: 'sunny' },
+  { name: 'focus', title: 'tabs.focus', icon: 'timer-outline', iconActive: 'timer' },
+  { name: 'analytics', title: 'tabs.insights', icon: 'stats-chart-outline', iconActive: 'stats-chart' },
+  { name: 'settings', title: 'tabs.settings', icon: 'settings-outline', iconActive: 'settings' },
 ];
 
 interface TabBarRenderProps {
@@ -22,6 +22,7 @@ interface TabBarRenderProps {
 /** Main sections as a swipeable pager: swipe left/right or tap the bar at the bottom. */
 export default function TabsLayout() {
   const isOnboarded = useSettingsStore((s) => s.settings?.isOnboardingCompleted ?? false);
+  const { colors } = useTheme();
   if (!isOnboarded) return <Redirect href="/onboarding" />;
 
   return (
@@ -46,7 +47,7 @@ export default function TabsLayout() {
       }}
     >
       {TABS.map((tab) => (
-        <TopTabs.Screen key={tab.name} name={tab.name} options={{ title: tab.title }} />
+        <TopTabs.Screen key={tab.name} name={tab.name} />
       ))}
     </TopTabs>
   );

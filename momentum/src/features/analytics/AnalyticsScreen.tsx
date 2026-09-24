@@ -1,18 +1,21 @@
 import { useCallback } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { runDetached } from '@/core/errors';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { Banner, Card, Chip, SectionTitle } from '@/components/ui';
-import { colors, spacing, typography } from '@/components/theme';
+import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { useLocalDate } from '@/hooks/useLocalDate';
 import { useAnalyticsStore, type AnalyticsRange } from '@/state/analyticsStore';
 import { Heatmap } from './Heatmap';
 import { TrendCharts } from './TrendCharts';
 import { UsageCard } from './UsageCard';
+import { useT } from '@/i18n';
 
 function StatTile({ value, label, tint }: { value: string; label: string; tint?: string }) {
+  const { typography } = useTheme();
+  const styles = useStyles();
   return (
     <Card style={styles.tile}>
       <Text style={[styles.tileValue, tint ? { color: tint } : null]}>{value}</Text>
@@ -22,6 +25,9 @@ function StatTile({ value, label, tint }: { value: string; label: string; tint?:
 }
 
 export function AnalyticsScreen() {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
   const today = useLocalDate();
   const range = useAnalyticsStore((s) => s.range);
   const data = useAnalyticsStore((s) => s.data);
@@ -43,11 +49,11 @@ export function AnalyticsScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={false} onRefresh={reload} />}>
         <Text style={typography.title} accessibilityRole="header">
-          Insights
+          {t('ins.title')}
         </Text>
         <View style={styles.rangeRow}>
-          <Chip label="Week" selected={range === 'week'} onPress={() => selectRange('week')} />
-          <Chip label="Month" selected={range === 'month'} onPress={() => selectRange('month')} />
+          <Chip label={t('ins.week')} selected={range === 'week'} onPress={() => selectRange('week')} />
+          <Chip label={t('ins.month')} selected={range === 'month'} onPress={() => selectRange('month')} />
         </View>
         {error ? <Banner message={error} /> : null}
 
@@ -62,25 +68,25 @@ export function AnalyticsScreen() {
             <View style={styles.tiles}>
               <StatTile
                 value={data.averageCompletion === null ? '—' : `${Math.round(data.averageCompletion)}%`}
-                label="Avg. completion"
+                label={t('ins.avgCompletion')}
               />
-              <StatTile value={data.averageMood === null ? '—' : data.averageMood.toFixed(1)} label="Avg. mood" />
-              <StatTile value={`${data.focusMinutes}`} label="Focus min" />
-              <StatTile value={`🧊 ${data.freezesAvailable}`} label="Freezes left" tint={colors.freeze} />
+              <StatTile value={data.averageMood === null ? '—' : data.averageMood.toFixed(1)} label={t('ins.avgMood')} />
+              <StatTile value={`${data.focusMinutes}`} label={t('ins.focusMin')} />
+              <StatTile value={`🧊 ${data.freezesAvailable}`} label={t('ins.freezesLeft')} tint={colors.freeze} />
             </View>
 
-            <SectionTitle>Habit completion</SectionTitle>
+            <SectionTitle>{t('ins.habitCompletion')}</SectionTitle>
             <Card>
               <Heatmap rows={data.heatmap} dates={data.dates} />
             </Card>
 
-            <SectionTitle>Mood vs. habits</SectionTitle>
+            <SectionTitle>{t('ins.moodVsHabits')}</SectionTitle>
             <Card>
               <TrendCharts points={data.trend} />
             </Card>
 
-            <SectionTitle>Screen time</SectionTitle>
-            <UsageCard usage={data.usage} rangeLabel={range === 'week' ? '7-day' : '30-day'} />
+            <SectionTitle>{t('ins.screenTime')}</SectionTitle>
+            <UsageCard usage={data.usage} rangeLabel={range === 'week' ? t('ins.range7') : t('ins.range30')} />
           </>
         ) : null}
       </ScrollView>
@@ -88,11 +94,11 @@ export function AnalyticsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors }) => ({
   safe: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.sm },
   rangeRow: { flexDirection: 'row', gap: spacing.sm, marginVertical: spacing.sm },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   tile: { flexGrow: 1, flexBasis: '45%', gap: 2 },
   tileValue: { fontSize: 24, fontWeight: '700', color: colors.text, fontVariant: ['tabular-nums'] },
-});
+}));

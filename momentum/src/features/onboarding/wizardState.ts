@@ -1,4 +1,4 @@
-import { PRESETS, type GoalId, type HabitPreset } from '@/domain/presets';
+import { presetsForGoal, type GoalId, type HabitPreset, type PresetLanguage } from '@/domain/presets';
 
 export type WizardStep = 1 | 2 | 3;
 
@@ -29,7 +29,7 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       // Changing goal pre-selects all three of its presets.
       return state.goal === action.goal
         ? state
-        : { ...state, goal: action.goal, selectedPresetKeys: PRESETS[action.goal].map((p) => p.key) };
+        : { ...state, goal: action.goal, selectedPresetKeys: presetsForGoal(action.goal, 'en').map((p) => p.key) };
     case 'togglePreset': {
       const selected = state.selectedPresetKeys.includes(action.key)
         ? state.selectedPresetKeys.filter((k) => k !== action.key)
@@ -56,7 +56,7 @@ export function canAdvance(state: WizardState): boolean {
   }
 }
 
-export function selectedPresets(state: WizardState): HabitPreset[] {
+export function selectedPresets(state: WizardState, lang: PresetLanguage): HabitPreset[] {
   if (!state.goal) return [];
-  return PRESETS[state.goal].filter((preset) => state.selectedPresetKeys.includes(preset.key));
+  return presetsForGoal(state.goal, lang).filter((preset) => state.selectedPresetKeys.includes(preset.key));
 }

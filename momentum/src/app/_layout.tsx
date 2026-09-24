@@ -1,34 +1,54 @@
 import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { I18nManager, Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Stack, type ErrorBoundaryProps } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { runDetached } from '@/core/errors';
 import { DashboardSkeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui';
-import { colors, spacing, typography } from '@/components/theme';
+import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { configureNotifications } from '@/services/notifications';
 import { startUsageTracking } from '@/services/usageTracker';
 import { useFocusSoundStore } from '@/state/focusSoundStore';
 import { useFocusStore } from '@/state/focusStore';
+import { usePrefsStore } from '@/state/prefsStore';
 import { useSettingsStore } from '@/state/settingsStore';
+import { resolveLanguage , useT } from '@/i18n';
 
 /** Route-level error boundary: catches render errors anywhere below the root. */
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  const t = useT();
+  const { typography } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.center}>
-      <Text style={typography.heading}>Something went wrong</Text>
+      <Text style={typography.heading}>{t('root.errorTitle')}</Text>
       <Text style={[typography.caption, styles.message]}>{error.message}</Text>
-      <Button label="Try again" onPress={() => runDetached(retry())} />
+      <Button label={t('root.tryAgain')} onPress={() => runDetached(retry())} />
     </View>
   );
 }
 
 function Bootstrap() {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
   const status = useSettingsStore((s) => s.status);
+  const prefsReady = usePrefsStore((s) => s.isHydrated);
   const error = useSettingsStore((s) => s.error);
 
   useEffect(() => {
+    runDetached(
+      usePrefsStore
+        .getState()
+        .hydrate()
+        .then(() => {
+          // Hebrew is right-to-left. Android applies a direction change on the next launch.
+          const wantRTL = resolveLanguage(usePrefsStore.getState().language) === 'he';
+          I18nManager.allowRTL(true);
+          if (I18nManager.isRTL !== wantRTL) I18nManager.forceRTL(wantRTL);
+        }),
+    );
     configureNotifications();
     startUsageTracking();
     runDetached(useSettingsStore.getState().load());
@@ -39,14 +59,14 @@ function Bootstrap() {
   if (status === 'error') {
     return (
       <View style={styles.center}>
-        <Text style={typography.heading}>Couldn’t open your data</Text>
+        <Text style={typography.heading}>{t('root.dbError')}</Text>
         <Text style={[typography.caption, styles.message]}>{error}</Text>
-        <Button label="Retry" onPress={() => runDetached(useSettingsStore.getState().load())} />
+        <Button label={t('common.retry')} onPress={() => runDetached(useSettingsStore.getState().load())} />
       </View>
     );
   }
 
-  if (status !== 'ready') {
+  if (status !== 'ready' || !prefsReady) {
     return (
       <View style={styles.loading}>
         <DashboardSkeleton />
@@ -55,31 +75,40 @@ function Bootstrap() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: colors.background },
+        headerStyle: { backgroundColor: colors.surface },
+        headerTintColor: colors.text,
+        headerTitleStyle: { color: colors.text },
+      }}
+    >
       <Stack.Screen name="index" />
       <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen
         name="reflection"
-        options={{ presentation: 'modal', headerShown: true, title: 'Daily reflection' }}
+        options={{ presentation: 'modal', headerShown: true, title: t('nav.reflection') }}
       />
-      <Stack.Screen name="habit/new" options={{ presentation: 'modal', headerShown: true, title: 'New habit' }} />
-      <Stack.Screen name="habit/[id]" options={{ presentation: 'modal', headerShown: true, title: 'Edit habit' }} />
-      <Stack.Screen name="review" options={{ presentation: 'modal', headerShown: true, title: 'Unfinished tasks' }} />
+      <Stack.Screen name="habit/new" options={{ presentation: 'modal', headerShown: true, title: t('nav.newHabit') }} />
+      <Stack.Screen name="habit/[id]" options={{ presentation: 'modal', headerShown: true, title: t('nav.editHabit') }} />
+      <Stack.Screen name="review" options={{ presentation: 'modal', headerShown: true, title: t('nav.unfinished') }} />
     </Stack>
   );
 }
 
 export default function RootLayout() {
+  const { isDark } = useTheme();
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <Bootstrap />
     </SafeAreaProvider>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors }) => ({
   center: {
     flex: 1,
     alignItems: 'center',
@@ -90,4 +119,4 @@ const styles = StyleSheet.create({
   },
   message: { textAlign: 'center' },
   loading: { flex: 1, paddingTop: 64, backgroundColor: colors.background },
-});
+}));

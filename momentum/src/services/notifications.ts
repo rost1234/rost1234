@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { runDetached } from '@/core/errors';
+import { t } from '@/i18n';
 
 const FOCUS_CHANNEL_ID = 'focus';
 const REMINDER_CHANNEL_ID = 'reminders';
@@ -27,13 +28,13 @@ export function configureNotifications(): void {
     runDetached(
       Promise.all([
         Notifications.setNotificationChannelAsync(FOCUS_CHANNEL_ID, {
-          name: 'Focus timer',
+          name: t('notif.channelFocus'),
           importance: Notifications.AndroidImportance.HIGH,
           sound: 'default',
           vibrationPattern: [0, 250, 250, 250],
         }),
         Notifications.setNotificationChannelAsync(REMINDER_CHANNEL_ID, {
-          name: 'Reminders',
+          name: t('notif.channelReminders'),
           importance: Notifications.AndroidImportance.DEFAULT,
         }),
       ]),
@@ -71,8 +72,8 @@ export async function scheduleFocusCompleteNotification(endsAt: Date, minutes: n
   const seconds = Math.max(1, Math.round((endsAt.getTime() - Date.now()) / 1000));
   return Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Focus session complete 🎉',
-      body: `${minutes} minutes of deep work. Take a short break.`,
+      title: t('notif.focusDone'),
+      body: t('notif.focusDoneBody', { minutes }),
       sound: 'default',
     },
     trigger: {
@@ -112,7 +113,7 @@ export async function scheduleReflectionReminder(hour = 21, minute = 0): Promise
   await cancelReflectionReminder();
   await Notifications.scheduleNotificationAsync({
     identifier: REFLECTION_REMINDER_KEY,
-    content: { title: 'Evening check-in 🌙', body: 'Two minutes to reflect on your day.' },
+    content: { title: t('notif.evening'), body: t('notif.eveningBody') },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DAILY,
       hour,

@@ -1,13 +1,17 @@
 import type { HabitLogStatus } from '../models';
-import { GOALS, PRESETS, TEMPLATE_GROUPS, starterSuggestions } from '../presets';
+import { goals, presetsForGoal, starterSuggestions, templateGroups } from '../presets';
 import { hasCompletionBefore } from '../streaks';
 
 describe('templates', () => {
   it('offers one starter per goal and unique preset keys across all groups', () => {
-    expect(starterSuggestions().map((p) => p.key)).toEqual(GOALS.map((g) => PRESETS[g.id][0]?.key));
-    const keys = TEMPLATE_GROUPS.flatMap((g) => g.presets.map((p) => p.key));
+    expect(starterSuggestions('en').map((p) => p.key)).toEqual(goals('en').map((g) => presetsForGoal(g.id, 'en')[0]?.key));
+    const keys = templateGroups('en').flatMap((g) => g.presets.map((p) => p.key));
     expect(new Set(keys).size).toBe(keys.length);
-    expect(TEMPLATE_GROUPS.map((g) => g.id)).toEqual(expect.arrayContaining(['sleep', 'study', 'fitness', 'adhd']));
+    expect(templateGroups('en').map((g) => g.id)).toEqual(expect.arrayContaining(['sleep', 'study', 'fitness', 'adhd']));
+    // Every preset exists in Hebrew too, with the same keys and targets.
+    const he = templateGroups('he').flatMap((g) => g.presets);
+    expect(he.map((p) => p.key)).toEqual(keys);
+    expect(he.every((p) => p.habit.title.length > 0 && p.summary.length > 0)).toBe(true);
   });
 });
 

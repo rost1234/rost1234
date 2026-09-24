@@ -158,7 +158,7 @@ describe('backup round trip', () => {
     const snapshot = await source.backup.exportAll();
 
     const parsed = parseBackup(JSON.stringify({ app: 'momentum', schemaVersion: LATEST_SCHEMA_VERSION, exportedAt: 'x', tables: snapshot }));
-    if (!parsed.ok) throw new Error(parsed.error);
+    if (!parsed.ok) throw new Error(parsed.error.code);
 
     const target = repos(createTestDatabase().executor);
     await target.tasks.create({ title: 'will be replaced', habitId: null, dueDate: null });

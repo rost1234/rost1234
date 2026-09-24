@@ -6,7 +6,7 @@ import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { setStatusBarStyle } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Banner } from '@/components/ui';
-import { focusColors, radius, spacing } from '@/components/theme';
+import { currentTheme, focusColors, radius, spacing } from '@/components/theme';
 import { runDetached } from '@/core/errors';
 import { computeSnapshot } from '@/domain/focusTimer';
 import { CLASSIC_POMODORO } from '@/domain/pomodoro';
@@ -18,6 +18,7 @@ import { CircularTimer } from './CircularTimer';
 import { FocusButton, FocusChip, FocusLabel } from './focusUi';
 import { LinkSelector } from './LinkSelector';
 import { SoundPicker } from './SoundPicker';
+import { useT } from '@/i18n';
 
 const DURATIONS = [15, 25, 45, 60] as const;
 
@@ -28,6 +29,7 @@ function useLinkLabel(link: FocusLink): { title: string | null; why: string | nu
 }
 
 function ActiveTimer() {
+  const t = useT();
   const timer = useFocusStore((s) => s.timer);
   const { pause, resume, finish, cancel, onPhaseElapsed } = useFocusStore.getState();
   const now = useNow(timer !== null && timer.pausedAt === null);
@@ -43,9 +45,9 @@ function ActiveTimer() {
   if (!timer || !snapshot) return null;
 
   const confirmCancel = () =>
-    Alert.alert('Cancel session?', 'This session will not be logged.', [
-      { text: 'Keep going', style: 'cancel' },
-      { text: 'Cancel session', style: 'destructive', onPress: () => runDetached(cancel()) },
+    Alert.alert(t('focus.cancelTitle'), t('focus.cancelBody'), [
+      { text: t('focus.keepGoing'), style: 'cancel' },
+      { text: t('focus.cancelSession'), style: 'destructive', onPress: () => runDetached(cancel()) },
     ]);
 
   return (
@@ -53,10 +55,10 @@ function ActiveTimer() {
       <View style={styles.focusPill}>
         <Text style={styles.focusPillText} numberOfLines={1}>
           {timer.pomodoro
-            ? `${timer.pomodoro.phase === 'work' ? 'Focus' : 'Break'} ${timer.pomodoro.cycle}/${timer.pomodoro.totalCycles}${label ? ` · ${label}` : ''}`
+            ? `${timer.pomodoro.phase === 'work' ? t('focus.phaseWork') : t('focus.phaseBreak')} ${timer.pomodoro.cycle}/${timer.pomodoro.totalCycles}${label ? ` · ${label}` : ''}`
             : label
-              ? `Focusing on ${label}`
-              : 'Deep focus'}
+              ? t('focus.focusingOn', { label })
+              : t('focus.deep')}
         </Text>
       </View>
       {why ? <Text style={styles.why}>“{why}”</Text> : null}
@@ -65,23 +67,24 @@ function ActiveTimer() {
         progress={snapshot.progress}
         isPaused={snapshot.isPaused}
         isBreak={timer.pomodoro?.phase === 'break'}
-        caption={timer.pomodoro?.phase === 'break' ? 'Break — look away, stretch' : undefined}
+        caption={timer.pomodoro?.phase === 'break' ? t('focus.breakCaption') : undefined}
       />
       <View style={styles.controls}>
         {snapshot.isPaused ? (
-          <FocusButton label="Resume" icon="play" variant="primary" onPress={() => runDetached(resume())} style={styles.grow} />
+          <FocusButton label={t('focus.resume')} icon="play" variant="primary" onPress={() => runDetached(resume())} style={styles.grow} />
         ) : (
-          <FocusButton label="Pause" icon="pause" onPress={() => runDetached(pause())} style={styles.grow} />
+          <FocusButton label={t('focus.pause')} icon="pause" onPress={() => runDetached(pause())} style={styles.grow} />
         )}
-        <FocusButton label="Finish" icon="checkmark" onPress={() => runDetached(finish())} style={styles.grow} />
+        <FocusButton label={t('focus.finish')} icon="checkmark" onPress={() => runDetached(finish())} style={styles.grow} />
       </View>
       <SoundPicker isPlaying={!snapshot.isPaused} />
-      <FocusButton label="Cancel session" variant="ghost" onPress={confirmCancel} />
+      <FocusButton label={t('focus.cancelSession')} variant="ghost" onPress={confirmCancel} />
     </View>
   );
 }
 
 function TimerSetup({ initialHabitId }: { initialHabitId: string | null }) {
+  const t = useT();
   const habits = useHabitStore((s) => s.habits);
   const tasks = useTaskStore((s) => s.tasks);
   const start = useFocusStore((s) => s.start);
@@ -95,13 +98,15 @@ function TimerSetup({ initialHabitId }: { initialHabitId: string | null }) {
     <View style={styles.setup}>
       {lastSummary ? (
         <View style={styles.summary}>
-          <Text style={styles.summaryTitle}>{lastSummary.minutes > 0 ? 'Session logged 🎉' : 'Session ended'}</Text>
+          <Text style={styles.summaryTitle}>{lastSummary.minutes > 0 ? t('focus.logged') : t('focus.ended')}</Text>
           <Text style={styles.summaryText}>
             {lastSummary.minutes > 0
-              ? `${lastSummary.minutes} minutes of focus saved${lastSummary.blocks > 1 ? ` across ${lastSummary.blocks} blocks` : ''}.`
-              : 'Less than a minute — nothing logged.'}
+              ? lastSummary.blocks > 1
+                ? t('focus.savedMinutesBlocks', { minutes: lastSummary.minutes, blocks: lastSummary.blocks })
+                : t('focus.savedMinutes', { minutes: lastSummary.minutes })
+              : t('focus.tooShort')}
           </Text>
-          <FocusButton label="Done" onPress={dismissSummary} />
+          <FocusButton label={t('common.done')} onPress={dismissSummary} />
         </View>
       ) : null}
 
@@ -109,16 +114,16 @@ function TimerSetup({ initialHabitId }: { initialHabitId: string | null }) {
         remainingSeconds={(pomodoro ? CLASSIC_POMODORO.workMinutes : minutes) * 60}
         progress={0}
         isPaused={false}
-        caption={pomodoro ? `Pomodoro · ${CLASSIC_POMODORO.totalCycles} blocks` : 'Ready'}
+        caption={pomodoro ? t('focus.pomodoroCaption', { count: CLASSIC_POMODORO.totalCycles }) : t('focus.ready')}
         size={230}
       />
 
       <View style={styles.block}>
-        <FocusLabel>Mode</FocusLabel>
+        <FocusLabel>{t('focus.mode')}</FocusLabel>
         <View style={styles.durations}>
-          <FocusChip label="Single session" selected={!pomodoro} onPress={() => setPomodoro(false)} />
+          <FocusChip label={t('focus.single')} selected={!pomodoro} onPress={() => setPomodoro(false)} />
           <FocusChip
-            label={`Pomodoro ${CLASSIC_POMODORO.workMinutes}/${CLASSIC_POMODORO.breakMinutes} ×${CLASSIC_POMODORO.totalCycles}`}
+            label={t('focus.pomodoro', { work: CLASSIC_POMODORO.workMinutes, brk: CLASSIC_POMODORO.breakMinutes, cycles: CLASSIC_POMODORO.totalCycles })}
             selected={pomodoro}
             onPress={() => setPomodoro(true)}
           />
@@ -127,10 +132,10 @@ function TimerSetup({ initialHabitId }: { initialHabitId: string | null }) {
 
       {!pomodoro ? (
         <View style={styles.block}>
-          <FocusLabel>Duration</FocusLabel>
+          <FocusLabel>{t('focus.duration')}</FocusLabel>
           <View style={styles.durations}>
             {DURATIONS.map((d) => (
-              <FocusChip key={d} label={`${d} min`} selected={minutes === d} onPress={() => setMinutes(d)} />
+              <FocusChip key={d} label={t('focus.minutes', { minutes: d })} selected={minutes === d} onPress={() => setMinutes(d)} />
             ))}
           </View>
         </View>
@@ -140,7 +145,7 @@ function TimerSetup({ initialHabitId }: { initialHabitId: string | null }) {
       <SoundPicker isPlaying={false} />
 
       <FocusButton
-        label="Start focus"
+        label={t('focus.start')}
         icon="play"
         variant="primary"
         onPress={() => runDetached(start(minutes, link, { pomodoro }))}
@@ -153,22 +158,24 @@ function TimerSetup({ initialHabitId }: { initialHabitId: string | null }) {
 
 /** Android can't toggle Do Not Disturb without a special permission, so we open its settings. */
 function DndHint() {
+  const t = useT();
   if (Platform.OS !== 'android') return null;
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="Open Do Not Disturb settings"
+      accessibilityLabel={t('focus.dndA11y')}
       onPress={() => runDetached(Linking.sendIntent('android.settings.ZEN_MODE_SETTINGS'))}
       style={styles.dnd}
       hitSlop={8}
     >
       <Ionicons name="moon-outline" size={16} color={focusColors.textMuted} />
-      <Text style={styles.dndText}>Turn on Do Not Disturb for fewer interruptions</Text>
+      <Text style={styles.dndText}>{t('focus.dnd')}</Text>
     </Pressable>
   );
 }
 
 export function FocusScreen() {
+  const t = useT();
   // Deep link from a habit card's "Start Focus" button; keyed so a new habit re-seeds the form.
   const params = useLocalSearchParams<{ habitId?: string }>();
   const initialHabitId = params.habitId ?? null;
@@ -180,7 +187,7 @@ export function FocusScreen() {
   useFocusEffect(
     useCallback(() => {
       setStatusBarStyle('light');
-      return () => setStatusBarStyle('dark');
+      return () => setStatusBarStyle(currentTheme().isDark ? 'light' : 'dark');
     }, []),
   );
 
@@ -189,7 +196,7 @@ export function FocusScreen() {
       <SafeAreaView style={styles.flex} edges={['top']}>
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={styles.title} accessibilityRole="header">
-            Focus
+            {t('focus.title')}
           </Text>
           {error ? <Banner message={error} onDismiss={() => useFocusStore.setState({ error: null })} /> : null}
           {!isHydrated ? null : timer ? (
