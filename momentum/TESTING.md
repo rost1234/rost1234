@@ -36,6 +36,15 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Settings → Reminder: switch off/on; −/+ moves the time in 15-min steps; the reminder fires at the chosen time
 - [ ] With notifications blocked, changing the reminder shows the "notifications are blocked" note
 
+## Swipe & focus sounds
+- [ ] Swipe left/right moves between Today → Focus → Insights → Settings; the bottom bar follows
+- [ ] Horizontal lists (focus chips, sound chips, heatmap) still scroll without switching tabs
+- [ ] Focus → pick Brown noise → Start: sound plays and loops with no click; Pause stops it, Resume restarts it
+- [ ] Change sound / volume during a session → switches immediately
+- [ ] Lock the phone for 5+ minutes → the sound keeps playing (media controls appear on the lock screen)
+- [ ] Finish or Cancel → sound stops. Another app's music isn't stopped when the session starts
+- [ ] 40 Hz binaural with headphones: left and right tones differ
+
 ## Core loop
 - [ ] Fresh install shows onboarding; completing it lands on Today with the chosen habits
 - [ ] Tapping a binary habit toggles instantly; a count habit goes 1/4 → 4/4 and turns green

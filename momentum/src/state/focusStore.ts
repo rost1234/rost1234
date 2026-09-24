@@ -16,6 +16,18 @@ import {
   scheduleFocusCompleteNotification,
 } from '@/services/notifications';
 import { clearTimer, loadTimer, saveTimer } from '@/services/timerStorage';
+import { pauseFocusSound, playFocusSound, stopFocusSound } from '@/services/focusSoundPlayer';
+import { useFocusSoundStore } from './focusSoundStore';
+
+/** Plays the preferred focus sound (if any) — never lets audio errors break the timer. */
+async function startPreferredSound(): Promise<void> {
+  const { soundId, volume } = useFocusSoundStore.getState();
+  try {
+    await playFocusSound(soundId, volume);
+  } catch {
+    // Audio is optional.
+  }
+}
 
 export interface FocusLink {
   habitId: string | null;
@@ -67,6 +79,10 @@ export const useFocusStore = create<FocusState>((set, get) => {
         set({ timer, isHydrated: true });
         // A session that ended while the app was closed is logged on resume.
         if (timer && computeSnapshot(timer).isFinished) await get().finish();
+        else if (timer && !timer.pausedAt) {
+          await useFocusSoundStore.getState().hydrate();
+          await startPreferredSound();
+        }
       }).finally(() => set({ isHydrated: true })),
 
     start: (minutes, link) =>
@@ -78,6 +94,7 @@ export const useFocusStore = create<FocusState>((set, get) => {
         const notificationId = await scheduleFocusCompleteNotification(projectedEndDate(timer), minutes);
         await persist({ ...timer, notificationId });
         set({ lastSession: null, error: null });
+        await startPreferredSound();
       }),
 
     pause: () =>
@@ -85,6 +102,7 @@ export const useFocusStore = create<FocusState>((set, get) => {
         const timer = get().timer;
         if (!timer || timer.pausedAt) return;
         await persist({ ...pauseTimer(timer), notificationId: null });
+        pauseFocusSound();
         await cancelNotification(timer.notificationId);
       }),
 
@@ -94,6 +112,8 @@ export const useFocusStore = create<FocusState>((set, get) => {
         if (!timer || !timer.pausedAt) return;
         const resumed = resumeTimer(timer);
         await persist(resumed);
+        // Re-reads the preference, so a sound picked while paused starts now.
+        await startPreferredSound();
         const notificationId = await scheduleFocusCompleteNotification(
           projectedEndDate(resumed),
           resumed.targetDurationMinutes,
@@ -105,6 +125,7 @@ export const useFocusStore = create<FocusState>((set, get) => {
       withError(async () => {
         const timer = get().timer;
         set({ timer: null });
+        stopFocusSound();
         await clearTimer();
         if (timer) await cancelNotification(timer.notificationId);
       }),
@@ -118,6 +139,7 @@ export const useFocusStore = create<FocusState>((set, get) => {
         const minutes = focusedMinutes(snapshot);
         // Clear first so a crash mid-write can never double-log the session.
         set({ timer: null });
+        stopFocusSound();
         await clearTimer();
 
         let session: FocusSession | null = null;

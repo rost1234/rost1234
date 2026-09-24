@@ -12,6 +12,7 @@ import { useHabitStore } from '@/state/habitStore';
 import { useTaskStore } from '@/state/taskStore';
 import { CircularTimer } from './CircularTimer';
 import { LinkSelector } from './LinkSelector';
+import { SoundPicker } from './SoundPicker';
 
 const DURATIONS = [15, 25, 45, 60] as const;
 
@@ -54,6 +55,7 @@ function ActiveTimer() {
         )}
         <Button label="✓ Finish" onPress={() => runDetached(finish())} style={styles.grow} />
       </View>
+      <SoundPicker isPlaying={!snapshot.isPaused} />
       <Button label="Cancel" variant="ghost" onPress={confirmCancel} />
     </View>
   );
@@ -87,6 +89,7 @@ function TimerSetup({ initialHabitId }: { initialHabitId: string | null }) {
       </View>
 
       <LinkSelector habits={habits} tasks={tasks} value={link} onChange={setLink} />
+      <SoundPicker isPlaying={false} />
 
       <Button label="Start focus" onPress={() => runDetached(start(minutes, link))} style={styles.fullWidth} />
     </View>

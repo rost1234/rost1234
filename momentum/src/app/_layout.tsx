@@ -9,6 +9,7 @@ import { Button } from '@/components/ui';
 import { colors, spacing, typography } from '@/components/theme';
 import { configureNotifications } from '@/services/notifications';
 import { startUsageTracking } from '@/services/usageTracker';
+import { useFocusSoundStore } from '@/state/focusSoundStore';
 import { useFocusStore } from '@/state/focusStore';
 import { useSettingsStore } from '@/state/settingsStore';
 
@@ -31,6 +32,7 @@ function Bootstrap() {
     configureNotifications();
     startUsageTracking();
     runDetached(useSettingsStore.getState().load());
+    runDetached(useFocusSoundStore.getState().hydrate());
     runDetached(useFocusStore.getState().hydrate());
   }, []);
 
