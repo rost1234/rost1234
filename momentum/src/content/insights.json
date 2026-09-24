@@ -1,0 +1,46 @@
+[
+  {
+    "id": "habits-take-about-two-months",
+    "category": "habits",
+    "goals": [],
+    "finding": "In a real-world study, a new daily habit took a median of 66 days to feel automatic — and missing a single day didn't derail it.",
+    "stat": { "value": "66", "label": "days (median) until a habit felt automatic" },
+    "action": "Judge your new habit after two months, not two weeks. If you miss today, just do it tomorrow.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "How are habits formed: Modelling habit formation in the real world",
+      "authors": "Lally, van Jaarsveld, Potts & Wardle",
+      "year": 2010,
+      "institution": "University College London",
+      "venue": "European Journal of Social Psychology",
+      "doi": "10.1002/ejsp.674",
+      "url": "https://doi.org/10.1002/ejsp.674"
+    },
+    "evidence": "moderate",
+    "caveat": "96 participants; the range was wide (18–254 days) and depended on how complex the habit was.",
+    "triggers": ["new_habit", "streak_broken"],
+    "verifiedOn": "2026-09-24"
+  },
+  {
+    "id": "if-then-plans",
+    "category": "habits",
+    "goals": [],
+    "finding": "Deciding in advance exactly when and where you'll act (\"If it's 7am and I'm in the kitchen, then I stretch\") reliably helps people follow through.",
+    "stat": { "value": "94", "label": "studies in the meta-analysis" },
+    "action": "Rewrite one habit as: \"When ___ happens, I will ___.\"",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Implementation intentions and goal achievement: A meta-analysis of effects and processes",
+      "authors": "Gollwitzer & Sheeran",
+      "year": 2006,
+      "institution": "New York University / University of Sheffield",
+      "venue": "Advances in Experimental Social Psychology",
+      "doi": "10.1016/S0065-2601(06)38002-1",
+      "url": "https://doi.org/10.1016/S0065-2601(06)38002-1"
+    },
+    "popularizedBy": { "title": "Atomic Habits", "author": "James Clear" },
+    "evidence": "strong",
+    "triggers": ["new_habit"],
+    "verifiedOn": "2026-09-24"
+  }
+]
