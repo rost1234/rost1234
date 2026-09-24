@@ -34,6 +34,7 @@ export interface SettingsRepository {
   awardStreakFreeze(on: LocalDateString, max: number): Promise<number>;
   /** Minutes after midnight (0–1439), or null to turn the reminder off. */
   setReflectionReminder(minutes: number | null): Promise<void>;
+  setGoal(goal: string | null): Promise<void>;
 }
 
 export interface HabitRepository {
@@ -111,6 +112,12 @@ export interface PauseRepository {
   getAll(): Promise<Pause[]>;
   create(startDate: LocalDateString, endDate: LocalDateString, reason: PauseReason): Promise<Pause>;
   delete(id: string): Promise<void>;
+}
+
+export interface ShownInsightRepository {
+  /** Insight id → local date it was shown. */
+  getAll(): Promise<Record<string, LocalDateString>>;
+  markShown(insightId: string, date: LocalDateString): Promise<void>;
 }
 
 export type DatabaseSnapshot = Record<TableName, Record<string, unknown>[]>;

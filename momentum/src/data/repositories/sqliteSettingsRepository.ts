@@ -23,7 +23,7 @@ export class SqliteSettingsRepository implements SettingsRepository {
         'INSERT OR IGNORE INTO app_settings (id, is_onboarding_completed, streak_freezes_available, created_at) VALUES (?, 0, 2, ?)',
         [SETTINGS_ID, createdAt],
       );
-      return { id: SETTINGS_ID, isOnboardingCompleted: false, streakFreezesAvailable: 2, createdAt, lastFreezeAwardDate: null, reflectionReminderMinutes: DEFAULT_REMINDER_MINUTES };
+      return { id: SETTINGS_ID, isOnboardingCompleted: false, streakFreezesAvailable: 2, createdAt, lastFreezeAwardDate: null, reflectionReminderMinutes: DEFAULT_REMINDER_MINUTES, goal: null };
     });
   }
 
@@ -31,6 +31,13 @@ export class SqliteSettingsRepository implements SettingsRepository {
     return guardDb('settings.setOnboardingCompleted', async () => {
       const db = await this.db();
       await db.runAsync('UPDATE app_settings SET is_onboarding_completed = ? WHERE id = ?', [completed ? 1 : 0, SETTINGS_ID]);
+    });
+  }
+
+  setGoal(goal: string | null): Promise<void> {
+    return guardDb('settings.setGoal', async () => {
+      const db = await this.db();
+      await db.runAsync('UPDATE app_settings SET goal = ? WHERE id = ?', [goal, SETTINGS_ID]);
     });
   }
 

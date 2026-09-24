@@ -4,7 +4,10 @@
     "category": "habits",
     "goals": [],
     "finding": "In a real-world study, a new daily habit took a median of 66 days to feel automatic — and missing a single day didn't derail it.",
-    "stat": { "value": "66", "label": "days (median) until a habit felt automatic" },
+    "stat": {
+      "value": "66",
+      "label": "days (median) until a habit felt automatic"
+    },
     "action": "Judge your new habit after two months, not two weeks. If you miss today, just do it tomorrow.",
     "source": {
       "type": "peer_reviewed",
@@ -18,15 +21,27 @@
     },
     "evidence": "moderate",
     "caveat": "96 participants; the range was wide (18–254 days) and depended on how complex the habit was.",
-    "triggers": ["new_habit", "streak_broken"],
-    "verifiedOn": "2026-09-24"
+    "triggers": [
+      "new_habit",
+      "streak_broken"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "במחקר בעולם האמיתי, לקח חציון של 66 ימים עד שהרגל יומי חדש הרגיש אוטומטי — ופספוס של יום בודד לא הרס אותו.",
+      "action": "תשפוט הרגל חדש אחרי חודשיים, לא אחרי שבועיים. פספסת היום? פשוט תעשה את זה מחר.",
+      "statLabel": "ימים (חציון) עד שהרגל הרגיש אוטומטי",
+      "caveat": "96 משתתפים; הטווח היה רחב (18–254 ימים) ותלוי במורכבות ההרגל."
+    }
   },
   {
     "id": "if-then-plans",
     "category": "habits",
     "goals": [],
     "finding": "Deciding in advance exactly when and where you'll act (\"If it's 7am and I'm in the kitchen, then I stretch\") reliably helps people follow through.",
-    "stat": { "value": "94", "label": "studies in the meta-analysis" },
+    "stat": {
+      "value": "94",
+      "label": "studies in the meta-analysis"
+    },
     "action": "Rewrite one habit as: \"When ___ happens, I will ___.\"",
     "source": {
       "type": "meta_analysis",
@@ -38,9 +53,19 @@
       "doi": "10.1016/S0065-2601(06)38002-1",
       "url": "https://doi.org/10.1016/S0065-2601(06)38002-1"
     },
-    "popularizedBy": { "title": "Atomic Habits", "author": "James Clear" },
+    "popularizedBy": {
+      "title": "Atomic Habits",
+      "author": "James Clear"
+    },
     "evidence": "strong",
-    "triggers": ["new_habit"],
-    "verifiedOn": "2026-09-24"
+    "triggers": [
+      "new_habit"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "החלטה מראש מתי ואיפה בדיוק תפעל (\"אם השעה 7 בבוקר ואני במטבח, אז אני מתמתח\") עוזרת לאנשים לבצע באופן עקבי.",
+      "action": "נסח הרגל אחד מחדש: \"כש___ קורה, אני ___.\"",
+      "statLabel": "מחקרים במטא-אנליזה"
+    }
   }
 ]

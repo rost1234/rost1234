@@ -14,6 +14,8 @@ export interface AppSettings {
   lastFreezeAwardDate: LocalDateString | null;
   /** Evening reflection reminder, minutes after local midnight; null = off. */
   reflectionReminderMinutes: number | null;
+  /** Goal picked in onboarding (focus / health / mindset), used to pick relevant insights. */
+  goal: string | null;
 }
 
 export interface Habit {
@@ -44,12 +46,29 @@ export interface Habit {
   pairing: string;
   /** Habit stacking: do this right after another habit. */
   afterHabitId: string | null;
+  /** Part of the day the habit belongs to (Today shows the current block first). */
+  timeOfDay: TimeOfDay;
+  /** "smart" = a reminder at the time the habit is usually done. */
+  reminder: HabitReminder;
 }
+
+export type TimeOfDay = 'any' | 'morning' | 'afternoon' | 'evening';
+export type HabitReminder = 'off' | 'smart';
 
 export type GrowthMode = 'maintain' | 'grow';
 
 /** Fields every new habit needs; the rest are optional with sensible defaults. */
-type OptionalHabitFields = 'why' | 'growthMode' | 'goalCount' | 'levelStep' | 'levelSnoozeUntil' | 'cue' | 'pairing' | 'afterHabitId';
+type OptionalHabitFields =
+  | 'why'
+  | 'growthMode'
+  | 'goalCount'
+  | 'levelStep'
+  | 'levelSnoozeUntil'
+  | 'cue'
+  | 'pairing'
+  | 'afterHabitId'
+  | 'timeOfDay'
+  | 'reminder';
 
 export type NewHabit = Omit<Habit, 'id' | 'createdAt' | 'isArchived' | OptionalHabitFields> &
   Partial<Pick<Habit, OptionalHabitFields>>;

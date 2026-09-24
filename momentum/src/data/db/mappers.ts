@@ -59,6 +59,7 @@ export const mapSettings = (row: AppSettingsRow): AppSettings => ({
   createdAt: row.created_at,
   lastFreezeAwardDate: row.last_freeze_award_date ?? null,
   reflectionReminderMinutes: row.reflection_reminder_minutes ?? null,
+  goal: row.goal ?? null,
 });
 
 export const mapHabit = (row: HabitRow): Habit => ({
@@ -80,6 +81,8 @@ export const mapHabit = (row: HabitRow): Habit => ({
   cue: row.cue ?? '',
   pairing: row.pairing ?? '',
   afterHabitId: row.after_habit_id ?? null,
+  timeOfDay: row.time_of_day === 'morning' || row.time_of_day === 'afternoon' || row.time_of_day === 'evening' ? row.time_of_day : 'any',
+  reminder: row.reminder === 'smart' ? 'smart' : 'off',
 });
 
 export const mapPause = (row: PauseRow): Pause => ({

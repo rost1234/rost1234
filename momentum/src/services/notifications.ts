@@ -57,7 +57,7 @@ export async function requestNotificationPermission(): Promise<PermissionResult>
   }
 }
 
-async function hasPermission(): Promise<boolean> {
+export async function hasPermission(): Promise<boolean> {
   if (Platform.OS === 'web') return false;
   try {
     return (await Notifications.getPermissionsAsync()).granted;

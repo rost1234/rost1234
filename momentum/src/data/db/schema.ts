@@ -127,12 +127,28 @@ CREATE TABLE IF NOT EXISTS pauses (
 );
 `;
 
+/**
+ * v6: onboarding goal (for relevant insights), time-of-day blocks and smart
+ * reminders per habit, and which insight cards were already shown.
+ */
+const MIGRATION_6 = `
+ALTER TABLE app_settings ADD COLUMN goal TEXT NULL;
+ALTER TABLE habits ADD COLUMN time_of_day TEXT NULL;
+ALTER TABLE habits ADD COLUMN reminder TEXT NULL;
+
+CREATE TABLE IF NOT EXISTS shown_insights (
+  insight_id TEXT PRIMARY KEY NOT NULL,
+  shown_on TEXT NOT NULL
+);
+`;
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, statements: MIGRATION_1 },
   { version: 2, statements: MIGRATION_2 },
   { version: 3, statements: MIGRATION_3 },
   { version: 4, statements: MIGRATION_4 },
   { version: 5, statements: MIGRATION_5 },
+  { version: 6, statements: MIGRATION_6 },
 ];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS.reduce((max, m) => Math.max(max, m.version), 0);
@@ -148,6 +164,7 @@ export const TABLES = [
   'app_usage',
   'day_modes',
   'pauses',
+  'shown_insights',
 ] as const;
 
 export type TableName = (typeof TABLES)[number];
@@ -166,6 +183,7 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     created_at: 'text',
     last_freeze_award_date: 'nullable_text',
     reflection_reminder_minutes: 'nullable_integer',
+    goal: 'nullable_text',
   },
   habits: {
     id: 'text',
@@ -186,6 +204,8 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     cue: 'nullable_text',
     pairing: 'nullable_text',
     after_habit_id: 'nullable_text',
+    time_of_day: 'nullable_text',
+    reminder: 'nullable_text',
   },
   habit_logs: {
     id: 'text',
@@ -234,5 +254,9 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     end_date: 'text',
     reason: 'text',
     created_at: 'text',
+  },
+  shown_insights: {
+    insight_id: 'text',
+    shown_on: 'text',
   },
 };

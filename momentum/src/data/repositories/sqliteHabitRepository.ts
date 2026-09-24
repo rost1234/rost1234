@@ -25,6 +25,8 @@ function toColumns(changes: Partial<NewHabit>): [string, ColumnValue][] {
   if (changes.cue !== undefined) columns.push(['cue', changes.cue.trim()]);
   if (changes.pairing !== undefined) columns.push(['pairing', changes.pairing.trim()]);
   if (changes.afterHabitId !== undefined) columns.push(['after_habit_id', changes.afterHabitId]);
+  if (changes.timeOfDay !== undefined) columns.push(['time_of_day', changes.timeOfDay]);
+  if (changes.reminder !== undefined) columns.push(['reminder', changes.reminder]);
   return columns;
 }
 
@@ -38,6 +40,8 @@ async function insertHabit(db: SqlExecutor, input: NewHabit): Promise<Habit> {
     cue: '',
     pairing: '',
     afterHabitId: null,
+    timeOfDay: 'any',
+    reminder: 'off',
     ...input,
     title: input.title.trim(),
     microStep: input.microStep.trim(),
@@ -72,6 +76,8 @@ async function insertHabit(db: SqlExecutor, input: NewHabit): Promise<Habit> {
     cue: habit.cue,
     pairing: habit.pairing,
     afterHabitId: habit.afterHabitId,
+    timeOfDay: habit.timeOfDay,
+    reminder: habit.reminder,
   });
   await db.runAsync(`UPDATE habits SET ${extras.map(([c]) => `${c} = ?`).join(', ')} WHERE id = ?`, [
     ...extras.map(([, v]) => v),

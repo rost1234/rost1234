@@ -59,6 +59,7 @@ It must pass. Fix any validation errors it reports before finishing.
   - Add `triggers` when a card fits a moment in the app. For example, a card about recovering from a lapse gets `streak_broken`.
 - **Fit the app.** Momentum is about small daily habits, focus sessions, reflection and streaks. Prefer insights the user can act on inside that loop.
 - **`id`:** kebab-case, descriptive, and never reused.
+- **`he`:** a natural Hebrew translation of `finding`, `action`, and — when present — `stat.label` (as `statLabel`) and `caveat`. Same meaning, no added claims.
 
 ## Process
 

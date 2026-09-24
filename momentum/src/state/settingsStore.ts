@@ -12,7 +12,7 @@ interface SettingsState {
   error: string | null;
   load: () => Promise<void>;
   /** Batch-inserts the chosen habits and flips the onboarding flag atomically. */
-  completeOnboarding: (habits: readonly NewHabit[]) => Promise<void>;
+  completeOnboarding: (habits: readonly NewHabit[], goal?: string | null) => Promise<void>;
   setFreezesAvailable: (count: number) => void;
   /**
    * Saves the reminder time (minutes after midnight, null = off) and
@@ -36,13 +36,14 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     }
   },
 
-  completeOnboarding: async (habits) => {
+  completeOnboarding: async (habits, goal = null) => {
     await inTransaction('onboarding.complete', async (repos) => {
       await repos.habits.createMany(habits);
+      await repos.settings.setGoal(goal);
       await repos.settings.setOnboardingCompleted(true);
     });
     const current = get().settings;
-    if (current) set({ settings: { ...current, isOnboardingCompleted: true } });
+    if (current) set({ settings: { ...current, isOnboardingCompleted: true, goal } });
   },
 
   setReflectionReminder: async (minutes) => {

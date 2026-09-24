@@ -21,6 +21,8 @@ export function makeHabit(overrides: Partial<Habit> = {}): Habit {
     cue: '',
     pairing: '',
     afterHabitId: null,
+    timeOfDay: 'any',
+    reminder: 'off',
     ...overrides,
   };
 }

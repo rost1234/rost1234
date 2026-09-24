@@ -87,6 +87,15 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Notifications, widget texts and template habits appear in the chosen language
 - [ ] Large system font: timer, tab labels and header percent stay inside their space
 
+## Wave 4 — insights, weekly summary, milestones, rhythm
+- [ ] Today shows "Today's insight" (tap to expand: action, caveat, source link, evidence level); same card all day;
+      in Hebrew the card text is Hebrew
+- [ ] First open in a new week (Sunday) with at least a week of history → "Your week" summary opens once
+- [ ] Reaching a 7-day streak on a habit → a short celebration (🔥) with a vibration; it doesn't repeat for that milestone
+- [ ] Habit form → Part of the day (Morning/Afternoon/Evening): Today shows the current part of the day first
+- [ ] Habit form → Smart reminder on (permission asked): a reminder arrives around the usual time with a "Done ✓" button;
+      tapping it marks the habit done (app closed too — at the latest when the app next opens); no reminder once done
+
 ## Core loop
 - [ ] Fresh install shows onboarding; completing it lands on Today with the chosen habits
 - [ ] Tapping a binary habit toggles instantly; a count habit goes 1/4 → 4/4 and turns green

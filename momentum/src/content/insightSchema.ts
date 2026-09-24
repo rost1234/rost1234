@@ -53,6 +53,8 @@ export interface Insight {
   triggers: InsightTrigger[];
   /** YYYY-MM-DD the source was last checked. */
   verifiedOn: string;
+  /** Hebrew translation of the user-facing text (required). */
+  he: { finding: string; action: string; statLabel?: string; caveat?: string };
 }
 
 export const LIMITS = { finding: 200, action: 140, statLabel: 60, caveat: 200 } as const;
@@ -93,6 +95,12 @@ export function validateInsights(data: unknown): string[] {
     if (raw.caveat !== undefined && (!nonEmpty(raw.caveat) || raw.caveat.length > LIMITS.caveat)) at('caveat too long or empty');
     if (!Array.isArray(raw.triggers) || !raw.triggers.every((t) => oneOf(INSIGHT_TRIGGERS, t))) at('invalid triggers');
     if (!nonEmpty(raw.verifiedOn) || !DATE.test(raw.verifiedOn)) at('verifiedOn must be YYYY-MM-DD');
+    const he = raw.he;
+    if (!isRecord(he) || !nonEmpty(he.finding) || !nonEmpty(he.action)) at('he.finding and he.action are required');
+    else {
+      if (raw.stat !== undefined && !nonEmpty(he.statLabel)) at('he.statLabel is required when stat is set');
+      if (raw.caveat !== undefined && !nonEmpty(he.caveat)) at('he.caveat is required when caveat is set');
+    }
 
     const s = raw.source;
     if (!isRecord(s)) return at('source is required');

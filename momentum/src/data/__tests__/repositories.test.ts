@@ -3,7 +3,7 @@ import { parseBackup } from '../backup/backupFormat';
 import { SqliteBackupRepository } from '../repositories/sqliteBackupRepository';
 import { SqliteHabitLogRepository } from '../repositories/sqliteHabitLogRepository';
 import { SqliteHabitRepository } from '../repositories/sqliteHabitRepository';
-import { SqliteDayModeRepository, SqlitePauseRepository } from '../repositories/sqlitePlanningRepositories';
+import { SqliteDayModeRepository, SqlitePauseRepository, SqliteShownInsightRepository } from '../repositories/sqlitePlanningRepositories';
 import { SqliteReflectionRepository } from '../repositories/sqliteReflectionRepository';
 import { SqliteSettingsRepository } from '../repositories/sqliteSettingsRepository';
 import { SqliteTaskRepository } from '../repositories/sqliteTaskRepository';
@@ -191,5 +191,29 @@ describe('wave 2 tables', () => {
     expect(await planning.pauses.getAll()).toEqual([pause]);
     await planning.pauses.delete(pause.id);
     expect(await planning.pauses.getAll()).toEqual([]);
+  });
+});
+
+describe('wave 4 tables', () => {
+  it('upgrades v5 to v6: goal, time of day, smart reminder and shown insights', async () => {
+    const { db, executor } = createTestDatabase({ upToVersion: 5 });
+    db.exec("INSERT INTO habits (id, title, created_at) VALUES ('old', 'Old habit', '2026-09-01T08:00:00')");
+    applyRemainingMigrations(db, 5);
+    const r = repos(executor);
+    const shown = new SqliteShownInsightRepository(() => Promise.resolve(executor));
+
+    expect(await r.habits.getById('old')).toMatchObject({ timeOfDay: 'any', reminder: 'off' });
+    const h = await r.habits.create({ ...newHabit, timeOfDay: 'morning', reminder: 'smart' });
+    expect(await r.habits.getById(h.id)).toMatchObject({ timeOfDay: 'morning', reminder: 'smart' });
+    await r.habits.update(h.id, { timeOfDay: 'evening' });
+    expect((await r.habits.getById(h.id))?.timeOfDay).toBe('evening');
+
+    expect((await r.settings.get()).goal).toBeNull();
+    await r.settings.setGoal('focus');
+    expect((await r.settings.get()).goal).toBe('focus');
+
+    await shown.markShown('if-then-plans', '2026-09-24');
+    await shown.markShown('if-then-plans', '2026-09-30');
+    expect(await shown.getAll()).toEqual({ 'if-then-plans': '2026-09-30' });
   });
 });

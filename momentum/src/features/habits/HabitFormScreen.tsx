@@ -5,10 +5,11 @@ import { toErrorMessage } from '@/core/errors';
 import { weekdayLabel, type Weekday } from '@/core/localDate';
 import { Banner, Button, Chip } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
-import { ALL_WEEKDAYS, type Habit, type NewHabit, type TargetFrequency } from '@/domain/models';
+import { ALL_WEEKDAYS, type Habit, type HabitReminder, type NewHabit, type TargetFrequency, type TimeOfDay } from '@/domain/models';
 import type { HabitPreset } from '@/domain/presets';
 import { useHabitStore } from '@/state/habitStore';
 import { AtomicFields, type AtomicValues } from './AtomicFields';
+import { RhythmFields } from './RhythmFields';
 import { TemplatePicker } from './TemplatePicker';
 import { useT } from '@/i18n';
 
@@ -54,6 +55,8 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
   const [targetText, setTargetText] = useState(habit?.isQuantitative ? String(habit.targetCount) : '4');
   const [unit, setUnit] = useState(habit?.unit ?? '');
   const [frequency, setFrequency] = useState<TargetFrequency>(habit?.targetFrequency ?? 'daily');
+  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(habit?.timeOfDay ?? 'any');
+  const [reminder, setReminder] = useState<HabitReminder>(habit?.reminder ?? 'off');
   const [days, setDays] = useState<Weekday[]>(
     habit?.targetFrequency === 'specific_days' ? habit.targetDays : [1, 2, 3, 4, 5],
   );
@@ -96,6 +99,8 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
       cue: atomic.cue.trim(),
       pairing: atomic.pairing.trim(),
       afterHabitId: atomic.afterHabitId,
+      timeOfDay,
+      reminder,
     };
     setIsSaving(true);
     try {
@@ -183,6 +188,8 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
             </View>
           ) : null}
         </Field>
+
+        <RhythmFields timeOfDay={timeOfDay} reminder={reminder} onTimeOfDay={setTimeOfDay} onReminder={setReminder} />
 
         {habit ? (
           <Text style={typography.caption}>{t('form.keptOnEdit')}</Text>

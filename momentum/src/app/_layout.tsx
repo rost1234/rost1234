@@ -9,6 +9,9 @@ import { Button } from '@/components/ui';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { configureNotifications } from '@/services/notifications';
 import { startUsageTracking } from '@/services/usageTracker';
+import { registerReminderCategory } from '@/services/habitReminders';
+import { startNotificationResponses } from '@/services/notificationResponses';
+import { startHabitEffects } from '@/state/habitEffects';
 import { useFocusSoundStore } from '@/state/focusSoundStore';
 import { useFocusStore } from '@/state/focusStore';
 import { usePrefsStore } from '@/state/prefsStore';
@@ -47,13 +50,18 @@ function Bootstrap() {
           const wantRTL = resolveLanguage(usePrefsStore.getState().language) === 'he';
           I18nManager.allowRTL(true);
           if (I18nManager.isRTL !== wantRTL) I18nManager.forceRTL(wantRTL);
+          // Button titles are translated, so register them once the language is known.
+          return registerReminderCategory();
         }),
     );
+    startHabitEffects();
+    const stopResponses = startNotificationResponses();
     configureNotifications();
     startUsageTracking();
     runDetached(useSettingsStore.getState().load());
     runDetached(useFocusSoundStore.getState().hydrate());
     runDetached(useFocusStore.getState().hydrate());
+    return stopResponses;
   }, []);
 
   if (status === 'error') {
@@ -94,6 +102,7 @@ function Bootstrap() {
       <Stack.Screen name="habit/new" options={{ presentation: 'modal', headerShown: true, title: t('nav.newHabit') }} />
       <Stack.Screen name="habit/[id]" options={{ presentation: 'modal', headerShown: true, title: t('nav.editHabit') }} />
       <Stack.Screen name="review" options={{ presentation: 'modal', headerShown: true, title: t('nav.unfinished') }} />
+      <Stack.Screen name="weekly" options={{ presentation: 'modal', headerShown: true, title: t('weekly.nav') }} />
     </Stack>
   );
 }

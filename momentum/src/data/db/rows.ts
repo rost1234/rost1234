@@ -9,6 +9,7 @@ export interface AppSettingsRow {
   created_at: string;
   last_freeze_award_date: string | null;
   reflection_reminder_minutes: number | null;
+  goal: string | null;
 }
 
 export interface HabitRow {
@@ -30,6 +31,8 @@ export interface HabitRow {
   cue: string | null;
   pairing: string | null;
   after_habit_id: string | null;
+  time_of_day: string | null;
+  reminder: string | null;
 }
 
 export interface HabitLogRow {

@@ -9,13 +9,17 @@ import { Banner, Button, SectionTitle } from '@/components/ui';
 import { makeStyles, spacing } from '@/components/theme';
 import { dailyProgressPercent, progressOf } from '@/domain/habitProgress';
 import { habitsDueOn } from '@/domain/habitSchedule';
+import { orderByTimeOfDay } from '@/domain/rhythm';
 import { orderByStacking } from '@/domain/stacking';
+import { InsightCard } from '@/features/insights/InsightCard';
+import { shouldShowWeeklySummary } from '@/features/weekly/weeklyPrompt';
 import { useLocalDate } from '@/hooks/useLocalDate';
 import { useNow } from '@/hooks/useNow';
 import { useHabitStore } from '@/state/habitStore';
 import { useReflectionStore } from '@/state/reflectionStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { useTaskStore } from '@/state/taskStore';
+import { Celebration } from './Celebration';
 import { CoachMarks } from './CoachMarks';
 import { DashboardHeader } from './DashboardHeader';
 import { DecideCard } from './DecideCard';
@@ -30,10 +34,11 @@ import { useT } from '@/i18n';
 
 const EVENING_HOUR = 17;
 
-function useDashboardData(today: string) {
+function useDashboardData(today: string, hour: number) {
   const habits = useHabitStore((s) => s.habits);
   const logs = useHabitStore((s) => s.logs);
-  const dueToday = useMemo(() => orderByStacking(habitsDueOn(habits, today)), [habits, today]);
+  // Stacked habits follow their anchor; the current part of the day comes first.
+  const dueToday = useMemo(() => orderByTimeOfDay(orderByStacking(habitsDueOn(habits, today)), hour), [habits, today, hour]);
   const percent = useMemo(
     () => dailyProgressPercent(dueToday.map((habit) => ({ habit, progress: progressOf(logs[habit.id]?.[today]) }))),
     [dueToday, logs, today],
@@ -65,13 +70,22 @@ export function DashboardScreen() {
   const isEvening = hour >= EVENING_HOUR;
   const freezes = useSettingsStore((s) => s.settings?.streakFreezesAvailable ?? 0);
   const reflection = useReflectionStore((s) => s.byDate[today]);
-  const { dueToday, percent, doneCount, restCount } = useDashboardData(today);
+  const { dueToday, percent, doneCount, restCount } = useDashboardData(today, hour);
+  const habits = useHabitStore((s) => s.habits);
 
   const reload = useCallback(() => {
     runDetached(useHabitStore.getState().load(today));
     runDetached(useTaskStore.getState().load(today));
     runDetached(useReflectionStore.getState().loadForDate(today));
   }, [today]);
+
+  // Once a week, a 30-second look back at last week.
+  useEffect(() => {
+    if (status !== 'ready') return;
+    shouldShowWeeklySummary(today, habits).then((show) => {
+      if (show) router.push('/weekly');
+    }, () => undefined);
+  }, [status, today, habits]);
 
   useEffect(() => {
     reload();
@@ -109,6 +123,7 @@ export function DashboardScreen() {
         <HardDayBar today={today} />
         <CoachMarks />
         <LevelCard today={today} />
+        <InsightCard today={today} />
         {error ? <Banner message={error} onDismiss={clearError} /> : null}
         {taskError ? <Banner message={taskError} onDismiss={clearTaskError} /> : null}
         {freezeAwarded ? <Banner tone="info" message={t('today.perfectWeek')} /> : null}
@@ -160,6 +175,7 @@ export function DashboardScreen() {
           onHide={dismissLastChange}
         />
       ) : null}
+      <Celebration />
     </SafeAreaView>
   );
 }
