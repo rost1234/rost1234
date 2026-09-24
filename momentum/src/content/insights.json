@@ -67,5 +67,1019 @@
       "action": "נסח הרגל אחד מחדש: \"כש___ קורה, אני ___.\"",
       "statLabel": "מחקרים במטא-אנליזה"
     }
+  },
+  {
+    "id": "track-progress-in-writing",
+    "category": "habits",
+    "goals": [],
+    "finding": "People who regularly check and record their progress toward a goal are more likely to reach it, especially when they write it down or share it.",
+    "stat": {
+      "value": "138",
+      "label": "experiments in the meta-analysis"
+    },
+    "action": "Before bed, mark which habits you did today and which you didn't. Be honest, and write it down.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Does monitoring goal progress promote goal attainment? A meta-analysis of the experimental evidence",
+      "authors": "Harkin, Webb, Chang, Prestwich, Conner, Kellar, Benn & Sheeran",
+      "year": 2016,
+      "venue": "Psychological Bulletin",
+      "doi": "10.1037/bul0000025",
+      "url": "https://doi.org/10.1037/bul0000025"
+    },
+    "evidence": "strong",
+    "triggers": [
+      "new_habit"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "אנשים שבודקים ורושמים באופן קבוע את ההתקדמות שלהם לעבר מטרה נוטים יותר להשיג אותה, במיוחד כשהם כותבים את זה או משתפים אחרים.",
+      "action": "לפני השינה, סמן אילו הרגלים עשית היום ואילו לא. תהיה כן, ותרשום את זה.",
+      "statLabel": "ניסויים במטא-אנליזה"
+    }
+  },
+  {
+    "id": "habits-run-on-autopilot",
+    "category": "habits",
+    "goals": [],
+    "finding": "When people do something almost daily in the same setting, they tend to do it on autopilot, think about other things, and feel less stressed while doing it.",
+    "action": "Choose one fixed place and time for your newest habit, and do it there again today.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Habits in everyday life: Thought, emotion, and action",
+      "authors": "Wood, Quinn & Kashy",
+      "year": 2002,
+      "venue": "Journal of Personality and Social Psychology",
+      "doi": "10.1037/0022-3514.83.6.1281",
+      "url": "https://doi.org/10.1037/0022-3514.83.6.1281"
+    },
+    "evidence": "moderate",
+    "caveat": "Based on two diary studies using self-reports. It describes how habits feel, not how fast they form.",
+    "triggers": [
+      "new_habit"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "כשאנשים עושים משהו כמעט כל יום באותה סביבה, הם נוטים לעשות את זה על טייס אוטומטי, לחשוב על דברים אחרים ולהרגיש פחות לחץ בזמן הפעולה.",
+      "action": "בחר מקום ושעה קבועים להרגל הכי חדש שלך, ועשה אותו שם שוב היום.",
+      "caveat": "מבוסס על שני מחקרי יומן עם דיווח עצמי. הוא מתאר איך הרגלים מרגישים, לא כמה מהר הם נוצרים."
+    }
+  },
+  {
+    "id": "anchor-habit-after-routine",
+    "category": "habits",
+    "goals": [],
+    "finding": "In a flossing study, people who flossed right after brushing their teeth built a stronger habit than people who flossed before brushing.",
+    "action": "Attach your new habit to something you already do daily: \"After I ___, I will ___.\"",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Forming a flossing habit: An exploratory study of the psychological determinants of habit formation",
+      "authors": "Judah, Gardner & Aunger",
+      "year": 2013,
+      "venue": "British Journal of Health Psychology",
+      "doi": "10.1111/j.2044-8287.2012.02086.x",
+      "url": "https://doi.org/10.1111/j.2044-8287.2012.02086.x"
+    },
+    "popularizedBy": {
+      "title": "Atomic Habits",
+      "author": "James Clear"
+    },
+    "evidence": "moderate",
+    "caveat": "One exploratory study on flossing. The order effect hasn't been widely tested for other habits.",
+    "triggers": [
+      "new_habit"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "במחקר על חוט דנטלי, אנשים שהשתמשו בחוט מיד אחרי צחצוח השיניים בנו הרגל חזק יותר מאנשים שהשתמשו בו לפני הצחצוח.",
+      "action": "חבר את ההרגל החדש למשהו שאתה כבר עושה כל יום: \"אחרי ש___, אני ___.\"",
+      "caveat": "מחקר גישוש אחד על חוט דנטלי. השפעת הסדר עדיין לא נבדקה בהרחבה על הרגלים אחרים."
+    }
+  },
+  {
+    "id": "pair-a-habit-with-a-treat",
+    "category": "habits",
+    "goals": [],
+    "finding": "In a gym study with about 6,800 people, getting an audiobook and being encouraged to listen only while working out raised weekly workouts by about 10–12%.",
+    "action": "Pick a treat, like a podcast or playlist, and save it only for while you do your hardest habit.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Teaching temptation bundling to boost exercise: A field experiment",
+      "authors": "Kirgios, Mandel, Park, Milkman, Gromet, Kay & Duckworth",
+      "year": 2020,
+      "institution": "University of Pennsylvania",
+      "venue": "Organizational Behavior and Human Decision Processes",
+      "doi": "10.1016/j.obhdp.2020.09.003",
+      "url": "https://doi.org/10.1016/j.obhdp.2020.09.003"
+    },
+    "popularizedBy": {
+      "title": "How to Change",
+      "author": "Katy Milkman"
+    },
+    "evidence": "moderate",
+    "caveat": "The effect was modest, and the bundling advice added only a little beyond getting the audiobook itself.",
+    "triggers": [
+      "new_habit"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "במחקר בחדרי כושר עם כ-6,800 אנשים, קבלת ספר שמע ועידוד להאזין לו רק בזמן אימון העלו את מספר האימונים השבועי בכ-10–12%.",
+      "action": "בחר פינוק, כמו פודקאסט או פלייליסט, ושמור אותו רק לזמן שבו אתה עושה את ההרגל הכי קשה שלך.",
+      "caveat": "ההשפעה הייתה צנועה, ועצת ה\"צימוד\" הוסיפה רק מעט מעבר לקבלת ספר השמע עצמו."
+    }
+  },
+  {
+    "id": "interruptions-cost-stress",
+    "category": "focus",
+    "goals": [
+      "focus"
+    ],
+    "finding": "When work gets interrupted, people often keep up by working faster, but they pay for it with more stress, frustration and effort.",
+    "action": "Before your next focus session, silence alerts and close chat apps, even if it's only for 25 minutes.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "The cost of interrupted work: More speed and stress",
+      "authors": "Mark, Gudith & Klocke",
+      "year": 2008,
+      "institution": "University of California, Irvine",
+      "venue": "Proceedings of CHI 2008 (ACM)",
+      "doi": "10.1145/1357054.1357072",
+      "url": "https://doi.org/10.1145/1357054.1357072"
+    },
+    "evidence": "moderate",
+    "caveat": "A single lab experiment. People differ in how much interruptions affect them.",
+    "triggers": [
+      "missed_focus"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "כשעבודה נקטעת, אנשים לרוב עומדים בקצב בכך שהם עובדים מהר יותר, אבל משלמים על זה ביותר לחץ, תסכול ומאמץ.",
+      "action": "לפני סשן הריכוז הבא, השתק התראות וסגור אפליקציות צ'אט, גם אם זה רק ל-25 דקות.",
+      "caveat": "ניסוי מעבדה יחיד. אנשים שונים זה מזה במידה שבה הפרעות משפיעות עליהם."
+    }
+  },
+  {
+    "id": "notifications-pull-attention",
+    "category": "focus",
+    "goals": [
+      "focus"
+    ],
+    "finding": "In a lab study, just getting a phone notification, without even checking it, made people do worse on a task that needed steady attention.",
+    "action": "Put your phone on silent with vibration off for your next focus session.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "The attentional cost of receiving a cell phone notification",
+      "authors": "Stothart, Mitchum & Yehnert",
+      "year": 2015,
+      "venue": "Journal of Experimental Psychology: Human Perception and Performance",
+      "doi": "10.1037/xhp0000100",
+      "url": "https://doi.org/10.1037/xhp0000100"
+    },
+    "evidence": "moderate",
+    "caveat": "One lab study. Follow-up studies using other kinds of notifications found mixed results.",
+    "triggers": [
+      "missed_focus"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "במחקר מעבדה, עצם קבלת התראה בטלפון, אפילו בלי לבדוק אותה, גרמה לאנשים לבצע גרוע יותר משימה שדרשה קשב רציף.",
+      "action": "העבר את הטלפון למצב שקט, בלי רטט, לסשן הריכוז הבא שלך.",
+      "caveat": "מחקר מעבדה אחד. מחקרי המשך עם סוגי התראות אחרים מצאו תוצאות מעורבות."
+    }
+  },
+  {
+    "id": "wandering-mind-less-happy",
+    "category": "focus",
+    "goals": [
+      "focus",
+      "mindset"
+    ],
+    "finding": "In a big study that pinged people on their phones, minds wandered close to half the time, and people tended to feel less happy when they did.",
+    "action": "Pick one everyday task today, like washing dishes, and give it your full attention from start to finish.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "A wandering mind is an unhappy mind",
+      "authors": "Killingsworth & Gilbert",
+      "year": 2010,
+      "institution": "Harvard University",
+      "venue": "Science",
+      "doi": "10.1126/science.1192439",
+      "url": "https://doi.org/10.1126/science.1192439"
+    },
+    "evidence": "moderate",
+    "caveat": "Correlational: the data show a link between mind-wandering and lower mood, not proof that one causes the other.",
+    "triggers": [],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "במחקר גדול ששלח לאנשים הודעות לטלפון, המחשבות נדדו כמעט מחצית מהזמן, ואנשים נטו להרגיש פחות מאושרים כשזה קרה.",
+      "action": "בחר היום משימה יומיומית אחת, כמו שטיפת כלים, ותן לה את מלוא תשומת הלב מתחילתה ועד סופה.",
+      "caveat": "מתאמי: הנתונים מראים קשר בין נדידת מחשבות למצב רוח ירוד, לא הוכחה שאחד גורם לשני."
+    }
+  },
+  {
+    "id": "micro-breaks-restore-energy",
+    "category": "focus",
+    "goals": [
+      "focus"
+    ],
+    "finding": "Short breaks of 10 minutes or less are linked to feeling more energetic and less tired, on average.",
+    "stat": {
+      "value": "22",
+      "label": "study samples in the meta-analysis"
+    },
+    "action": "After this focus session, stand up, stretch or look out a window for 2–3 minutes before starting the next one.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "\"Give me a break!\" A systematic review and meta-analysis on the efficacy of micro-breaks for increasing well-being and performance",
+      "authors": "Albulescu, Macsinga, Rusu, Sulea, Bodnaru & Tulbure",
+      "year": 2022,
+      "venue": "PLOS ONE",
+      "doi": "10.1371/journal.pone.0272460",
+      "url": "https://doi.org/10.1371/journal.pone.0272460"
+    },
+    "evidence": "strong",
+    "caveat": "Breaks boosted energy more reliably than performance. Very draining work may need longer breaks.",
+    "triggers": [],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "הפסקות קצרות של 10 דקות או פחות קשורות, בממוצע, לתחושה של יותר אנרגיה ופחות עייפות.",
+      "action": "אחרי סשן הריכוז הזה, קום, התמתח או הסתכל מהחלון 2–3 דקות לפני שאתה מתחיל את הבא.",
+      "statLabel": "מדגמי מחקר במטא-אנליזה",
+      "caveat": "ההפסקות שיפרו אנרגיה בעקביות רבה יותר מאשר ביצועים. עבודה תובענית במיוחד עשויה לדרוש הפסקות ארוכות יותר."
+    }
+  },
+  {
+    "id": "walk-for-new-ideas",
+    "category": "focus",
+    "goals": [
+      "focus"
+    ],
+    "finding": "Across 23 studies, walking gave a large boost to brainstorming, which means coming up with lots of new ideas.",
+    "stat": {
+      "value": "23",
+      "label": "studies in the meta-analysis"
+    },
+    "action": "Stuck on a problem? Take a 5-minute walk and think about it while you move.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "The impact of walking on creative thinking: A systematic review and meta-analysis",
+      "authors": "Thabane, Arora, Boilard, Sutoski, Parpia, Calic et al.",
+      "year": 2026,
+      "institution": "McMaster University",
+      "venue": "PLOS ONE",
+      "doi": "10.1371/journal.pone.0347878",
+      "url": "https://doi.org/10.1371/journal.pone.0347878"
+    },
+    "evidence": "moderate",
+    "caveat": "Most participants were students and many studies came from one research group, so the effect size may be overstated.",
+    "triggers": [
+      "missed_focus"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "לפי 23 מחקרים, הליכה נתנה דחיפה גדולה לסיעור מוחות, כלומר ליכולת להעלות הרבה רעיונות חדשים.",
+      "action": "תקוע עם בעיה? צא להליכה של 5 דקות וחשוב עליה תוך כדי תנועה.",
+      "statLabel": "מחקרים במטא-אנליזה",
+      "caveat": "רוב המשתתפים היו סטודנטים, ומחקרים רבים הגיעו מקבוצת מחקר אחת, כך שגודל ההשפעה עשוי להיות מוגזם."
+    }
+  },
+  {
+    "id": "adults-need-seven-hours",
+    "category": "sleep_energy",
+    "goals": [
+      "health"
+    ],
+    "finding": "Sleep experts recommend that adults regularly sleep 7 or more hours a night. Regularly sleeping less is linked to worse health, mood and performance.",
+    "stat": {
+      "value": "7+",
+      "label": "hours of sleep a night recommended for adults"
+    },
+    "action": "Count back at least 7 hours from tomorrow's wake-up time and set a bedtime reminder for tonight.",
+    "source": {
+      "type": "institutional_report",
+      "title": "Recommended amount of sleep for a healthy adult: A joint consensus statement of the American Academy of Sleep Medicine and Sleep Research Society",
+      "authors": "Watson et al.",
+      "year": 2015,
+      "institution": "American Academy of Sleep Medicine & Sleep Research Society",
+      "venue": "Journal of Clinical Sleep Medicine",
+      "doi": "10.5664/jcsm.4758",
+      "url": "https://doi.org/10.5664/jcsm.4758"
+    },
+    "evidence": "strong",
+    "caveat": "This is for adults. Teens and children need more sleep.",
+    "triggers": [],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "מומחי שינה ממליצים שמבוגרים יישנו באופן קבוע 7 שעות או יותר בלילה. שינה קצרה יותר באופן קבוע קשורה לבריאות, מצב רוח וביצועים גרועים יותר.",
+      "action": "ספור לפחות 7 שעות אחורה משעת ההשכמה של מחר, והגדר תזכורת לשעת שינה הלילה.",
+      "statLabel": "שעות שינה בלילה המומלצות למבוגרים",
+      "caveat": "ההמלצה היא למבוגרים. בני נוער וילדים צריכים יותר שינה."
+    }
+  },
+  {
+    "id": "caffeine-cutoff-time",
+    "category": "sleep_energy",
+    "goals": [
+      "health"
+    ],
+    "finding": "On average, caffeine cut sleep by about 45 minutes. The authors suggest having a regular coffee at least 8.8 hours before bed.",
+    "stat": {
+      "value": "45",
+      "label": "minutes less sleep after caffeine, on average"
+    },
+    "action": "Set a caffeine cutoff about 9 hours before your usual bedtime and stick to it today.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "The effect of caffeine on subsequent sleep: A systematic review and meta-analysis",
+      "authors": "Gardiner, Weakley, Burke, Roach, Sargent, Maniar, Townshend & Halson",
+      "year": 2023,
+      "institution": "Australian Catholic University",
+      "venue": "Sleep Medicine Reviews",
+      "doi": "10.1016/j.smrv.2023.101764",
+      "url": "https://doi.org/10.1016/j.smrv.2023.101764"
+    },
+    "evidence": "strong",
+    "caveat": "Averages from 24 studies. How much caffeine affects you depends on the dose and your own sensitivity.",
+    "triggers": [],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "בממוצע, קפאין קיצר את השינה בכ-45 דקות. החוקרים ממליצים לשתות קפה רגיל לפחות 8.8 שעות לפני השינה.",
+      "action": "קבע שעת סיום לקפאין, כ-9 שעות לפני שעת השינה הרגילה שלך, והיצמד אליה היום.",
+      "statLabel": "דקות שינה פחות בממוצע אחרי קפאין",
+      "caveat": "ממוצעים מ-24 מחקרים. עוצמת ההשפעה תלויה בכמות וברגישות האישית שלך."
+    }
+  },
+  {
+    "id": "exercise-for-better-sleep",
+    "category": "sleep_energy",
+    "goals": [
+      "health"
+    ],
+    "finding": "Regular exercise is linked to better sleep quality and falling asleep a bit faster. The benefits are small to moderate on average.",
+    "action": "Fit in a brisk 5-minute walk or a few flights of stairs today.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "The effects of physical activity on sleep: A meta-analytic review",
+      "authors": "Kredlow, Capozzoli, Hearon et al.",
+      "year": 2015,
+      "venue": "Journal of Behavioral Medicine",
+      "doi": "10.1007/s10865-015-9617-6",
+      "url": "https://doi.org/10.1007/s10865-015-9617-6"
+    },
+    "evidence": "strong",
+    "caveat": "66 studies with varied methods. The effects are mostly small to moderate.",
+    "triggers": [],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "פעילות גופנית קבועה קשורה לאיכות שינה טובה יותר ולהירדמות קצת יותר מהירה. התועלת בממוצע קטנה עד בינונית.",
+      "action": "שלב היום הליכה נמרצת של 5 דקות או כמה קומות במדרגות.",
+      "caveat": "66 מחקרים בשיטות שונות. ההשפעות בעיקר קטנות עד בינוניות."
+    }
+  },
+  {
+    "id": "screens-before-bed-delay-sleep",
+    "category": "sleep_energy",
+    "goals": [
+      "health"
+    ],
+    "finding": "People who read on a light-emitting tablet before bed took longer to fall asleep and felt less alert the next morning than when they read a printed book.",
+    "action": "Tonight, swap the last 30 minutes of screen time for a paper book or dim lights.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Evening use of light-emitting eReaders negatively affects sleep, circadian timing, and next-morning alertness",
+      "authors": "Chang, Aeschbach, Duffy & Czeisler",
+      "year": 2015,
+      "institution": "Brigham and Women's Hospital / Harvard Medical School",
+      "venue": "PNAS",
+      "doi": "10.1073/pnas.1418490112",
+      "url": "https://doi.org/10.1073/pnas.1418490112"
+    },
+    "evidence": "moderate",
+    "caveat": "A small, tightly controlled lab study. Real-life effects, such as with phones in night mode, may be smaller.",
+    "triggers": [],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "אנשים שקראו לפני השינה בטאבלט מאיר לקחו יותר זמן להירדם והרגישו פחות ערניים למחרת בבוקר, לעומת קריאה בספר מודפס.",
+      "action": "הלילה, החלף את 30 דקות המסך האחרונות בספר מנייר או בתאורה עמומה.",
+      "caveat": "מחקר מעבדה קטן ומבוקר מאוד. ייתכן שההשפעה בחיים האמיתיים, למשל בטלפון עם מצב לילה, קטנה יותר."
+    }
+  },
+  {
+    "id": "ten-minute-nap",
+    "category": "sleep_energy",
+    "goals": [
+      "health"
+    ],
+    "finding": "After a short night's sleep, a 10-minute afternoon nap worked best of the nap lengths tested, which ranged from 5 to 30 minutes.",
+    "action": "Slept badly? Try a nap of about 10 minutes this afternoon, and set an alarm so it stays short.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "A brief afternoon nap following nocturnal sleep restriction: Which nap duration is most recuperative?",
+      "authors": "Brooks & Lack",
+      "year": 2006,
+      "institution": "Flinders University",
+      "venue": "Sleep",
+      "doi": "10.1093/sleep/29.6.831",
+      "url": "https://doi.org/10.1093/sleep/29.6.831"
+    },
+    "evidence": "moderate",
+    "caveat": "Only 24 healthy young good sleepers, tested after a night of about 5 hours of sleep.",
+    "triggers": [],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "אחרי לילה של שינה קצרה, תנומת צהריים של 10 דקות הייתה היעילה ביותר מבין אורכי התנומה שנבדקו, בין 5 ל-30 דקות.",
+      "action": "ישנת רע? נסה תנומה של כ-10 דקות אחר הצהריים, והגדר שעון מעורר כדי שתישאר קצרה.",
+      "caveat": "רק 24 צעירים בריאים שישנים טוב, שנבדקו אחרי לילה של כ-5 שעות שינה."
+    }
+  },
+  {
+    "id": "regular-sleep-schedule",
+    "category": "sleep_energy",
+    "goals": [
+      "health"
+    ],
+    "finding": "In about 61,000 adults, going to sleep and waking at regular times was linked to a lower risk of early death, more strongly than how long they slept.",
+    "action": "Pick one wake-up time for this week and set it as a daily alarm, weekends included.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Sleep regularity is a stronger predictor of mortality risk than sleep duration: A prospective cohort study",
+      "authors": "Windred et al.",
+      "year": 2024,
+      "venue": "Sleep",
+      "doi": "10.1093/sleep/zsad253",
+      "url": "https://doi.org/10.1093/sleep/zsad253"
+    },
+    "evidence": "moderate",
+    "caveat": "Correlational study of mostly middle-aged and older UK adults. It can't prove regular sleep itself causes the benefit.",
+    "triggers": [],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "אצל כ-61,000 מבוגרים, הליכה לישון והתעוררות בשעות קבועות היו קשורות לסיכון נמוך יותר למוות מוקדם, יותר מאשר משך השינה.",
+      "action": "בחר שעת השכמה אחת לשבוע הזה והגדר אותה כשעון מעורר יומי, כולל בסופי שבוע.",
+      "caveat": "מחקר מתאמי על מבוגרים בריטים, רובם בגיל העמידה ומעלה. הוא לא מוכיח ששינה סדירה עצמה גורמת לתועלת."
+    }
+  },
+  {
+    "id": "sleep-loss-dims-mood",
+    "category": "sleep_energy",
+    "goals": [
+      "health",
+      "mindset"
+    ],
+    "finding": "Across more than 50 years of experiments, losing sleep lowered people's positive feelings and raised their anxiety.",
+    "action": "If today feels heavier than usual, check how you slept before blaming yourself, and aim for an earlier bedtime.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Sleep loss and emotion: A systematic review and meta-analysis of over 50 years of experimental research",
+      "authors": "Palmer, Bower, Cho, Clementi, Lau, Oosterhoff & Alfano",
+      "year": 2024,
+      "venue": "Psychological Bulletin",
+      "doi": "10.1037/bul0000410",
+      "url": "https://doi.org/10.1037/bul0000410"
+    },
+    "evidence": "strong",
+    "caveat": "Most studies were short lab experiments that restricted sleep in healthy adults.",
+    "triggers": [
+      "low_mood"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "לפי ניסויים מיותר מ-50 שנה, חוסר שינה הפחית את הרגשות החיוביים של אנשים והגביר את החרדה שלהם.",
+      "action": "אם היום מרגיש כבד מהרגיל, בדוק איך ישנת לפני שאתה מאשים את עצמך, ונסה ללכת לישון מוקדם יותר.",
+      "caveat": "רוב המחקרים היו ניסויי מעבדה קצרים של מניעת שינה אצל מבוגרים בריאים."
+    }
+  },
+  {
+    "id": "name-your-feeling",
+    "category": "mood",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "Putting a feeling into words, like \"I feel anxious,\" tends to calm it a little, even though it doesn't feel like you're trying to.",
+    "action": "Right now, write one word or a short sentence that names how you feel.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Putting feelings into words: Affect labeling as implicit emotion regulation",
+      "authors": "Torre & Lieberman",
+      "year": 2018,
+      "institution": "University of California, Los Angeles",
+      "venue": "Emotion Review",
+      "doi": "10.1177/1754073917742706",
+      "url": "https://doi.org/10.1177/1754073917742706"
+    },
+    "evidence": "moderate",
+    "caveat": "Mostly short lab studies with modest effects. This is not a replacement for professional help.",
+    "triggers": [
+      "low_mood"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "לתת לרגש שם במילים, כמו \"אני מרגיש חרד\", נוטה להרגיע אותו קצת, גם אם זה לא מרגיש כמו מאמץ להירגע.",
+      "action": "עכשיו, כתוב מילה אחת או משפט קצר שמתאר איך אתה מרגיש.",
+      "caveat": "מבוסס בעיקר על מחקרי מעבדה קצרים עם השפעות צנועות. זה לא תחליף לעזרה מקצועית."
+    }
+  },
+  {
+    "id": "gratitude-small-lift",
+    "category": "mood",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "Gratitude exercises, like listing things you're thankful for, gave a small boost to wellbeing compared with other activities, but didn't reduce anxiety.",
+    "action": "Write down three specific things from today that you're grateful for.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Thankful for the little things: A meta-analysis of gratitude interventions",
+      "authors": "Davis, Choe, Meyers, Wade, Varjas, Gifford, Quinn, Hook, Van Tongeren, Griffin & Worthington",
+      "year": 2016,
+      "venue": "Journal of Counseling Psychology",
+      "doi": "10.1037/cou0000107",
+      "url": "https://doi.org/10.1037/cou0000107"
+    },
+    "evidence": "moderate",
+    "caveat": "The effects were small, and relatively few studies were available for each outcome.",
+    "triggers": [
+      "low_mood"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "תרגילי הכרת תודה, כמו לרשום דברים שאתה אסיר תודה עליהם, נתנו דחיפה קטנה לרווחה הנפשית לעומת פעילויות אחרות, אבל לא הפחיתו חרדה.",
+      "action": "כתוב שלושה דברים ספציפיים מהיום שאתה אסיר תודה עליהם.",
+      "caveat": "ההשפעות היו קטנות, והמחקרים שנכללו היו מעטים יחסית לכל תוצאה."
+    }
+  },
+  {
+    "id": "write-it-out",
+    "category": "mood",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "Writing freely about your deepest thoughts and feelings on something that bothers you has a small but real benefit, on average.",
+    "stat": {
+      "value": "146",
+      "label": "randomized studies in the meta-analysis"
+    },
+    "action": "Set a 5-minute timer and write freely about something on your mind. You can throw the page away after.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Experimental disclosure and its moderators: A meta-analysis",
+      "authors": "Frattaroli",
+      "year": 2006,
+      "venue": "Psychological Bulletin",
+      "doi": "10.1037/0033-2909.132.6.823",
+      "url": "https://doi.org/10.1037/0033-2909.132.6.823"
+    },
+    "evidence": "strong",
+    "caveat": "The average effect was small (r = .075) and results varied between studies. Not a replacement for professional help.",
+    "triggers": [
+      "low_mood"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "כתיבה חופשית על המחשבות והרגשות העמוקים שלך לגבי משהו שמטריד אותך מביאה תועלת קטנה אבל אמיתית, בממוצע.",
+      "action": "הפעל טיימר ל-5 דקות וכתוב בחופשיות על משהו שמעסיק אותך. אפשר לזרוק את הדף אחר כך.",
+      "statLabel": "מחקרים אקראיים במטא-אנליזה",
+      "caveat": "ההשפעה הממוצעת הייתה קטנה (r = .075) והתוצאות השתנו בין מחקרים. זה לא תחליף לעזרה מקצועית."
+    }
+  },
+  {
+    "id": "two-hours-in-nature",
+    "category": "mood",
+    "goals": [
+      "health",
+      "mindset"
+    ],
+    "finding": "In a survey of about 20,000 people in England, those who spent at least 2 hours a week in nature were more likely to report good health and wellbeing.",
+    "stat": {
+      "value": "120",
+      "label": "minutes a week in nature linked to better wellbeing"
+    },
+    "action": "Plan a 10–20 minute walk in a park or other green space today.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Spending at least 120 minutes a week in nature is associated with good health and wellbeing",
+      "authors": "White, Alcock, Grellier, Wheeler, Hartig, Warber et al.",
+      "year": 2019,
+      "institution": "University of Exeter",
+      "venue": "Scientific Reports",
+      "doi": "10.1038/s41598-019-44097-3",
+      "url": "https://doi.org/10.1038/s41598-019-44097-3"
+    },
+    "evidence": "moderate",
+    "caveat": "Correlational survey data. The time could be split into shorter visits, but this doesn't prove nature is the cause.",
+    "triggers": [
+      "low_mood"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "בסקר של כ-20,000 אנשים באנגליה, מי שבילו לפחות שעתיים בשבוע בטבע נטו יותר לדווח על בריאות ורווחה טובות.",
+      "action": "תכנן להיום הליכה של 10–20 דקות בפארק או בשטח ירוק אחר.",
+      "statLabel": "דקות בשבוע בטבע שקשורות לרווחה טובה יותר",
+      "caveat": "נתוני סקר מתאמיים. אפשר לחלק את הזמן לביקורים קצרים, אבל זה לא מוכיח שהטבע הוא הגורם."
+    }
+  },
+  {
+    "id": "move-to-lift-mood",
+    "category": "mood",
+    "goals": [
+      "health",
+      "mindset"
+    ],
+    "finding": "A review covering more than 1,000 trials found that physical activity improved symptoms of depression, anxiety and stress across many groups of adults.",
+    "stat": {
+      "value": "1,039",
+      "label": "trials summarized in the review"
+    },
+    "action": "Do 5 minutes of movement you enjoy, like walking, dancing or stairs, and notice your mood afterward.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Effectiveness of physical activity interventions for improving depression, anxiety and distress: An overview of systematic reviews",
+      "authors": "Singh, Olds, Curtis, Dumuid, Virgara, Watson et al.",
+      "year": 2023,
+      "venue": "British Journal of Sports Medicine",
+      "doi": "10.1136/bjsports-2022-106195",
+      "url": "https://doi.org/10.1136/bjsports-2022-106195"
+    },
+    "evidence": "strong",
+    "caveat": "Studied in adults. Movement can support mood, but it's not a replacement for professional help if you're struggling.",
+    "triggers": [
+      "low_mood"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "סקירה שכללה יותר מ-1,000 ניסויים מצאה שפעילות גופנית שיפרה תסמינים של דיכאון, חרדה ולחץ אצל קבוצות רבות של מבוגרים.",
+      "action": "עשה 5 דקות של תנועה שאתה נהנה ממנה, כמו הליכה, ריקוד או מדרגות, ושים לב למצב הרוח שלך אחר כך.",
+      "statLabel": "ניסויים שסוכמו בסקירה",
+      "caveat": "נבדק אצל מבוגרים. תנועה יכולה לתמוך במצב הרוח, אבל היא לא תחליף לעזרה מקצועית אם קשה לך."
+    }
+  },
+  {
+    "id": "relationships-and-longevity",
+    "category": "social",
+    "goals": [],
+    "finding": "Across 148 studies, people with stronger social relationships had a 50% greater chance of survival during the study periods.",
+    "stat": {
+      "value": "50%",
+      "label": "higher chance of survival with strong social ties"
+    },
+    "action": "Send a short message to someone you care about and ask how their week is going.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Social relationships and mortality risk: A meta-analytic review",
+      "authors": "Holt-Lunstad, Smith & Layton",
+      "year": 2010,
+      "institution": "Brigham Young University",
+      "venue": "PLOS Medicine",
+      "doi": "10.1371/journal.pmed.1000316",
+      "url": "https://doi.org/10.1371/journal.pmed.1000316"
+    },
+    "evidence": "strong",
+    "caveat": "Correlational: these are long-term observational studies, so they show a link, not proof of cause.",
+    "triggers": [],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "לפי 148 מחקרים, לאנשים עם קשרים חברתיים חזקים יותר היה סיכוי גבוה ב-50% לשרוד לאורך תקופות המחקר.",
+      "action": "שלח הודעה קצרה למישהו שאכפת לך ממנו ושאל איך עובר עליו השבוע.",
+      "statLabel": "סיכוי גבוה יותר לשרוד עם קשרים חברתיים חזקים",
+      "caveat": "מתאמי: אלה מחקרי תצפית ארוכי טווח, ולכן הם מראים קשר ולא הוכחה לסיבתיות."
+    }
+  },
+  {
+    "id": "talk-to-a-stranger",
+    "category": "social",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "Commuters expected to prefer sitting alone, but those asked to chat with a stranger actually enjoyed their trip more.",
+    "action": "Start a short, friendly chat today with someone you don't usually talk to, like a cashier or neighbor.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Mistakenly seeking solitude",
+      "authors": "Epley & Schroeder",
+      "year": 2014,
+      "institution": "University of Chicago",
+      "venue": "Journal of Experimental Psychology: General",
+      "doi": "10.1037/a0037323",
+      "url": "https://doi.org/10.1037/a0037323"
+    },
+    "evidence": "moderate",
+    "caveat": "Experiments with commuters and lab participants in one U.S. city. They measured short-term enjoyment.",
+    "triggers": [
+      "low_mood"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "נוסעים בתחבורה ציבורית ציפו שיעדיפו לשבת לבד, אבל מי שהתבקשו לשוחח עם זר נהנו מהנסיעה יותר.",
+      "action": "פתח היום שיחה קצרה וידידותית עם מישהו שאתה לא מדבר איתו בדרך כלל, כמו קופאי או שכן.",
+      "caveat": "ניסויים עם נוסעים ומשתתפי מעבדה בעיר אמריקאית אחת. נמדדה הנאה לטווח קצר."
+    }
+  },
+  {
+    "id": "thank-you-lands-better",
+    "category": "social",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "People who wrote thank-you letters underestimated how good the receivers would feel and overestimated how awkward it would be.",
+    "action": "Send a two-line thank-you to someone who helped you, and say exactly what they did.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Undervaluing gratitude: Expressers misunderstand the consequences of showing appreciation",
+      "authors": "Kumar & Epley",
+      "year": 2018,
+      "venue": "Psychological Science",
+      "doi": "10.1177/0956797618772506",
+      "url": "https://doi.org/10.1177/0956797618772506"
+    },
+    "evidence": "moderate",
+    "caveat": "Based on a small set of experiments. Receivers were people the writers chose to thank.",
+    "triggers": [
+      "perfect_week"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "אנשים שכתבו מכתבי תודה העריכו בחסר כמה טוב ירגישו המקבלים, והעריכו ביתר כמה מביך זה יהיה.",
+      "action": "שלח הודעת תודה של שתי שורות למישהו שעזר לך, וכתוב בדיוק מה הוא עשה.",
+      "caveat": "מבוסס על מספר קטן של ניסויים. המקבלים היו אנשים שהכותבים בחרו להודות להם."
+    }
+  },
+  {
+    "id": "reaching-out-is-appreciated",
+    "category": "social",
+    "goals": [],
+    "finding": "People tend to underestimate how much someone appreciates a quick, unexpected message just checking in on them.",
+    "action": "Text one person you haven't talked to in a while: \"Was just thinking of you. How are you?\"",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "The surprise of reaching out: Appreciated more than we think",
+      "authors": "Liu, Rim, Min & Min",
+      "year": 2023,
+      "venue": "Journal of Personality and Social Psychology",
+      "doi": "10.1037/pspi0000402",
+      "url": "https://doi.org/10.1037/pspi0000402"
+    },
+    "evidence": "moderate",
+    "caveat": "Pre-registered experiments, and an independent team replicated a key study. Long-term effects weren't measured.",
+    "triggers": [],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "אנשים נוטים להעריך בחסר כמה מישהו מעריך הודעה קצרה ולא צפויה שרק בודקת מה שלומו.",
+      "action": "שלח הודעה לאדם שלא דיברת איתו מזמן: \"בדיוק חשבתי עליך. מה שלומך?\"",
+      "caveat": "ניסויים שנרשמו מראש, ומחקר מרכזי שוחזר בהצלחה על ידי צוות עצמאי. השפעות ארוכות טווח לא נמדדו."
+    }
+  },
+  {
+    "id": "kindness-lifts-the-giver",
+    "category": "social",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "Doing small acts of kindness gives the person doing them a small-to-medium boost in wellbeing, on average.",
+    "action": "Do one small kind thing for someone today, like helping with a task or sharing something useful.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Happy to help? A systematic review and meta-analysis of the effects of performing acts of kindness on the well-being of the actor",
+      "authors": "Curry, Rowland, Van Lissa, Zlotowitz, McAlaney & Whitehouse",
+      "year": 2018,
+      "institution": "University of Oxford",
+      "venue": "Journal of Experimental Social Psychology",
+      "doi": "10.1016/j.jesp.2018.02.014",
+      "url": "https://doi.org/10.1016/j.jesp.2018.02.014"
+    },
+    "evidence": "strong",
+    "caveat": "Based on 27 studies with about 4,000 people. The effect is modest.",
+    "triggers": [
+      "low_mood"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "עשיית מעשי חסד קטנים נותנת למי שעושה אותם דחיפה קטנה עד בינונית ברווחה הנפשית, בממוצע.",
+      "action": "עשה היום דבר טוב וקטן אחד בשביל מישהו, כמו עזרה במשימה או שיתוף של משהו שימושי.",
+      "caveat": "מבוסס על 27 מחקרים עם כ-4,000 משתתפים. ההשפעה צנועה."
+    }
+  },
+  {
+    "id": "willpower-battery-myth",
+    "category": "motivation",
+    "goals": [
+      "focus",
+      "mindset"
+    ],
+    "finding": "The popular idea that willpower runs out like a battery failed a big test: across 23 labs, the effect was close to zero.",
+    "stat": {
+      "value": "2,141",
+      "label": "participants in the 23-lab replication"
+    },
+    "action": "Next time you think \"I'm out of willpower,\" try doing just 2 minutes of the task anyway.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "A multilab preregistered replication of the ego-depletion effect",
+      "authors": "Hagger, Chatzisarantis, Alberts, Anggono, Batailler, Birt et al.",
+      "year": 2016,
+      "venue": "Perspectives on Psychological Science",
+      "doi": "10.1177/1745691616652873",
+      "url": "https://doi.org/10.1177/1745691616652873"
+    },
+    "evidence": "strong",
+    "caveat": "Some researchers still debate the effect, but this large pre-registered test found no reliable evidence for it.",
+    "triggers": [
+      "missed_focus"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "הרעיון הפופולרי שכוח הרצון נגמר כמו סוללה נכשל במבחן גדול: ב-23 מעבדות, ההשפעה הייתה קרובה לאפס.",
+      "action": "בפעם הבאה שאתה חושב \"נגמר לי כוח הרצון\", נסה בכל זאת לעשות רק 2 דקות מהמשימה.",
+      "statLabel": "משתתפים בניסוי השחזור ב-23 מעבדות",
+      "caveat": "חלק מהחוקרים עדיין מתווכחים על האפקט, אבל המבחן הגדול הזה, שנרשם מראש, לא מצא לו ראיות אמינות."
+    }
+  },
+  {
+    "id": "practice-is-not-everything",
+    "category": "motivation",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "The 10,000-hours idea is overstated: deliberate practice explained about a fifth of skill differences in music, and much less in school and jobs.",
+    "stat": {
+      "value": "21%",
+      "label": "of performance differences in music explained by practice"
+    },
+    "action": "Pick one small weak spot in a skill you care about and practice just that for 5 focused minutes.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Deliberate practice and performance in music, games, sports, education, and professions: A meta-analysis",
+      "authors": "Macnamara, Hambrick & Oswald",
+      "year": 2014,
+      "venue": "Psychological Science",
+      "doi": "10.1177/0956797614535810",
+      "url": "https://doi.org/10.1177/0956797614535810"
+    },
+    "evidence": "strong",
+    "caveat": "Practice still matters. The analysis shows it's important, just not the whole story.",
+    "triggers": [],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "רעיון 10,000 השעות מוגזם: תרגול מכוון הסביר כחמישית מההבדלים ביכולת במוזיקה, והרבה פחות בלימודים ובעבודה.",
+      "action": "בחר נקודת חולשה קטנה אחת במיומנות שחשובה לך, ותרגל רק אותה במשך 5 דקות מרוכזות.",
+      "statLabel": "מההבדלים בביצועים במוזיקה שהוסברו על ידי תרגול",
+      "caveat": "תרגול עדיין חשוב. המחקר מראה שהוא משמעותי, רק לא כל הסיפור."
+    }
+  },
+  {
+    "id": "mindset-lessons-small-effect",
+    "category": "motivation",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "Growth-mindset lessons help less than often claimed: across many studies, their average effect on school grades was small.",
+    "action": "When something feels hard today, write down one specific strategy you'll try next.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "To what extent and under which circumstances are growth mind-sets important to academic achievement? Two meta-analyses",
+      "authors": "Sisk, Burgoyne, Sun, Butler & Macnamara",
+      "year": 2018,
+      "venue": "Psychological Science",
+      "doi": "10.1177/0956797617739704",
+      "url": "https://doi.org/10.1177/0956797617739704"
+    },
+    "popularizedBy": {
+      "title": "Mindset",
+      "author": "Carol S. Dweck"
+    },
+    "evidence": "strong",
+    "caveat": "Students from low-income families or at high risk of failing may benefit more.",
+    "triggers": [],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "שיעורים על \"חשיבה צומחת\" עוזרים פחות ממה שנטען לעיתים קרובות: לפי מחקרים רבים, ההשפעה הממוצעת שלהם על ציונים הייתה קטנה.",
+      "action": "כשמשהו מרגיש קשה היום, כתוב אסטרטגיה ספציפית אחת שתנסה בפעם הבאה.",
+      "caveat": "תלמידים ממשפחות מעוטות הכנסה או בסיכון לכישלון עשויים להרוויח יותר."
+    }
+  },
+  {
+    "id": "specific-hard-goals",
+    "category": "motivation",
+    "goals": [
+      "focus"
+    ],
+    "finding": "Decades of research show that specific, challenging goals lead to better performance than vague goals like \"just do your best.\"",
+    "action": "Turn one vague goal into a specific one with a number, like \"read 10 pages\" instead of \"read more.\"",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Building a practically useful theory of goal setting and task motivation: A 35-year odyssey",
+      "authors": "Locke & Latham",
+      "year": 2002,
+      "institution": "University of Maryland / University of Toronto",
+      "venue": "American Psychologist",
+      "doi": "10.1037/0003-066X.57.9.705",
+      "url": "https://doi.org/10.1037/0003-066X.57.9.705"
+    },
+    "evidence": "strong",
+    "triggers": [
+      "new_habit"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "עשרות שנות מחקר מראות שמטרות ספציפיות ומאתגרות מובילות לביצועים טובים יותר ממטרות מעורפלות כמו \"פשוט תעשה כמיטב יכולתך\".",
+      "action": "הפוך מטרה מעורפלת אחת למטרה ספציפית עם מספר, למשל \"לקרוא 10 עמודים\" במקום \"לקרוא יותר\"."
+    }
+  },
+  {
+    "id": "wish-then-plan-for-obstacles",
+    "category": "motivation",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "Picturing your goal, then the obstacle in your way, then making an if-then plan for it (known as WOOP) helps people reach goals, with a small-to-medium effect.",
+    "stat": {
+      "value": "15,907",
+      "label": "participants across 21 studies"
+    },
+    "action": "Name one goal for today and its biggest obstacle, then write: \"If [obstacle], then I will ___.\"",
+    "source": {
+      "type": "meta_analysis",
+      "title": "A meta-analysis of the effects of mental contrasting with implementation intentions on goal attainment",
+      "authors": "Wang, Wang & Gai",
+      "year": 2021,
+      "institution": "Northeast Normal University",
+      "venue": "Frontiers in Psychology",
+      "doi": "10.3389/fpsyg.2021.565202",
+      "url": "https://doi.org/10.3389/fpsyg.2021.565202"
+    },
+    "evidence": "strong",
+    "caveat": "The effect was stronger when a person guided the exercise than when people just followed written instructions.",
+    "triggers": [
+      "new_habit"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "לדמיין את המטרה, אחר כך את המכשול שבדרך, ואז להכין תוכנית \"אם-אז\" להתמודדות איתו (שיטה שנקראת WOOP) עוזר לאנשים להשיג מטרות, בהשפעה קטנה עד בינונית.",
+      "action": "בחר מטרה אחת להיום ואת המכשול הגדול ביותר שלה, וכתוב: \"אם [מכשול], אז אני ___.\"",
+      "statLabel": "משתתפים ב-21 מחקרים",
+      "caveat": "ההשפעה הייתה חזקה יותר כשאדם הנחה את התרגיל מאשר כשאנשים רק עקבו אחרי הוראות כתובות."
+    }
+  },
+  {
+    "id": "self-compassion-after-a-slip",
+    "category": "motivation",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "After a failure, people who treated themselves kindly were more motivated to improve. For example, they studied longer after doing badly on a test.",
+    "action": "Missed a day? Write one kind sentence to yourself, as you would to a friend, then plan tomorrow's step.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Self-compassion increases self-improvement motivation",
+      "authors": "Breines & Chen",
+      "year": 2012,
+      "institution": "University of California, Berkeley",
+      "venue": "Personality and Social Psychology Bulletin",
+      "doi": "10.1177/0146167212445599",
+      "url": "https://doi.org/10.1177/0146167212445599"
+    },
+    "evidence": "moderate",
+    "caveat": "Four short experiments. Long-term effects weren't tested.",
+    "triggers": [
+      "streak_broken"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "אחרי כישלון, אנשים שהתייחסו לעצמם בחמלה היו בעלי מוטיבציה גבוהה יותר להשתפר. למשל, הם למדו יותר זמן אחרי שנכשלו במבחן.",
+      "action": "פספסת יום? כתוב לעצמך משפט אחד טוב, כמו שהיית כותב לחבר, ואז תכנן את הצעד של מחר.",
+      "caveat": "ארבעה ניסויים קצרים. השפעות לטווח ארוך לא נבדקו."
+    }
+  },
+  {
+    "id": "reward-the-comeback",
+    "category": "motivation",
+    "goals": [],
+    "finding": "In a study of 61,293 gym members testing 54 different programs, the best one gave small rewards for coming back after a missed workout.",
+    "stat": {
+      "value": "54",
+      "label": "exercise programs tested head-to-head"
+    },
+    "action": "If you missed a habit yesterday, do it today and give yourself a small treat for the comeback.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Megastudies improve the impact of applied behavioural science",
+      "authors": "Milkman et al.",
+      "year": 2021,
+      "institution": "University of Pennsylvania",
+      "venue": "Nature",
+      "doi": "10.1038/s41586-021-04128-4",
+      "url": "https://doi.org/10.1038/s41586-021-04128-4"
+    },
+    "evidence": "moderate",
+    "caveat": "Most effects faded after the 4 weeks ended. Only 8% of programs still showed a measurable effect afterward.",
+    "triggers": [
+      "streak_broken"
+    ],
+    "verifiedOn": "2026-09-24",
+    "he": {
+      "finding": "במחקר על 61,293 מנויי חדר כושר שבחן 54 תוכניות שונות, התוכנית הטובה ביותר נתנה פרסים קטנים על חזרה אחרי אימון שפוספס.",
+      "action": "אם פספסת הרגל אתמול, עשה אותו היום ותן לעצמך פינוק קטן על החזרה.",
+      "statLabel": "תוכניות אימון שנבדקו זו מול זו",
+      "caveat": "רוב ההשפעות דעכו אחרי ארבעת השבועות. רק 8% מהתוכניות עדיין הראו השפעה מדידה אחר כך."
+    }
   }
 ]
