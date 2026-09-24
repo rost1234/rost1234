@@ -30,9 +30,42 @@ export interface Habit {
   isArchived: boolean;
   /** Personal reason for the habit (optional, may be empty). */
   why: string;
+  /** "maintain" keeps the target fixed; "grow" suggests gradual level-ups. */
+  growthMode: GrowthMode;
+  /** For growing habits: the long-term target. */
+  goalCount: number | null;
+  /** For growing habits: how much the target rises per level. */
+  levelStep: number | null;
+  /** No level suggestions until after this date. */
+  levelSnoozeUntil: LocalDateString | null;
+  /** Atomic Habits "make it obvious": when and where. */
+  cue: string;
+  /** Atomic Habits "make it attractive": pair it with something enjoyable. */
+  pairing: string;
+  /** Habit stacking: do this right after another habit. */
+  afterHabitId: string | null;
 }
 
-export type NewHabit = Omit<Habit, 'id' | 'createdAt' | 'isArchived' | 'why'> & { why?: string };
+export type GrowthMode = 'maintain' | 'grow';
+
+/** Fields every new habit needs; the rest are optional with sensible defaults. */
+type OptionalHabitFields = 'why' | 'growthMode' | 'goalCount' | 'levelStep' | 'levelSnoozeUntil' | 'cue' | 'pairing' | 'afterHabitId';
+
+export type NewHabit = Omit<Habit, 'id' | 'createdAt' | 'isArchived' | OptionalHabitFields> &
+  Partial<Pick<Habit, OptionalHabitFields>>;
+
+export type DayMode = 'minimum';
+
+export type PauseReason = 'vacation' | 'sick' | 'other';
+
+/** A planned break: streaks are paused (days count as skipped) between the dates. */
+export interface Pause {
+  id: string;
+  startDate: LocalDateString;
+  endDate: LocalDateString;
+  reason: PauseReason;
+  createdAt: string;
+}
 
 export interface HabitLog {
   id: string;

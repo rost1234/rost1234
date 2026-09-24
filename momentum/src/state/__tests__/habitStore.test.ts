@@ -1,4 +1,5 @@
 import type { Habit } from '@/domain/models';
+import { makeHabit } from '@/testing/fixtures';
 // jest.mock calls below are hoisted above this import by babel-jest.
 import { useHabitStore } from '../habitStore';
 
@@ -16,19 +17,13 @@ jest.mock('@/services/streakService', () => ({
 
 
 const TODAY = '2026-09-24';
-const water: Habit = {
+const water: Habit = makeHabit({
   id: 'water',
   title: 'Water',
-  microStep: '',
   isQuantitative: true,
   targetCount: 2,
   unit: 'glasses',
-  targetFrequency: 'daily',
-  targetDays: [],
-  createdAt: '2026-09-01T08:00:00',
-  isArchived: false,
-  why: '',
-};
+});
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 

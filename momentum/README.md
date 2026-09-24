@@ -68,6 +68,10 @@ src/
   brown/pink/soft-white noise, 40 Hz binaural over warm noise) — decorrelated stereo, loudness-matched, periodic by
   construction (gapless). Played with `expo-audio` in the background with fade in/out and crossfades; each option shows
   an honest one-line evidence note.
+- **Atomic Habits**: habits are *maintain* (fixed target) or *grow* (`domain/levels.ts` suggests level-ups after 6/7
+  good days, easing after 3 misses — the user always decides). Cue/pairing fields and habit stacking (`domain/stacking.ts`).
+- **Hard days**: a low-energy day makes the tiny first step count; planned pauses (`domain/pauses.ts`) turn paused days
+  into neutral days before the streak/freeze engine runs, so nothing breaks and no freezes are spent.
 - **Midnight**: the dashboard reloads automatically at local midnight and whenever the app returns to the foreground on a new day.
 
 ## Releases & updates

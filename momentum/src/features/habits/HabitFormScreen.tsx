@@ -8,6 +8,7 @@ import { colors, radius, spacing, typography } from '@/components/theme';
 import { ALL_WEEKDAYS, type Habit, type NewHabit, type TargetFrequency } from '@/domain/models';
 import type { HabitPreset } from '@/domain/presets';
 import { useHabitStore } from '@/state/habitStore';
+import { AtomicFields, type AtomicValues } from './AtomicFields';
 import { TemplatePicker } from './TemplatePicker';
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -26,6 +27,23 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
   const [title, setTitle] = useState(habit?.title ?? '');
   const [microStep, setMicroStep] = useState(habit?.microStep ?? '');
   const [why, setWhy] = useState(habit?.why ?? '');
+  const allHabits = useHabitStore((s) => s.habits);
+  const anchors = allHabits.filter((h) => h.id !== habit?.id && h.afterHabitId !== habit?.id);
+  const [atomic, setAtomic] = useState<AtomicValues>({
+    growthMode: habit?.growthMode ?? 'maintain',
+    goalText: habit?.goalCount ? String(habit.goalCount) : '',
+    stepText: habit?.levelStep ? String(habit.levelStep) : '',
+    cue: habit?.cue ?? '',
+    pairing: habit?.pairing ?? '',
+    afterHabitId: habit?.afterHabitId ?? null,
+  });
+  const patchAtomic = (patch: Partial<AtomicValues>) => setAtomic((current) => ({ ...current, ...patch }));
+  // A yes/no habit that should grow becomes "minutes", starting tiny.
+  const growBinary = () => {
+    setIsQuantitative(true);
+    setUnit((u) => u || 'min');
+    setTargetText('2');
+  };
   const [isQuantitative, setIsQuantitative] = useState(habit?.isQuantitative ?? false);
   const [targetText, setTargetText] = useState(habit?.isQuantitative ? String(habit.targetCount) : '4');
   const [unit, setUnit] = useState(habit?.unit ?? '');
@@ -66,6 +84,12 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
       targetFrequency: frequency,
       targetDays: frequency === 'specific_days' ? days : [],
       why: why.trim(),
+      growthMode: atomic.growthMode,
+      goalCount: atomic.growthMode === 'grow' && Number.parseInt(atomic.goalText, 10) > 0 ? Number.parseInt(atomic.goalText, 10) : null,
+      levelStep: atomic.growthMode === 'grow' && Number.parseInt(atomic.stepText, 10) > 0 ? Number.parseInt(atomic.stepText, 10) : null,
+      cue: atomic.cue.trim(),
+      pairing: atomic.pairing.trim(),
+      afterHabitId: atomic.afterHabitId,
     };
     setIsSaving(true);
     try {
@@ -130,6 +154,15 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
             </Field>
           </View>
         ) : null}
+
+        <AtomicFields
+          values={atomic}
+          onChange={patchAtomic}
+          anchors={anchors}
+          onGrowBinary={growBinary}
+          isQuantitative={isQuantitative}
+          unit={unit}
+        />
 
         <Field label="Schedule">
           <View style={styles.chips}>

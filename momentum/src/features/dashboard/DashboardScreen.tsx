@@ -9,6 +9,7 @@ import { Banner, Button, SectionTitle } from '@/components/ui';
 import { colors, spacing, typography } from '@/components/theme';
 import { dailyProgressPercent, progressOf } from '@/domain/habitProgress';
 import { habitsDueOn } from '@/domain/habitSchedule';
+import { orderByStacking } from '@/domain/stacking';
 import { useLocalDate } from '@/hooks/useLocalDate';
 import { useNow } from '@/hooks/useNow';
 import { useHabitStore } from '@/state/habitStore';
@@ -19,6 +20,8 @@ import { CoachMarks } from './CoachMarks';
 import { DashboardHeader } from './DashboardHeader';
 import { DecideCard } from './DecideCard';
 import { EmptyHabits } from './EmptyHabits';
+import { HardDayBar } from './HardDayBar';
+import { LevelCard } from './LevelCard';
 import { HabitCard } from './HabitCard';
 import { MoreSection } from './MoreSection';
 import { ReflectionPrompt } from './ReflectionPrompt';
@@ -29,7 +32,7 @@ const EVENING_HOUR = 17;
 function useDashboardData(today: string) {
   const habits = useHabitStore((s) => s.habits);
   const logs = useHabitStore((s) => s.logs);
-  const dueToday = useMemo(() => habitsDueOn(habits, today), [habits, today]);
+  const dueToday = useMemo(() => orderByStacking(habitsDueOn(habits, today)), [habits, today]);
   const percent = useMemo(
     () => dailyProgressPercent(dueToday.map((habit) => ({ habit, progress: progressOf(logs[habit.id]?.[today]) }))),
     [dueToday, logs, today],
@@ -100,7 +103,9 @@ export function DashboardScreen() {
           freezes={freezes}
         />
 
+        <HardDayBar today={today} />
         <CoachMarks />
+        <LevelCard today={today} />
         {error ? <Banner message={error} onDismiss={clearError} /> : null}
         {taskError ? <Banner message={taskError} onDismiss={clearTaskError} /> : null}
         {freezeAwarded ? <Banner tone="info" message="🧊 Perfect week! You earned a streak freeze." /> : null}

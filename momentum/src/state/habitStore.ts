@@ -4,9 +4,11 @@ import type { LocalDateString } from '@/core/localDate';
 import { repositories } from '@/data/repositories';
 import { applyPrimaryAction, decrementProgress, progressOf, reevaluateProgress, type LogProgress } from '@/domain/habitProgress';
 import type { Habit, HabitLog, NewHabit } from '@/domain/models';
+import { applyPauses } from '@/domain/pauses';
 import { computeStreak } from '@/domain/streaks';
 import { historyStart, reconcileStreakFreezes, statusesByHabit } from '@/services/streakService';
 import { refreshTodayWidget } from '@/widget/refreshWidget';
+import { usePlanningStore } from './planningStore';
 import { useSettingsStore } from './settingsStore';
 
 type LoadStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -33,7 +35,7 @@ interface HabitState {
   skipHabit: (habitId: string) => void;
   addHabit: (input: NewHabit) => Promise<void>;
   /** Saves edits; today's log is re-evaluated against a changed target. Streak history is kept. */
-  updateHabit: (habitId: string, changes: NewHabit) => Promise<void>;
+  updateHabit: (habitId: string, changes: Partial<NewHabit>) => Promise<void>;
   archiveHabit: (habitId: string) => Promise<void>;
   clearError: () => void;
   /** Restores the habit's state from before `lastChange`. */
@@ -68,7 +70,8 @@ function indexLogs(logs: readonly HabitLog[]): LogIndex {
 
 function streakFor(habit: Habit, logs: LogIndex, today: LocalDateString): number {
   const statuses = statusesByHabit(Object.values(logs[habit.id] ?? {})).get(habit.id) ?? new Map();
-  return computeStreak(habit, statuses, today);
+  // Planned pauses (vacation / sick) count as neutral days.
+  return computeStreak(habit, applyPauses(statuses, usePlanningStore.getState().pauses, today), today);
 }
 
 function allStreaks(habits: readonly Habit[], logs: LogIndex, today: LocalDateString): Record<string, number> {
@@ -149,6 +152,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
       set({ status: get().habits.length > 0 ? get().status : 'loading', today });
       try {
         const habits = await repositories.habits.getAll();
+        await usePlanningStore.getState().load(today);
         const reconcile = await reconcileStreakFreezes(habits, today);
         useSettingsStore.getState().setFreezesAvailable(reconcile.freezesRemaining);
         const logs = indexLogs(await repositories.habitLogs.getInRange(historyStart(today), today));
@@ -171,7 +175,14 @@ export const useHabitStore = create<HabitState>((set, get) => {
     tapHabit: (habitId) => {
       const habit = get().habits.find((h) => h.id === habitId);
       const progress = currentProgress(habitId);
-      if (habit && progress) commitProgress(habitId, applyPrimaryAction(habit, progress), { recordUndo: true });
+      if (!habit || !progress) return;
+      // Low-energy day: one tap on the micro-step completes any habit.
+      const minimumDay = usePlanningStore.getState().dayMode === 'minimum';
+      const next =
+        minimumDay && progress.status !== 'completed'
+          ? { currentCount: Math.max(1, progress.currentCount), status: 'completed' as const }
+          : applyPrimaryAction(habit, progress);
+      commitProgress(habitId, next, { recordUndo: true });
     },
 
     undoHabitStep: (habitId) => {
@@ -212,7 +223,8 @@ export const useHabitStore = create<HabitState>((set, get) => {
       if (!current) return;
       await repositories.habits.update(habitId, changes);
       refreshTodayWidget();
-      const updated = { ...current, ...changes, targetCount: changes.isQuantitative ? Math.max(1, changes.targetCount) : 1 };
+      const merged = { ...current, ...changes };
+      const updated = { ...merged, targetCount: merged.isQuantitative ? Math.max(1, merged.targetCount) : 1 };
       const { today, logs } = get();
       set({
         habits: get().habits.map((h) => (h.id === habitId ? updated : h)),

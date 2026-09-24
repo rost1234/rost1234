@@ -3,6 +3,7 @@ import { parseBackup } from '../backup/backupFormat';
 import { SqliteBackupRepository } from '../repositories/sqliteBackupRepository';
 import { SqliteHabitLogRepository } from '../repositories/sqliteHabitLogRepository';
 import { SqliteHabitRepository } from '../repositories/sqliteHabitRepository';
+import { SqliteDayModeRepository, SqlitePauseRepository } from '../repositories/sqlitePlanningRepositories';
 import { SqliteReflectionRepository } from '../repositories/sqliteReflectionRepository';
 import { SqliteSettingsRepository } from '../repositories/sqliteSettingsRepository';
 import { SqliteTaskRepository } from '../repositories/sqliteTaskRepository';
@@ -163,5 +164,32 @@ describe('backup round trip', () => {
     await target.tasks.create({ title: 'will be replaced', habitId: null, dueDate: null });
     await target.backup.replaceAll(parsed.backup.tables);
     expect(await target.backup.exportAll()).toEqual(snapshot);
+  });
+});
+
+describe('wave 2 tables', () => {
+  it('upgrades v4 data to v5 and stores Atomic-Habits fields, day modes and pauses', async () => {
+    const { db, executor } = createTestDatabase({ upToVersion: 4 });
+    db.exec("INSERT INTO habits (id, title, created_at) VALUES ('old', 'Old habit', '2026-09-01T08:00:00')");
+    applyRemainingMigrations(db, 4);
+    const r = repos(executor);
+    const planning = {
+      dayModes: new SqliteDayModeRepository(() => Promise.resolve(executor)),
+      pauses: new SqlitePauseRepository(() => Promise.resolve(executor)),
+    };
+
+    expect(await r.habits.getById('old')).toMatchObject({ growthMode: 'maintain', goalCount: null, cue: '', afterHabitId: null });
+    const grown = await r.habits.create({ ...newHabit, growthMode: 'grow', goalCount: 20, levelStep: 2, cue: ' after coffee ', afterHabitId: 'old' });
+    expect(await r.habits.getById(grown.id)).toMatchObject({ growthMode: 'grow', goalCount: 20, levelStep: 2, cue: 'after coffee', afterHabitId: 'old' });
+
+    await planning.dayModes.set('2026-09-24', 'minimum');
+    expect(await planning.dayModes.get('2026-09-24')).toBe('minimum');
+    await planning.dayModes.set('2026-09-24', null);
+    expect(await planning.dayModes.get('2026-09-24')).toBeNull();
+
+    const pause = await planning.pauses.create('2026-10-01', '2026-10-07', 'vacation');
+    expect(await planning.pauses.getAll()).toEqual([pause]);
+    await planning.pauses.delete(pause.id);
+    expect(await planning.pauses.getAll()).toEqual([]);
   });
 });

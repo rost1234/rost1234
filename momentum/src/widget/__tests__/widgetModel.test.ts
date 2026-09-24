@@ -1,21 +1,9 @@
 import type { Habit, HabitLog } from '@/domain/models';
+import { makeHabit } from '@/testing/fixtures';
 import { buildTodayWidgetModel, rowsForHeight } from '../widgetModel';
 
 const TODAY = '2026-09-24';
-const habit = (id: string, extra: Partial<Habit> = {}): Habit => ({
-  id,
-  title: id,
-  microStep: '',
-  isQuantitative: false,
-  targetCount: 1,
-  unit: '',
-  targetFrequency: 'daily',
-  targetDays: [],
-  createdAt: '2026-09-01T08:00:00',
-  isArchived: false,
-  why: '',
-  ...extra,
-});
+const habit = (id: string, extra: Partial<Habit> = {}): Habit => makeHabit({ id, title: id, ...extra });
 const log = (habitId: string, currentCount: number, status: HabitLog['status']): HabitLog => ({
   id: `l-${habitId}`,
   habitId,

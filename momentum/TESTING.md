@@ -67,6 +67,15 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
       close the app for 35 min and reopen → it has moved on correctly; notifications fire at each change
 - [ ] Focus → "Turn on Do Not Disturb" opens the system DND settings
 
+## Wave 2 — Atomic Habits & hard days
+- [ ] Edit a count habit → Atomic habits → "Grow": set goal 20, step 2; a yes/no habit switched to Grow becomes "2 min"
+- [ ] After a strong week (6+ of 7 days) a "Level up …?" card appears on Today; "Go to N" raises the target, "Not now" hides it for 7 days
+- [ ] 3+ misses in a week → "Make … easier?" card; at the goal → "Goal reached" → "Keep it here" switches to Maintain
+- [ ] "When & where" shows under the habit title; "Stack it after…" places it right after its anchor with "↳ after …"
+- [ ] "Low-energy day?" pill: when on, one tap completes any habit (also from the widget); turn off → normal again
+- [ ] Settings → Breaks: pause 3 days from today → Today shows the vacation banner; missed days don't break streaks,
+      no freezes are used, and the heatmap shows them as "–"; ✕ ends the pause
+
 ## Core loop
 - [ ] Fresh install shows onboarding; completing it lands on Today with the chosen habits
 - [ ] Tapping a binary habit toggles instantly; a count habit goes 1/4 → 4/4 and turns green

@@ -23,6 +23,13 @@ export interface HabitRow {
   created_at: string;
   is_archived: SqlBoolean;
   why: string | null;
+  growth_mode: string | null;
+  goal_count: number | null;
+  level_step: number | null;
+  level_snooze_until: string | null;
+  cue: string | null;
+  pairing: string | null;
+  after_habit_id: string | null;
 }
 
 export interface HabitLogRow {
@@ -65,4 +72,17 @@ export interface DailyReflectionRow {
 export interface AppUsageRow {
   log_date: string;
   seconds: number;
+}
+
+export interface DayModeRow {
+  log_date: string;
+  mode: string;
+}
+
+export interface PauseRow {
+  id: string;
+  start_date: string;
+  end_date: string;
+  reason: string;
+  created_at: string;
 }

@@ -8,6 +8,7 @@ import { colors, spacing, typography } from '@/components/theme';
 import { exportBackup, pickBackupFile, restoreBackup, type PendingImport } from '@/services/backup';
 import { reloadAllData } from '@/state/reloadAll';
 import { DataTransparency } from './DataTransparency';
+import { PauseSetting } from './PauseSetting';
 import { ReminderSetting } from './ReminderSetting';
 import { useSettingsStore } from '@/state/settingsStore';
 
@@ -94,6 +95,9 @@ export function SettingsScreen() {
           <Button label="Export backup (JSON)" variant="secondary" onPress={() => void runExport()} loading={isExporting} />
           <Button label="Restore from backup" variant="ghost" onPress={() => void runImport()} loading={isImporting} />
         </Card>
+
+        <SectionTitle>Breaks</SectionTitle>
+        <PauseSetting />
 
         <SectionTitle>Streak freezes</SectionTitle>
         <Card style={styles.card}>

@@ -35,19 +35,20 @@ async function fetchAnalytics(today: LocalDateString, range: AnalyticsRange): Pr
   const startIso = new Date(parseLocalDate(start).setHours(0, 0, 0, 0)).toISOString();
   const endIso = new Date(parseLocalDate(addDays(today, 1)).setHours(0, 0, 0, 0)).toISOString();
 
-  const [habits, logs, reflections, sessions, settings, usage] = await Promise.all([
+  const [habits, logs, reflections, sessions, settings, usage, pauses] = await Promise.all([
     repositories.habits.getAll(),
     repositories.habitLogs.getInRange(start, today),
     repositories.reflections.getInRange(start, today),
     repositories.focusSessions.getInRange(startIso, endIso),
     repositories.settings.get(),
     repositories.usage.getInRange(start, today),
+    repositories.pauses.getAll(),
   ]);
 
   const trend = buildTrend(habits, logs, reflections, dates);
   return {
     dates,
-    heatmap: buildHeatmap(habits, logs, dates, today),
+    heatmap: buildHeatmap(habits, logs, dates, today, pauses),
     trend,
     averageCompletion: averageOf(trend.map((p) => p.completionPercent)),
     averageMood: averageOf(trend.map((p) => p.mood)),

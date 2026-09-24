@@ -2,6 +2,7 @@ import { addDays, type LocalDateString } from '@/core/localDate';
 import { inTransaction, repositories } from '@/data/repositories';
 import type { Habit, HabitLog, HabitLogStatus } from '@/domain/models';
 import { MAX_STREAK_FREEZES, shouldAwardFreeze } from '@/domain/freezeRewards';
+import { applyPausesToAll } from '@/domain/pauses';
 import { planStreakFreezes, type StatusByDate } from '@/domain/streaks';
 
 /** How much history the dashboard keeps in memory for streak maths. */
@@ -46,8 +47,17 @@ export async function reconcileStreakFreezes(
     return { forgivenDays: 0, freezesRemaining: Math.max(0, settings.streakFreezesAvailable), freezeAwarded: false };
   }
 
-  const logs = await repositories.habitLogs.getInRange(historyStart(today), addDays(today, -1));
-  const statuses: ReadonlyMap<string, StatusByDate> = statusesByHabit(logs);
+  const [logs, pauses] = await Promise.all([
+    repositories.habitLogs.getInRange(historyStart(today), addDays(today, -1)),
+    repositories.pauses.getAll(),
+  ]);
+  // Paused days are neutral: no freezes are spent on them and streaks survive.
+  const statuses: ReadonlyMap<string, StatusByDate> = applyPausesToAll(
+    statusesByHabit(logs),
+    habits.map((h) => h.id),
+    pauses,
+    addDays(today, -1),
+  );
 
   let freezes = settings.streakFreezesAvailable;
   const freezeAwarded = shouldAwardFreeze(habits, statuses, today, freezes, settings.lastFreezeAwardDate);

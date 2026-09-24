@@ -99,11 +99,40 @@ const MIGRATION_4 = `
 ALTER TABLE habits ADD COLUMN why TEXT NULL;
 `;
 
+/**
+ * v5: Atomic Habits (growing targets, cue/pairing, habit stacking),
+ * low-energy days and planned pauses (vacation / sick).
+ */
+const MIGRATION_5 = `
+ALTER TABLE habits ADD COLUMN growth_mode TEXT NULL;
+ALTER TABLE habits ADD COLUMN goal_count INTEGER NULL;
+ALTER TABLE habits ADD COLUMN level_step INTEGER NULL;
+ALTER TABLE habits ADD COLUMN level_snooze_until TEXT NULL;
+ALTER TABLE habits ADD COLUMN cue TEXT NULL;
+ALTER TABLE habits ADD COLUMN pairing TEXT NULL;
+ALTER TABLE habits ADD COLUMN after_habit_id TEXT NULL;
+
+CREATE TABLE IF NOT EXISTS day_modes (
+  log_date TEXT PRIMARY KEY NOT NULL,
+  mode TEXT NOT NULL CHECK (mode IN ('minimum'))
+);
+
+CREATE TABLE IF NOT EXISTS pauses (
+  id TEXT PRIMARY KEY NOT NULL,
+  start_date TEXT NOT NULL,
+  end_date TEXT NOT NULL,
+  reason TEXT NOT NULL DEFAULT 'vacation',
+  created_at TEXT NOT NULL,
+  CHECK (end_date >= start_date)
+);
+`;
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, statements: MIGRATION_1 },
   { version: 2, statements: MIGRATION_2 },
   { version: 3, statements: MIGRATION_3 },
   { version: 4, statements: MIGRATION_4 },
+  { version: 5, statements: MIGRATION_5 },
 ];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS.reduce((max, m) => Math.max(max, m.version), 0);
@@ -117,6 +146,8 @@ export const TABLES = [
   'focus_sessions',
   'daily_reflections',
   'app_usage',
+  'day_modes',
+  'pauses',
 ] as const;
 
 export type TableName = (typeof TABLES)[number];
@@ -148,6 +179,13 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     created_at: 'text',
     is_archived: 'integer',
     why: 'nullable_text',
+    growth_mode: 'nullable_text',
+    goal_count: 'nullable_integer',
+    level_step: 'nullable_integer',
+    level_snooze_until: 'nullable_text',
+    cue: 'nullable_text',
+    pairing: 'nullable_text',
+    after_habit_id: 'nullable_text',
   },
   habit_logs: {
     id: 'text',
@@ -185,5 +223,16 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
   app_usage: {
     log_date: 'text',
     seconds: 'integer',
+  },
+  day_modes: {
+    log_date: 'text',
+    mode: 'text',
+  },
+  pauses: {
+    id: 'text',
+    start_date: 'text',
+    end_date: 'text',
+    reason: 'text',
+    created_at: 'text',
   },
 };

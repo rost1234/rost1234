@@ -1,7 +1,8 @@
 import type { LocalDateString } from '@/core/localDate';
 import { completionRatio, dailyProgressPercent, progressOf } from './habitProgress';
 import { habitStartDate, isHabitDueOn } from './habitSchedule';
-import type { DailyReflection, Habit, HabitLog, MoodScore } from './models';
+import type { DailyReflection, Habit, HabitLog, MoodScore, Pause } from './models';
+import { isPaused } from './pauses';
 
 export type HeatCellState =
   | 'completed'
@@ -64,6 +65,7 @@ export function buildHeatmap(
   logs: readonly HabitLog[],
   dates: readonly LocalDateString[],
   today: LocalDateString,
+  pauses: readonly Pause[] = [],
 ): HeatRow[] {
   const index = indexLogs(logs);
   return habits.map((habit) => {
@@ -71,7 +73,11 @@ export function buildHeatmap(
     return {
       habitId: habit.id,
       title: habit.title,
-      cells: dates.map((date) => ({ date, state: cellState(habit, byDate?.get(date), date, today) })),
+      cells: dates.map((date) => {
+        const state = cellState(habit, byDate?.get(date), date, today);
+        // Planned pauses read as neutral "skipped" days, not misses.
+        return { date, state: (state === 'missed' || state === 'pending') && isPaused(pauses, date) ? 'skipped' : state };
+      }),
     };
   });
 }

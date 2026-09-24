@@ -3,6 +3,9 @@ import type { LocalDateString } from '@/core/localDate';
 import type {
   AppSettings,
   DailyUsage,
+  DayMode,
+  Pause,
+  PauseReason,
   DailyReflection,
   FocusSession,
   Habit,
@@ -96,6 +99,18 @@ export interface UsageRepository {
   /** Adds foreground seconds to a day's total. */
   addSeconds(date: LocalDateString, seconds: number): Promise<void>;
   getInRange(start: LocalDateString, end: LocalDateString): Promise<DailyUsage[]>;
+}
+
+export interface DayModeRepository {
+  get(date: LocalDateString): Promise<DayMode | null>;
+  /** `null` clears the mode for that day. */
+  set(date: LocalDateString, mode: DayMode | null): Promise<void>;
+}
+
+export interface PauseRepository {
+  getAll(): Promise<Pause[]>;
+  create(startDate: LocalDateString, endDate: LocalDateString, reason: PauseReason): Promise<Pause>;
+  delete(id: string): Promise<void>;
 }
 
 export type DatabaseSnapshot = Record<TableName, Record<string, unknown>[]>;

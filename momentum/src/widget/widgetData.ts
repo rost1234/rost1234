@@ -21,6 +21,12 @@ export async function tapHabitFromWidget(habitId: string): Promise<void> {
   const habit = await repositories.habits.getById(habitId);
   if (!habit || habit.isArchived || !isHabitDueOn(habit, today)) return;
   const log = (await repositories.habitLogs.getForDate(today)).find((l) => l.habitId === habitId);
-  const next = applyPrimaryAction(habit, progressOf(log));
+  const progress = progressOf(log);
+  // Same low-energy-day rule as the app: the tiny step completes the habit.
+  const minimumDay = (await repositories.dayModes.get(today)) === 'minimum';
+  const next =
+    minimumDay && progress.status !== 'completed'
+      ? { currentCount: Math.max(1, progress.currentCount), status: 'completed' as const }
+      : applyPrimaryAction(habit, progress);
   await repositories.habitLogs.upsert({ habitId, logDate: today, currentCount: next.currentCount, status: next.status });
 }

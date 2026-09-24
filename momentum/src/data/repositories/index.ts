@@ -4,12 +4,15 @@ import { SqliteBackupRepository } from './sqliteBackupRepository';
 import { SqliteFocusSessionRepository } from './sqliteFocusSessionRepository';
 import { SqliteHabitLogRepository } from './sqliteHabitLogRepository';
 import { SqliteHabitRepository } from './sqliteHabitRepository';
+import { SqliteDayModeRepository, SqlitePauseRepository } from './sqlitePlanningRepositories';
 import { SqliteReflectionRepository } from './sqliteReflectionRepository';
 import { SqliteSettingsRepository } from './sqliteSettingsRepository';
 import { SqliteTaskRepository } from './sqliteTaskRepository';
 import { SqliteUsageRepository } from './sqliteUsageRepository';
 import type {
   BackupRepository,
+  DayModeRepository,
+  PauseRepository,
   ExecutorProvider,
   FocusSessionRepository,
   HabitLogRepository,
@@ -30,6 +33,8 @@ export interface Repositories {
   reflections: ReflectionRepository;
   backup: BackupRepository;
   usage: UsageRepository;
+  dayModes: DayModeRepository;
+  pauses: PauseRepository;
 }
 
 export function createRepositories(provider: ExecutorProvider): Repositories {
@@ -42,6 +47,8 @@ export function createRepositories(provider: ExecutorProvider): Repositories {
     reflections: new SqliteReflectionRepository(provider),
     backup: new SqliteBackupRepository(provider),
     usage: new SqliteUsageRepository(provider),
+    dayModes: new SqliteDayModeRepository(provider),
+    pauses: new SqlitePauseRepository(provider),
   };
 }
 

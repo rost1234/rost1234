@@ -7,6 +7,7 @@ import {
   type Habit,
   type HabitLog,
   type HabitLogStatus,
+  type Pause,
   type Task,
   type TargetFrequency,
 } from '@/domain/models';
@@ -16,6 +17,7 @@ import type {
   FocusSessionRow,
   HabitLogRow,
   HabitRow,
+  PauseRow,
   SqlBoolean,
   TaskRow,
 } from './rows';
@@ -71,6 +73,21 @@ export const mapHabit = (row: HabitRow): Habit => ({
   createdAt: row.created_at,
   isArchived: fromSqlBoolean(row.is_archived),
   why: row.why ?? '',
+  growthMode: row.growth_mode === 'grow' ? 'grow' : 'maintain',
+  goalCount: row.goal_count ?? null,
+  levelStep: row.level_step ?? null,
+  levelSnoozeUntil: row.level_snooze_until ?? null,
+  cue: row.cue ?? '',
+  pairing: row.pairing ?? '',
+  afterHabitId: row.after_habit_id ?? null,
+});
+
+export const mapPause = (row: PauseRow): Pause => ({
+  id: row.id,
+  startDate: row.start_date,
+  endDate: row.end_date,
+  reason: row.reason === 'sick' || row.reason === 'other' ? row.reason : 'vacation',
+  createdAt: row.created_at,
 });
 
 export const mapHabitLog = (row: HabitLogRow): HabitLog => ({

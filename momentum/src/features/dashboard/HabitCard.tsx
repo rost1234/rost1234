@@ -61,6 +61,7 @@ function HabitCardComponent({ habit }: HabitCardProps) {
   // Each card subscribes only to its own slice, so a tap re-renders one card.
   const log = useHabitStore((s) => (s.today ? s.logs[habit.id]?.[s.today] : undefined));
   const streak = useHabitStore((s) => s.streaks[habit.id] ?? 0);
+  const anchorTitle = useHabitStore((s) => (habit.afterHabitId ? s.habits.find((h) => h.id === habit.afterHabitId)?.title : undefined));
   // "Fresh start" instead of a bare zero when the user is coming back after a break.
   const isComeback = useHabitStore((s) => {
     const byDate = s.logs[habit.id];
@@ -128,7 +129,15 @@ function HabitCardComponent({ habit }: HabitCardProps) {
             ) : null}
           </View>
           <Text style={typography.caption} numberOfLines={1}>
-            {isSkipped ? 'Skipped today' : habit.microStep ? habit.microStep : countLabel}
+            {isSkipped
+              ? 'Skipped today'
+              : anchorTitle
+                ? `↳ after ${anchorTitle}${habit.microStep ? ` · ${habit.microStep}` : ''}`
+                : habit.cue
+                  ? `${habit.cue}${habit.microStep ? ` · ${habit.microStep}` : ''}`
+                  : habit.microStep
+                    ? habit.microStep
+                    : countLabel}
           </Text>
           {habit.isQuantitative ? (
             <View style={styles.progressRow}>
