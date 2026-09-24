@@ -7,6 +7,7 @@ import { SqliteHabitRepository } from './sqliteHabitRepository';
 import { SqliteReflectionRepository } from './sqliteReflectionRepository';
 import { SqliteSettingsRepository } from './sqliteSettingsRepository';
 import { SqliteTaskRepository } from './sqliteTaskRepository';
+import { SqliteUsageRepository } from './sqliteUsageRepository';
 import type {
   BackupRepository,
   ExecutorProvider,
@@ -17,6 +18,7 @@ import type {
   SettingsRepository,
   SqlExecutor,
   TaskRepository,
+  UsageRepository,
 } from './types';
 
 export interface Repositories {
@@ -27,9 +29,10 @@ export interface Repositories {
   focusSessions: FocusSessionRepository;
   reflections: ReflectionRepository;
   backup: BackupRepository;
+  usage: UsageRepository;
 }
 
-function createRepositories(provider: ExecutorProvider): Repositories {
+export function createRepositories(provider: ExecutorProvider): Repositories {
   return {
     settings: new SqliteSettingsRepository(provider),
     habits: new SqliteHabitRepository(provider),
@@ -38,6 +41,7 @@ function createRepositories(provider: ExecutorProvider): Repositories {
     focusSessions: new SqliteFocusSessionRepository(provider),
     reflections: new SqliteReflectionRepository(provider),
     backup: new SqliteBackupRepository(provider),
+    usage: new SqliteUsageRepository(provider),
   };
 }
 

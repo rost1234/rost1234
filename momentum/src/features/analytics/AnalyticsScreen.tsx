@@ -10,6 +10,7 @@ import { useLocalDate } from '@/hooks/useLocalDate';
 import { useAnalyticsStore, type AnalyticsRange } from '@/state/analyticsStore';
 import { Heatmap } from './Heatmap';
 import { TrendCharts } from './TrendCharts';
+import { UsageCard } from './UsageCard';
 
 function StatTile({ value, label, tint }: { value: string; label: string; tint?: string }) {
   return (
@@ -77,6 +78,9 @@ export function AnalyticsScreen() {
             <Card>
               <TrendCharts points={data.trend} />
             </Card>
+
+            <SectionTitle>Screen time</SectionTitle>
+            <UsageCard usage={data.usage} rangeLabel={range === 'week' ? '7-day' : '30-day'} />
           </>
         ) : null}
       </ScrollView>

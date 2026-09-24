@@ -3,6 +3,7 @@ import { toErrorMessage } from '@/core/errors';
 import { addDays, lastNDays, parseLocalDate, type LocalDateString } from '@/core/localDate';
 import { repositories } from '@/data/repositories';
 import { averageOf, buildHeatmap, buildTrend, type HeatRow, type TrendPoint } from '@/domain/analytics';
+import { summarizeUsage, type UsageSummary } from '@/domain/usage';
 
 export type AnalyticsRange = 'week' | 'month';
 
@@ -16,6 +17,7 @@ export interface AnalyticsData {
   averageMood: number | null;
   focusMinutes: number;
   freezesAvailable: number;
+  usage: UsageSummary;
 }
 
 interface AnalyticsState {
@@ -33,12 +35,13 @@ async function fetchAnalytics(today: LocalDateString, range: AnalyticsRange): Pr
   const startIso = new Date(parseLocalDate(start).setHours(0, 0, 0, 0)).toISOString();
   const endIso = new Date(parseLocalDate(addDays(today, 1)).setHours(0, 0, 0, 0)).toISOString();
 
-  const [habits, logs, reflections, sessions, settings] = await Promise.all([
+  const [habits, logs, reflections, sessions, settings, usage] = await Promise.all([
     repositories.habits.getAll(),
     repositories.habitLogs.getInRange(start, today),
     repositories.reflections.getInRange(start, today),
     repositories.focusSessions.getInRange(startIso, endIso),
     repositories.settings.get(),
+    repositories.usage.getInRange(start, today),
   ]);
 
   const trend = buildTrend(habits, logs, reflections, dates);
@@ -50,6 +53,7 @@ async function fetchAnalytics(today: LocalDateString, range: AnalyticsRange): Pr
     averageMood: averageOf(trend.map((p) => p.mood)),
     focusMinutes: sessions.reduce((sum, s) => sum + s.durationMinutes, 0),
     freezesAvailable: settings.streakFreezesAvailable,
+    usage: summarizeUsage(usage, today),
   };
 }
 

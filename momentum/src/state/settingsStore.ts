@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { toErrorMessage } from '@/core/errors';
 import { inTransaction, repositories } from '@/data/repositories';
 import type { AppSettings, NewHabit } from '@/domain/models';
+import { cancelReflectionReminder, scheduleReflectionReminder } from '@/services/notifications';
 
 type LoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -13,6 +14,11 @@ interface SettingsState {
   /** Batch-inserts the chosen habits and flips the onboarding flag atomically. */
   completeOnboarding: (habits: readonly NewHabit[]) => Promise<void>;
   setFreezesAvailable: (count: number) => void;
+  /**
+   * Saves the reminder time (minutes after midnight, null = off) and
+   * reschedules the notification. Returns false if notifications are blocked.
+   */
+  setReflectionReminder: (minutes: number | null) => Promise<boolean>;
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -37,6 +43,17 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     });
     const current = get().settings;
     if (current) set({ settings: { ...current, isOnboardingCompleted: true } });
+  },
+
+  setReflectionReminder: async (minutes) => {
+    await repositories.settings.setReflectionReminder(minutes);
+    const current = get().settings;
+    if (current) set({ settings: { ...current, reflectionReminderMinutes: minutes } });
+    if (minutes === null) {
+      await cancelReflectionReminder();
+      return true;
+    }
+    return scheduleReflectionReminder(Math.floor(minutes / 60), minutes % 60);
   },
 
   setFreezesAvailable: (count) => {

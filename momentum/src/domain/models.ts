@@ -12,6 +12,8 @@ export interface AppSettings {
   createdAt: string;
   /** Local date of the last perfect-week freeze award. */
   lastFreezeAwardDate: LocalDateString | null;
+  /** Evening reflection reminder, minutes after local midnight; null = off. */
+  reflectionReminderMinutes: number | null;
 }
 
 export interface Habit {
@@ -79,4 +81,9 @@ export const ALL_WEEKDAYS: readonly Weekday[] = [0, 1, 2, 3, 4, 5, 6];
 
 export function isMoodScore(value: number): value is MoodScore {
   return Number.isInteger(value) && value >= 1 && value <= 5;
+}
+
+export interface DailyUsage {
+  logDate: LocalDateString;
+  seconds: number;
 }

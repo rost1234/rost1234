@@ -88,10 +88,18 @@ export async function cancelNotification(id: string | null): Promise<void> {
   await Notifications.cancelScheduledNotificationAsync(id);
 }
 
-/** Daily evening nudge to do the 2-minute reflection (idempotent). */
-export async function scheduleReflectionReminder(hour = 21, minute = 0): Promise<void> {
-  if (!(await hasPermission())) return;
+export async function cancelReflectionReminder(): Promise<void> {
+  if (Platform.OS === 'web') return;
   await Notifications.cancelScheduledNotificationAsync(REFLECTION_REMINDER_KEY).catch(() => undefined);
+}
+
+/**
+ * Daily evening nudge to do the 2-minute reflection (idempotent).
+ * Returns false when notifications aren't permitted.
+ */
+export async function scheduleReflectionReminder(hour = 21, minute = 0): Promise<boolean> {
+  if (!(await hasPermission())) return false;
+  await cancelReflectionReminder();
   await Notifications.scheduleNotificationAsync({
     identifier: REFLECTION_REMINDER_KEY,
     content: { title: 'Evening check-in 🌙', body: 'Two minutes to reflect on your day.' },
@@ -102,4 +110,5 @@ export async function scheduleReflectionReminder(hour = 21, minute = 0): Promise
       channelId: REMINDER_CHANNEL_ID,
     },
   });
+  return true;
 }

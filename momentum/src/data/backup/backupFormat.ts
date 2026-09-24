@@ -27,6 +27,9 @@ function coerce(value: unknown, type: ColumnType): SqlValue | undefined {
     case 'integer':
       if (typeof value === 'boolean') return value ? 1 : 0;
       return typeof value === 'number' && Number.isInteger(value) ? value : undefined;
+    case 'nullable_integer':
+      if (value === null || value === undefined) return null;
+      return typeof value === 'number' && Number.isInteger(value) ? value : undefined;
   }
 }
 

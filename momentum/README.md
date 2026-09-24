@@ -59,6 +59,10 @@ src/
 - **Freeze rewards**: 7 perfect days in a row (ending yesterday) earn +1 freeze, capped at 3; forgiven days never count.
 - **Home-screen widget (Android)**: `src/widget/` — headless task handler reads/writes SQLite directly, so habits can be
   ticked without opening the app; the app refreshes the widget after changes and reloads when it returns to the foreground.
+- **Screen-time honesty**: foreground time per local day is stored in `app_usage` (never leaves the device) and shown
+  passively in Insights against the 5-minute goal.
+- **Tests**: pure domain logic, plus the real repositories and migrations run against Node's built-in SQLite
+  (`src/data/__tests__`), and the habit store's optimistic update/rollback.
 - **Midnight**: the dashboard reloads automatically at local midnight and whenever the app returns to the foreground on a new day.
 
 ## Releases & updates

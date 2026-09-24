@@ -7,6 +7,7 @@ import { Banner, Button, Card, SectionTitle } from '@/components/ui';
 import { colors, spacing, typography } from '@/components/theme';
 import { exportBackup, pickBackupFile, restoreBackup, type PendingImport } from '@/services/backup';
 import { reloadAllData } from '@/state/reloadAll';
+import { ReminderSetting } from './ReminderSetting';
 import { useSettingsStore } from '@/state/settingsStore';
 
 export function SettingsScreen() {
@@ -78,6 +79,9 @@ export function SettingsScreen() {
           Settings
         </Text>
         {message ? <Banner tone={message.tone} message={message.text} onDismiss={() => setMessage(null)} /> : null}
+
+        <SectionTitle>Reminder</SectionTitle>
+        <ReminderSetting />
 
         <SectionTitle>Your data</SectionTitle>
         <Card style={styles.card}>

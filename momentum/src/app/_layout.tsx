@@ -8,6 +8,7 @@ import { DashboardSkeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui';
 import { colors, spacing, typography } from '@/components/theme';
 import { configureNotifications } from '@/services/notifications';
+import { startUsageTracking } from '@/services/usageTracker';
 import { useFocusStore } from '@/state/focusStore';
 import { useSettingsStore } from '@/state/settingsStore';
 
@@ -28,6 +29,7 @@ function Bootstrap() {
 
   useEffect(() => {
     configureNotifications();
+    startUsageTracking();
     runDetached(useSettingsStore.getState().load());
     runDetached(useFocusStore.getState().hydrate());
   }, []);

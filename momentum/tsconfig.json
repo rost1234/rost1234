@@ -5,7 +5,7 @@
     "noImplicitAny": true,
     "noUncheckedIndexedAccess": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["jest"],
+    "types": ["jest", "node"],
     "paths": {
       "@/*": ["./src/*"]
     }

@@ -31,6 +31,11 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Dark mode on the phone → widget switches to dark colours
 - [ ] Before onboarding, the widget says "Tap to set up"
 
+## Phase 3
+- [ ] Insights → "Screen time" shows today's time in Momentum (grows while the app is open, stops when it's closed)
+- [ ] Settings → Reminder: switch off/on; −/+ moves the time in 15-min steps; the reminder fires at the chosen time
+- [ ] With notifications blocked, changing the reminder shows the "notifications are blocked" note
+
 ## Core loop
 - [ ] Fresh install shows onboarding; completing it lands on Today with the chosen habits
 - [ ] Tapping a binary habit toggles instantly; a count habit goes 1/4 → 4/4 and turns green

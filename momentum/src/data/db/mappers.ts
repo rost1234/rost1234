@@ -56,6 +56,7 @@ export const mapSettings = (row: AppSettingsRow): AppSettings => ({
   streakFreezesAvailable: row.streak_freezes_available,
   createdAt: row.created_at,
   lastFreezeAwardDate: row.last_freeze_award_date ?? null,
+  reflectionReminderMinutes: row.reflection_reminder_minutes ?? null,
 });
 
 export const mapHabit = (row: HabitRow): Habit => ({

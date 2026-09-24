@@ -23,7 +23,8 @@ export function OnboardingWizard() {
     const status = await requestNotificationPermission();
     dispatch({ type: 'setNotificationStatus', status });
     if (status === 'granted') {
-      await scheduleReflectionReminder().catch(() => undefined);
+      const minutes = useSettingsStore.getState().settings?.reflectionReminderMinutes ?? 21 * 60;
+      await scheduleReflectionReminder(Math.floor(minutes / 60), minutes % 60).catch(() => false);
     }
     setIsAsking(false);
   };

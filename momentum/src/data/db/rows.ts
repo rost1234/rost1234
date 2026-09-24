@@ -8,6 +8,7 @@ export interface AppSettingsRow {
   streak_freezes_available: number;
   created_at: string;
   last_freeze_award_date: string | null;
+  reflection_reminder_minutes: number | null;
 }
 
 export interface HabitRow {
@@ -58,4 +59,9 @@ export interface DailyReflectionRow {
   gratitude_text: string;
   lesson_text: string;
   created_at: string;
+}
+
+export interface AppUsageRow {
+  log_date: string;
+  seconds: number;
 }

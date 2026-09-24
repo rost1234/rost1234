@@ -2,6 +2,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import type { LocalDateString } from '@/core/localDate';
 import type {
   AppSettings,
+  DailyUsage,
   DailyReflection,
   FocusSession,
   Habit,
@@ -28,6 +29,8 @@ export interface SettingsRepository {
   consumeStreakFreezes(count: number): Promise<number>;
   /** +1 freeze (capped at `max`) and records the award date; returns the new balance. */
   awardStreakFreeze(on: LocalDateString, max: number): Promise<number>;
+  /** Minutes after midnight (0–1439), or null to turn the reminder off. */
+  setReflectionReminder(minutes: number | null): Promise<void>;
 }
 
 export interface HabitRepository {
@@ -87,6 +90,12 @@ export interface ReflectionRepository {
   /** Insert or update the single reflection for `input.logDate`. */
   upsert(input: ReflectionInput): Promise<DailyReflection>;
   delete(id: string): Promise<void>;
+}
+
+export interface UsageRepository {
+  /** Adds foreground seconds to a day's total. */
+  addSeconds(date: LocalDateString, seconds: number): Promise<void>;
+  getInRange(start: LocalDateString, end: LocalDateString): Promise<DailyUsage[]>;
 }
 
 export type DatabaseSnapshot = Record<TableName, Record<string, unknown>[]>;

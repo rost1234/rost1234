@@ -7,6 +7,7 @@ import type { AppSettingsRow } from '../db/rows';
 import type { ExecutorProvider, SettingsRepository } from './types';
 
 const SETTINGS_ID = 1;
+const DEFAULT_REMINDER_MINUTES = 21 * 60;
 
 export class SqliteSettingsRepository implements SettingsRepository {
   constructor(private readonly db: ExecutorProvider) {}
@@ -22,7 +23,7 @@ export class SqliteSettingsRepository implements SettingsRepository {
         'INSERT OR IGNORE INTO app_settings (id, is_onboarding_completed, streak_freezes_available, created_at) VALUES (?, 0, 2, ?)',
         [SETTINGS_ID, createdAt],
       );
-      return { id: SETTINGS_ID, isOnboardingCompleted: false, streakFreezesAvailable: 2, createdAt, lastFreezeAwardDate: null };
+      return { id: SETTINGS_ID, isOnboardingCompleted: false, streakFreezesAvailable: 2, createdAt, lastFreezeAwardDate: null, reflectionReminderMinutes: DEFAULT_REMINDER_MINUTES };
     });
   }
 
@@ -30,6 +31,14 @@ export class SqliteSettingsRepository implements SettingsRepository {
     return guardDb('settings.setOnboardingCompleted', async () => {
       const db = await this.db();
       await db.runAsync('UPDATE app_settings SET is_onboarding_completed = ? WHERE id = ?', [completed ? 1 : 0, SETTINGS_ID]);
+    });
+  }
+
+  setReflectionReminder(minutes: number | null): Promise<void> {
+    return guardDb('settings.setReflectionReminder', async () => {
+      const db = await this.db();
+      const value = minutes === null ? null : Math.max(0, Math.min(24 * 60 - 1, Math.trunc(minutes)));
+      await db.runAsync('UPDATE app_settings SET reflection_reminder_minutes = ? WHERE id = ?', [value, SETTINGS_ID]);
     });
   }
 

@@ -81,9 +81,23 @@ const MIGRATION_2 = `
 ALTER TABLE app_settings ADD COLUMN last_freeze_award_date TEXT NULL;
 `;
 
+/**
+ * v3: foreground time per local day (to keep the app honest about its
+ * "under 5 minutes" promise) and a configurable reflection reminder
+ * (minutes after midnight; NULL = off).
+ */
+const MIGRATION_3 = `
+CREATE TABLE IF NOT EXISTS app_usage (
+  log_date TEXT PRIMARY KEY NOT NULL,
+  seconds INTEGER NOT NULL DEFAULT 0 CHECK (seconds >= 0)
+);
+ALTER TABLE app_settings ADD COLUMN reflection_reminder_minutes INTEGER NULL DEFAULT 1260;
+`;
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, statements: MIGRATION_1 },
   { version: 2, statements: MIGRATION_2 },
+  { version: 3, statements: MIGRATION_3 },
 ];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS.reduce((max, m) => Math.max(max, m.version), 0);
@@ -96,11 +110,12 @@ export const TABLES = [
   'tasks',
   'focus_sessions',
   'daily_reflections',
+  'app_usage',
 ] as const;
 
 export type TableName = (typeof TABLES)[number];
 
-export type ColumnType = 'text' | 'integer' | 'nullable_text';
+export type ColumnType = 'text' | 'integer' | 'nullable_text' | 'nullable_integer';
 
 /**
  * Column whitelist per table, used to validate and restore backups. Only these
@@ -113,6 +128,7 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     streak_freezes_available: 'integer',
     created_at: 'text',
     last_freeze_award_date: 'nullable_text',
+    reflection_reminder_minutes: 'nullable_integer',
   },
   habits: {
     id: 'text',
@@ -158,5 +174,9 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     gratitude_text: 'text',
     lesson_text: 'text',
     created_at: 'text',
+  },
+  app_usage: {
+    log_date: 'text',
+    seconds: 'integer',
   },
 };
