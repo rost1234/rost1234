@@ -3,6 +3,7 @@ import { Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { toErrorMessage } from '@/core/errors';
+import { SheetHeader } from '@/components/SheetHeader';
 import { Banner, Button, Card, SectionTitle } from '@/components/ui';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { exportBackup, pickBackupFile, restoreBackup, type PendingImport } from '@/services/backup';
@@ -88,9 +89,7 @@ export function SettingsScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={typography.title} accessibilityRole="header">
-          {t('set.title')}
-        </Text>
+        <SheetHeader title={t('set.title')} />
         {message ? <Banner tone={message.tone} message={message.text} onDismiss={() => setMessage(null)} /> : null}
 
         <SectionTitle>{t('app.title')}</SectionTitle>

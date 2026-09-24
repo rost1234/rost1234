@@ -3,6 +3,7 @@ import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { runDetached } from '@/core/errors';
+import { SheetHeader } from '@/components/SheetHeader';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { Banner, Card, Chip, SectionTitle } from '@/components/ui';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
@@ -27,7 +28,7 @@ function StatTile({ value, label, tint }: { value: string; label: string; tint?:
 
 export function AnalyticsScreen() {
   const t = useT();
-  const { colors, typography } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
   const today = useLocalDate();
   const range = useAnalyticsStore((s) => s.range);
@@ -49,9 +50,7 @@ export function AnalyticsScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={false} onRefresh={reload} />}>
-        <Text style={typography.title} accessibilityRole="header">
-          {t('ins.title')}
-        </Text>
+        <SheetHeader title={t('ins.title')} />
         <View style={styles.rangeRow}>
           <Chip label={t('ins.week')} selected={range === 'week'} onPress={() => selectRange('week')} />
           <Chip label={t('ins.month')} selected={range === 'month'} onPress={() => selectRange('month')} />

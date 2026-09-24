@@ -109,6 +109,13 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Settings → Lock reflections (confirms with fingerprint/PIN): opening the reflection asks to unlock; it stays
       unlocked until the app goes to the background
 
+## Navigation without tabs
+- [ ] Home has ⚙️ (Settings) and 📚 (Library) at the top, and a "▶ Focus" button floating at the bottom; there is no tab bar
+- [ ] Tapping the progress ring opens Insights; ✕, swipe down or Android back returns to Home
+- [ ] Focus opens full screen; ⌄ returns Home while the session keeps running and the button shows "Focus · 12:34 left"
+- [ ] Library lists all research cards with topic filters; tapping a card shows the action, caveat and source
+- [ ] The app-icon shortcuts and the Focus widget still open Focus
+
 ## Core loop
 - [ ] Fresh install shows onboarding; completing it lands on Today with the chosen habits
 - [ ] Tapping a binary habit toggles instantly; a count habit goes 1/4 → 4/4 and turns green

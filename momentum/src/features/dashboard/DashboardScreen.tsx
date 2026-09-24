@@ -25,6 +25,7 @@ import { DashboardHeader } from './DashboardHeader';
 import { DecideCard } from './DecideCard';
 import { EmptyHabits } from './EmptyHabits';
 import { HardDayBar } from './HardDayBar';
+import { FocusFab, HomeTopBar } from './HomeChrome';
 import { LevelCard } from './LevelCard';
 import { HabitCard } from './HabitCard';
 import { MoreSection } from './MoreSection';
@@ -111,6 +112,7 @@ export function DashboardScreen() {
         refreshControl={<RefreshControl refreshing={false} onRefresh={reload} />}
         keyboardShouldPersistTaps="handled"
       >
+        <HomeTopBar />
         <DashboardHeader
           today={today}
           hour={hour}
@@ -175,6 +177,7 @@ export function DashboardScreen() {
           onHide={dismissLastChange}
         />
       ) : null}
+      <FocusFab />
       <Celebration />
     </SafeAreaView>
   );
@@ -182,6 +185,7 @@ export function DashboardScreen() {
 
 const useStyles = makeStyles(({ colors, typography }) => ({
   safe: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl },
+  // Room for the floating focus button.
+  content: { padding: spacing.lg, paddingBottom: spacing.xxl + 72 },
   link: { ...typography.label, color: colors.primary },
 }));

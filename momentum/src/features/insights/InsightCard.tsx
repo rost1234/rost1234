@@ -14,7 +14,7 @@ import { useHabitStore } from '@/state/habitStore';
 import { useSettingsStore } from '@/state/settingsStore';
 
 /** Validated by src/content/__tests__/insights.test.ts. */
-const INSIGHTS = rawInsights as unknown as Insight[];
+export const INSIGHTS = rawInsights as unknown as Insight[];
 
 function useActiveTriggers(today: LocalDateString): InsightTriggerId[] {
   const habits = useHabitStore((s) => s.habits);
@@ -36,12 +36,9 @@ function useActiveTriggers(today: LocalDateString): InsightTriggerId[] {
 /** "One insight a day": research-backed, sourced, and one small action. */
 export function InsightCard({ today }: { today: LocalDateString }) {
   const t = useT();
-  const { colors, typography } = useTheme();
-  const styles = useStyles();
   const goal = useSettingsStore((s) => s.settings?.goal ?? null);
   const triggers = useActiveTriggers(today);
   const [shown, setShown] = useState<Record<string, LocalDateString> | null>(null);
-  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     repositories.shownInsights.getAll().then(setShown, () => setShown({}));
@@ -56,6 +53,15 @@ export function InsightCard({ today }: { today: LocalDateString }) {
   }, [insight, shown, today]);
 
   if (!insight) return null;
+  return <InsightView insight={insight} title={t('insight.title')} />;
+}
+
+/** One insight card: finding (and stat) up front; action, caveat and source on tap. */
+export function InsightView({ insight, title, defaultOpen = false }: { insight: Insight; title: string; defaultOpen?: boolean }) {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
+  const [open, setOpen] = useState(defaultOpen);
   const he = t.language === 'he';
   const finding = he ? insight.he.finding : insight.finding;
   const action = he ? insight.he.action : insight.action;
@@ -66,7 +72,7 @@ export function InsightCard({ today }: { today: LocalDateString }) {
     <View style={styles.card}>
       <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} onPress={() => setOpen((v) => !v)} style={styles.header}>
         <Ionicons name="bulb-outline" size={20} color={colors.accent} />
-        <Text style={[typography.overline, { flex: 1, color: colors.accent }]}>{t('insight.title')}</Text>
+        <Text style={[typography.overline, { flex: 1, color: colors.accent }]}>{title}</Text>
         <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textMuted} />
       </Pressable>
       {insight.stat ? (

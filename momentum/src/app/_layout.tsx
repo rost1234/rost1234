@@ -109,7 +109,7 @@ function Bootstrap() {
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
-      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="(main)" />
       <Stack.Screen
         name="reflection"
         options={{ presentation: 'modal', headerShown: true, title: t('nav.reflection') }}

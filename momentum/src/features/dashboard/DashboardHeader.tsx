@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ProgressRing } from '@/components/ProgressRing';
@@ -48,11 +49,20 @@ export function DashboardHeader({ today, hour, percent, doneCount, totalCount, f
           </Text>
         </View>
       </View>
-      <ProgressRing value={percent / 100} size={92} stroke={9} track="rgba(255,255,255,0.22)" from="#FFFFFF" to="#C7D2FE">
-        <Text style={styles.percent} maxFontSizeMultiplier={1.2} accessibilityLabel={t('today.percentA11y', { percent })}>
-          {percent}%
-        </Text>
-      </ProgressRing>
+      {/* The ring is the door to Insights (charts, heatmap, trends). */}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${t('today.percentA11y', { percent })}. ${t('home.openInsights')}`}
+        onPress={() => router.push('/analytics')}
+        hitSlop={8}
+      >
+        <ProgressRing value={percent / 100} size={92} stroke={9} track="rgba(255,255,255,0.22)" from="#FFFFFF" to="#C7D2FE">
+          <Text style={styles.percent} maxFontSizeMultiplier={1.2}>
+            {percent}%
+          </Text>
+        </ProgressRing>
+        <Text style={styles.ringHint}>{t('home.insightsHint')}</Text>
+      </Pressable>
     </LinearGradient>
   );
 }
@@ -84,4 +94,5 @@ const useStyles = makeStyles(({ shadow }) => ({
   },
   freezeText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
   percent: { color: '#FFFFFF', fontSize: 22, fontWeight: '800' },
+  ringHint: { color: 'rgba(255,255,255,0.8)', fontSize: 11, fontWeight: '700', textAlign: 'center', marginTop: 4 },
 }));

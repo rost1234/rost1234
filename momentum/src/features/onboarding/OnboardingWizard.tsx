@@ -38,7 +38,7 @@ export function OnboardingWizard() {
     setError(null);
     try {
       await completeOnboarding(presets.map((p) => p.habit), state.goal);
-      router.replace('/(tabs)');
+      router.replace('/(main)');
     } catch (e) {
       setError(t('onb.saveError', { error: toErrorMessage(e) }));
       setIsSaving(false);

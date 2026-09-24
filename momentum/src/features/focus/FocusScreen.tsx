@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Alert, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { setStatusBarStyle } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Banner } from '@/components/ui';
@@ -195,9 +195,21 @@ export function FocusScreen() {
     <LinearGradient colors={[focusColors.backgroundTop, focusColors.backgroundBottom]} style={styles.flex}>
       <SafeAreaView style={styles.flex} edges={['top']}>
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.title} accessibilityRole="header">
-            {t('focus.title')}
-          </Text>
+          <View style={styles.titleRow}>
+            <Text style={[styles.title, styles.grow]} accessibilityRole="header">
+              {t('focus.title')}
+            </Text>
+            {/* Minimizing keeps the session running; the Home button shows the time left. */}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('focus.minimize')}
+              onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
+              hitSlop={10}
+              style={styles.minimize}
+            >
+              <Ionicons name="chevron-down" size={22} color={focusColors.text} />
+            </Pressable>
+          </View>
           {error ? <Banner message={error} onDismiss={() => useFocusStore.setState({ error: null })} /> : null}
           {!isHydrated ? null : timer ? (
             <ActiveTimer />
@@ -214,6 +226,15 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   content: { padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl },
   title: { color: focusColors.text, fontSize: 28, fontWeight: '800', letterSpacing: -0.3 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  minimize: {
+    width: 38,
+    height: 38,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: focusColors.surface,
+  },
   active: { alignItems: 'center', gap: spacing.xl, marginTop: spacing.sm },
   focusPill: {
     maxWidth: '90%',
