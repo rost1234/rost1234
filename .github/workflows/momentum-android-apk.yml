@@ -1,0 +1,78 @@
+name: Momentum Android APK
+
+on:
+  push:
+    branches: [claude/momentum-local-first-app-i5yhju]
+    paths: ['momentum/**', '.github/workflows/momentum-android-apk.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: momentum-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: momentum
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: momentum/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck and test
+        run: |
+          npx tsc --noEmit
+          npx jest
+
+      - name: Generate native Android project
+        run: npx expo prebuild --platform android --no-install
+        env:
+          CI: 1
+
+      - name: Build release APK
+        working-directory: momentum/android
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+
+      - name: Collect APK
+        run: |
+          mkdir -p dist
+          cp android/app/build/outputs/apk/release/app-release.apk dist/momentum-${{ github.run_number }}.apk
+          ls -lh dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: momentum-apk
+          path: momentum/dist/*.apk
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: momentum-build-${{ github.run_number }}
+          name: Momentum APK (build ${{ github.run_number }})
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          body: |
+            Android APK for Momentum, built from ${{ github.sha }}.
+            Download `momentum-${{ github.run_number }}.apk` on your phone and allow "Install unknown apps".
+            Signed with the debug key (for testing, not Play Store).
+          files: momentum/dist/*.apk
