@@ -4,75 +4,144 @@ import { createId } from '@/core/id';
 import type { LocalDateString } from '@/core/localDate';
 import { repositories } from '@/data/repositories';
 import type { Task } from '@/domain/models';
+import { hasRoomToday, placementForNewTask } from '@/domain/taskPlanning';
+
+/** Where a task lives relative to today. */
+type Bucket = 'today' | 'overdue' | 'later';
+
+export type TaskDecision = 'today' | 'later' | 'drop';
 
 interface TaskState {
   today: LocalDateString | null;
+  /** Planned for today (open and done). */
   tasks: Task[];
+  /** Open tasks from previous days awaiting a decision. */
+  overdue: Task[];
+  /** Open, undated tasks. */
+  later: Task[];
   isLoaded: boolean;
   error: string | null;
+
   load: (today: LocalDateString) => Promise<void>;
-  addTask: (title: string) => void;
+  /** Adds to today while there's room (max 3 open), otherwise to Later. Returns where it went. */
+  addTask: (title: string) => 'today' | 'later' | null;
   toggleTask: (taskId: string) => void;
   deleteTask: (taskId: string) => void;
+  /** Moves a task from any list to today / Later, or drops it. */
+  decide: (taskId: string, decision: TaskDecision) => void;
+  clearError: () => void;
 }
 
+const isPending = (id: string) => id.startsWith('pending-');
+
 export const useTaskStore = create<TaskState>((set, get) => {
-  const rollback = (snapshot: Task[], message: string) => (error: unknown) =>
-    set({ tasks: snapshot, error: `${message} ${toErrorMessage(error)}` });
+  type Lists = Pick<TaskState, 'tasks' | 'overdue' | 'later'>;
+  const snapshot = (): Lists => ({ tasks: get().tasks, overdue: get().overdue, later: get().later });
+  const rollback = (lists: Lists, message: string) => (error: unknown) =>
+    set({ ...lists, error: `${message} ${toErrorMessage(error)}` });
+
+  const findTask = (taskId: string): { task: Task; bucket: Bucket } | null => {
+    const { tasks, overdue, later } = get();
+    const inToday = tasks.find((t) => t.id === taskId);
+    if (inToday) return { task: inToday, bucket: 'today' };
+    const inOverdue = overdue.find((t) => t.id === taskId);
+    if (inOverdue) return { task: inOverdue, bucket: 'overdue' };
+    const inLater = later.find((t) => t.id === taskId);
+    return inLater ? { task: inLater, bucket: 'later' } : null;
+  };
+
+  const without = (taskId: string): Lists => ({
+    tasks: get().tasks.filter((t) => t.id !== taskId),
+    overdue: get().overdue.filter((t) => t.id !== taskId),
+    later: get().later.filter((t) => t.id !== taskId),
+  });
 
   return {
     today: null,
     tasks: [],
+    overdue: [],
+    later: [],
     isLoaded: false,
     error: null,
 
     load: async (today) => {
       set({ today });
       try {
-        const tasks = await repositories.tasks.getForDate(today);
-        if (get().today === today) set({ tasks, isLoaded: true, error: null });
+        const [tasks, overdue, later] = await Promise.all([
+          repositories.tasks.getForDate(today),
+          repositories.tasks.getOverdue(today),
+          repositories.tasks.getBacklog(),
+        ]);
+        if (get().today === today) set({ tasks, overdue, later, isLoaded: true, error: null });
       } catch (error) {
         set({ isLoaded: true, error: toErrorMessage(error) });
       }
     },
 
     addTask: (title) => {
-      const { today, tasks } = get();
+      const { today } = get();
       const trimmed = title.trim();
-      if (!today || trimmed.length === 0) return;
+      if (!today || trimmed.length === 0) return null;
+      const dueDate = placementForNewTask(get().tasks, today);
       const placeholder: Task = {
         id: `pending-${createId()}`,
         habitId: null,
         title: trimmed,
         isCompleted: false,
-        dueDate: today,
+        dueDate,
         createdAt: new Date().toISOString(),
       };
-      set({ tasks: [...tasks, placeholder] });
+      const before = snapshot();
+      const key = dueDate ? 'tasks' : 'later';
+      set({ [key]: [...get()[key], placeholder] });
       runDetached(
-        repositories.tasks.create({ title: trimmed, habitId: null, dueDate: today }).then((saved) => {
-          set({ tasks: get().tasks.map((t) => (t.id === placeholder.id ? saved : t)) });
+        repositories.tasks.create({ title: trimmed, habitId: null, dueDate }).then((saved) => {
+          set({ [key]: get()[key].map((t) => (t.id === placeholder.id ? saved : t)) });
         }),
-        rollback(tasks, "Couldn't add task."),
+        rollback(before, "Couldn't add task."),
       );
+      return dueDate ? 'today' : 'later';
     },
 
     toggleTask: (taskId) => {
       const { today, tasks } = get();
       const task = tasks.find((t) => t.id === taskId);
-      if (!today || !task || task.id.startsWith('pending-')) return;
+      if (!today || !task || isPending(task.id)) return;
       const isCompleted = !task.isCompleted;
-      set({
-        tasks: tasks.map((t) => (t.id === taskId ? { ...t, isCompleted, dueDate: isCompleted ? today : t.dueDate } : t)),
-      });
-      runDetached(repositories.tasks.setCompleted(taskId, isCompleted, today), rollback(tasks, "Couldn't update task."));
+      // Re-opening a task must respect the daily cap.
+      if (!isCompleted && !hasRoomToday(tasks, today)) {
+        set({ error: 'Today already has 3 open tasks. Finish or move one first.' });
+        return;
+      }
+      const before = snapshot();
+      set({ tasks: tasks.map((t) => (t.id === taskId ? { ...t, isCompleted } : t)) });
+      runDetached(repositories.tasks.setCompleted(taskId, isCompleted, today), rollback(before, "Couldn't update task."));
     },
 
-    deleteTask: (taskId) => {
-      const { tasks } = get();
-      if (taskId.startsWith('pending-')) return;
-      set({ tasks: tasks.filter((t) => t.id !== taskId) });
-      runDetached(repositories.tasks.delete(taskId), rollback(tasks, "Couldn't delete task."));
+    deleteTask: (taskId) => get().decide(taskId, 'drop'),
+
+    decide: (taskId, decision) => {
+      const { today } = get();
+      const found = findTask(taskId);
+      if (!today || !found || isPending(taskId)) return;
+      if (decision === 'today' && found.bucket !== 'today' && !hasRoomToday(get().tasks, today)) {
+        set({ error: 'Today already has 3 open tasks. Finish or move one first.' });
+        return;
+      }
+      const before = snapshot();
+      const rest = without(taskId);
+
+      if (decision === 'drop') {
+        set(rest);
+        runDetached(repositories.tasks.delete(taskId), rollback(before, "Couldn't drop task."));
+        return;
+      }
+      const dueDate = decision === 'today' ? today : null;
+      const moved: Task = { ...found.task, dueDate };
+      set(decision === 'today' ? { ...rest, tasks: [...rest.tasks, moved] } : { ...rest, later: [...rest.later, moved] });
+      runDetached(repositories.tasks.setDueDate(taskId, dueDate), rollback(before, "Couldn't move task."));
     },
+
+    clearError: () => set({ error: null }),
   };
 });

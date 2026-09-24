@@ -55,6 +55,7 @@ export const mapSettings = (row: AppSettingsRow): AppSettings => ({
   isOnboardingCompleted: fromSqlBoolean(row.is_onboarding_completed),
   streakFreezesAvailable: row.streak_freezes_available,
   createdAt: row.created_at,
+  lastFreezeAwardDate: row.last_freeze_award_date ?? null,
 });
 
 export const mapHabit = (row: HabitRow): Habit => ({

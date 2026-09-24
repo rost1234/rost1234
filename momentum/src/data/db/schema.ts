@@ -76,7 +76,15 @@ INSERT OR IGNORE INTO app_settings (id, is_onboarding_completed, streak_freezes_
 VALUES (1, 0, 2, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'));
 `;
 
-export const MIGRATIONS: readonly Migration[] = [{ version: 1, statements: MIGRATION_1 }];
+/** v2: remembers when the last perfect-week streak freeze was awarded. */
+const MIGRATION_2 = `
+ALTER TABLE app_settings ADD COLUMN last_freeze_award_date TEXT NULL;
+`;
+
+export const MIGRATIONS: readonly Migration[] = [
+  { version: 1, statements: MIGRATION_1 },
+  { version: 2, statements: MIGRATION_2 },
+];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS.reduce((max, m) => Math.max(max, m.version), 0);
 
@@ -104,6 +112,7 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     is_onboarding_completed: 'integer',
     streak_freezes_available: 'integer',
     created_at: 'text',
+    last_freeze_award_date: 'nullable_text',
   },
   habits: {
     id: 'text',

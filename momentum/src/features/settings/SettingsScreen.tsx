@@ -93,6 +93,7 @@ export function SettingsScreen() {
           <Text style={typography.heading}>🧊 {freezes} available</Text>
           <Text style={typography.caption}>
             Miss a scheduled day and a freeze is used automatically to keep your streak alive — one freeze per missed day.
+            Every perfect week (7 days in a row with all habits done) earns a new freeze, up to 3.
           </Text>
         </Card>
       </ScrollView>

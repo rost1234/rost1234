@@ -5,7 +5,7 @@ import { toErrorMessage } from '@/core/errors';
 import { weekdayLabel, type Weekday } from '@/core/localDate';
 import { Banner, Button, Chip } from '@/components/ui';
 import { colors, radius, spacing, typography } from '@/components/theme';
-import { ALL_WEEKDAYS, type NewHabit, type TargetFrequency } from '@/domain/models';
+import { ALL_WEEKDAYS, type Habit, type NewHabit, type TargetFrequency } from '@/domain/models';
 import { useHabitStore } from '@/state/habitStore';
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -17,15 +17,19 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export function NewHabitScreen() {
+/** Create a habit, or edit `habit` in place (its history and streak are kept). */
+export function HabitFormScreen({ habit }: { habit?: Habit }) {
   const addHabit = useHabitStore((s) => s.addHabit);
-  const [title, setTitle] = useState('');
-  const [microStep, setMicroStep] = useState('');
-  const [isQuantitative, setIsQuantitative] = useState(false);
-  const [targetText, setTargetText] = useState('4');
-  const [unit, setUnit] = useState('');
-  const [frequency, setFrequency] = useState<TargetFrequency>('daily');
-  const [days, setDays] = useState<Weekday[]>([1, 2, 3, 4, 5]);
+  const updateHabit = useHabitStore((s) => s.updateHabit);
+  const [title, setTitle] = useState(habit?.title ?? '');
+  const [microStep, setMicroStep] = useState(habit?.microStep ?? '');
+  const [isQuantitative, setIsQuantitative] = useState(habit?.isQuantitative ?? false);
+  const [targetText, setTargetText] = useState(habit?.isQuantitative ? String(habit.targetCount) : '4');
+  const [unit, setUnit] = useState(habit?.unit ?? '');
+  const [frequency, setFrequency] = useState<TargetFrequency>(habit?.targetFrequency ?? 'daily');
+  const [days, setDays] = useState<Weekday[]>(
+    habit?.targetFrequency === 'specific_days' ? habit.targetDays : [1, 2, 3, 4, 5],
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,17 +45,18 @@ export function NewHabitScreen() {
   const save = async () => {
     if (!isValid) return;
     const input: NewHabit = {
-      title,
-      microStep,
+      title: title.trim(),
+      microStep: microStep.trim(),
       isQuantitative,
       targetCount: isQuantitative ? targetCount : 1,
-      unit: isQuantitative ? unit : '',
+      unit: isQuantitative ? unit.trim() : '',
       targetFrequency: frequency,
       targetDays: frequency === 'specific_days' ? days : [],
     };
     setIsSaving(true);
     try {
-      await addHabit(input);
+      if (habit) await updateHabit(habit.id, input);
+      else await addHabit(input);
       router.back();
     } catch (e) {
       setError(`Couldn't save habit. ${toErrorMessage(e)}`);
@@ -64,7 +69,14 @@ export function NewHabitScreen() {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {error ? <Banner message={error} onDismiss={() => setError(null)} /> : null}
         <Field label="Habit">
-          <TextInput value={title} onChangeText={setTitle} placeholder="e.g. Stretch" style={styles.input} maxLength={60} autoFocus />
+          <TextInput
+            value={title}
+            onChangeText={setTitle}
+            placeholder="e.g. Stretch"
+            style={styles.input}
+            maxLength={60}
+            autoFocus={!habit}
+          />
         </Field>
         <Field label="Tiny first step">
           <TextInput
@@ -109,7 +121,10 @@ export function NewHabitScreen() {
           ) : null}
         </Field>
 
-        <Button label="Save habit" onPress={() => void save()} disabled={!isValid} loading={isSaving} />
+        {habit ? (
+          <Text style={typography.caption}>Your streak and history are kept when you edit a habit.</Text>
+        ) : null}
+        <Button label={habit ? 'Save changes' : 'Save habit'} onPress={() => void save()} disabled={!isValid} loading={isSaving} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

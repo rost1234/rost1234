@@ -54,6 +54,9 @@ src/
 - **Focus timer** persists only `start_time`, target and pause bookkeeping; remaining time is always
   `target − (now − start − paused)`, so backgrounding, locking or killing the app never drifts it. The completion
   notification is scheduled up-front, so it fires even when the app is suspended.
+- **Today's 3**: at most 3 open tasks per day; extra tasks go to *Later*. Unfinished tasks from earlier days
+  never roll over silently — a "Decide" card asks: Today / Later / Drop (bullet-journal migration).
+- **Freeze rewards**: 7 perfect days in a row (ending yesterday) earn +1 freeze, capped at 3; forgiven days never count.
 - **Midnight**: the dashboard reloads automatically at local midnight and whenever the app returns to the foreground on a new day.
 
 ## Releases & updates

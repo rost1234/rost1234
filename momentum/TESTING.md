@@ -13,6 +13,14 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Replace restores the data and returns to the Today screen
 - [ ] Picking a non-Momentum file shows an error and changes nothing
 
+## Phase 1
+- [ ] After updating from build 2, existing habits/tasks are intact (DB migrates to v2)
+- [ ] Add 4 tasks: the 4th goes to Later (hint shown); counter shows 3/3
+- [ ] Check one off → a new task goes to today again
+- [ ] Tasks from yesterday show a "Decide" card → Today / Later / Drop each work; Today is disabled when full
+- [ ] More ▸ shows Later tasks (→ Today / ✕) and, before 17:00, the reflection card
+- [ ] Long-press habit → Edit habit: change the target (e.g. 4 → 2) → today's card updates, streak kept
+
 ## Core loop
 - [ ] Fresh install shows onboarding; completing it lands on Today with the chosen habits
 - [ ] Tapping a binary habit toggles instantly; a count habit goes 1/4 → 4/4 and turns green

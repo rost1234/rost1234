@@ -1,6 +1,7 @@
 import { addDays, type LocalDateString } from '@/core/localDate';
 import { inTransaction, repositories } from '@/data/repositories';
 import type { Habit, HabitLog, HabitLogStatus } from '@/domain/models';
+import { MAX_STREAK_FREEZES, shouldAwardFreeze } from '@/domain/freezeRewards';
 import { planStreakFreezes, type StatusByDate } from '@/domain/streaks';
 
 /** How much history the dashboard keeps in memory for streak maths. */
@@ -26,27 +27,37 @@ export function statusesByHabit(logs: readonly HabitLog[]): Map<string, Map<Loca
 export interface ReconcileResult {
   forgivenDays: number;
   freezesRemaining: number;
+  /** True when a perfect week just earned a new freeze. */
+  freezeAwarded: boolean;
 }
 
 /**
- * Applies smart streak freezes for days missed before `today`. Forgiven logs
- * and the freeze deduction are committed atomically.
+ * Runs once per dashboard load:
+ * 1. A perfect week (7 days ending yesterday) earns +1 freeze, up to the cap.
+ * 2. Missed days that interrupt a live streak are forgiven with freezes.
+ * Forgiven logs and the freeze deduction are committed atomically.
  */
 export async function reconcileStreakFreezes(
   habits: readonly Habit[],
   today: LocalDateString,
 ): Promise<ReconcileResult> {
   const settings = await repositories.settings.get();
-  if (settings.streakFreezesAvailable <= 0 || habits.length === 0) {
-    return { forgivenDays: 0, freezesRemaining: Math.max(0, settings.streakFreezesAvailable) };
+  if (habits.length === 0) {
+    return { forgivenDays: 0, freezesRemaining: Math.max(0, settings.streakFreezesAvailable), freezeAwarded: false };
   }
 
   const logs = await repositories.habitLogs.getInRange(historyStart(today), addDays(today, -1));
   const statuses: ReadonlyMap<string, StatusByDate> = statusesByHabit(logs);
-  const plan = planStreakFreezes(habits, statuses, today, settings.streakFreezesAvailable);
 
+  let freezes = settings.streakFreezesAvailable;
+  const freezeAwarded = shouldAwardFreeze(habits, statuses, today, freezes, settings.lastFreezeAwardDate);
+  if (freezeAwarded) {
+    freezes = await repositories.settings.awardStreakFreeze(today, MAX_STREAK_FREEZES);
+  }
+
+  const plan = planStreakFreezes(habits, statuses, today, freezes);
   if (plan.freezesUsed === 0) {
-    return { forgivenDays: 0, freezesRemaining: settings.streakFreezesAvailable };
+    return { forgivenDays: 0, freezesRemaining: freezes, freezeAwarded };
   }
 
   const freezesRemaining = await inTransaction('streaks.applyFreezes', async (repos) => {
@@ -56,5 +67,5 @@ export async function reconcileStreakFreezes(
     return repos.settings.consumeStreakFreezes(plan.freezesUsed);
   });
 
-  return { forgivenDays: plan.freezesUsed, freezesRemaining };
+  return { forgivenDays: plan.freezesUsed, freezesRemaining, freezeAwarded };
 }

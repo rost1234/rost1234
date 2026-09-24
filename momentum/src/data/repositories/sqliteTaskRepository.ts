@@ -13,13 +13,38 @@ export class SqliteTaskRepository implements TaskRepository {
     return guardDb('tasks.getForDate', async () => {
       const db = await this.db();
       const rows = await db.getAllAsync<TaskRow>(
-        `SELECT * FROM tasks
-         WHERE (is_completed = 0 AND (due_date IS NULL OR due_date <= ?))
-            OR (is_completed = 1 AND due_date = ?)
-         ORDER BY is_completed ASC, created_at ASC`,
-        [date, date],
+        'SELECT * FROM tasks WHERE due_date = ? ORDER BY is_completed ASC, created_at ASC',
+        [date],
       );
       return rows.map(mapTask);
+    });
+  }
+
+  getOverdue(date: LocalDateString): Promise<Task[]> {
+    return guardDb('tasks.getOverdue', async () => {
+      const db = await this.db();
+      const rows = await db.getAllAsync<TaskRow>(
+        'SELECT * FROM tasks WHERE is_completed = 0 AND due_date < ? ORDER BY due_date ASC, created_at ASC',
+        [date],
+      );
+      return rows.map(mapTask);
+    });
+  }
+
+  getBacklog(): Promise<Task[]> {
+    return guardDb('tasks.getBacklog', async () => {
+      const db = await this.db();
+      const rows = await db.getAllAsync<TaskRow>(
+        'SELECT * FROM tasks WHERE is_completed = 0 AND due_date IS NULL ORDER BY created_at ASC',
+      );
+      return rows.map(mapTask);
+    });
+  }
+
+  setDueDate(id: string, dueDate: LocalDateString | null): Promise<void> {
+    return guardDb('tasks.setDueDate', async () => {
+      const db = await this.db();
+      await db.runAsync('UPDATE tasks SET due_date = ? WHERE id = ?', [dueDate, id]);
     });
   }
 

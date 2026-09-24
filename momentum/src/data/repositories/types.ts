@@ -26,6 +26,8 @@ export interface SettingsRepository {
   setOnboardingCompleted(completed: boolean): Promise<void>;
   /** Atomically deducts `count` freezes (never below zero); returns the new balance. */
   consumeStreakFreezes(count: number): Promise<number>;
+  /** +1 freeze (capped at `max`) and records the award date; returns the new balance. */
+  awardStreakFreeze(on: LocalDateString, max: number): Promise<number>;
 }
 
 export interface HabitRepository {
@@ -55,8 +57,14 @@ export interface HabitLogRepository {
 }
 
 export interface TaskRepository {
-  /** Open tasks due on/before `date` (or undated) plus tasks completed on `date`. */
+  /** Every task (open or done) planned for exactly `date`. */
   getForDate(date: LocalDateString): Promise<Task[]>;
+  /** Open tasks planned for a day before `date` — they need a decision. */
+  getOverdue(date: LocalDateString): Promise<Task[]>;
+  /** Open, undated tasks ("Later"). */
+  getBacklog(): Promise<Task[]>;
+  /** Plans a task for a day, or `null` to move it to Later. */
+  setDueDate(id: string, dueDate: LocalDateString | null): Promise<void>;
   getAll(): Promise<Task[]>;
   create(input: NewTask): Promise<Task>;
   /** Completing a task re-dates it to `on` so it stays visible that day. */

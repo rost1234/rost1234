@@ -61,3 +61,13 @@ export function dailyProgressPercent(
   const total = counted.reduce((sum, item) => sum + completionRatio(item.habit, item.progress), 0);
   return Math.round((total / counted.length) * 100);
 }
+
+/**
+ * Re-evaluates a day's progress after the habit's target changed (edit). Skipped
+ * and forgiven days keep their status; counts are clamped for binary habits.
+ */
+export function reevaluateProgress(habit: ProgressHabit, current: LogProgress): LogProgress {
+  if (current.status === 'skipped' || current.status === 'forgiven') return current;
+  const currentCount = habit.isQuantitative ? current.currentCount : Math.min(1, current.currentCount);
+  return { currentCount, status: statusForCount(habit, currentCount) };
+}

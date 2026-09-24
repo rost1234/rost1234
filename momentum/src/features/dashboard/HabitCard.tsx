@@ -16,6 +16,7 @@ function openHabitMenu(habit: Habit, isSkipped: boolean) {
   const skipLabel = isSkipped ? 'Unskip today' : 'Skip today';
   const actions: { label: string; run: () => void; destructive?: boolean }[] = [
     { label: skipLabel, run: () => skipHabit(habit.id) },
+    { label: 'Edit habit', run: () => router.push({ pathname: '/habit/[id]', params: { id: habit.id } }) },
     { label: 'Reset today', run: () => undoHabitStep(habit.id) },
     {
       label: 'Archive habit',

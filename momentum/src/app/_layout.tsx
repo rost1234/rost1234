@@ -60,6 +60,8 @@ function Bootstrap() {
         options={{ presentation: 'modal', headerShown: true, title: 'Daily reflection' }}
       />
       <Stack.Screen name="habit/new" options={{ presentation: 'modal', headerShown: true, title: 'New habit' }} />
+      <Stack.Screen name="habit/[id]" options={{ presentation: 'modal', headerShown: true, title: 'Edit habit' }} />
+      <Stack.Screen name="review" options={{ presentation: 'modal', headerShown: true, title: 'Unfinished tasks' }} />
     </Stack>
   );
 }

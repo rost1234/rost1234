@@ -9,14 +9,19 @@ import { colors, spacing, typography } from '@/components/theme';
 import { dailyProgressPercent, progressOf } from '@/domain/habitProgress';
 import { habitsDueOn } from '@/domain/habitSchedule';
 import { useLocalDate } from '@/hooks/useLocalDate';
+import { useNow } from '@/hooks/useNow';
 import { useHabitStore } from '@/state/habitStore';
 import { useReflectionStore } from '@/state/reflectionStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { useTaskStore } from '@/state/taskStore';
 import { DashboardHeader } from './DashboardHeader';
+import { DecideCard } from './DecideCard';
 import { HabitCard } from './HabitCard';
+import { MoreSection } from './MoreSection';
 import { ReflectionPrompt } from './ReflectionPrompt';
 import { TaskList } from './TaskList';
+
+const EVENING_HOUR = 17;
 
 function useDashboardData(today: string) {
   const habits = useHabitStore((s) => s.habits);
@@ -35,8 +40,12 @@ export function DashboardScreen() {
   const status = useHabitStore((s) => s.status);
   const error = useHabitStore((s) => s.error);
   const forgivenDays = useHabitStore((s) => s.lastForgivenDays);
+  const freezeAwarded = useHabitStore((s) => s.lastFreezeAwarded);
   const clearError = useHabitStore((s) => s.clearError);
   const taskError = useTaskStore((s) => s.error);
+  const clearTaskError = useTaskStore((s) => s.clearError);
+  // The evening check-in only takes space on the main screen when it's relevant.
+  const isEvening = useNow(true, 60_000).getHours() >= EVENING_HOUR;
   const freezes = useSettingsStore((s) => s.settings?.streakFreezesAvailable ?? 0);
   const reflection = useReflectionStore((s) => s.byDate[today]);
   const { dueToday, percent, restCount } = useDashboardData(today);
@@ -69,7 +78,8 @@ export function DashboardScreen() {
         <DashboardHeader today={today} percent={percent} freezes={freezes} />
 
         {error ? <Banner message={error} onDismiss={clearError} /> : null}
-        {taskError ? <Banner message={taskError} /> : null}
+        {taskError ? <Banner message={taskError} onDismiss={clearTaskError} /> : null}
+        {freezeAwarded ? <Banner tone="info" message="🧊 Perfect week! You earned a streak freeze." /> : null}
         {forgivenDays > 0 ? (
           <Banner
             tone="info"
@@ -97,17 +107,20 @@ export function DashboardScreen() {
         ) : (
           dueToday.map((habit) => <HabitCard key={habit.id} habit={habit} />)
         )}
-        {restCount > 0 ? (
-          <Text style={[typography.caption, styles.rest]}>
-            {restCount} habit{restCount === 1 ? '' : 's'} not scheduled today
-          </Text>
-        ) : null}
 
-        <SectionTitle>Tasks</SectionTitle>
+        <DecideCard />
+
+        <SectionTitle>Today’s 3</SectionTitle>
         <TaskList />
 
-        <SectionTitle>Wind down</SectionTitle>
-        <ReflectionPrompt reflection={reflection} />
+        {isEvening ? (
+          <>
+            <SectionTitle>Wind down</SectionTitle>
+            <ReflectionPrompt reflection={reflection} />
+          </>
+        ) : null}
+
+        <MoreSection unscheduledCount={restCount} reflection={reflection} showReflection={!isEvening} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -118,5 +131,4 @@ const styles = StyleSheet.create({
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
   link: { ...typography.label, color: colors.primary },
   empty: { gap: spacing.md, alignItems: 'flex-start' },
-  rest: { marginTop: spacing.xs },
 });

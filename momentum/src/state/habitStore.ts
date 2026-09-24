@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { runDetached, toErrorMessage } from '@/core/errors';
 import type { LocalDateString } from '@/core/localDate';
 import { repositories } from '@/data/repositories';
-import { applyPrimaryAction, decrementProgress, progressOf, type LogProgress } from '@/domain/habitProgress';
+import { applyPrimaryAction, decrementProgress, progressOf, reevaluateProgress, type LogProgress } from '@/domain/habitProgress';
 import type { Habit, HabitLog, NewHabit } from '@/domain/models';
 import { computeStreak } from '@/domain/streaks';
 import { historyStart, reconcileStreakFreezes, statusesByHabit } from '@/services/streakService';
@@ -22,12 +22,15 @@ interface HabitState {
   /** Transient, user-facing error (e.g. a failed write that was rolled back). */
   error: string | null;
   lastForgivenDays: number;
+  lastFreezeAwarded: boolean;
 
   load: (today: LocalDateString) => Promise<void>;
   tapHabit: (habitId: string) => void;
   undoHabitStep: (habitId: string) => void;
   skipHabit: (habitId: string) => void;
   addHabit: (input: NewHabit) => Promise<void>;
+  /** Saves edits; today's log is re-evaluated against a changed target. Streak history is kept. */
+  updateHabit: (habitId: string, changes: NewHabit) => Promise<void>;
   archiveHabit: (habitId: string) => Promise<void>;
   clearError: () => void;
 }
@@ -110,6 +113,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
     status: 'idle',
     error: null,
     lastForgivenDays: 0,
+    lastFreezeAwarded: false,
 
     load: async (today) => {
       // Keep existing data visible during refreshes (e.g. midnight rollover).
@@ -127,6 +131,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
           status: 'ready',
           error: null,
           lastForgivenDays: reconcile.forgivenDays,
+          lastFreezeAwarded: reconcile.freezeAwarded,
         });
       } catch (error) {
         set({ status: 'error', error: toErrorMessage(error) });
@@ -167,6 +172,23 @@ export const useHabitStore = create<HabitState>((set, get) => {
         habits: [...get().habits, habit],
         streaks: { ...get().streaks, [habit.id]: today ? streakFor(habit, logs, today) : 0 },
       });
+    },
+
+    updateHabit: async (habitId, changes) => {
+      const current = get().habits.find((h) => h.id === habitId);
+      if (!current) return;
+      await repositories.habits.update(habitId, changes);
+      const updated = { ...current, ...changes, targetCount: changes.isQuantitative ? Math.max(1, changes.targetCount) : 1 };
+      const { today, logs } = get();
+      set({
+        habits: get().habits.map((h) => (h.id === habitId ? updated : h)),
+        streaks: { ...get().streaks, [habitId]: today ? streakFor(updated, logs, today) : 0 },
+      });
+
+      const log = today ? logs[habitId]?.[today] : undefined;
+      if (!log) return;
+      const next = reevaluateProgress(updated, progressOf(log));
+      if (next.status !== log.status || next.currentCount !== log.currentCount) commitProgress(habitId, next);
     },
 
     archiveHabit: async (habitId) => {

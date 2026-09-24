@@ -7,6 +7,7 @@ export interface AppSettingsRow {
   is_onboarding_completed: SqlBoolean;
   streak_freezes_available: number;
   created_at: string;
+  last_freeze_award_date: string | null;
 }
 
 export interface HabitRow {

@@ -10,6 +10,8 @@ export interface AppSettings {
   isOnboardingCompleted: boolean;
   streakFreezesAvailable: number;
   createdAt: string;
+  /** Local date of the last perfect-week freeze award. */
+  lastFreezeAwardDate: LocalDateString | null;
 }
 
 export interface Habit {
