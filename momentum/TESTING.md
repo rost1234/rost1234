@@ -21,6 +21,16 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] More ▸ shows Later tasks (→ Today / ✕) and, before 17:00, the reflection card
 - [ ] Long-press habit → Edit habit: change the target (e.g. 4 → 2) → today's card updates, streak kept
 
+## Phase 2 — home-screen widget
+- [ ] Long-press the home screen → Widgets → Momentum → "Momentum — Today" can be added
+- [ ] Widget shows today's date, % and today's habits (open ones first); resize taller → more rows
+- [ ] Tap a binary habit on the widget → ✓ and the % update within a second or two
+- [ ] Tap a count habit → 1/4 → 2/4 …
+- [ ] Open the app → the dashboard shows the same progress (and vice versa: tap in app → widget updates)
+- [ ] Tap the date/percent header → the app opens
+- [ ] Dark mode on the phone → widget switches to dark colours
+- [ ] Before onboarding, the widget says "Tap to set up"
+
 ## Core loop
 - [ ] Fresh install shows onboarding; completing it lands on Today with the chosen habits
 - [ ] Tapping a binary habit toggles instantly; a count habit goes 1/4 → 4/4 and turns green

@@ -6,6 +6,7 @@ import { applyPrimaryAction, decrementProgress, progressOf, reevaluateProgress, 
 import type { Habit, HabitLog, NewHabit } from '@/domain/models';
 import { computeStreak } from '@/domain/streaks';
 import { historyStart, reconcileStreakFreezes, statusesByHabit } from '@/services/streakService';
+import { refreshTodayWidget } from '@/widget/refreshWidget';
 import { useSettingsStore } from './settingsStore';
 
 type LoadStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -78,6 +79,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
       repositories.habitLogs
         .upsert({ habitId, logDate: today, currentCount: next.currentCount, status: next.status })
         .then((saved) => {
+          refreshTodayWidget();
           const current = get().logs[habitId]?.[today];
           if (current && current.id !== saved.id) {
             // Only swap in the real id; newer optimistic counts stay authoritative.
@@ -133,6 +135,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
           lastForgivenDays: reconcile.forgivenDays,
           lastFreezeAwarded: reconcile.freezeAwarded,
         });
+        refreshTodayWidget(0);
       } catch (error) {
         set({ status: 'error', error: toErrorMessage(error) });
       }
@@ -168,6 +171,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
     addHabit: async (input) => {
       const habit = await repositories.habits.create(input);
       const { today, logs } = get();
+      refreshTodayWidget();
       set({
         habits: [...get().habits, habit],
         streaks: { ...get().streaks, [habit.id]: today ? streakFor(habit, logs, today) : 0 },
@@ -178,6 +182,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
       const current = get().habits.find((h) => h.id === habitId);
       if (!current) return;
       await repositories.habits.update(habitId, changes);
+      refreshTodayWidget();
       const updated = { ...current, ...changes, targetCount: changes.isQuantitative ? Math.max(1, changes.targetCount) : 1 };
       const { today, logs } = get();
       set({
@@ -196,6 +201,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
       set({ habits: before.filter((h) => h.id !== habitId) });
       try {
         await repositories.habits.setArchived(habitId, true);
+        refreshTodayWidget();
       } catch (error) {
         set({ habits: before, error: `Couldn't archive habit. ${toErrorMessage(error)}` });
       }

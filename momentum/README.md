@@ -57,6 +57,8 @@ src/
 - **Today's 3**: at most 3 open tasks per day; extra tasks go to *Later*. Unfinished tasks from earlier days
   never roll over silently — a "Decide" card asks: Today / Later / Drop (bullet-journal migration).
 - **Freeze rewards**: 7 perfect days in a row (ending yesterday) earn +1 freeze, capped at 3; forgiven days never count.
+- **Home-screen widget (Android)**: `src/widget/` — headless task handler reads/writes SQLite directly, so habits can be
+  ticked without opening the app; the app refreshes the widget after changes and reloads when it returns to the foreground.
 - **Midnight**: the dashboard reloads automatically at local midnight and whenever the app returns to the foreground on a new day.
 
 ## Releases & updates

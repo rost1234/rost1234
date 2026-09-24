@@ -27,7 +27,25 @@
       "expo-router",
       "expo-sqlite",
       "expo-sharing",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "Today",
+              "label": "Momentum \u2014 Today",
+              "description": "Tick off today's habits from your home screen",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
+      ]
     ],
     "scheme": "momentum"
   }

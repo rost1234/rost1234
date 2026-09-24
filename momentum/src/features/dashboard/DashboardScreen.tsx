@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AppState, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { runDetached } from '@/core/errors';
@@ -58,6 +58,11 @@ export function DashboardScreen() {
 
   useEffect(() => {
     reload();
+    // Habits may have been ticked from the home-screen widget while we were away.
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') reload();
+    });
+    return () => subscription.remove();
   }, [reload]);
 
   if (status === 'idle' || status === 'loading') {
