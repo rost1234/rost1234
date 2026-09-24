@@ -48,6 +48,17 @@ jobs:
         run: npx expo prebuild --platform android --no-install
         env:
           CI: 1
+          # Increases every build so each APK installs as an update over the last.
+          ANDROID_VERSION_CODE: ${{ github.run_number }}
+
+      - name: Verify signing key is unchanged
+        # Every Momentum APK so far is signed with this key. If it ever changes,
+        # Android refuses the update and users would have to uninstall — which
+        # deletes all local data. Fail loudly instead of shipping that.
+        run: |
+          echo "${EXPECTED_KEYSTORE_SHA256}  android/app/debug.keystore" | sha256sum --check
+        env:
+          EXPECTED_KEYSTORE_SHA256: 221e0a3106aa4c3ccc154e0a418b55020b3f9ea6e84f92e8749cd9e2f39f5e58
 
       - name: Build release APK
         working-directory: momentum/android

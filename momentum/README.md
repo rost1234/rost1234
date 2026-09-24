@@ -42,7 +42,7 @@ src/
 | 3 · Dashboard & smart streaks | `features/dashboard/*`, `state/habitStore.ts`, `domain/streaks.ts`, `services/streakService.ts` |
 | 4 · Stateless focus timer | `domain/focusTimer.ts`, `state/focusStore.ts`, `features/focus/*` |
 | 5 · Reflection & analytics | `features/reflection/*`, `features/analytics/*`, `domain/analytics.ts` |
-| 6 · Polish | skeletons, `useLocalDate` midnight refresh, `services/backup.ts` JSON export, `guardDb` + route `ErrorBoundary` |
+| 6 · Polish | skeletons, `useLocalDate` midnight refresh, `services/backup.ts` JSON export + validated restore (with safety copy), `guardDb` + route `ErrorBoundary` |
 
 ## Key behaviours
 
@@ -55,3 +55,10 @@ src/
   `target − (now − start − paused)`, so backgrounding, locking or killing the app never drifts it. The completion
   notification is scheduled up-front, so it fires even when the app is suspended.
 - **Midnight**: the dashboard reloads automatically at local midnight and whenever the app returns to the foreground on a new day.
+
+## Releases & updates
+
+CI (`.github/workflows/momentum-android-apk.yml`) builds an APK on every push and publishes it as a GitHub release.
+`versionCode` = the workflow run number, so each build installs as an update. All builds are signed with the same
+key and CI refuses to build if that key changes — a key change would force an uninstall, which deletes local data.
+See `TESTING.md` for the on-device checklist.

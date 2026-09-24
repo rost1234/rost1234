@@ -13,6 +13,7 @@ import type {
   ReflectionInput,
   Task,
 } from '@/domain/models';
+import type { BackupTables } from '../backup/backupFormat';
 import type { TableName } from '../db/schema';
 
 /** The subset of the SQLite API repositories rely on (db or transaction). */
@@ -84,4 +85,6 @@ export type DatabaseSnapshot = Record<TableName, Record<string, unknown>[]>;
 
 export interface BackupRepository {
   exportAll(): Promise<DatabaseSnapshot>;
+  /** Replaces every table's contents. Must run inside a transaction. */
+  replaceAll(tables: BackupTables): Promise<void>;
 }

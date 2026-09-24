@@ -91,3 +91,63 @@ export const TABLES = [
 ] as const;
 
 export type TableName = (typeof TABLES)[number];
+
+export type ColumnType = 'text' | 'integer' | 'nullable_text';
+
+/**
+ * Column whitelist per table, used to validate and restore backups. Only these
+ * columns are ever written back, so a tampered file can't inject extra SQL.
+ */
+export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, ColumnType>>>> = {
+  app_settings: {
+    id: 'integer',
+    is_onboarding_completed: 'integer',
+    streak_freezes_available: 'integer',
+    created_at: 'text',
+  },
+  habits: {
+    id: 'text',
+    title: 'text',
+    micro_step: 'text',
+    is_quantitative: 'integer',
+    target_count: 'integer',
+    unit: 'text',
+    target_frequency: 'text',
+    target_days: 'text',
+    created_at: 'text',
+    is_archived: 'integer',
+  },
+  habit_logs: {
+    id: 'text',
+    habit_id: 'text',
+    log_date: 'text',
+    current_count: 'integer',
+    status: 'text',
+    updated_at: 'text',
+  },
+  tasks: {
+    id: 'text',
+    habit_id: 'nullable_text',
+    title: 'text',
+    is_completed: 'integer',
+    due_date: 'nullable_text',
+    created_at: 'text',
+  },
+  focus_sessions: {
+    id: 'text',
+    habit_id: 'nullable_text',
+    task_id: 'nullable_text',
+    start_time: 'text',
+    end_time: 'text',
+    duration_minutes: 'integer',
+    created_at: 'text',
+  },
+  daily_reflections: {
+    id: 'text',
+    log_date: 'text',
+    mood_score: 'integer',
+    gratitude_text: 'text',
+    lesson_text: 'text',
+    created_at: 'text',
+  },
+};
