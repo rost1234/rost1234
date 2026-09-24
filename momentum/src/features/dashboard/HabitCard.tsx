@@ -7,6 +7,7 @@ import { colors, radius, shadow, spacing, typography } from '@/components/theme'
 import { haptics } from '@/core/haptics';
 import { completionRatio, progressOf } from '@/domain/habitProgress';
 import type { Habit } from '@/domain/models';
+import { hasCompletionBefore } from '@/domain/streaks';
 import { useHabitStore } from '@/state/habitStore';
 
 interface HabitCardProps {
@@ -27,6 +28,7 @@ function openHabitMenu(habit: Habit, isSkipped: boolean) {
     ActionSheetIOS.showActionSheetWithOptions(
       {
         title: habit.title,
+        message: habit.why ? `Why: ${habit.why}` : undefined,
         options: [...actions.map((a) => a.label), 'Cancel'],
         destructiveButtonIndex: actions.findIndex((a) => a.destructive),
         cancelButtonIndex: actions.length,
@@ -35,7 +37,7 @@ function openHabitMenu(habit: Habit, isSkipped: boolean) {
     );
     return;
   }
-  Alert.alert(habit.title, undefined, [
+  Alert.alert(habit.title, habit.why ? `Why: ${habit.why}` : undefined, [
     ...actions.map((a) => ({ text: a.label, onPress: a.run, style: a.destructive ? ('destructive' as const) : ('default' as const) })),
     { text: 'Cancel', style: 'cancel' as const },
   ]);
@@ -59,6 +61,12 @@ function HabitCardComponent({ habit }: HabitCardProps) {
   // Each card subscribes only to its own slice, so a tap re-renders one card.
   const log = useHabitStore((s) => (s.today ? s.logs[habit.id]?.[s.today] : undefined));
   const streak = useHabitStore((s) => s.streaks[habit.id] ?? 0);
+  // "Fresh start" instead of a bare zero when the user is coming back after a break.
+  const isComeback = useHabitStore((s) => {
+    const byDate = s.logs[habit.id];
+    if (!s.today || !byDate || (s.streaks[habit.id] ?? 0) > 0) return false;
+    return hasCompletionBefore(new Map(Object.entries(byDate).map(([d, l]) => [d, l.status])), s.today);
+  });
   const tapHabit = useHabitStore((s) => s.tapHabit);
   const undoHabitStep = useHabitStore((s) => s.undoHabitStep);
 
@@ -111,6 +119,11 @@ function HabitCardComponent({ habit }: HabitCardProps) {
               <View style={styles.streak}>
                 <Ionicons name="flame" size={12} color={colors.warning} />
                 <Text style={styles.streakText}>{streak}</Text>
+              </View>
+            ) : isComeback && !isDone ? (
+              <View style={[styles.streak, styles.comeback]}>
+                <Ionicons name="leaf" size={12} color={colors.success} />
+                <Text style={[styles.streakText, { color: colors.success }]}>Fresh start</Text>
               </View>
             ) : null}
           </View>
@@ -198,6 +211,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.warningSoft,
   },
   streakText: { fontSize: 12, fontWeight: '700', color: colors.warning },
+  comeback: { backgroundColor: colors.successSoft },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.xs },
   count: { ...typography.caption, fontVariant: ['tabular-nums'] },
   actions: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginLeft: spacing.sm },

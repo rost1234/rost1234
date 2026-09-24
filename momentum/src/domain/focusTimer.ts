@@ -16,6 +16,19 @@ export interface PersistedTimer {
   taskId: string | null;
   /** Id of the scheduled "session complete" notification, if any. */
   notificationId: string | null;
+  /** Present for Pomodoro sessions: which phase this timer represents. */
+  pomodoro?: PomodoroPhase;
+  /** Notifications scheduled for later Pomodoro phase changes. */
+  extraNotificationIds?: string[];
+}
+
+export interface PomodoroPhase {
+  workMinutes: number;
+  breakMinutes: number;
+  totalCycles: number;
+  /** 1-based cycle number. */
+  cycle: number;
+  phase: 'work' | 'break';
 }
 
 export interface TimerSnapshot {
@@ -106,6 +119,21 @@ export function isPersistedTimer(value: unknown): value is PersistedTimer {
     nullableString(v.pausedAt) &&
     nullableString(v.habitId) &&
     nullableString(v.taskId) &&
-    nullableString(v.notificationId)
+    nullableString(v.notificationId) &&
+    (v.pomodoro === undefined || isPomodoroPhase(v.pomodoro)) &&
+    (v.extraNotificationIds === undefined ||
+      (Array.isArray(v.extraNotificationIds) && v.extraNotificationIds.every((id) => typeof id === 'string')))
+  );
+}
+
+function isPomodoroPhase(value: unknown): value is PomodoroPhase {
+  if (typeof value !== 'object' || value === null) return false;
+  const p = value as Record<string, unknown>;
+  return (
+    typeof p.workMinutes === 'number' &&
+    typeof p.breakMinutes === 'number' &&
+    typeof p.totalCycles === 'number' &&
+    typeof p.cycle === 'number' &&
+    (p.phase === 'work' || p.phase === 'break')
   );
 }

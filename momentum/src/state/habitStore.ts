@@ -24,6 +24,8 @@ interface HabitState {
   error: string | null;
   lastForgivenDays: number;
   lastFreezeAwarded: boolean;
+  /** Most recent user change, so it can be undone from a toast. */
+  lastChange: LastChange | null;
 
   load: (today: LocalDateString) => Promise<void>;
   tapHabit: (habitId: string) => void;
@@ -34,6 +36,26 @@ interface HabitState {
   updateHabit: (habitId: string, changes: NewHabit) => Promise<void>;
   archiveHabit: (habitId: string) => Promise<void>;
   clearError: () => void;
+  /** Restores the habit's state from before `lastChange`. */
+  undoLast: () => void;
+  dismissLastChange: () => void;
+}
+
+export interface LastChange {
+  habitId: string;
+  previous: LogProgress;
+  /** What happened, for the toast ("Done", "+1", "Skipped"…). */
+  label: string;
+  /** Unique per change so the toast restarts its timer. */
+  at: number;
+}
+
+function describeChange(before: LogProgress, after: LogProgress, unit: string): string {
+  if (after.status === 'skipped') return 'Skipped for today';
+  if (after.status === 'completed' && before.status !== 'completed') return 'Done ✓';
+  if (after.currentCount > before.currentCount) return `+1${unit ? ` ${unit}` : ''}`;
+  if (after.currentCount < before.currentCount || before.status === 'completed') return 'Undone';
+  return 'Updated';
 }
 
 function indexLogs(logs: readonly HabitLog[]): LogIndex {
@@ -58,12 +80,16 @@ export const useHabitStore = create<HabitState>((set, get) => {
    * Optimistic write: state is updated synchronously (UI reacts on the same
    * frame), then persisted. A failed write rolls back to the previous log.
    */
-  const commitProgress = (habitId: string, next: LogProgress): void => {
+  const commitProgress = (habitId: string, next: LogProgress, options: { recordUndo?: boolean } = {}): void => {
     const { today, logs, habits } = get();
     const habit = habits.find((h) => h.id === habitId);
     if (!today || !habit) return;
 
     const previous = logs[habitId]?.[today];
+    if (options.recordUndo) {
+      const before = progressOf(previous);
+      set({ lastChange: { habitId, previous: before, label: `${habit.title}: ${describeChange(before, next, habit.unit)}`, at: Date.now() } });
+    }
     const optimistic: HabitLog = {
       id: previous?.id ?? `pending-${habitId}-${today}`,
       habitId,
@@ -116,6 +142,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
     error: null,
     lastForgivenDays: 0,
     lastFreezeAwarded: false,
+    lastChange: null,
 
     load: async (today) => {
       // Keep existing data visible during refreshes (e.g. midnight rollover).
@@ -144,7 +171,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
     tapHabit: (habitId) => {
       const habit = get().habits.find((h) => h.id === habitId);
       const progress = currentProgress(habitId);
-      if (habit && progress) commitProgress(habitId, applyPrimaryAction(habit, progress));
+      if (habit && progress) commitProgress(habitId, applyPrimaryAction(habit, progress), { recordUndo: true });
     },
 
     undoHabitStep: (habitId) => {
@@ -154,6 +181,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
       commitProgress(
         habitId,
         habit.isQuantitative ? decrementProgress(habit, progress) : { currentCount: 0, status: 'in_progress' },
+        { recordUndo: true },
       );
     },
 
@@ -165,6 +193,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
         progress.status === 'skipped'
           ? { currentCount: progress.currentCount, status: 'in_progress' }
           : { currentCount: progress.currentCount, status: 'skipped' },
+        { recordUndo: true },
       );
     },
 
@@ -208,5 +237,14 @@ export const useHabitStore = create<HabitState>((set, get) => {
     },
 
     clearError: () => set({ error: null }),
+
+    undoLast: () => {
+      const change = get().lastChange;
+      if (!change) return;
+      set({ lastChange: null });
+      commitProgress(change.habitId, change.previous);
+    },
+
+    dismissLastChange: () => set({ lastChange: null }),
   };
 });

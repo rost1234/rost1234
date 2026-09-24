@@ -45,7 +45,8 @@ describe('migrations', () => {
     const settings = await r.settings.get();
     expect(settings).toMatchObject({ streakFreezesAvailable: 2, lastFreezeAwardDate: null, reflectionReminderMinutes: 1260 });
     expect((await r.tasks.getOverdue('2026-09-24')).map((t) => t.title)).toEqual(['kept']);
-    expect(LATEST_SCHEMA_VERSION).toBeGreaterThanOrEqual(3);
+    expect(LATEST_SCHEMA_VERSION).toBeGreaterThanOrEqual(4);
+    expect((await r.habits.create({ ...newHabit, why: ' energy ' })).why).toBe('energy');
   });
 });
 
@@ -68,8 +69,9 @@ describe('habits and logs', () => {
     const r = repos(createTestDatabase().executor);
     const habit = await r.habits.create(newHabit);
     expect(habit.title).toBe('Read');
-    await r.habits.update(habit.id, { targetCount: 5, targetFrequency: 'specific_days', targetDays: [3, 1, 1] });
-    expect(await r.habits.getById(habit.id)).toMatchObject({ targetCount: 5, targetDays: [1, 3] });
+    expect(habit.why).toBe('');
+    await r.habits.update(habit.id, { targetCount: 5, targetFrequency: 'specific_days', targetDays: [3, 1, 1], why: 'kids' });
+    expect(await r.habits.getById(habit.id)).toMatchObject({ targetCount: 5, targetDays: [1, 3], why: 'kids' });
     await r.habits.setArchived(habit.id, true);
     expect(await r.habits.getAll()).toHaveLength(0);
     expect(await r.habits.getAll({ includeArchived: true })).toHaveLength(1);

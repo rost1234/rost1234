@@ -94,10 +94,16 @@ CREATE TABLE IF NOT EXISTS app_usage (
 ALTER TABLE app_settings ADD COLUMN reflection_reminder_minutes INTEGER NULL DEFAULT 1260;
 `;
 
+/** v4: an optional personal "why" per habit, shown when motivation dips. */
+const MIGRATION_4 = `
+ALTER TABLE habits ADD COLUMN why TEXT NULL;
+`;
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, statements: MIGRATION_1 },
   { version: 2, statements: MIGRATION_2 },
   { version: 3, statements: MIGRATION_3 },
+  { version: 4, statements: MIGRATION_4 },
 ];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS.reduce((max, m) => Math.max(max, m.version), 0);
@@ -141,6 +147,7 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     target_days: 'text',
     created_at: 'text',
     is_archived: 'integer',
+    why: 'nullable_text',
   },
   habit_logs: {
     id: 'text',

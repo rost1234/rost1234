@@ -83,6 +83,16 @@ export async function scheduleFocusCompleteNotification(endsAt: Date, minutes: n
   });
 }
 
+/** One-shot focus-channel notification at `endsAt` (e.g. a Pomodoro phase change). */
+export async function scheduleFocusNotification(endsAt: Date, title: string, body: string): Promise<string | null> {
+  if (!(await hasPermission())) return null;
+  const seconds = Math.max(1, Math.round((endsAt.getTime() - Date.now()) / 1000));
+  return Notifications.scheduleNotificationAsync({
+    content: { title, body, sound: 'default' },
+    trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds, channelId: FOCUS_CHANNEL_ID },
+  });
+}
+
 export async function cancelNotification(id: string | null): Promise<void> {
   if (!id || Platform.OS === 'web') return;
   await Notifications.cancelScheduledNotificationAsync(id);

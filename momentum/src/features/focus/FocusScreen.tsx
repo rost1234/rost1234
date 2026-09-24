@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { setStatusBarStyle } from 'expo-status-bar';
@@ -8,6 +9,7 @@ import { Banner } from '@/components/ui';
 import { focusColors, radius, spacing } from '@/components/theme';
 import { runDetached } from '@/core/errors';
 import { computeSnapshot } from '@/domain/focusTimer';
+import { CLASSIC_POMODORO } from '@/domain/pomodoro';
 import { useNow } from '@/hooks/useNow';
 import { useFocusStore, type FocusLink } from '@/state/focusStore';
 import { useHabitStore } from '@/state/habitStore';
@@ -19,24 +21,24 @@ import { SoundPicker } from './SoundPicker';
 
 const DURATIONS = [15, 25, 45, 60] as const;
 
-function useLinkLabel(link: FocusLink): string | null {
+function useLinkLabel(link: FocusLink): { title: string | null; why: string | null } {
   const habit = useHabitStore((s) => (link.habitId ? s.habits.find((h) => h.id === link.habitId) : undefined));
   const task = useTaskStore((s) => (link.taskId ? s.tasks.find((t) => t.id === link.taskId) : undefined));
-  return habit?.title ?? task?.title ?? null;
+  return { title: habit?.title ?? task?.title ?? null, why: habit?.why ? habit.why : null };
 }
 
 function ActiveTimer() {
   const timer = useFocusStore((s) => s.timer);
-  const { pause, resume, finish, cancel } = useFocusStore.getState();
+  const { pause, resume, finish, cancel, onPhaseElapsed } = useFocusStore.getState();
   const now = useNow(timer !== null && timer.pausedAt === null);
-  const label = useLinkLabel({ habitId: timer?.habitId ?? null, taskId: timer?.taskId ?? null });
+  const { title: label, why } = useLinkLabel({ habitId: timer?.habitId ?? null, taskId: timer?.taskId ?? null });
 
   // Pure derivation from the persisted start time: correct after background/lock.
   const snapshot = timer ? computeSnapshot(timer, now) : null;
 
   useEffect(() => {
-    if (snapshot?.isFinished) runDetached(finish());
-  }, [snapshot?.isFinished, finish]);
+    if (snapshot?.isFinished) runDetached(onPhaseElapsed());
+  }, [snapshot?.isFinished, onPhaseElapsed]);
 
   if (!timer || !snapshot) return null;
 
@@ -50,10 +52,21 @@ function ActiveTimer() {
     <View style={styles.active}>
       <View style={styles.focusPill}>
         <Text style={styles.focusPillText} numberOfLines={1}>
-          {label ? `Focusing on ${label}` : 'Deep focus'}
+          {timer.pomodoro
+            ? `${timer.pomodoro.phase === 'work' ? 'Focus' : 'Break'} ${timer.pomodoro.cycle}/${timer.pomodoro.totalCycles}${label ? ` · ${label}` : ''}`
+            : label
+              ? `Focusing on ${label}`
+              : 'Deep focus'}
         </Text>
       </View>
-      <CircularTimer remainingSeconds={snapshot.remainingSeconds} progress={snapshot.progress} isPaused={snapshot.isPaused} />
+      {why ? <Text style={styles.why}>“{why}”</Text> : null}
+      <CircularTimer
+        remainingSeconds={snapshot.remainingSeconds}
+        progress={snapshot.progress}
+        isPaused={snapshot.isPaused}
+        isBreak={timer.pomodoro?.phase === 'break'}
+        caption={timer.pomodoro?.phase === 'break' ? 'Break — look away, stretch' : undefined}
+      />
       <View style={styles.controls}>
         {snapshot.isPaused ? (
           <FocusButton label="Resume" icon="play" variant="primary" onPress={() => runDetached(resume())} style={styles.grow} />
@@ -72,31 +85,56 @@ function TimerSetup({ initialHabitId }: { initialHabitId: string | null }) {
   const habits = useHabitStore((s) => s.habits);
   const tasks = useTaskStore((s) => s.tasks);
   const start = useFocusStore((s) => s.start);
-  const lastSession = useFocusStore((s) => s.lastSession);
+  const lastSummary = useFocusStore((s) => s.lastSummary);
   const dismissSummary = useFocusStore((s) => s.dismissSummary);
   const [minutes, setMinutes] = useState<number>(25);
+  const [pomodoro, setPomodoro] = useState(false);
   const [link, setLink] = useState<FocusLink>({ habitId: initialHabitId, taskId: null });
 
   return (
     <View style={styles.setup}>
-      {lastSession ? (
+      {lastSummary ? (
         <View style={styles.summary}>
-          <Text style={styles.summaryTitle}>Session logged 🎉</Text>
-          <Text style={styles.summaryText}>{lastSession.durationMinutes} minutes of focus saved.</Text>
+          <Text style={styles.summaryTitle}>{lastSummary.minutes > 0 ? 'Session logged 🎉' : 'Session ended'}</Text>
+          <Text style={styles.summaryText}>
+            {lastSummary.minutes > 0
+              ? `${lastSummary.minutes} minutes of focus saved${lastSummary.blocks > 1 ? ` across ${lastSummary.blocks} blocks` : ''}.`
+              : 'Less than a minute — nothing logged.'}
+          </Text>
           <FocusButton label="Done" onPress={dismissSummary} />
         </View>
       ) : null}
 
-      <CircularTimer remainingSeconds={minutes * 60} progress={0} isPaused={false} caption="Ready" size={230} />
+      <CircularTimer
+        remainingSeconds={(pomodoro ? CLASSIC_POMODORO.workMinutes : minutes) * 60}
+        progress={0}
+        isPaused={false}
+        caption={pomodoro ? `Pomodoro · ${CLASSIC_POMODORO.totalCycles} blocks` : 'Ready'}
+        size={230}
+      />
 
       <View style={styles.block}>
-        <FocusLabel>Duration</FocusLabel>
+        <FocusLabel>Mode</FocusLabel>
         <View style={styles.durations}>
-          {DURATIONS.map((d) => (
-            <FocusChip key={d} label={`${d} min`} selected={minutes === d} onPress={() => setMinutes(d)} />
-          ))}
+          <FocusChip label="Single session" selected={!pomodoro} onPress={() => setPomodoro(false)} />
+          <FocusChip
+            label={`Pomodoro ${CLASSIC_POMODORO.workMinutes}/${CLASSIC_POMODORO.breakMinutes} ×${CLASSIC_POMODORO.totalCycles}`}
+            selected={pomodoro}
+            onPress={() => setPomodoro(true)}
+          />
         </View>
       </View>
+
+      {!pomodoro ? (
+        <View style={styles.block}>
+          <FocusLabel>Duration</FocusLabel>
+          <View style={styles.durations}>
+            {DURATIONS.map((d) => (
+              <FocusChip key={d} label={`${d} min`} selected={minutes === d} onPress={() => setMinutes(d)} />
+            ))}
+          </View>
+        </View>
+      ) : null}
 
       <LinkSelector habits={habits} tasks={tasks} value={link} onChange={setLink} />
       <SoundPicker isPlaying={false} />
@@ -105,10 +143,28 @@ function TimerSetup({ initialHabitId }: { initialHabitId: string | null }) {
         label="Start focus"
         icon="play"
         variant="primary"
-        onPress={() => runDetached(start(minutes, link))}
+        onPress={() => runDetached(start(minutes, link, { pomodoro }))}
         style={styles.fullWidth}
       />
+      <DndHint />
     </View>
+  );
+}
+
+/** Android can't toggle Do Not Disturb without a special permission, so we open its settings. */
+function DndHint() {
+  if (Platform.OS !== 'android') return null;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Open Do Not Disturb settings"
+      onPress={() => runDetached(Linking.sendIntent('android.settings.ZEN_MODE_SETTINGS'))}
+      style={styles.dnd}
+      hitSlop={8}
+    >
+      <Ionicons name="moon-outline" size={16} color={focusColors.textMuted} />
+      <Text style={styles.dndText}>Turn on Do Not Disturb for fewer interruptions</Text>
+    </Pressable>
   );
 }
 
@@ -160,6 +216,7 @@ const styles = StyleSheet.create({
     backgroundColor: focusColors.surface,
   },
   focusPillText: { color: focusColors.text, fontSize: 14, fontWeight: '600' },
+  why: { color: focusColors.textMuted, fontSize: 14, fontStyle: 'italic', textAlign: 'center', marginTop: -spacing.md },
   controls: { flexDirection: 'row', gap: spacing.md, alignSelf: 'stretch' },
   grow: { flex: 1 },
   setup: { alignItems: 'center', gap: spacing.xl },
@@ -175,4 +232,6 @@ const styles = StyleSheet.create({
   summaryTitle: { color: focusColors.text, fontSize: 18, fontWeight: '700' },
   summaryText: { color: focusColors.textMuted, fontSize: 15 },
   fullWidth: { alignSelf: 'stretch' },
+  dnd: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  dndText: { color: focusColors.textMuted, fontSize: 13, textDecorationLine: 'underline' },
 });

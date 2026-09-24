@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import { AppState, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AppState, Pressable, RefreshControl, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { runDetached } from '@/core/errors';
 import { DashboardSkeleton } from '@/components/Skeleton';
+import { Toast } from '@/components/Toast';
 import { Banner, Button, SectionTitle } from '@/components/ui';
 import { colors, spacing, typography } from '@/components/theme';
 import { dailyProgressPercent, progressOf } from '@/domain/habitProgress';
@@ -14,8 +15,10 @@ import { useHabitStore } from '@/state/habitStore';
 import { useReflectionStore } from '@/state/reflectionStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { useTaskStore } from '@/state/taskStore';
+import { CoachMarks } from './CoachMarks';
 import { DashboardHeader } from './DashboardHeader';
 import { DecideCard } from './DecideCard';
+import { EmptyHabits } from './EmptyHabits';
 import { HabitCard } from './HabitCard';
 import { MoreSection } from './MoreSection';
 import { ReflectionPrompt } from './ReflectionPrompt';
@@ -46,6 +49,9 @@ export function DashboardScreen() {
   const forgivenDays = useHabitStore((s) => s.lastForgivenDays);
   const freezeAwarded = useHabitStore((s) => s.lastFreezeAwarded);
   const clearError = useHabitStore((s) => s.clearError);
+  const lastChange = useHabitStore((s) => s.lastChange);
+  const undoLast = useHabitStore((s) => s.undoLast);
+  const dismissLastChange = useHabitStore((s) => s.dismissLastChange);
   const taskError = useTaskStore((s) => s.error);
   const clearTaskError = useTaskStore((s) => s.clearError);
   // The evening check-in only takes space on the main screen when it's relevant.
@@ -94,6 +100,7 @@ export function DashboardScreen() {
           freezes={freezes}
         />
 
+        <CoachMarks />
         {error ? <Banner message={error} onDismiss={clearError} /> : null}
         {taskError ? <Banner message={taskError} onDismiss={clearTaskError} /> : null}
         {freezeAwarded ? <Banner tone="info" message="🧊 Perfect week! You earned a streak freeze." /> : null}
@@ -117,10 +124,7 @@ export function DashboardScreen() {
         {status === 'error' && dueToday.length === 0 ? (
           <Button label="Retry" variant="secondary" onPress={reload} />
         ) : dueToday.length === 0 ? (
-          <View style={styles.empty}>
-            <Text style={typography.body}>Nothing scheduled today.</Text>
-            <Button label="Add a habit" variant="secondary" onPress={() => router.push('/habit/new')} />
-          </View>
+          <EmptyHabits hasAnyHabits={restCount > 0} />
         ) : (
           dueToday.map((habit) => <HabitCard key={habit.id} habit={habit} />)
         )}
@@ -139,6 +143,15 @@ export function DashboardScreen() {
 
         <MoreSection unscheduledCount={restCount} reflection={reflection} showReflection={!isEvening} />
       </ScrollView>
+      {lastChange ? (
+        <Toast
+          id={lastChange.at}
+          message={lastChange.label}
+          actionLabel="Undo"
+          onAction={undoLast}
+          onHide={dismissLastChange}
+        />
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -147,5 +160,4 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
   link: { ...typography.label, color: colors.primary },
-  empty: { gap: spacing.md, alignItems: 'flex-start' },
 });

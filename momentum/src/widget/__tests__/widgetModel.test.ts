@@ -13,6 +13,7 @@ const habit = (id: string, extra: Partial<Habit> = {}): Habit => ({
   targetDays: [],
   createdAt: '2026-09-01T08:00:00',
   isArchived: false,
+  why: '',
   ...extra,
 });
 const log = (habitId: string, currentCount: number, status: HabitLog['status']): HabitLog => ({

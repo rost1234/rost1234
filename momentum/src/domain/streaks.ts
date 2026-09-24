@@ -47,6 +47,14 @@ export function computeStreak(
   return streak;
 }
 
+/** True when the habit was completed at least once before `date` (for "fresh start" copy). */
+export function hasCompletionBefore(statuses: StatusByDate, date: LocalDateString): boolean {
+  for (const [logDate, status] of statuses) {
+    if (logDate < date && status === 'completed') return true;
+  }
+  return false;
+}
+
 export interface FreezePlanItem {
   habitId: string;
   /** Missed dates that should be written as `forgiven`. */

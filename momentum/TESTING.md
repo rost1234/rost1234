@@ -54,6 +54,19 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Focus tab: dark screen, light status bar; other tabs go back to a dark status bar
 - [ ] Tab bar icons; the active tab has a highlighted pill (dark variant on Focus)
 
+## Wave 1 — quick wins
+- [ ] Tap a habit → a dark toast "Water: +1 glasses · UNDO" appears for ~4 s; UNDO restores the previous state
+- [ ] First launch after update: 3 tips on Today (Next / Skip); they never come back after "Got it"
+- [ ] With no habits: 3 one-tap starters appear; tapping one adds it immediately
+- [ ] New habit → "Start from a template": Sleep / Study / Fitness / ADHD groups pre-fill the form
+- [ ] "Why it matters" field saves; long-press the habit shows "Why: …"; Focus on that habit shows the quote
+- [ ] A habit with past completions but a broken streak shows a green "Fresh start" badge
+- [ ] Insights heatmap cells show ✓ ◐ ❄ – · symbols (legend too)
+- [ ] Settings → "Your data stays on this phone" expands to the stored / never-collected lists
+- [ ] Focus → Mode "Pomodoro 25/5 ×4": ring turns green in breaks, pill shows "Focus 1/4" / "Break 1/4";
+      close the app for 35 min and reopen → it has moved on correctly; notifications fire at each change
+- [ ] Focus → "Turn on Do Not Disturb" opens the system DND settings
+
 ## Core loop
 - [ ] Fresh install shows onboarding; completing it lands on Today with the chosen habits
 - [ ] Tapping a binary habit toggles instantly; a count habit goes 1/4 → 4/4 and turns green

@@ -22,6 +22,7 @@ export interface HabitRow {
   target_days: string;
   created_at: string;
   is_archived: SqlBoolean;
+  why: string | null;
 }
 
 export interface HabitLogRow {

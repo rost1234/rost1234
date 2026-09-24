@@ -13,6 +13,27 @@ const CELL_COLOR: Record<HeatCellState, string> = {
   not_scheduled: 'transparent',
 };
 
+/** Every state also has a symbol, so meaning never depends on color alone. */
+const CELL_SYMBOL: Record<HeatCellState, string> = {
+  completed: '✓',
+  partial: '◐',
+  forgiven: '❄',
+  missed: '·',
+  skipped: '–',
+  pending: '',
+  not_scheduled: '',
+};
+
+const CELL_INK: Record<HeatCellState, string> = {
+  completed: '#FFFFFF',
+  partial: '#14532D',
+  forgiven: '#FFFFFF',
+  missed: colors.danger,
+  skipped: colors.textMuted,
+  pending: colors.textMuted,
+  not_scheduled: colors.textMuted,
+};
+
 const LEGEND: { state: HeatCellState; label: string }[] = [
   { state: 'completed', label: 'Done' },
   { state: 'partial', label: 'Partial' },
@@ -24,6 +45,7 @@ const LEGEND: { state: HeatCellState; label: string }[] = [
 const LABEL_WIDTH = 96;
 
 function Cell({ state, size }: { state: HeatCellState; size: number }) {
+  const symbol = CELL_SYMBOL[state];
   return (
     <View
       style={[
@@ -31,7 +53,16 @@ function Cell({ state, size }: { state: HeatCellState; size: number }) {
         { width: size, height: size, backgroundColor: CELL_COLOR[state] },
         state === 'not_scheduled' && styles.cellEmpty,
       ]}
-    />
+    >
+      {symbol && size >= 12 ? (
+        <Text
+          style={[styles.symbol, { fontSize: Math.round(size * 0.6), lineHeight: size, color: CELL_INK[state] }]}
+          allowFontScaling={false}
+        >
+          {symbol}
+        </Text>
+      ) : null}
+    </View>
   );
 }
 
@@ -98,7 +129,8 @@ export function Heatmap({ rows, dates }: { rows: readonly HeatRow[]; dates: read
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  cell: { borderRadius: radius.sm / 2 },
+  cell: { borderRadius: radius.sm / 2, alignItems: 'center', justifyContent: 'center' },
+  symbol: { fontWeight: '800', textAlign: 'center' },
   cellEmpty: { borderWidth: 1, borderColor: colors.surfaceMuted },
   dayLabel: { ...typography.caption, fontSize: 11, textAlign: 'center' },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },

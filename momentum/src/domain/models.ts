@@ -28,9 +28,11 @@ export interface Habit {
   targetDays: Weekday[];
   createdAt: string;
   isArchived: boolean;
+  /** Personal reason for the habit (optional, may be empty). */
+  why: string;
 }
 
-export type NewHabit = Omit<Habit, 'id' | 'createdAt' | 'isArchived'>;
+export type NewHabit = Omit<Habit, 'id' | 'createdAt' | 'isArchived' | 'why'> & { why?: string };
 
 export interface HabitLog {
   id: string;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { toErrorMessage } from '@/core/errors';
@@ -7,6 +7,7 @@ import { Banner, Button, Card, SectionTitle } from '@/components/ui';
 import { colors, spacing, typography } from '@/components/theme';
 import { exportBackup, pickBackupFile, restoreBackup, type PendingImport } from '@/services/backup';
 import { reloadAllData } from '@/state/reloadAll';
+import { DataTransparency } from './DataTransparency';
 import { ReminderSetting } from './ReminderSetting';
 import { useSettingsStore } from '@/state/settingsStore';
 
@@ -84,6 +85,8 @@ export function SettingsScreen() {
         <ReminderSetting />
 
         <SectionTitle>Your data</SectionTitle>
+        <DataTransparency />
+        <View style={{ height: spacing.md }} />
         <Card style={styles.card}>
           <Text style={typography.body}>
             Everything lives only on this device. No account, no servers, no tracking.

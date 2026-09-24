@@ -6,7 +6,9 @@ import { weekdayLabel, type Weekday } from '@/core/localDate';
 import { Banner, Button, Chip } from '@/components/ui';
 import { colors, radius, spacing, typography } from '@/components/theme';
 import { ALL_WEEKDAYS, type Habit, type NewHabit, type TargetFrequency } from '@/domain/models';
+import type { HabitPreset } from '@/domain/presets';
 import { useHabitStore } from '@/state/habitStore';
+import { TemplatePicker } from './TemplatePicker';
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -23,6 +25,7 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
   const updateHabit = useHabitStore((s) => s.updateHabit);
   const [title, setTitle] = useState(habit?.title ?? '');
   const [microStep, setMicroStep] = useState(habit?.microStep ?? '');
+  const [why, setWhy] = useState(habit?.why ?? '');
   const [isQuantitative, setIsQuantitative] = useState(habit?.isQuantitative ?? false);
   const [targetText, setTargetText] = useState(habit?.isQuantitative ? String(habit.targetCount) : '4');
   const [unit, setUnit] = useState(habit?.unit ?? '');
@@ -39,6 +42,16 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
     (!isQuantitative || (Number.isFinite(targetCount) && targetCount >= 1 && targetCount <= 999)) &&
     (frequency === 'daily' || days.length > 0);
 
+  const applyTemplate = ({ habit: t }: HabitPreset) => {
+    setTitle(t.title);
+    setMicroStep(t.microStep);
+    setIsQuantitative(t.isQuantitative);
+    setTargetText(String(t.isQuantitative ? t.targetCount : 4));
+    setUnit(t.unit);
+    setFrequency(t.targetFrequency);
+    if (t.targetFrequency === 'specific_days') setDays(t.targetDays);
+  };
+
   const toggleDay = (day: Weekday) =>
     setDays((current) => (current.includes(day) ? current.filter((d) => d !== day) : [...current, day]));
 
@@ -52,6 +65,7 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
       unit: isQuantitative ? unit.trim() : '',
       targetFrequency: frequency,
       targetDays: frequency === 'specific_days' ? days : [],
+      why: why.trim(),
     };
     setIsSaving(true);
     try {
@@ -68,6 +82,7 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {error ? <Banner message={error} onDismiss={() => setError(null)} /> : null}
+        {!habit ? <TemplatePicker onPick={applyTemplate} /> : null}
         <Field label="Habit">
           <TextInput
             value={title}
@@ -85,6 +100,15 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
             placeholder="e.g. Roll out the mat"
             style={styles.input}
             maxLength={100}
+          />
+        </Field>
+        <Field label="Why it matters to you (optional)">
+          <TextInput
+            value={why}
+            onChangeText={setWhy}
+            placeholder="e.g. So I have energy to play with my kids"
+            style={styles.input}
+            maxLength={120}
           />
         </Field>
 

@@ -27,6 +27,7 @@ const water: Habit = {
   targetDays: [],
   createdAt: '2026-09-01T08:00:00',
   isArchived: false,
+  why: '',
 };
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -56,5 +57,19 @@ describe('habitStore optimistic updates', () => {
     await flush();
     expect(useHabitStore.getState().logs.water?.[TODAY]).toBeUndefined();
     expect(useHabitStore.getState().error).toContain('disk full');
+  });
+});
+
+describe('habitStore undo', () => {
+  it('records the last change and restores the previous state', async () => {
+    mockUpsert.mockResolvedValue({ id: 'db-1', habitId: 'water', logDate: TODAY, currentCount: 1, status: 'in_progress', updatedAt: 'x' });
+    useHabitStore.getState().tapHabit('water');
+    useHabitStore.getState().tapHabit('water');
+    expect(useHabitStore.getState().lastChange?.label).toBe('Water: Done ✓');
+
+    useHabitStore.getState().undoLast();
+    expect(useHabitStore.getState().logs.water?.[TODAY]).toMatchObject({ currentCount: 1, status: 'in_progress' });
+    expect(useHabitStore.getState().lastChange).toBeNull();
+    await flush();
   });
 });

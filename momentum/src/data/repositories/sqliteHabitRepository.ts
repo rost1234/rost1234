@@ -17,6 +17,7 @@ function toColumns(changes: Partial<NewHabit>): [string, ColumnValue][] {
   if (changes.unit !== undefined) columns.push(['unit', changes.unit.trim()]);
   if (changes.targetFrequency !== undefined) columns.push(['target_frequency', changes.targetFrequency]);
   if (changes.targetDays !== undefined) columns.push(['target_days', serializeWeekdays(changes.targetDays)]);
+  if (changes.why !== undefined) columns.push(['why', changes.why.trim()]);
   return columns;
 }
 
@@ -26,14 +27,15 @@ async function insertHabit(db: SqlExecutor, input: NewHabit): Promise<Habit> {
     title: input.title.trim(),
     microStep: input.microStep.trim(),
     unit: input.unit.trim(),
+    why: (input.why ?? '').trim(),
     targetCount: input.isQuantitative ? Math.max(1, Math.trunc(input.targetCount)) : 1,
     id: createId(),
     createdAt: nowIso(),
     isArchived: false,
   };
   await db.runAsync(
-    `INSERT INTO habits (id, title, micro_step, is_quantitative, target_count, unit, target_frequency, target_days, created_at, is_archived)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+    `INSERT INTO habits (id, title, micro_step, is_quantitative, target_count, unit, target_frequency, target_days, created_at, is_archived, why)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
     [
       habit.id,
       habit.title,
@@ -44,6 +46,7 @@ async function insertHabit(db: SqlExecutor, input: NewHabit): Promise<Habit> {
       habit.targetFrequency,
       serializeWeekdays(habit.targetDays),
       habit.createdAt,
+      habit.why,
     ],
   );
   return habit;

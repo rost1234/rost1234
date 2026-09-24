@@ -70,6 +70,7 @@ export const mapHabit = (row: HabitRow): Habit => ({
   targetDays: parseWeekdays(row.target_days),
   createdAt: row.created_at,
   isArchived: fromSqlBoolean(row.is_archived),
+  why: row.why ?? '',
 });
 
 export const mapHabitLog = (row: HabitLogRow): HabitLog => ({

@@ -1,22 +1,11 @@
 import { create } from 'zustand';
 import { toErrorMessage } from '@/core/errors';
 import { repositories } from '@/data/repositories';
-import {
-  computeSnapshot,
-  createTimer,
-  focusedMinutes,
-  pauseTimer,
-  projectedEndDate,
-  resumeTimer,
-  type PersistedTimer,
-} from '@/domain/focusTimer';
-import type { FocusSession } from '@/domain/models';
-import {
-  cancelNotification,
-  scheduleFocusCompleteNotification,
-} from '@/services/notifications';
-import { clearTimer, loadTimer, saveTimer } from '@/services/timerStorage';
+import { computeSnapshot, createTimer, focusedMinutes, pauseTimer, resumeTimer, type PersistedTimer } from '@/domain/focusTimer';
+import { CLASSIC_POMODORO, advanceFinishedPhases, firstPhase } from '@/domain/pomodoro';
 import { pauseFocusSound, playFocusSound, stopFocusSound } from '@/services/focusSoundPlayer';
+import { cancelTimerNotifications, scheduleTimerNotifications } from '@/services/timerNotifications';
+import { clearTimer, loadTimer, saveTimer } from '@/services/timerStorage';
 import { useFocusSoundStore } from './focusSoundStore';
 
 /** Plays the preferred focus sound (if any) — never lets audio errors break the timer. */
@@ -34,24 +23,36 @@ export interface FocusLink {
   taskId: string | null;
 }
 
+export interface FocusSummary {
+  minutes: number;
+  blocks: number;
+}
+
 interface FocusState {
   timer: PersistedTimer | null;
   isHydrated: boolean;
-  /** Most recently logged session, for the completion summary. */
-  lastSession: FocusSession | null;
+  /** What the last finished session logged, for the completion card. */
+  lastSummary: FocusSummary | null;
   error: string | null;
 
   hydrate: () => Promise<void>;
-  start: (minutes: number, link: FocusLink) => Promise<void>;
+  start: (minutes: number, link: FocusLink, options?: { pomodoro?: boolean }) => Promise<void>;
   pause: () => Promise<void>;
   resume: () => Promise<void>;
   cancel: () => Promise<void>;
-  /** Ends the session (early or on time) and logs it to SQLite. */
+  /** Ends the whole session now (early or on time) and logs focused time. */
   finish: () => Promise<void>;
+  /** Called when the current phase ran out: rolls a Pomodoro forward or finishes. */
+  onPhaseElapsed: () => Promise<void>;
   dismissSummary: () => void;
 }
 
-let finishing = false;
+let busy = false;
+
+async function logWork(timer: PersistedTimer, startTime: string, endTime: string, minutes: number): Promise<void> {
+  if (minutes <= 0) return;
+  await repositories.focusSessions.create({ habitId: timer.habitId, taskId: timer.taskId, startTime, endTime, durationMinutes: minutes });
+}
 
 export const useFocusStore = create<FocusState>((set, get) => {
   const persist = async (timer: PersistedTimer): Promise<void> => {
@@ -67,33 +68,46 @@ export const useFocusStore = create<FocusState>((set, get) => {
     }
   };
 
+  /** Clears the running timer first so a crash can never double-log. */
+  const clearRunning = async (): Promise<void> => {
+    set({ timer: null });
+    stopFocusSound();
+    await clearTimer();
+  };
+
+  /** Sound only plays during focus phases, not during Pomodoro breaks. */
+  const syncSound = async (timer: PersistedTimer): Promise<void> => {
+    if (timer.pausedAt) return;
+    if (timer.pomodoro?.phase === 'break') pauseFocusSound();
+    else await startPreferredSound();
+  };
+
   return {
     timer: null,
     isHydrated: false,
-    lastSession: null,
+    lastSummary: null,
     error: null,
 
     hydrate: () =>
       withError(async () => {
         const timer = await loadTimer();
         set({ timer, isHydrated: true });
-        // A session that ended while the app was closed is logged on resume.
-        if (timer && computeSnapshot(timer).isFinished) await get().finish();
-        else if (timer && !timer.pausedAt) {
-          await useFocusSoundStore.getState().hydrate();
-          await startPreferredSound();
-        }
+        await useFocusSoundStore.getState().hydrate();
+        // Anything that ended while the app was closed is logged / rolled forward now.
+        if (timer && computeSnapshot(timer).isFinished) await get().onPhaseElapsed();
+        else if (timer) await syncSound(timer);
       }).finally(() => set({ isHydrated: true })),
 
-    start: (minutes, link) =>
+    start: (minutes, link, options = {}) =>
       withError(async () => {
         const previous = get().timer;
-        if (previous) await cancelNotification(previous.notificationId);
-        const timer = createTimer(minutes, link);
-        await persist(timer); // persisted *before* scheduling: the clock is the source of truth
-        const notificationId = await scheduleFocusCompleteNotification(projectedEndDate(timer), minutes);
-        await persist({ ...timer, notificationId });
-        set({ lastSession: null, error: null });
+        if (previous) await cancelTimerNotifications(previous);
+        const base = options.pomodoro
+          ? { ...createTimer(CLASSIC_POMODORO.workMinutes, link), pomodoro: firstPhase(CLASSIC_POMODORO) }
+          : createTimer(minutes, link);
+        await persist(base); // persisted *before* scheduling: the clock is the source of truth
+        await persist({ ...base, ...(await scheduleTimerNotifications(base)) });
+        set({ lastSummary: null, error: null });
         await startPreferredSound();
       }),
 
@@ -101,9 +115,9 @@ export const useFocusStore = create<FocusState>((set, get) => {
       withError(async () => {
         const timer = get().timer;
         if (!timer || timer.pausedAt) return;
-        await persist({ ...pauseTimer(timer), notificationId: null });
+        await persist({ ...pauseTimer(timer), notificationId: null, extraNotificationIds: [] });
         pauseFocusSound();
-        await cancelNotification(timer.notificationId);
+        await cancelTimerNotifications(timer);
       }),
 
     resume: () =>
@@ -113,58 +127,73 @@ export const useFocusStore = create<FocusState>((set, get) => {
         const resumed = resumeTimer(timer);
         await persist(resumed);
         // Re-reads the preference, so a sound picked while paused starts now.
-        await startPreferredSound();
-        const notificationId = await scheduleFocusCompleteNotification(
-          projectedEndDate(resumed),
-          resumed.targetDurationMinutes,
-        );
-        await persist({ ...resumed, notificationId });
+        await syncSound(resumed);
+        await persist({ ...resumed, ...(await scheduleTimerNotifications(resumed)) });
       }),
 
     cancel: () =>
       withError(async () => {
         const timer = get().timer;
-        set({ timer: null });
-        stopFocusSound();
-        await clearTimer();
-        if (timer) await cancelNotification(timer.notificationId);
+        await clearRunning();
+        if (timer) await cancelTimerNotifications(timer);
       }),
 
     finish: async () => {
       const timer = get().timer;
-      if (!timer || finishing) return;
-      finishing = true;
+      if (!timer || busy) return;
+      busy = true;
       try {
         const snapshot = computeSnapshot(timer);
-        const minutes = focusedMinutes(snapshot);
-        // Clear first so a crash mid-write can never double-log the session.
-        set({ timer: null });
-        stopFocusSound();
-        await clearTimer();
-
-        let session: FocusSession | null = null;
-        if (minutes > 0) {
-          const endTime = new Date(new Date(timer.startTime).getTime() + timer.pausedAccumulatedMs + snapshot.elapsedSeconds * 1000);
-          session = await repositories.focusSessions.create({
-            habitId: timer.habitId,
-            taskId: timer.taskId,
-            startTime: timer.startTime,
-            endTime: endTime.toISOString(),
-            durationMinutes: minutes,
-          });
-        }
-
-        // On-time finishes are announced by the already-scheduled notification
-        // (it fires even when backgrounded); early finishes cancel it.
-        if (!snapshot.isFinished) await cancelNotification(timer.notificationId);
-        set({ lastSession: session, error: null });
+        await clearRunning();
+        // A Pomodoro break isn't focus time; any other phase logs what was done.
+        const isBreak = timer.pomodoro?.phase === 'break';
+        const minutes = isBreak ? 0 : focusedMinutes(snapshot);
+        const endTime = new Date(new Date(timer.startTime).getTime() + timer.pausedAccumulatedMs + snapshot.elapsedSeconds * 1000);
+        await logWork(timer, timer.startTime, endTime.toISOString(), minutes);
+        // On-time single sessions are announced by the scheduled notification; everything else is cancelled.
+        if (!snapshot.isFinished || timer.pomodoro) await cancelTimerNotifications(timer);
+        const previous = get().lastSummary;
+        set({
+          lastSummary: { minutes: (previous?.minutes ?? 0) + minutes, blocks: (previous?.blocks ?? 0) + (minutes > 0 ? 1 : 0) },
+          error: null,
+        });
       } catch (error) {
         set({ error: `Couldn't log focus session. ${toErrorMessage(error)}` });
       } finally {
-        finishing = false;
+        busy = false;
       }
     },
 
-    dismissSummary: () => set({ lastSession: null }),
+    onPhaseElapsed: async () => {
+      const timer = get().timer;
+      if (!timer || busy) return;
+      if (!timer.pomodoro) {
+        await get().finish();
+        return;
+      }
+      busy = true;
+      try {
+        const { timer: next, completedWork } = advanceFinishedPhases(timer);
+        for (const work of completedWork) await logWork(timer, work.startTime, work.endTime, work.minutes);
+        const minutes = completedWork.reduce((sum, w) => sum + w.minutes, 0);
+        const previous = get().lastSummary;
+        const summary = { minutes: (previous?.minutes ?? 0) + minutes, blocks: (previous?.blocks ?? 0) + completedWork.length };
+        if (next) {
+          // Notifications for later phases were scheduled up front; keep their ids.
+          await persist(next);
+          set({ lastSummary: summary });
+          await syncSound(next);
+        } else {
+          await clearRunning();
+          set({ lastSummary: summary });
+        }
+      } catch (error) {
+        set({ error: `Couldn't log focus session. ${toErrorMessage(error)}` });
+      } finally {
+        busy = false;
+      }
+    },
+
+    dismissSummary: () => set({ lastSummary: null }),
   };
 });
