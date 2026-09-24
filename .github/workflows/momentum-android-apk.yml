@@ -61,6 +61,19 @@ jobs:
         env:
           EXPECTED_KEYSTORE_SHA256: 221e0a3106aa4c3ccc154e0a418b55020b3f9ea6e84f92e8749cd9e2f39f5e58
 
+      - name: Install Android NDK (with retries)
+        # Gradle's on-the-fly NDK download occasionally fails on hosted runners;
+        # installing it up front with retries makes builds reliable.
+        run: |
+          NDK_VERSION=$(grep -E '^ndkVersion' node_modules/react-native/gradle/libs.versions.toml | sed -E 's/.*"(.*)".*/\1/')
+          echo "NDK $NDK_VERSION"
+          for attempt in 1 2 3; do
+            yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;$NDK_VERSION" > /dev/null && exit 0
+            echo "sdkmanager attempt $attempt failed; retrying in 20s"
+            sleep 20
+          done
+          exit 1
+
       - name: Build release APK
         working-directory: momentum/android
         run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
