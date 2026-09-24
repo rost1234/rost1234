@@ -1,63 +1,96 @@
 # FeynmanMind
 
-AI-powered active learning: the Feynman Technique plus SM-2 spaced repetition.
+Active learning with the **Feynman Technique** and **spaced repetition (SM-2)**.
+Explain a concept in plain words, get one Socratic question back from an AI tutor
+(never the answer), and turn notes or PDFs into flashcards that come back just
+before you'd forget them.
 
-## Phase 1: foundations
+Expo (React Native, iOS / Android / web) · Supabase (Postgres + RLS + Edge Functions) · OpenAI or Gemini.
+English and Hebrew (RTL), light and dark themes.
 
-| Deliverable | Path |
+## Features
+
+| Area | What it does |
 |---|---|
-| Supabase schema, constraints, triggers, RLS | `supabase/migrations/20260924000000_phase1_core_schema.sql` |
-| SM-2 scheduler `calculateNextReview` | `src/srs/sm2.ts` (tests: `src/srs/sm2.test.ts`) |
-| Feynman tutor system prompt, JSON Schema, validator | `supabase/functions/_shared/feynman-tutor.ts` |
+| Auth | Email + password, or passwordless 6-digit email code. Account deletion in Settings. |
+| Library | Subjects → concepts. Create, rename, delete. Mastery bar per subject. |
+| Feynman tutor | Write an explanation (drafts are kept per concept). Get a score, verdict, one Socratic question, jargon to unpack and misconceptions, without being told the answer. Revise and resubmit. Past attempts are saved. |
+| Flashcards | Generate from pasted text or a PDF (≤ 10 MB), or add and edit by hand. Duplicates are skipped. |
+| Review | SM-2 queue with all six grades (0–5) and the next interval shown on each button. Safe across devices. |
+| Today | Cards due, streak, today's recall rate, totals, a 7-day forecast and history, and the weakest concepts to explain next. |
+| Settings | Language (device / English / Hebrew), theme, daily reminder time, cards per generation, sign out, delete account. |
 
+## Project layout
 
-### Data-flow rules enforced by the database
-- Ownership starts at `subjects.user_id`; policies reach concepts and sessions through `private.owns_*()` helpers.
-- A trigger creates a `card_reviews` row (EF 2.5, due now) for every new flashcard. Clients can only `select`/`update` it.
-- Clients insert a `feynman_sessions` row with only the explanation. The AI fields are written by the Edge Function using the service role, so clients can't fake scores.
-- A new `comprehension_score` updates `concepts.mastery_level`.
+```
+src/app/                  expo-router screens
+  _layout.tsx             providers, RTL, auth + onboarding gate (Stack.Protected)
+  onboarding.tsx, sign-in.tsx
+  (app)/(tabs)/           Today · Library · Review · Settings
+  (app)/subject/[id]      concepts in a subject
+  (app)/concept/[id]/     concept hub · explain (Feynman) · generate (cards)
+  (app)/card/[id]         create / edit a flashcard
+  (app)/session/[id]      a past explanation + feedback
+  (app)/study             review session
+src/data/                 React Query hooks per table/RPC
+src/srs/                  SM-2 (sm2.ts), review submission, grade previews
+src/api/functions.ts      typed Edge Function client
+src/components/, theme/, i18n/, lib/, services/reminders.ts, state/
+supabase/migrations/      schema, RLS, triggers, review_logs, RPCs
+supabase/functions/       feynman-evaluate · generate-flashcards · delete-account
+```
 
-## Phase 2: backend wiring
+## Setup
 
-| Piece | Path |
-|---|---|
-| `feynman-evaluate` Edge Function | `supabase/functions/feynman-evaluate/` |
-| `generate-flashcards` Edge Function (text or PDF) | `supabase/functions/generate-flashcards/` |
-| Shared: HTTP/CORS, Supabase clients, OpenAI/Gemini client | `supabase/functions/_shared/` |
-| Flashcard prompt, schema, chunker | `supabase/functions/_shared/flashcard-generator.ts` |
-| Client: Edge Function wrappers | `src/api/functions.ts` |
-| Client: due queue + `submitReview` (SM-2) | `src/srs/reviewService.ts` |
-| DB types | `src/types/database.ts` |
-
-Each function is split into `index.ts` (HTTP + auth), `repo.ts` (Supabase queries)
-and `service.ts` (logic, tested with fake repos and a fake LLM).
-
-### Setup
+### 1. Supabase
 
 ```bash
-supabase db push
-supabase secrets set LLM_PROVIDER=openai OPENAI_API_KEY=...   # or LLM_PROVIDER=gemini GEMINI_API_KEY=...
-supabase secrets set LLM_MODEL=...                            # optional; defaults gpt-4o-mini / gemini-2.5-flash
+supabase link --project-ref <ref>
+supabase db push                                   # both migrations
+supabase secrets set LLM_PROVIDER=openai OPENAI_API_KEY=...
+#   or: LLM_PROVIDER=gemini GEMINI_API_KEY=...
+supabase secrets set LLM_MODEL=...                 # optional; defaults gpt-4o-mini / gemini-2.5-flash
 supabase functions deploy feynman-evaluate
 supabase functions deploy generate-flashcards
+supabase functions deploy delete-account
 ```
 
-### Checks
+For **email-code sign-in**, the *Magic Link* email template must include the
+code: add `{{ .Token }}` under **Authentication → Email Templates**.
+
+### 2. App
 
 ```bash
-npm test                  # SM-2 (Node 22+)
-npm run typecheck         # client code
-npm run test:functions    # Edge Function tests (Deno 2)
-npm run check:functions   # Edge Function type-check (Deno 2)
+cp .env.example .env.local     # set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+npm install
+npm start                      # Expo dev server (press w for web)
 ```
 
-### Behaviour worth knowing
-- **Limits:** 30 Feynman evaluations and 300 generated cards per user per hour.
-  Up to 60k characters of source per call (split into 6k-character chunks, 3 in parallel).
-- **Tutor grounding:** the concept's existing flashcards are sent as reference
-  material, and the last 5 Socratic questions are sent so they aren't repeated.
-- **AI failures:** one retry on 429/5xx/invalid JSON, then `502 llm_error`.
-  A failed evaluation deletes its unscored session row.
-- **Review conflicts:** `submitReview` only updates if `last_reviewed_at` hasn't
-  changed since fetch; otherwise it throws `ReviewConflictError`.
-- **PDFs:** text-based only (via `unpdf`). Scanned or encrypted PDFs return `422 unreadable_pdf`.
+Without these values the app shows a setup screen instead of failing.
+Reminders use `expo-notifications`, so test them in a development build
+(`npx expo run:ios|android` or `eas build --profile development`).
+
+### 3. Builds
+
+`eas.json` has development, preview and production profiles
+(`npx eas-cli@latest build --profile production`).
+
+## Checks
+
+```bash
+npm run typecheck          # tsc
+npm run lint               # expo lint
+npm test                   # jest: SM-2, grades, i18n completeness, errors, formatting
+npm run test:functions     # Deno: Edge Function services, LLM client, chunking
+npm run check:functions    # Deno type-check
+npx expo-doctor
+```
+
+## How the data stays safe and consistent
+
+- **Access rules:** RLS on every table. Ownership flows from `subjects.user_id`, and triggers stop flashcards or reviews being attached to someone else's rows.
+- **Scores can't be faked:** clients can't write AI fields. The `feynman-evaluate` function writes them with the service role.
+- **Reviews:** `submit_card_review` saves the SM-2 result and a `review_logs` entry in one transaction. It only applies if the card hasn't changed since it was fetched, so grading the same card on two devices counts once.
+- **Dashboard:** `get_study_stats` computes due counts, streak, forecast and history in the user's time zone.
+- **Account deletion:** deleting the account removes all data via `ON DELETE CASCADE`.
+- **Limits:** 30 evaluations and 300 generated cards per user per hour. One retry on AI errors.

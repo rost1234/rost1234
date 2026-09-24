@@ -96,9 +96,55 @@ export interface Database {
           },
         ]
       >;
+      review_logs: Table<
+        {
+          id: string;
+          card_id: string;
+          user_id: string;
+          quality: number;
+          easiness_factor: number;
+          interval_days: number;
+          reviewed_at: string;
+        },
+        {
+          id?: string;
+          card_id: string;
+          user_id?: string;
+          quality: number;
+          easiness_factor: number;
+          interval_days: number;
+          reviewed_at?: string;
+        },
+        [
+          {
+            foreignKeyName: 'review_logs_card_id_fkey';
+            columns: ['card_id'];
+            isOneToOne: false;
+            referencedRelation: 'flashcards';
+            referencedColumns: ['id'];
+          },
+        ]
+      >;
     };
     Views: Record<never, never>;
-    Functions: Record<never, never>;
+    Functions: {
+      submit_card_review: {
+        Args: {
+          p_review_id: string;
+          p_expected_last_reviewed_at: string | null;
+          p_quality: number;
+          p_easiness_factor: number;
+          p_interval_days: number;
+          p_repetitions: number;
+          p_next_review_date: string;
+        };
+        Returns: boolean;
+      };
+      get_study_stats: {
+        Args: { p_tz?: string };
+        Returns: Json;
+      };
+    };
     Enums: Record<never, never>;
     CompositeTypes: Record<never, never>;
   };

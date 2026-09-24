@@ -1,5 +1,5 @@
 /** Typed wrappers for the FeynmanMind Edge Functions. */
-import { FunctionsHttpError, type SupabaseClient } from '@supabase/supabase-js';
+import { FunctionsFetchError, FunctionsHttpError, type SupabaseClient } from '@supabase/supabase-js';
 import type { FeynmanEvaluation } from '../../supabase/functions/_shared/feynman-tutor.ts';
 
 export type { FeynmanEvaluation };
@@ -47,7 +47,10 @@ export class ApiError extends Error {
   }
 }
 
-async function invoke<T>(client: SupabaseClient, name: string, body: Record<string, unknown>): Promise<T> {
+// Any client typed for this project works; the functions API isn't schema-typed.
+type AnyClient = SupabaseClient<any, any, any>;
+
+async function invoke<T>(client: AnyClient, name: string, body: Record<string, unknown>): Promise<T> {
   const { data, error } = await client.functions.invoke<T>(name, { body });
   if (!error) return data as T;
 
@@ -57,15 +60,16 @@ async function invoke<T>(client: SupabaseClient, name: string, body: Record<stri
     const e = payload?.error;
     throw new ApiError(e?.code ?? 'internal', e?.message ?? 'Request failed', res.status);
   }
-  throw new ApiError('network', error.message);
+  if (error instanceof FunctionsFetchError) throw new ApiError('network', error.message);
+  throw new ApiError('internal', error.message);
 }
 
-export function evaluateExplanation(client: SupabaseClient, conceptId: string, explanation: string) {
+export function evaluateExplanation(client: AnyClient, conceptId: string, explanation: string) {
   return invoke<EvaluateResponse>(client, 'feynman-evaluate', { concept_id: conceptId, explanation });
 }
 
 export function generateFlashcards(
-  client: SupabaseClient,
+  client: AnyClient,
   conceptId: string,
   source: { text: string } | { pdfBase64: string },
   maxCards?: number,
@@ -75,4 +79,8 @@ export function generateFlashcards(
     ...('text' in source ? { text: source.text } : { pdf_base64: source.pdfBase64 }),
     ...(maxCards ? { max_cards: maxCards } : {}),
   });
+}
+
+export function deleteAccount(client: AnyClient) {
+  return invoke<{ deleted: true }>(client, 'delete-account', { confirm: 'DELETE' });
 }
