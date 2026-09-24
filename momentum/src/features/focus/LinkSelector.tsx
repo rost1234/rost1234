@@ -1,8 +1,8 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Chip } from '@/components/ui';
-import { spacing, typography } from '@/components/theme';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { spacing } from '@/components/theme';
 import type { Habit, Task } from '@/domain/models';
 import type { FocusLink } from '@/state/focusStore';
+import { FocusChip, FocusLabel } from './focusUi';
 
 interface LinkSelectorProps {
   habits: readonly Habit[];
@@ -18,11 +18,11 @@ export function LinkSelector({ habits, tasks, value, onChange }: LinkSelectorPro
   const isNone = value.habitId === null && value.taskId === null;
   return (
     <View style={styles.container}>
-      <Text style={typography.label}>Link to (optional)</Text>
+      <FocusLabel>Working on</FocusLabel>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-        <Chip label="Nothing" selected={isNone} onPress={() => onChange(NONE)} />
+        <FocusChip label="Just focus" selected={isNone} onPress={() => onChange(NONE)} />
         {habits.map((habit) => (
-          <Chip
+          <FocusChip
             key={habit.id}
             label={habit.title}
             selected={value.habitId === habit.id}
@@ -30,7 +30,7 @@ export function LinkSelector({ habits, tasks, value, onChange }: LinkSelectorPro
           />
         ))}
         {openTasks.map((task) => (
-          <Chip
+          <FocusChip
             key={task.id}
             label={`☐ ${task.title}`}
             selected={value.taskId === task.id}

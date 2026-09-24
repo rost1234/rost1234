@@ -31,7 +31,11 @@ function useDashboardData(today: string) {
     () => dailyProgressPercent(dueToday.map((habit) => ({ habit, progress: progressOf(logs[habit.id]?.[today]) }))),
     [dueToday, logs, today],
   );
-  return { dueToday, percent, restCount: habits.length - dueToday.length };
+  const doneCount = useMemo(
+    () => dueToday.filter((habit) => progressOf(logs[habit.id]?.[today]).status === 'completed').length,
+    [dueToday, logs, today],
+  );
+  return { dueToday, percent, doneCount, restCount: habits.length - dueToday.length };
 }
 
 export function DashboardScreen() {
@@ -45,10 +49,11 @@ export function DashboardScreen() {
   const taskError = useTaskStore((s) => s.error);
   const clearTaskError = useTaskStore((s) => s.clearError);
   // The evening check-in only takes space on the main screen when it's relevant.
-  const isEvening = useNow(true, 60_000).getHours() >= EVENING_HOUR;
+  const hour = useNow(true, 60_000).getHours();
+  const isEvening = hour >= EVENING_HOUR;
   const freezes = useSettingsStore((s) => s.settings?.streakFreezesAvailable ?? 0);
   const reflection = useReflectionStore((s) => s.byDate[today]);
-  const { dueToday, percent, restCount } = useDashboardData(today);
+  const { dueToday, percent, doneCount, restCount } = useDashboardData(today);
 
   const reload = useCallback(() => {
     runDetached(useHabitStore.getState().load(today));
@@ -80,7 +85,14 @@ export function DashboardScreen() {
         refreshControl={<RefreshControl refreshing={false} onRefresh={reload} />}
         keyboardShouldPersistTaps="handled"
       >
-        <DashboardHeader today={today} percent={percent} freezes={freezes} />
+        <DashboardHeader
+          today={today}
+          hour={hour}
+          percent={percent}
+          doneCount={doneCount}
+          totalCount={dueToday.length}
+          freezes={freezes}
+        />
 
         {error ? <Banner message={error} onDismiss={clearError} /> : null}
         {taskError ? <Banner message={taskError} onDismiss={clearTaskError} /> : null}

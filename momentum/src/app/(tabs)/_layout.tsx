@@ -5,10 +5,10 @@ import { colors } from '@/components/theme';
 import { useSettingsStore } from '@/state/settingsStore';
 
 const TABS: readonly TabItem[] = [
-  { name: 'index', title: 'Today', glyph: '◉' },
-  { name: 'focus', title: 'Focus', glyph: '◷' },
-  { name: 'analytics', title: 'Insights', glyph: '▦' },
-  { name: 'settings', title: 'Settings', glyph: '⚙' },
+  { name: 'index', title: 'Today', icon: 'sunny-outline', iconActive: 'sunny' },
+  { name: 'focus', title: 'Focus', icon: 'timer-outline', iconActive: 'timer' },
+  { name: 'analytics', title: 'Insights', icon: 'stats-chart-outline', iconActive: 'stats-chart' },
+  { name: 'settings', title: 'Settings', icon: 'settings-outline', iconActive: 'settings' },
 ];
 
 interface TabBarRenderProps {
@@ -34,6 +34,7 @@ export default function TabsLayout() {
           <SwipeTabBar
             items={TABS}
             activeIndex={TABS.findIndex((t) => t.name === activeName)}
+            dark={activeName === 'focus'}
             onPress={(name, isFocused) => {
               const route = state.routes.find((r) => r.name === name);
               if (!route) return;

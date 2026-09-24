@@ -1,52 +1,40 @@
-import { StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
-import { colors, typography } from '@/components/theme';
+import { StyleSheet, Text } from 'react-native';
+import { ProgressRing } from '@/components/ProgressRing';
+import { focusColors } from '@/components/theme';
 import { formatClock } from '@/domain/focusTimer';
 
 interface CircularTimerProps {
   remainingSeconds: number;
   progress: number;
   isPaused: boolean;
+  caption?: string;
   size?: number;
-  strokeWidth?: number;
 }
 
-export function CircularTimer({ remainingSeconds, progress, isPaused, size = 260, strokeWidth = 14 }: CircularTimerProps) {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const clamped = Math.max(0, Math.min(1, progress));
+export function CircularTimer({ remainingSeconds, progress, isPaused, caption, size = 270 }: CircularTimerProps) {
   const clock = formatClock(remainingSeconds);
-
   return (
-    <View
-      style={{ width: size, height: size }}
-      accessibilityRole="timer"
-      accessibilityLabel={`${clock} remaining${isPaused ? ', paused' : ''}`}
+    <ProgressRing
+      value={progress}
+      size={size}
+      stroke={12}
+      track={focusColors.ringTrack}
+      from={isPaused ? focusColors.paused : focusColors.ringStart}
+      to={isPaused ? '#F59E0B' : focusColors.ringEnd}
     >
-      <Svg width={size} height={size}>
-        <Circle cx={size / 2} cy={size / 2} r={radius} stroke={colors.surfaceMuted} strokeWidth={strokeWidth} fill="none" />
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={isPaused ? colors.warning : colors.primary}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          fill="none"
-          strokeDasharray={`${circumference} ${circumference}`}
-          strokeDashoffset={circumference * clamped}
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        />
-      </Svg>
-      <View style={[StyleSheet.absoluteFill, styles.center]}>
-        <Text style={styles.clock}>{clock}</Text>
-        <Text style={typography.caption}>{isPaused ? 'Paused' : 'Remaining'}</Text>
-      </View>
-    </View>
+      <Text
+        style={[styles.clock, { fontSize: size > 240 ? 60 : 50 }]}
+        accessibilityRole="timer"
+        accessibilityLabel={`${clock} ${isPaused ? 'paused' : 'remaining'}`}
+      >
+        {clock}
+      </Text>
+      <Text style={styles.caption}>{caption ?? (isPaused ? 'Paused' : 'Remaining')}</Text>
+    </ProgressRing>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { alignItems: 'center', justifyContent: 'center' },
-  clock: { fontSize: 56, fontWeight: '300', color: colors.text, fontVariant: ['tabular-nums'] },
+  clock: { fontWeight: '200', color: focusColors.text, fontVariant: ['tabular-nums'], letterSpacing: 1 },
+  caption: { color: focusColors.textMuted, fontSize: 13, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase' },
 });

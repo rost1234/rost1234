@@ -1,8 +1,10 @@
-import { memo } from 'react';
-import { ActionSheetIOS, Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { memo, useEffect, useRef, useState } from 'react';
+import { ActionSheetIOS, Alert, Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ProgressBar } from '@/components/ui';
-import { colors, radius, spacing, typography } from '@/components/theme';
+import { colors, radius, shadow, spacing, typography } from '@/components/theme';
+import { haptics } from '@/core/haptics';
 import { completionRatio, progressOf } from '@/domain/habitProgress';
 import type { Habit } from '@/domain/models';
 import { useHabitStore } from '@/state/habitStore';
@@ -18,11 +20,7 @@ function openHabitMenu(habit: Habit, isSkipped: boolean) {
     { label: skipLabel, run: () => skipHabit(habit.id) },
     { label: 'Edit habit', run: () => router.push({ pathname: '/habit/[id]', params: { id: habit.id } }) },
     { label: 'Reset today', run: () => undoHabitStep(habit.id) },
-    {
-      label: 'Archive habit',
-      destructive: true,
-      run: () => void archiveHabit(habit.id),
-    },
+    { label: 'Archive habit', destructive: true, run: () => void archiveHabit(habit.id) },
   ];
 
   if (Platform.OS === 'ios') {
@@ -43,6 +41,20 @@ function openHabitMenu(habit: Habit, isSkipped: boolean) {
   ]);
 }
 
+/** Springs the check circle whenever the habit becomes done. */
+function useDonePop(isDone: boolean): Animated.Value {
+  const [scale] = useState(() => new Animated.Value(1));
+  const wasDone = useRef(isDone);
+  useEffect(() => {
+    if (isDone && !wasDone.current) {
+      scale.setValue(0.6);
+      Animated.spring(scale, { toValue: 1, friction: 4, tension: 160, useNativeDriver: true }).start();
+    }
+    wasDone.current = isDone;
+  }, [isDone, scale]);
+  return scale;
+}
+
 function HabitCardComponent({ habit }: HabitCardProps) {
   // Each card subscribes only to its own slice, so a tap re-renders one card.
   const log = useHabitStore((s) => (s.today ? s.logs[habit.id]?.[s.today] : undefined));
@@ -54,43 +66,61 @@ function HabitCardComponent({ habit }: HabitCardProps) {
   const ratio = completionRatio(habit, progress);
   const isDone = progress.status === 'completed';
   const isSkipped = progress.status === 'skipped';
+  const pop = useDonePop(isDone);
   const countLabel = habit.isQuantitative
     ? `${progress.currentCount}/${habit.targetCount}${habit.unit ? ` ${habit.unit}` : ''}`
     : isDone
       ? 'Done'
       : 'Tap to complete';
 
+  const onTap = () => {
+    const willComplete = habit.isQuantitative ? progress.currentCount + 1 >= habit.targetCount && !isDone : !isDone;
+    if (willComplete) haptics.success();
+    else haptics.tap();
+    tapHabit(habit.id);
+  };
+
   return (
     <View style={[styles.card, isDone && styles.cardDone, isSkipped && styles.cardSkipped]}>
       <Pressable
-        onPress={() => tapHabit(habit.id)}
-        onLongPress={() => openHabitMenu(habit, isSkipped)}
+        onPress={onTap}
+        onLongPress={() => {
+          haptics.select();
+          openHabitMenu(habit, isSkipped);
+        }}
         delayLongPress={350}
         accessibilityRole={habit.isQuantitative ? 'adjustable' : 'checkbox'}
         accessibilityState={habit.isQuantitative ? undefined : { checked: isDone }}
         accessibilityLabel={`${habit.title}, ${countLabel}${streak > 0 ? `, ${streak} day streak` : ''}`}
         accessibilityHint={habit.isQuantitative ? 'Tap to add one. Long press for options.' : 'Tap to toggle. Long press for options.'}
-        style={({ pressed }) => [styles.main, pressed && { opacity: 0.7 }]}
+        style={({ pressed }) => [styles.main, pressed && { opacity: 0.75 }]}
       >
-        <View style={[styles.checkCircle, isDone && styles.checkCircleDone]}>
-          <Text style={[styles.checkText, isDone && { color: colors.onPrimary }]}>
-            {isDone ? '✓' : habit.isQuantitative ? '+' : ''}
-          </Text>
-        </View>
+        <Animated.View style={[styles.checkCircle, isDone && styles.checkCircleDone, { transform: [{ scale: pop }] }]}>
+          {isDone ? (
+            <Ionicons name="checkmark" size={22} color={colors.onPrimary} />
+          ) : habit.isQuantitative ? (
+            <Ionicons name="add" size={22} color={colors.primary} />
+          ) : null}
+        </Animated.View>
         <View style={styles.body}>
           <View style={styles.titleRow}>
             <Text style={[typography.label, styles.title, isSkipped && styles.strike]} numberOfLines={1}>
               {habit.title}
             </Text>
-            {streak > 0 ? <Text style={styles.streak}>🔥 {streak}</Text> : null}
+            {streak > 0 ? (
+              <View style={styles.streak}>
+                <Ionicons name="flame" size={12} color={colors.warning} />
+                <Text style={styles.streakText}>{streak}</Text>
+              </View>
+            ) : null}
           </View>
           <Text style={typography.caption} numberOfLines={1}>
-            {isSkipped ? 'Skipped today' : habit.microStep ? `↳ ${habit.microStep}` : countLabel}
+            {isSkipped ? 'Skipped today' : habit.microStep ? habit.microStep : countLabel}
           </Text>
           {habit.isQuantitative ? (
             <View style={styles.progressRow}>
               <View style={{ flex: 1 }}>
-                <ProgressBar value={ratio} color={isDone ? colors.success : colors.primary} />
+                <ProgressBar value={ratio} color={isDone ? colors.success : colors.primary} height={6} />
               </View>
               <Text style={styles.count}>{countLabel}</Text>
             </View>
@@ -104,10 +134,13 @@ function HabitCardComponent({ habit }: HabitCardProps) {
             accessibilityRole="button"
             accessibilityLabel={`Undo one ${habit.unit || 'step'} for ${habit.title}`}
             hitSlop={8}
-            onPress={() => undoHabitStep(habit.id)}
-            style={styles.smallButton}
+            onPress={() => {
+              haptics.tap();
+              undoHabitStep(habit.id);
+            }}
+            style={styles.iconButton}
           >
-            <Text style={styles.smallButtonText}>−</Text>
+            <Ionicons name="remove" size={18} color={colors.textMuted} />
           </Pressable>
         ) : null}
         <Pressable
@@ -115,9 +148,9 @@ function HabitCardComponent({ habit }: HabitCardProps) {
           accessibilityLabel={`Start focus session for ${habit.title}`}
           hitSlop={8}
           onPress={() => router.push({ pathname: '/focus', params: { habitId: habit.id } })}
-          style={styles.focusButton}
+          style={[styles.iconButton, styles.focusButton]}
         >
-          <Text style={styles.focusText}>▶ Focus</Text>
+          <Ionicons name="play" size={16} color={colors.primary} />
         </Pressable>
       </View>
     </View>
@@ -132,48 +165,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.border,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.sm,
+    paddingVertical: spacing.md + 2,
+    paddingHorizontal: spacing.md + 2,
+    marginBottom: spacing.sm + 2,
+    ...shadow,
   },
-  cardDone: { backgroundColor: colors.successSoft, borderColor: colors.successSoft },
-  cardSkipped: { opacity: 0.6 },
+  cardDone: { backgroundColor: '#F2FBF5' },
+  cardSkipped: { opacity: 0.55 },
   main: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   checkCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     borderWidth: 2,
     borderColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.primarySoft,
   },
   checkCircleDone: { backgroundColor: colors.success, borderColor: colors.success },
-  checkText: { fontSize: 20, fontWeight: '700', color: colors.primary },
   body: { flex: 1, gap: 2 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   title: { flexShrink: 1, fontSize: 16 },
   strike: { textDecorationLine: 'line-through' },
-  streak: { fontSize: 13, fontWeight: '600', color: colors.warning },
+  streak: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: radius.pill,
+    backgroundColor: colors.warningSoft,
+  },
+  streakText: { fontSize: 12, fontWeight: '700', color: colors.warning },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.xs },
   count: { ...typography.caption, fontVariant: ['tabular-nums'] },
   actions: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginLeft: spacing.sm },
-  smallButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  iconButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: colors.surfaceMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  smallButtonText: { fontSize: 18, fontWeight: '700', color: colors.textMuted },
-  focusButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
-  },
-  focusText: { fontSize: 13, fontWeight: '700', color: colors.primary },
+  focusButton: { backgroundColor: colors.primarySoft },
 });

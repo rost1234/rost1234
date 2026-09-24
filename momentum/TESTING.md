@@ -44,6 +44,15 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Lock the phone for 5+ minutes → the sound keeps playing (media controls appear on the lock screen)
 - [ ] Finish or Cancel → sound stops. Another app's music isn't stopped when the session starts
 - [ ] 40 Hz binaural with headphones: left and right tones differ
+- [ ] Rain / Ocean: no audible "seam" when the 45-second loop repeats
+- [ ] Sound fades in on start, fades out on pause/finish, and crossfades when switching sounds
+- [ ] Switching between sounds keeps roughly the same loudness
+
+## Look & feel
+- [ ] Today: gradient header with greeting, date, ring and freeze count
+- [ ] Checking a habit: short vibration, check pops in; completing the target gives a "success" vibration
+- [ ] Focus tab: dark screen, light status bar; other tabs go back to a dark status bar
+- [ ] Tab bar icons; the active tab has a highlighted pill (dark variant on Focus)
 
 ## Core loop
 - [ ] Fresh install shows onboarding; completing it lands on Today with the chosen habits

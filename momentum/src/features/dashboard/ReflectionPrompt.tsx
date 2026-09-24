@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { colors, radius, spacing, typography } from '@/components/theme';
+import { colors, radius, shadow, spacing, typography } from '@/components/theme';
 import type { DailyReflection } from '@/domain/models';
 import { MOOD_OPTIONS } from '@/features/reflection/mood';
 
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     backgroundColor: colors.primarySoft,
   },
-  cardDone: { backgroundColor: colors.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+  cardDone: { backgroundColor: colors.surface, ...shadow },
   emoji: { fontSize: 28 },
   chevron: { fontSize: 28, color: colors.textMuted },
 });

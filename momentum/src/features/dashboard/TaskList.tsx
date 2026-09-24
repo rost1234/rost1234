@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ActionSheetIOS, Alert, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { colors, radius, spacing, typography } from '@/components/theme';
+import { colors, radius, shadow, spacing, typography } from '@/components/theme';
 import type { Task } from '@/domain/models';
 import { MAX_OPEN_TASKS_PER_DAY } from '@/domain/taskPlanning';
 import { useTaskStore } from '@/state/taskStore';
@@ -89,16 +89,15 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.border,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.xs,
+    ...shadow,
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm },
   box: {
     width: 22,
     height: 22,
-    borderRadius: 6,
+    borderRadius: 11,
     borderWidth: 2,
     borderColor: colors.border,
     alignItems: 'center',

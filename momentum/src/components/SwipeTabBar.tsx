@@ -1,39 +1,54 @@
+import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, spacing } from './theme';
+import { haptics } from '@/core/haptics';
+import { colors, radius, spacing } from './theme';
+
+type IconName = ComponentProps<typeof Ionicons>['name'];
 
 export interface TabItem {
   name: string;
   title: string;
-  glyph: string;
+  icon: IconName;
+  iconActive: IconName;
 }
 
 interface SwipeTabBarProps {
   items: readonly TabItem[];
   activeIndex: number;
+  /** Dark variant (used while the focus screen is showing). */
+  dark?: boolean;
   onPress: (name: string, isFocused: boolean) => void;
 }
 
 /** Bottom tab bar for the swipeable pager (the pager itself handles swipes). */
-export function SwipeTabBar({ items, activeIndex, onPress }: SwipeTabBarProps) {
+export function SwipeTabBar({ items, activeIndex, dark = false, onPress }: SwipeTabBarProps) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.sm) }]} accessibilityRole="tablist">
+    <View
+      style={[styles.bar, dark && styles.barDark, { paddingBottom: Math.max(insets.bottom, spacing.sm) }]}
+      accessibilityRole="tablist"
+    >
       {items.map((item, index) => {
         const focused = index === activeIndex;
-        const color = focused ? colors.primary : colors.textMuted;
+        const color = focused ? (dark ? '#FFFFFF' : colors.primary) : dark ? '#8E8FB8' : colors.textMuted;
         return (
           <Pressable
             key={item.name}
             accessibilityRole="tab"
             accessibilityState={{ selected: focused }}
             accessibilityLabel={item.title}
-            onPress={() => onPress(item.name, focused)}
+            onPress={() => {
+              if (!focused) haptics.select();
+              onPress(item.name, focused);
+            }}
             style={styles.tab}
           >
-            <Text style={[styles.glyph, { color }]}>{item.glyph}</Text>
+            <View style={[styles.pill, focused && (dark ? styles.pillActiveDark : styles.pillActive)]}>
+              <Ionicons name={focused ? item.iconActive : item.icon} size={22} color={color} />
+            </View>
             <Text style={[styles.label, { color }]}>{item.title}</Text>
-            <View style={[styles.indicator, focused && { backgroundColor: colors.primary }]} />
           </Pressable>
         );
       })}
@@ -45,12 +60,14 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
     backgroundColor: colors.surface,
+    paddingTop: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
-    paddingTop: spacing.sm,
   },
+  barDark: { backgroundColor: '#0B0C1A', borderTopColor: 'rgba(255,255,255,0.08)' },
   tab: { flex: 1, alignItems: 'center', gap: 2 },
-  glyph: { fontSize: 18 },
+  pill: { paddingHorizontal: spacing.lg, paddingVertical: 4, borderRadius: radius.pill },
+  pillActive: { backgroundColor: colors.primarySoft },
+  pillActiveDark: { backgroundColor: 'rgba(139,139,255,0.22)' },
   label: { fontSize: 12, fontWeight: '600' },
-  indicator: { width: 18, height: 3, borderRadius: 2, marginTop: 2, backgroundColor: 'transparent' },
 });

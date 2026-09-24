@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing, typography } from '@/components/theme';
+import { colors, radius, shadow, spacing, typography } from '@/components/theme';
 import type { DailyReflection } from '@/domain/models';
 import { useTaskStore } from '@/state/taskStore';
 import { ReflectionPrompt } from './ReflectionPrompt';
@@ -87,6 +87,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: radius.md,
     backgroundColor: colors.surface,
+    ...shadow,
   },
   pill: { paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: radius.pill, backgroundColor: colors.primarySoft },
   pillText: { fontSize: 13, fontWeight: '700', color: colors.primary },

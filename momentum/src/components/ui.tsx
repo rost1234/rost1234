@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import { colors, radius, spacing, typography } from './theme';
+import { haptics } from '@/core/haptics';
+import { colors, radius, shadow, spacing, typography } from './theme';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
@@ -31,7 +32,10 @@ export function Button({ label, onPress, variant = 'primary', disabled, loading,
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: inactive, busy: loading === true }}
       disabled={inactive}
-      onPress={onPress}
+      onPress={() => {
+        haptics.tap();
+        onPress();
+      }}
       style={({ pressed }) => [
         styles.button,
         { backgroundColor: palette.bg, opacity: inactive ? 0.5 : pressed ? 0.8 : 1 },
@@ -67,7 +71,7 @@ export function ProgressBar({ value, color = colors.primary, height = 8 }: { val
 export function SectionTitle({ children, action }: { children: string; action?: ReactNode }) {
   return (
     <View style={styles.sectionRow}>
-      <Text style={typography.heading}>{children}</Text>
+      <Text style={typography.overline}>{children}</Text>
       {action}
     </View>
   );
@@ -92,7 +96,10 @@ export function Chip({ label, selected, onPress }: { label: string; selected: bo
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
-      onPress={onPress}
+      onPress={() => {
+        haptics.select();
+        onPress();
+      }}
       style={[styles.chip, selected && styles.chipSelected]}
     >
       <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]}>{label}</Text>
@@ -102,9 +109,9 @@ export function Chip({ label, selected, onPress }: { label: string; selected: bo
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 48,
+    minHeight: 50,
     paddingHorizontal: spacing.xl,
-    borderRadius: radius.md,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -113,8 +120,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.border,
+    ...shadow,
   },
   track: { width: '100%', backgroundColor: colors.surfaceMuted, overflow: 'hidden' },
   fill: { height: '100%' },
@@ -123,7 +129,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: spacing.xl,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.xs,
   },
   banner: {
     flexDirection: 'row',
@@ -135,12 +142,14 @@ const styles = StyleSheet.create({
   },
   bannerClose: { color: colors.textMuted, fontSize: 16 },
   chip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm + 2,
     borderRadius: radius.pill,
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  chipSelected: { backgroundColor: colors.primary },
+  chipSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
   chipLabel: { ...typography.label, color: colors.textMuted },
   chipLabelSelected: { color: colors.onPrimary },
 });

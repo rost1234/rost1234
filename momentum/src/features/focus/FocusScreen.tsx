@@ -1,16 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { setStatusBarStyle } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+import { Banner } from '@/components/ui';
+import { focusColors, radius, spacing } from '@/components/theme';
 import { runDetached } from '@/core/errors';
-import { Banner, Button, Card, Chip } from '@/components/ui';
-import { colors, spacing, typography } from '@/components/theme';
 import { computeSnapshot } from '@/domain/focusTimer';
 import { useNow } from '@/hooks/useNow';
 import { useFocusStore, type FocusLink } from '@/state/focusStore';
 import { useHabitStore } from '@/state/habitStore';
 import { useTaskStore } from '@/state/taskStore';
 import { CircularTimer } from './CircularTimer';
+import { FocusButton, FocusChip, FocusLabel } from './focusUi';
 import { LinkSelector } from './LinkSelector';
 import { SoundPicker } from './SoundPicker';
 
@@ -45,18 +48,22 @@ function ActiveTimer() {
 
   return (
     <View style={styles.active}>
-      <Text style={typography.caption}>{label ? `Focusing on ${label}` : 'Deep focus'}</Text>
+      <View style={styles.focusPill}>
+        <Text style={styles.focusPillText} numberOfLines={1}>
+          {label ? `Focusing on ${label}` : 'Deep focus'}
+        </Text>
+      </View>
       <CircularTimer remainingSeconds={snapshot.remainingSeconds} progress={snapshot.progress} isPaused={snapshot.isPaused} />
       <View style={styles.controls}>
         {snapshot.isPaused ? (
-          <Button label="▶ Resume" onPress={() => runDetached(resume())} style={styles.grow} />
+          <FocusButton label="Resume" icon="play" variant="primary" onPress={() => runDetached(resume())} style={styles.grow} />
         ) : (
-          <Button label="❚❚ Pause" variant="secondary" onPress={() => runDetached(pause())} style={styles.grow} />
+          <FocusButton label="Pause" icon="pause" onPress={() => runDetached(pause())} style={styles.grow} />
         )}
-        <Button label="✓ Finish" onPress={() => runDetached(finish())} style={styles.grow} />
+        <FocusButton label="Finish" icon="checkmark" onPress={() => runDetached(finish())} style={styles.grow} />
       </View>
       <SoundPicker isPlaying={!snapshot.isPaused} />
-      <Button label="Cancel" variant="ghost" onPress={confirmCancel} />
+      <FocusButton label="Cancel session" variant="ghost" onPress={confirmCancel} />
     </View>
   );
 }
@@ -73,25 +80,34 @@ function TimerSetup({ initialHabitId }: { initialHabitId: string | null }) {
   return (
     <View style={styles.setup}>
       {lastSession ? (
-        <Card style={styles.summary}>
-          <Text style={typography.heading}>Session logged 🎉</Text>
-          <Text style={typography.body}>{lastSession.durationMinutes} minutes of focus saved.</Text>
-          <Button label="Done" variant="secondary" onPress={dismissSummary} />
-        </Card>
+        <View style={styles.summary}>
+          <Text style={styles.summaryTitle}>Session logged 🎉</Text>
+          <Text style={styles.summaryText}>{lastSession.durationMinutes} minutes of focus saved.</Text>
+          <FocusButton label="Done" onPress={dismissSummary} />
+        </View>
       ) : null}
 
-      <CircularTimer remainingSeconds={minutes * 60} progress={0} isPaused={false} size={220} />
+      <CircularTimer remainingSeconds={minutes * 60} progress={0} isPaused={false} caption="Ready" size={230} />
 
-      <View style={styles.durations}>
-        {DURATIONS.map((d) => (
-          <Chip key={d} label={`${d} min`} selected={minutes === d} onPress={() => setMinutes(d)} />
-        ))}
+      <View style={styles.block}>
+        <FocusLabel>Duration</FocusLabel>
+        <View style={styles.durations}>
+          {DURATIONS.map((d) => (
+            <FocusChip key={d} label={`${d} min`} selected={minutes === d} onPress={() => setMinutes(d)} />
+          ))}
+        </View>
       </View>
 
       <LinkSelector habits={habits} tasks={tasks} value={link} onChange={setLink} />
       <SoundPicker isPlaying={false} />
 
-      <Button label="Start focus" onPress={() => runDetached(start(minutes, link))} style={styles.fullWidth} />
+      <FocusButton
+        label="Start focus"
+        icon="play"
+        variant="primary"
+        onPress={() => runDetached(start(minutes, link))}
+        style={styles.fullWidth}
+      />
     </View>
   );
 }
@@ -104,27 +120,59 @@ export function FocusScreen() {
   const isHydrated = useFocusStore((s) => s.isHydrated);
   const error = useFocusStore((s) => s.error);
 
+  // Light status bar on the dark focus screen only.
+  useFocusEffect(
+    useCallback(() => {
+      setStatusBarStyle('light');
+      return () => setStatusBarStyle('dark');
+    }, []),
+  );
+
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={typography.title} accessibilityRole="header">
-          Focus
-        </Text>
-        {error ? <Banner message={error} onDismiss={() => useFocusStore.setState({ error: null })} /> : null}
-        {!isHydrated ? null : timer ? <ActiveTimer /> : <TimerSetup key={initialHabitId ?? 'none'} initialHabitId={initialHabitId} />}
-      </ScrollView>
-    </SafeAreaView>
+    <LinearGradient colors={[focusColors.backgroundTop, focusColors.backgroundBottom]} style={styles.flex}>
+      <SafeAreaView style={styles.flex} edges={['top']}>
+        <ScrollView contentContainerStyle={styles.content}>
+          <Text style={styles.title} accessibilityRole="header">
+            Focus
+          </Text>
+          {error ? <Banner message={error} onDismiss={() => useFocusStore.setState({ error: null })} /> : null}
+          {!isHydrated ? null : timer ? (
+            <ActiveTimer />
+          ) : (
+            <TimerSetup key={initialHabitId ?? 'none'} initialHabitId={initialHabitId} />
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  flex: { flex: 1 },
   content: { padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl },
-  active: { alignItems: 'center', gap: spacing.xl, marginTop: spacing.lg },
+  title: { color: focusColors.text, fontSize: 28, fontWeight: '800', letterSpacing: -0.3 },
+  active: { alignItems: 'center', gap: spacing.xl, marginTop: spacing.sm },
+  focusPill: {
+    maxWidth: '90%',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+    backgroundColor: focusColors.surface,
+  },
+  focusPillText: { color: focusColors.text, fontSize: 14, fontWeight: '600' },
   controls: { flexDirection: 'row', gap: spacing.md, alignSelf: 'stretch' },
   grow: { flex: 1 },
   setup: { alignItems: 'center', gap: spacing.xl },
-  durations: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm },
-  summary: { alignSelf: 'stretch', gap: spacing.sm },
+  block: { gap: spacing.sm, alignSelf: 'stretch' },
+  durations: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  summary: {
+    alignSelf: 'stretch',
+    gap: spacing.sm,
+    padding: spacing.lg,
+    borderRadius: radius.lg,
+    backgroundColor: focusColors.surfaceActive,
+  },
+  summaryTitle: { color: focusColors.text, fontSize: 18, fontWeight: '700' },
+  summaryText: { color: focusColors.textMuted, fontSize: 15 },
   fullWidth: { alignSelf: 'stretch' },
 });

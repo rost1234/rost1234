@@ -1,6 +1,16 @@
+import type { Ionicons } from '@expo/vector-icons';
+import type { ComponentProps } from 'react';
 import type { AudioSource } from 'expo-audio';
+import rainSound from '../../../assets/sounds/rain.ogg';
+import oceanSound from '../../../assets/sounds/ocean.ogg';
+import brownNoise from '../../../assets/sounds/brown-noise.ogg';
+import pinkNoise from '../../../assets/sounds/pink-noise.ogg';
+import whiteNoise from '../../../assets/sounds/white-noise.ogg';
+import binaural40 from '../../../assets/sounds/binaural-40hz.ogg';
 
-export type FocusSoundId = 'off' | 'white' | 'pink' | 'brown' | 'binaural40';
+type IconName = ComponentProps<typeof Ionicons>['name'];
+
+export type FocusSoundId = 'off' | 'rain' | 'ocean' | 'brown' | 'pink' | 'white' | 'binaural40';
 
 export interface FocusSound {
   id: Exclude<FocusSoundId, 'off'>;
@@ -9,6 +19,9 @@ export interface FocusSound {
   /** Honest one-liner about the research, shown in the picker. */
   evidence: string;
   needsHeadphones: boolean;
+  icon: IconName;
+  /** Accent used for the sound's card. */
+  tint: string;
   source: AudioSource;
 }
 
@@ -22,36 +35,64 @@ export interface FocusSound {
  */
 export const FOCUS_SOUNDS: readonly FocusSound[] = [
   {
+    id: 'rain',
+    label: 'Rain',
+    description: 'Soft rain on a window',
+    evidence: 'Pleasant masking. Many people find it calming; benefits vary.',
+    needsHeadphones: false,
+    icon: 'rainy-outline',
+    tint: '#3B82F6',
+    source: rainSound,
+  },
+  {
+    id: 'ocean',
+    label: 'Ocean',
+    description: 'Slow, distant waves',
+    evidence: 'Pleasant masking. Many people find it calming; benefits vary.',
+    needsHeadphones: false,
+    icon: 'water-outline',
+    tint: '#0EA5E9',
+    source: oceanSound,
+  },
+  {
     id: 'brown',
     label: 'Brown noise',
     description: 'Deep, soft rumble — like a waterfall',
     evidence: 'Masks distractions. Small, person-dependent benefit.',
     needsHeadphones: false,
-    source: require('../../../assets/sounds/brown-noise.wav'),
+    icon: 'cloudy-outline',
+    tint: '#A16207',
+    source: brownNoise,
   },
   {
     id: 'pink',
     label: 'Pink noise',
-    description: 'Balanced, like steady rain',
+    description: 'Balanced and even, like steady rain',
     evidence: 'Masks distractions. Small, person-dependent benefit.',
     needsHeadphones: false,
-    source: require('../../../assets/sounds/pink-noise.wav'),
+    icon: 'leaf-outline',
+    tint: '#DB2777',
+    source: pinkNoise,
   },
   {
     id: 'white',
     label: 'White noise',
-    description: 'Bright hiss, strongest masking',
+    description: 'Brighter hiss, strongest masking (softened highs)',
     evidence: 'Best studied for attention, mostly with ADHD symptoms.',
     needsHeadphones: false,
-    source: require('../../../assets/sounds/white-noise.wav'),
+    icon: 'radio-outline',
+    tint: '#64748B',
+    source: whiteNoise,
   },
   {
     id: 'binaural40',
     label: '40 Hz binaural',
-    description: '200/240 Hz tones over soft pink noise',
+    description: '200 / 240 Hz tones over warm noise',
     evidence: 'Experimental — research is mixed. Needs headphones.',
     needsHeadphones: true,
-    source: require('../../../assets/sounds/binaural-40hz.wav'),
+    icon: 'headset-outline',
+    tint: '#7C3AED',
+    source: binaural40,
   },
 ];
 
