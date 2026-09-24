@@ -1,6 +1,6 @@
 /**
  * Feynman AI Tutor — system prompt, response JSON Schema and validator.
- * Shared by the `feynman-evaluate` Edge Function (Deno) and client types.
+ * Used by the `feynman-evaluate` Edge Function; provider wiring lives in llm.ts.
  *
  * The schema is kept to the subset both OpenAI Structured Outputs (strict)
  * and Gemini `responseSchema` accept: every property required,
@@ -219,16 +219,3 @@ export function parseFeynmanEvaluation(raw: unknown): FeynmanEvaluation {
     encouragement: isStr(o.encouragement) ? o.encouragement.trim() : '',
   };
 }
-
-/** OpenAI Chat Completions / Responses `response_format`. */
-export const OPENAI_RESPONSE_FORMAT = {
-  type: 'json_schema',
-  json_schema: { name: 'feynman_evaluation', strict: true, schema: FEYNMAN_RESPONSE_SCHEMA },
-} as const;
-
-/** Gemini `generationConfig` (use with `systemInstruction: FEYNMAN_SYSTEM_PROMPT`). */
-export const GEMINI_GENERATION_CONFIG = {
-  temperature: 0.3,
-  responseMimeType: 'application/json',
-  responseJsonSchema: FEYNMAN_RESPONSE_SCHEMA,
-} as const;

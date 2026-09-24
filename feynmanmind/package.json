@@ -4,6 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --experimental-strip-types --test src/**/*.test.ts"
+    "typecheck": "tsc -p .",
+    "test": "node --experimental-strip-types --test src/**/*.test.ts",
+    "test:functions": "cd supabase/functions && deno test --allow-env",
+    "check:functions": "cd supabase/functions && deno check */index.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.117.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.4",
+    "typescript": "^5.9.3"
   }
 }
