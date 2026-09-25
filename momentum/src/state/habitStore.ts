@@ -10,6 +10,7 @@ import { historyStart, reconcileStreakFreezes, statusesByHabit } from '@/service
 import { refreshTodayWidget } from '@/widget/refreshWidget';
 import { usePlanningStore } from './planningStore';
 import { useSettingsStore } from './settingsStore';
+import { useHabitReminderStore } from './habitReminderStore';
 import { t } from '@/i18n';
 
 type LoadStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -94,6 +95,15 @@ export const useHabitStore = create<HabitState>((set, get) => {
       const before = progressOf(previous);
       set({ lastChange: { habitId, previous: before, label: t('undo.label', { title: habit.title, change: describeChange(before, next, habit.unit) }), at: Date.now() } });
     }
+
+    // Track when habit is completed for smart reminders
+    const previousStatus = previous ? progressOf(previous).status : 'in_progress';
+    if (next.status === 'completed' && previousStatus !== 'completed') {
+      const now = new Date();
+      const minutes = now.getHours() * 60 + now.getMinutes();
+      useHabitReminderStore.getState().recordCompletion(habitId, today, minutes);
+    }
+
     const optimistic: HabitLog = {
       id: previous?.id ?? `pending-${habitId}-${today}`,
       habitId,
@@ -243,6 +253,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
       set({ habits: before.filter((h) => h.id !== habitId) });
       try {
         await repositories.habits.setArchived(habitId, true);
+        useHabitReminderStore.getState().clearHabitStats(habitId);
         refreshTodayWidget();
       } catch (error) {
         set({ habits: before, error: t('err.archive', { error: toErrorMessage(error) }) });
