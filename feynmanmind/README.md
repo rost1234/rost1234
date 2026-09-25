@@ -20,7 +20,9 @@ device's bottom safe-area inset), so nothing is ever stuck under the home indica
 
 | Area | What it does |
 |---|---|
-| Learning paths | 6 built-in guided courses in Hebrew (physics, biology, math, computing & AI, economics, psychology): an ordered map of 7–8 stations, each with a lesson and flashcards, available offline. Type any topic and the AI builds a new map in the same format. |
+| Learning paths | 6 built-in guided courses in Hebrew (physics, biology, math, computing & AI, economics, psychology), each climbing **four levels: foundations → advanced (high school) → bachelor's → master's**. Foundations lessons and flashcards ship with the app (offline); higher stations are mapped out and their lessons are written by the AI on first visit, pitched at that level and saved on the device. Type any topic and the AI builds a new four-level map. |
+| Placement test | Adaptive multiple-choice test per course (3 questions per level, bottom-up, with "I don't know"). Pass 2 of 3 to climb; the first level you don't pass is where you start. Levels below are marked *known* but stay open. |
+| Standalone concepts | Add any concept without choosing a subject; the AI can write it a lesson and flashcards. |
 | Library | Subjects → concepts. Create, rename, delete. Mastery bar per subject. |
 | Feynman tutor | Write an explanation (drafts are kept per concept). Get a score, verdict, one Socratic question, jargon to unpack and misconceptions, without being told the answer. Revise and resubmit. Past attempts are saved. |
 | Flashcards | Generate from pasted text or a PDF (≤ 10 MB), or add and edit by hand. Duplicates are skipped. |
@@ -37,6 +39,7 @@ Offline, everything works except the two AI actions (explain feedback and card g
 │ screens (expo-router)                   │        │ feynman-evaluate    (stateless) │
 │   ↕ React Query hooks  (src/data)       │  HTTPS │ generate-flashcards (stateless) │
 │                                         │        │ generate-course     (stateless) │
+│                                         │        │ generate-lesson     (stateless) │
 │   ↕ pure logic         (src/local)      │ ─────▶ │   → OpenAI / Gemini             │
 │   ↕ zustand store → SQLite kv / web LS  │        │ no DB, no auth, per-IP limit    │
 └─────────────────────────────────────────┘        └─────────────────────────────────┘
@@ -51,7 +54,7 @@ Offline, everything works except the two AI actions (explain feedback and card g
 src/app/            screens: onboarding, (app)/index (the single home screen),
                     concept/[id]/{index,explain,generate}, card/[id], session/[id], study
 src/features/home/  home sections: Today, Learning paths, Library, Progress, Settings
-src/content/        built-in courses (Hebrew) and the course type
+src/content/        built-in courses (Hebrew): foundations lessons + four-level maps and placement quizzes
 src/local/          LocalDB types, pure logic, persisted store
 src/data/           React Query hooks over the local store + AI calls
 src/api/functions   client for the two AI functions
@@ -82,6 +85,7 @@ npx supabase secrets set LLM_PROVIDER=gemini GEMINI_API_KEY=...   # or LLM_PROVI
 npx supabase functions deploy feynman-evaluate --no-verify-jwt
 npx supabase functions deploy generate-flashcards --no-verify-jwt
 npx supabase functions deploy generate-course --no-verify-jwt
+npx supabase functions deploy generate-lesson --no-verify-jwt
 ```
 
 Then in the app: **Settings → AI connection**, paste the project URL and publishable key and press
@@ -89,7 +93,7 @@ Then in the app: **Settings → AI connection**, paste the project URL and publi
 rebuilding. (Alternatively bake them in at build time via `.env.local`.) No database is needed.
 
 > **Cost and abuse:** with no accounts, the AI functions are public. They only have a best-effort
-> in-memory limit per IP (30 explanations, 15 card generations and 10 course maps per hour). Set a
+> in-memory limit per IP (30 explanations, 15 card generations, 10 course maps and 40 lessons per hour). Set a
 > spending cap with your AI provider before sharing the app.
 
 Reminders use `expo-notifications`, so test them in a development build

@@ -2,6 +2,7 @@ import * as Crypto from 'expo-crypto';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { storage } from '@/lib/storage';
+import { normalizeCourse } from '@/content/types';
 import { emptyDB, type LocalDB } from './types';
 
 interface DBState {
@@ -25,11 +26,14 @@ export const useDBStore = create<DBState>()(
     }),
     {
       name: 'feynmanmind.db',
-      version: 2,
-      // v2 added AI-generated courses; earlier data just gets an empty set.
+      version: 3,
+      // v2 added AI courses; v3 added levels, lessons and placements. Fill
+      // in anything missing and convert flat AI courses to levels.
       migrate: (persisted) => {
         const state = persisted as { db?: Partial<LocalDB> } | undefined;
-        return { db: { ...emptyDB(), ...(state?.db ?? {}) } } as DBState;
+        const db = { ...emptyDB(), ...(state?.db ?? {}) };
+        db.courses = Object.fromEntries(Object.entries(db.courses).map(([id, c]) => [id, normalizeCourse(c)]));
+        return { db } as DBState;
       },
       storage: createJSONStorage(() => storage),
       partialize: (s) => ({ db: s.db }),

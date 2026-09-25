@@ -23,8 +23,8 @@ export function CoursesSection() {
       <Text style={typography.caption}>{t('courses.intro')}</Text>
       {courses.isPending ? <LoadingState /> : null}
       {courses.data?.map(({ course, progress }) => {
-        const total = course.concepts.length;
-        const done = progress.mastered;
+        const { total, done } = progress;
+        const currentLevel = progress.stations.find((s) => s.key === progress.nextKey)?.levelIndex;
         return (
           <Card key={course.id} onPress={() => router.push(`/course/${course.id}`)} accessibilityLabel={course.title}>
             <View style={styles.row}>
@@ -38,6 +38,11 @@ export function CoursesSection() {
                 <Text style={typography.caption} numberOfLines={2}>
                   {course.description}
                 </Text>
+                {currentLevel !== undefined && (progress.started > 0 || progress.placement) ? (
+                  <Text style={[typography.caption, { color: colors.primary, fontWeight: '700' }]}>
+                    {t('courses.currentLevel', { level: t(`level.${course.levels[currentLevel]!.key}`) })}
+                  </Text>
+                ) : null}
               </View>
               <Chevron />
             </View>

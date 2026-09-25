@@ -1,7 +1,7 @@
 /**
  * POST /functions/v1/generate-course   (public, stateless)
  * Body:     { "topic": string, "language"?: "he" | "en" }
- * Response: { prompt_version, course: { title, description, concepts: [{ key, title, summary, explanation, cards }] } }
+ * Response: { prompt_version, course: { title, description, levels: [{ key, stations: [{ key, title, summary }], quiz: [{ question, options, correct }] }] } }
  * Errors:   400 invalid_input · 422 invalid_topic · 429 rate_limited · 502 llm_error
  */
 import { handle, json, readJsonBody } from '../_shared/http.ts';

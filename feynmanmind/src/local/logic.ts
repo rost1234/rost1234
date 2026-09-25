@@ -4,8 +4,8 @@
  */
 import { calculateNextReview, initialReviewData, type QualityScore } from '@/srs/sm2';
 import type { FeynmanEvaluation } from '@/api/functions';
-import type { Course } from '@/content/types';
-import { DuplicateError, NotFoundError, type Concept, type Flashcard, type LocalDB } from './types';
+import { findStation, stationsOf, type Course, type CourseConcept, type LevelKey } from '@/content/types';
+import { DuplicateError, LessonMissingError, NotFoundError, type Concept, type Flashcard, type Lesson, type LocalDB, type Placement } from './types';
 
 type NewId = () => string;
 
@@ -281,6 +281,8 @@ export function fromBackup(text: string): LocalDB {
     sessions: d.sessions!,
     reviewDays: isRecord(d.reviewDays) ? d.reviewDays! : {},
     courses: isRecord(d.courses) ? d.courses! : {},
+    lessons: isRecord(d.lessons) ? d.lessons! : {},
+    placements: isRecord(d.placements) ? d.placements! : {},
   };
 }
 
@@ -290,45 +292,88 @@ export function fromBackup(text: string): LocalDB {
 
 export const MASTERED_AT = 71;
 
-export type StationStatus = 'new' | 'started' | 'mastered';
+/** new → not touched · known → skipped by the placement test · started → in the library · mastered → explained at 71+. */
+export type StationStatus = 'new' | 'known' | 'started' | 'mastered';
 
 export interface StationProgress {
   key: string;
+  levelIndex: number;
   status: StationStatus;
   conceptId?: string;
   mastery: number;
+  /** A lesson is available (built in or already written by the AI). */
+  hasLesson: boolean;
+}
+
+export interface LevelProgress {
+  key: LevelKey;
+  total: number;
+  /** Mastered or known. */
+  done: number;
+  known: boolean;
 }
 
 export interface CourseProgress {
   stations: StationProgress[];
+  levels: LevelProgress[];
+  total: number;
+  /** Mastered or known through placement. */
+  done: number;
   mastered: number;
   started: number;
-  /** First station that isn't mastered yet, in course order. */
+  /** First station that isn't mastered or known, in course order. */
   nextKey: string | null;
+  placement: Placement | null;
 }
 
 const courseSubject = (db: LocalDB, courseId: string) => Object.values(db.subjects).find((s) => s.course_id === courseId);
+const lessonKey = (courseId: string, stationKey: string) => `${courseId}/${stationKey}`;
+
+/** The station's lesson: built in, or previously written by the AI and saved. */
+export function lessonFor(db: LocalDB, course: Course, station: CourseConcept): Lesson | null {
+  if (station.explanation && station.cards?.length) return { explanation: station.explanation, cards: station.cards };
+  return db.lessons[lessonKey(course.id, station.key)] ?? null;
+}
+
+export function saveLesson(db: LocalDB, courseId: string, stationKey: string, lesson: Lesson): LocalDB {
+  return { ...db, lessons: { ...db.lessons, [lessonKey(courseId, stationKey)]: lesson } };
+}
 
 export function courseProgress(db: LocalDB, course: Course): CourseProgress {
   const subject = courseSubject(db, course.id);
+  const placement = db.placements[course.id] ?? null;
   const byKey = new Map(
     subject ? Object.values(db.concepts).filter((c) => c.subject_id === subject.id && c.course_key).map((c) => [c.course_key!, c]) : [],
   );
-  const stations = course.concepts.map((cc): StationProgress => {
-    const concept = byKey.get(cc.key);
-    if (!concept) return { key: cc.key, status: 'new', mastery: 0 };
+  const stations = stationsOf(course).map(({ station, levelIndex }): StationProgress => {
+    const concept = byKey.get(station.key);
+    const hasLesson = lessonFor(db, course, station) !== null;
+    if (!concept) {
+      const known = placement !== null && levelIndex < placement.levelIndex;
+      return { key: station.key, levelIndex, status: known ? 'known' : 'new', mastery: 0, hasLesson };
+    }
     return {
-      key: cc.key,
+      key: station.key,
+      levelIndex,
       conceptId: concept.id,
       mastery: concept.mastery_level,
       status: concept.mastery_level >= MASTERED_AT ? 'mastered' : 'started',
+      hasLesson,
     };
   });
+  const isDone = (s: StationProgress) => s.status === 'mastered' || s.status === 'known';
   return {
     stations,
+    levels: course.levels.map((level, i) => {
+      const own = stations.filter((s) => s.levelIndex === i);
+      return { key: level.key, total: own.length, done: own.filter(isDone).length, known: placement !== null && i < placement.levelIndex };
+    }),
+    total: stations.length,
+    done: stations.filter(isDone).length,
     mastered: stations.filter((s) => s.status === 'mastered').length,
-    started: stations.filter((s) => s.status !== 'new').length,
-    nextKey: stations.find((s) => s.status !== 'mastered')?.key ?? null,
+    started: stations.filter((s) => s.status === 'started' || s.status === 'mastered').length,
+    nextKey: stations.find((s) => !isDone(s))?.key ?? null,
+    placement,
   };
 }
 
@@ -338,11 +383,17 @@ export function courseProgress(db: LocalDB, course: Course): CourseProgress {
  * already-started station returns the existing concept.
  */
 export function startStation(db: LocalDB, course: Course, key: string, newId: NewId, now: Date): [LocalDB, string] {
-  const station = course.concepts.find((c) => c.key === key);
-  if (!station) throw new NotFoundError('Station');
+  const ref = findStation(course, key);
+  if (!ref) throw new NotFoundError('Station');
 
   let next = db;
   let subject = courseSubject(next, course.id);
+  const existing = subject && Object.values(next.concepts).find((c) => c.subject_id === subject!.id && c.course_key === key);
+  if (existing) return [next, existing.id];
+
+  const lesson = lessonFor(next, course, ref.station);
+  if (!lesson) throw new LessonMissingError();
+
   if (!subject) {
     // Don't collide with a subject the learner already made with the same name.
     const taken = new Set(Object.values(next.subjects).map((s) => titleKey(s.title)));
@@ -353,39 +404,111 @@ export function startStation(db: LocalDB, course: Course, key: string, newId: Ne
     next = { ...next, subjects: { ...next.subjects, [id]: subject } };
   }
 
-  const existing = Object.values(next.concepts).find((c) => c.subject_id === subject.id && c.course_key === key);
-  if (existing) return [next, existing.id];
-
   const conceptId = newId();
-  // Stagger creation times so the library lists stations in course order.
-  const order = course.concepts.indexOf(station);
   const concept: Concept = {
     id: conceptId,
     subject_id: subject.id,
-    title: station.title,
+    title: ref.station.title,
     mastery_level: 0,
-    created_at: new Date(now.getTime() + order).toISOString(),
+    // Stagger creation times so the library lists stations in course order.
+    created_at: new Date(now.getTime() + ref.index).toISOString(),
     course_key: key,
   };
   next = { ...next, concepts: { ...next.concepts, [conceptId]: concept } };
-  [next] = addCards(next, conceptId, station.cards, newId, now);
+  [next] = addCards(next, conceptId, lesson.cards, newId, now);
   return [next, conceptId];
 }
 
-/** The course and station a library concept was started from, if any. */
+/** The course and station (with its lesson, if any) a library concept was started from. */
 export function stationOf(db: LocalDB, conceptId: string, findCourse: (id: string) => Course | undefined) {
   const concept = db.concepts[conceptId];
   const courseId = concept && db.subjects[concept.subject_id]?.course_id;
   const course = courseId ? findCourse(courseId) : undefined;
-  const station = course?.concepts.find((c) => c.key === concept?.course_key);
-  return course && station ? { course, station } : null;
+  const ref = course && concept?.course_key ? findStation(course, concept.course_key) : undefined;
+  if (!course || !ref) return null;
+  return { course, station: ref.station, lesson: lessonFor(db, course, ref.station) };
 }
 
 export function saveCustomCourse(db: LocalDB, course: Course): LocalDB {
   return { ...db, courses: { ...db.courses, [course.id]: course } };
 }
 
-/** Removes an AI course from the catalog. Its library subject and progress stay. */
+/** Removes an AI course from the catalog, with its saved lessons and placement. Library progress stays. */
 export function deleteCustomCourse(db: LocalDB, id: string): LocalDB {
-  return { ...db, courses: omit(db.courses, (c) => c.id === id) };
+  return {
+    ...db,
+    courses: omit(db.courses, (c) => c.id === id),
+    lessons: Object.fromEntries(Object.entries(db.lessons).filter(([k]) => !k.startsWith(`${id}/`))),
+    placements: Object.fromEntries(Object.entries(db.placements).filter(([k]) => k !== id)),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Placement test
+// ---------------------------------------------------------------------------
+
+/** A level is "known" when at least two thirds of its questions were answered correctly. */
+export const passesLevel = (correct: number, asked: number) => asked > 0 && correct * 3 >= asked * 2;
+
+export interface PlacementState {
+  /** Level currently being tested. */
+  levelIndex: number;
+  /** Correct answers per finished level. */
+  scores: number[];
+  done: boolean;
+  /** Where the learner lands once done. */
+  resultLevel: number;
+}
+
+export const startPlacement = (): PlacementState => ({ levelIndex: 0, scores: [], done: false, resultLevel: 0 });
+
+/**
+ * Adaptive placement: test the levels bottom-up and stop at the first one the
+ * learner doesn't know. Levels without questions end the test there.
+ */
+export function finishPlacementLevel(course: Course, state: PlacementState, correct: number): PlacementState {
+  const level = course.levels[state.levelIndex];
+  const scores = [...state.scores, correct];
+  const passed = !!level && passesLevel(correct, level.quiz.length);
+  const nextIndex = state.levelIndex + 1;
+  const canContinue = passed && nextIndex < course.levels.length && course.levels[nextIndex]!.quiz.length > 0;
+  if (canContinue) return { levelIndex: nextIndex, scores, done: false, resultLevel: nextIndex };
+  // Passing everything still starts you at the top level: 3 questions don't prove master's-level mastery.
+  const resultLevel = passed ? Math.min(nextIndex, course.levels.length - 1) : state.levelIndex;
+  return { levelIndex: state.levelIndex, scores, done: true, resultLevel };
+}
+
+export function savePlacement(db: LocalDB, courseId: string, state: PlacementState, now: Date): LocalDB {
+  const placement: Placement = { levelIndex: state.resultLevel, scores: state.scores, taken_at: now.toISOString() };
+  return { ...db, placements: { ...db.placements, [courseId]: placement } };
+}
+
+// ---------------------------------------------------------------------------
+// Standalone concepts
+// ---------------------------------------------------------------------------
+
+/**
+ * Adds a concept without choosing a subject. It goes into a catch-all subject
+ * (created on first use, named `looseTitle`). Returns the existing concept if
+ * the same title was already added there.
+ */
+export function addLooseConcept(db: LocalDB, title: string, looseTitle: string, newId: NewId, now: Date): [LocalDB, string] {
+  let next = db;
+  let subject = Object.values(next.subjects).find((s) => s.loose);
+  if (!subject) {
+    const id = newId();
+    subject = { id, title: looseTitle, created_at: now.toISOString(), loose: true };
+    next = { ...next, subjects: { ...next.subjects, [id]: subject } };
+  }
+  const existing = Object.values(next.concepts).find((c) => c.subject_id === subject!.id && titleKey(c.title) === titleKey(title));
+  if (existing) return [next, existing.id];
+  return saveConcept(next, { subjectId: subject.id, title }, newId, now);
+}
+
+/** Stores a lesson written for a concept and adds its flashcards. */
+export function saveConceptLesson(db: LocalDB, conceptId: string, lesson: Lesson, newId: NewId, now: Date): LocalDB {
+  const concept = db.concepts[conceptId];
+  if (!concept) throw new NotFoundError('Concept');
+  const next = { ...db, concepts: { ...db.concepts, [conceptId]: { ...concept, lesson: lesson.explanation } } };
+  return addCards(next, conceptId, lesson.cards, newId, now)[0];
 }

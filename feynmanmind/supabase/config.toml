@@ -10,3 +10,6 @@ verify_jwt = false
 
 [functions.generate-course]
 verify_jwt = false
+
+[functions.generate-lesson]
+verify_jwt = false

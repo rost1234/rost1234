@@ -1,8 +1,18 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { generateCourse } from '@/api/functions';
+import { generateCourse, generateLesson } from '@/api/functions';
 import { BUILT_IN_COURSES, builtInCourse } from '@/content/catalog';
-import type { Course } from '@/content/types';
-import { courseProgress, deleteCustomCourse, saveCustomCourse, startStation, stationOf } from '@/local/logic';
+import { findStation, stationsOf, type Course } from '@/content/types';
+import {
+  courseProgress,
+  deleteCustomCourse,
+  lessonFor,
+  saveCustomCourse,
+  saveLesson,
+  savePlacement,
+  startStation,
+  stationOf,
+  type PlacementState,
+} from '@/local/logic';
 import { commit, getDB, newId, useDBStore } from '@/local/store';
 import { NotFoundError } from '@/local/types';
 import { read } from './local';
@@ -65,7 +75,7 @@ export function useGenerateCourse() {
         icon: 'sparkles-outline',
         builtIn: false,
         created_at: new Date().toISOString(),
-        concepts: course.concepts,
+        levels: course.levels,
       };
       useDBStore.getState().update((db) => saveCustomCourse(db, saved));
       return saved;
@@ -76,5 +86,60 @@ export function useGenerateCourse() {
 export function useDeleteCourse() {
   return useMutation({
     mutationFn: (id: string) => read(() => useDBStore.getState().update((db) => deleteCustomCourse(db, id))),
+  });
+}
+
+/** Writes the lesson for a station that doesn't have one yet (AI), and saves it on the device. */
+export function useWriteStationLesson() {
+  return useMutation({
+    mutationFn: async ({ courseId, key, language }: { courseId: string; key: string; language: 'he' | 'en' }) => {
+      const course = findCourse(courseId);
+      const ref = course && findStation(course, key);
+      if (!course || !ref) throw new NotFoundError('Station');
+      const existing = lessonFor(getDB(), course, ref.station);
+      if (existing) return existing;
+      const { lesson } = await generateLesson({
+        concept_title: ref.station.title,
+        summary: ref.station.summary,
+        course_title: course.title,
+        level: ref.level.key,
+        // Everything before this station, so the lesson builds on it.
+        previous_titles: stationsOf(course)
+          .slice(0, ref.index)
+          .map((s) => s.station.title),
+        language,
+      });
+      useDBStore.getState().update((db) => saveLesson(db, courseId, key, lesson));
+      return lesson;
+    },
+  });
+}
+
+export function useSavePlacement() {
+  return useMutation({
+    mutationFn: ({ courseId, state }: { courseId: string; state: PlacementState }) =>
+      read(() => useDBStore.getState().update((db) => savePlacement(db, courseId, state, new Date()))),
+  });
+}
+
+/** The station, its place in the course, and its lesson if one exists yet. */
+export function useStation(courseId: string, key: string) {
+  return useQuery({
+    queryKey: ['courses', courseId, 'station', key],
+    queryFn: () =>
+      read(() => {
+        const course = findCourse(courseId);
+        const ref = course && findStation(course, key);
+        if (!course || !ref) throw new NotFoundError('Station');
+        const all = stationsOf(course);
+        return {
+          course,
+          ref,
+          total: all.length,
+          next: all[ref.index + 1]?.station ?? null,
+          lesson: lessonFor(getDB(), course, ref.station),
+          progress: courseProgress(getDB(), course).stations[ref.index]!,
+        };
+      }),
   });
 }

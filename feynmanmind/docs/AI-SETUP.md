@@ -5,6 +5,7 @@
 - **משוב סוקרטי** על ההסבר שלכם
 - **יצירת כרטיסיות** מטקסט או מ-PDF
 - **בניית מפת לימוד** על כל נושא שתכתבו
+- **כתיבת שיעורים** לתחנות ברמות מתקדם, תואר ראשון ותואר שני, ולמושגים חופשיים
 
 מפתח ה-AI לא יכול לשבת בתוך האפליקציה, כי כל אחד יכול לחלץ אותו משם. לכן הוא יושב בשרת קטן משלכם ב-Supabase, והאפליקציה מדברת רק איתו. השרת לא שומר שום מידע.
 
@@ -36,6 +37,7 @@ npx supabase secrets set LLM_PROVIDER=gemini GEMINI_API_KEY=<המפתח_משלב
 npx supabase functions deploy feynman-evaluate --no-verify-jwt
 npx supabase functions deploy generate-flashcards --no-verify-jwt
 npx supabase functions deploy generate-course --no-verify-jwt
+npx supabase functions deploy generate-lesson --no-verify-jwt
 ```
 
 - ברירת המחדל היא המודל `gemini-3.8-flash`. אפשר להחליף מודל עם `npx supabase secrets set LLM_MODEL=<שם_מודל>`.
@@ -57,5 +59,5 @@ npx supabase functions deploy generate-course --no-verify-jwt
 
 ## עלויות ואבטחה
 - **אחסון:** השרת לא שומר שום דבר. הוא מעביר את הבקשה ל-Gemini ומחזיר תשובה.
-- **מגבלת שימוש:** לכל כתובת IP יש מגבלה בסיסית: 30 משובים, 15 יצירות כרטיסיות ו-10 מפות לימוד בשעה.
+- **מגבלת שימוש:** לכל כתובת IP יש מגבלה בסיסית: 30 משובים, 15 יצירות כרטיסיות, 10 מפות לימוד ו-40 שיעורים בשעה.
 - **כתובת השרת:** מי שיש לו את הכתובת יכול להשתמש בשרת. לשימוש אישי זה בסדר. אם משתפים את האפליקציה עם אחרים, הגדירו תקרת הוצאה ב-Google AI Studio.

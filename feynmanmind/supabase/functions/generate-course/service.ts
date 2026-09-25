@@ -31,9 +31,9 @@ export async function generateCourse(llm: StructuredLlm, input: CourseInput): Pr
     schema: COURSE_RESPONSE_SCHEMA,
     parse: parseCourse,
     temperature: 0.4,
-    maxOutputTokens: 8000,
+    maxOutputTokens: 6000,
   });
-  if (course.concepts.length === 0) {
+  if (course.levels.length === 0) {
     throw new HttpError(422, 'That topic could not be turned into a course', 'invalid_topic');
   }
   return { prompt_version: COURSE_PROMPT_VERSION, course };

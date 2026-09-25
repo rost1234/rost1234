@@ -12,6 +12,23 @@ export interface LocalDB {
   reviewDays: Record<string, { reviewed: number; correct: number }>;
   /** Courses the AI generated for this learner (built-in ones ship with the app). */
   courses: Record<string, Course>;
+  /** AI-written lessons for course stations that don't ship with one, keyed `${courseId}/${stationKey}`. */
+  lessons: Record<string, Lesson>;
+  /** Placement test results per course. */
+  placements: Record<string, Placement>;
+}
+
+export interface Lesson {
+  explanation: string;
+  cards: { question: string; answer: string }[];
+}
+
+export interface Placement {
+  /** Index of the level the learner was placed in; every level below it counts as known. */
+  levelIndex: number;
+  /** Correct answers per level that was tested, in order. */
+  scores: number[];
+  taken_at: string;
 }
 
 export interface Subject {
@@ -20,6 +37,8 @@ export interface Subject {
   created_at: string;
   /** Set when the subject was created from a guided course. */
   course_id?: string;
+  /** The catch-all subject for standalone concepts added without a subject. */
+  loose?: boolean;
 }
 
 export interface Concept {
@@ -31,6 +50,8 @@ export interface Concept {
   created_at: string;
   /** The course station this concept was started from (see CourseConcept.key). */
   course_key?: string;
+  /** A lesson written for this concept (standalone concepts), shown on its page. */
+  lesson?: string;
 }
 
 export interface Flashcard {
@@ -54,13 +75,31 @@ export interface FeynmanSession {
   created_at: string;
 }
 
-export const emptyDB = (): LocalDB => ({ subjects: {}, concepts: {}, cards: {}, sessions: {}, reviewDays: {}, courses: {} });
+export const emptyDB = (): LocalDB => ({
+  subjects: {},
+  concepts: {},
+  cards: {},
+  sessions: {},
+  reviewDays: {},
+  courses: {},
+  lessons: {},
+  placements: {},
+});
 
 export class DuplicateError extends Error {
   readonly code = 'duplicate';
   constructor() {
     super('An item with this name already exists');
     this.name = 'DuplicateError';
+  }
+}
+
+/** A course station has no lesson yet: it has to be written (by the AI) before it can be started. */
+export class LessonMissingError extends Error {
+  readonly code = 'lesson_missing';
+  constructor() {
+    super('This station has no lesson yet');
+    this.name = 'LessonMissingError';
   }
 }
 

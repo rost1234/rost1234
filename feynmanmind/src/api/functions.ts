@@ -3,6 +3,7 @@
  * the device and sends only the context each request needs.
  */
 import type { FeynmanEvaluation } from '../../supabase/functions/_shared/feynman-tutor.ts';
+import type { LevelKey } from '@/content/types';
 import { getAiConfig, type AiConfig } from '@/lib/env';
 
 export type { FeynmanEvaluation };
@@ -100,7 +101,26 @@ export function generateFlashcards({ source, ...rest }: GenerateRequest) {
 export interface GeneratedCourse {
   title: string;
   description: string;
-  concepts: { key: string; title: string; summary: string; explanation: string; cards: { question: string; answer: string }[] }[];
+  levels: {
+    key: LevelKey;
+    stations: { key: string; title: string; summary: string }[];
+    quiz: { question: string; options: string[]; correct: number }[];
+  }[];
+}
+
+export interface LessonRequest {
+  concept_title: string;
+  summary?: string;
+  course_title?: string;
+  level: LevelKey | 'standalone';
+  previous_titles?: string[];
+  language: 'he' | 'en';
+}
+
+export function generateLesson(request: LessonRequest) {
+  return call<{ prompt_version: string; lesson: { explanation: string; cards: { question: string; answer: string }[] } }>('generate-lesson', {
+    ...request,
+  });
 }
 
 export function generateCourse(topic: string, language: 'he' | 'en') {

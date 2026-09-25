@@ -5,8 +5,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { OptionsSheet } from '@/components/OptionsSheet';
 import { PromptModal } from '@/components/PromptModal';
 import { ScoreRing } from '@/components/ScoreRing';
-import { Button, Card, Chevron, EmptyState, ErrorState, IconButton, LoadingState, ProgressBar, SectionHeader } from '@/components/ui';
-import { useConcepts, useDeleteConcept, useSaveConcept, type ConceptSummary } from '@/data/concepts';
+import { Button, Card, Chevron, EmptyState, ErrorState, IconButton, InlineError, LoadingState, ProgressBar, SectionHeader, TextField } from '@/components/ui';
+import { useAddLooseConcept, useConcepts, useDeleteConcept, useSaveConcept, type ConceptSummary } from '@/data/concepts';
 import { useDeleteSubject, useSaveSubject, useSubjects, type SubjectSummary } from '@/data/subjects';
 import { useT } from '@/i18n';
 import { confirmAsync } from '@/lib/dialogs';
@@ -87,6 +87,7 @@ export function LibrarySection() {
           ) : undefined
         }
       />
+      <LooseConceptCard />
       {subjects.isPending ? (
         <LoadingState />
       ) : subjects.isError ? (
@@ -150,6 +151,49 @@ export function LibrarySection() {
         }
       />
     </>
+  );
+}
+
+/** Add a concept without choosing a subject; it goes to the "standalone concepts" subject. */
+function LooseConceptCard() {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const add = useAddLooseConcept();
+  const [title, setTitle] = useState('');
+
+  const submit = () => {
+    const text = title.trim();
+    if (!text || add.isPending) return;
+    add.mutate(
+      { title: text, looseTitle: t('loose.subject') },
+      {
+        onSuccess: (id) => {
+          setTitle('');
+          router.push(`/concept/${id}`);
+        },
+      },
+    );
+  };
+
+  return (
+    <Card>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+        <Ionicons name="flash-outline" size={20} color={colors.primary} />
+        <Text style={[typography.subheading, { flex: 1 }]}>{t('loose.title')}</Text>
+      </View>
+      <Text style={typography.caption}>{t('loose.body')}</Text>
+      <TextField
+        value={title}
+        onChangeText={setTitle}
+        placeholder={t('loose.placeholder')}
+        maxLength={200}
+        returnKeyType="done"
+        onSubmitEditing={submit}
+        accessibilityLabel={t('loose.title')}
+      />
+      <InlineError message={add.error ? errorMessage(add.error, t) : null} />
+      <Button label={t('loose.add')} icon="add" variant="secondary" onPress={submit} disabled={!title.trim()} loading={add.isPending} />
+    </Card>
   );
 }
 

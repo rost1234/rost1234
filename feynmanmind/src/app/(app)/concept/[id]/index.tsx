@@ -3,13 +3,14 @@ import { Pressable, RefreshControl, Text, View } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ScoreRing } from '@/components/ScoreRing';
-import { Button, Card, Chevron, ErrorState, IconButton, type IconName, LoadingState, Screen, SectionHeader } from '@/components/ui';
-import { useConcept } from '@/data/concepts';
+import { Button, Card, Chevron, ErrorState, IconButton, type IconName, InlineError, LoadingState, Screen, SectionHeader } from '@/components/ui';
+import { useConcept, useWriteConceptLesson } from '@/data/concepts';
 import { useConceptStation } from '@/data/courses';
 import { useDeleteFlashcard, useFlashcards, type CardRow } from '@/data/flashcards';
 import { useSessions } from '@/data/sessions';
 import { useT } from '@/i18n';
 import { confirmAsync } from '@/lib/dialogs';
+import { useAiConfigured } from '@/lib/env';
 import { errorMessage } from '@/lib/errors';
 import { formatDate, formatDateTime } from '@/lib/format';
 import { makeStyles, radius, scoreColor, spacing, useTheme } from '@/theme';
@@ -21,6 +22,8 @@ export default function ConceptScreen() {
   const { colors, typography } = useTheme();
   const concept = useConcept(id);
   const station = useConceptStation(id);
+  const writeLesson = useWriteConceptLesson();
+  const aiReady = useAiConfigured();
   const sessions = useSessions(id);
   const cards = useFlashcards(id);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -49,6 +52,28 @@ export default function ConceptScreen() {
           </View>
         </Card>
 
+        {!station.data && concept.data.lesson ? (
+          <Card>
+            <Text style={typography.label}>{t('lesson.title').toLocaleUpperCase()}</Text>
+            {concept.data.lesson.split(/\n\s*\n/).map((paragraph, i) => (
+              <Text key={i} style={[typography.body, { lineHeight: 26 }]} selectable>
+                {paragraph.trim()}
+              </Text>
+            ))}
+          </Card>
+        ) : null}
+        {!station.data && !concept.data.lesson ? (
+          <Card style={{ borderStyle: 'dashed', borderColor: colors.primary }}>
+            <Text style={typography.subheading}>{t('lesson.conceptTitle')}</Text>
+            <Text style={typography.caption}>{t('lesson.conceptBody')}</Text>
+            <InlineError message={!aiReady ? t('error.aiNotConfigured') : writeLesson.error ? errorMessage(writeLesson.error, t) : null} />
+            {writeLesson.isPending ? (
+              <LoadingState label={t('lesson.writing')} />
+            ) : (
+              <Button label={t('lesson.write')} icon="sparkles-outline" disabled={!aiReady} onPress={() => writeLesson.mutate({ conceptId: id, language: 'he' })} />
+            )}
+          </Card>
+        ) : null}
         {station.data ? (
           <Button
             label={t('course.readLesson')}

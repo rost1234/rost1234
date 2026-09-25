@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { cardsOf, deleteConcept, saveConcept } from '@/local/logic';
+import { generateLesson } from '@/api/functions';
+import { addLooseConcept, cardsOf, deleteConcept, saveConcept, saveConceptLesson } from '@/local/logic';
 import { commit, getDB, newId, useDBStore } from '@/local/store';
 import { NotFoundError } from '@/local/types';
 import { keys } from './keys';
@@ -30,7 +31,9 @@ export interface ConceptDetail {
   id: string;
   title: string;
   mastery_level: number;
-  subject: { id: string; title: string };
+  subject: { id: string; title: string; loose: boolean };
+  /** A lesson written for this concept (standalone concepts). */
+  lesson?: string;
 }
 
 export function useConcept(id: string) {
@@ -42,7 +45,13 @@ export function useConcept(id: string) {
         const c = db.concepts[id];
         const s = c && db.subjects[c.subject_id];
         if (!c || !s) throw new NotFoundError('Concept');
-        return { id: c.id, title: c.title, mastery_level: c.mastery_level, subject: { id: s.id, title: s.title } };
+        return {
+          id: c.id,
+          title: c.title,
+          mastery_level: c.mastery_level,
+          subject: { id: s.id, title: s.title, loose: !!s.loose },
+          lesson: c.lesson,
+        };
       }),
   });
 }
@@ -73,5 +82,33 @@ export function useSaveConcept() {
 export function useDeleteConcept() {
   return useMutation({
     mutationFn: (id: string) => read(() => useDBStore.getState().update((db) => deleteConcept(db, id))),
+  });
+}
+
+/** Adds a concept without choosing a subject (goes into the "standalone concepts" subject). */
+export function useAddLooseConcept() {
+  return useMutation({
+    mutationFn: ({ title, looseTitle }: { title: string; looseTitle: string }) =>
+      read(() => commit((db) => addLooseConcept(db, title.trim(), looseTitle, newId, new Date()))),
+  });
+}
+
+/** Has the AI write a lesson and flashcards for any library concept, then saves them. */
+export function useWriteConceptLesson() {
+  return useMutation({
+    mutationFn: async ({ conceptId, language }: { conceptId: string; language: 'he' | 'en' }) => {
+      const db = getDB();
+      const concept = db.concepts[conceptId];
+      if (!concept) throw new NotFoundError('Concept');
+      const subject = db.subjects[concept.subject_id];
+      const { lesson } = await generateLesson({
+        concept_title: concept.title,
+        course_title: subject && !subject.loose ? subject.title : undefined,
+        level: 'standalone',
+        language,
+      });
+      useDBStore.getState().update((current) => saveConceptLesson(current, conceptId, lesson, newId, new Date()));
+      return lesson;
+    },
   });
 }

@@ -48,7 +48,7 @@ export function useEvaluateExplanation(conceptId: string) {
           .slice(0, 20)
           .map((c) => ({ question: c.question, answer: c.answer })),
         // For guided-course concepts, the lesson the learner read is ground truth too.
-        reference_text: stationOf(db, conceptId, findCourse)?.station.explanation,
+        reference_text: stationOf(db, conceptId, findCourse)?.lesson?.explanation ?? db.concepts[conceptId]?.lesson,
       });
       const sessionId = commit((current) => addSession(current, conceptId, explanation, response.evaluation, newId, new Date()));
       return { session_id: sessionId, evaluation: response.evaluation };
