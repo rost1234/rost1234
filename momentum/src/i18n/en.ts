@@ -203,6 +203,8 @@ export const en = {
   'insight.evidence.emerging': 'Evidence: emerging (early or limited)',
   'insight.evidence.moderate': 'Evidence: moderate (solid studies, not yet broadly replicated)',
   'insight.evidence.strong': 'Evidence: strong (meta-analysis / replicated)',
+  'insight.source': 'Source',
+  'insight.hideSource': 'Hide source',
   'insight.title': 'Today’s insight',
   'level.downBody': '{missed} misses in the last {window} days. Dropping to {to}{unit} keeps the habit alive — you can grow again later.',
   'level.downTitle': 'Make {title} easier?',

@@ -205,6 +205,8 @@ export const he: Record<TranslationKey, string> = {
   'insight.evidence.emerging': 'רמת ראיות: ראשונית (מוקדמת או מוגבלת)',
   'insight.evidence.moderate': 'רמת ראיות: בינונית (מחקרים טובים, טרם שוחזרו בהרחבה)',
   'insight.evidence.strong': 'רמת ראיות: חזקה (מטא-אנליזה / שוחזר)',
+  'insight.source': 'מקור',
+  'insight.hideSource': 'הסתרת המקור',
   'insight.title': 'התובנה של היום',
   'level.downBody': '{missed} החמצות ב-{window} הימים האחרונים. ירידה ל-{to}{unit} תשמור על ההרגל — אפשר לגדול שוב אחר כך.',
   'level.downTitle': 'להקל על {title}?',

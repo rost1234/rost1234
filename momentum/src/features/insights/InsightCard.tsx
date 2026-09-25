@@ -56,12 +56,13 @@ export function InsightCard({ today }: { today: LocalDateString }) {
   return <InsightView insight={insight} title={t('insight.title')} />;
 }
 
-/** One insight card: finding (and stat) up front; action, caveat and source on tap. */
+/** One insight card: finding (and stat) up front; action and caveat on tap; source behind its own button. */
 export function InsightView({ insight, title, defaultOpen = false }: { insight: Insight; title: string; defaultOpen?: boolean }) {
   const t = useT();
   const { colors, typography } = useTheme();
   const styles = useStyles();
   const [open, setOpen] = useState(defaultOpen);
+  const [sourceOpen, setSourceOpen] = useState(false);
   const he = t.language === 'he';
   const finding = he ? insight.he.finding : insight.finding;
   const action = he ? insight.he.action : insight.action;
@@ -89,6 +90,21 @@ export function InsightView({ insight, title, defaultOpen = false }: { insight: 
             <Text style={[typography.label, { flex: 1 }]}>{action}</Text>
           </View>
           {caveat ? <Text style={typography.caption}>{t('insight.caveat', { caveat })}</Text> : null}
+        </View>
+      ) : null}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded: sourceOpen }}
+        accessibilityLabel={sourceOpen ? t('insight.hideSource') : t('insight.source')}
+        onPress={() => setSourceOpen((v) => !v)}
+        hitSlop={8}
+        style={({ pressed }) => [styles.sourceToggle, pressed && { opacity: 0.7 }]}
+      >
+        <Ionicons name={sourceOpen ? 'close' : 'information-circle-outline'} size={14} color={colors.textMuted} />
+        <Text style={styles.sourceToggleLabel}>{sourceOpen ? t('insight.hideSource') : t('insight.source')}</Text>
+      </Pressable>
+      {sourceOpen ? (
+        <View style={styles.sourceBox}>
           <Pressable accessibilityRole="link" onPress={() => runDetached(Linking.openURL(insight.source.url))} hitSlop={6}>
             <Text style={[typography.caption, styles.source]}>
               {insight.source.authors} ({insight.source.year}) · {insight.source.venue ?? insight.source.title}
@@ -110,4 +126,16 @@ const useStyles = makeStyles(({ colors, shadow }) => ({
   more: { gap: spacing.sm, marginTop: spacing.xs },
   actionRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
   source: { textDecorationLine: 'underline' },
+  sourceToggle: {
+    alignSelf: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceMuted,
+  },
+  sourceToggleLabel: { fontSize: 12, fontWeight: '600', color: colors.textMuted },
+  sourceBox: { gap: spacing.xs, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.surfaceMuted },
 }));
