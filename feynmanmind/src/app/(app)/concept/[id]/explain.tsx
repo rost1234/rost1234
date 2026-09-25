@@ -8,7 +8,7 @@ import { useConcept } from '@/data/concepts';
 import { useEvaluateExplanation, useSessions } from '@/data/sessions';
 import { EvaluationView } from '@/features/feynman/EvaluationView';
 import { useT } from '@/i18n';
-import { isAiConfigured } from '@/lib/env';
+import { useAiConfigured } from '@/lib/env';
 import { errorMessage } from '@/lib/errors';
 import { haptics } from '@/lib/haptics';
 import { useDraftsStore } from '@/state/draftsStore';
@@ -21,6 +21,7 @@ const MAX_CHARS = 8000;
 export default function ExplainScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const t = useT();
+  const isAiConfigured = useAiConfigured();
   const styles = useStyles();
   const { colors, typography } = useTheme();
   const concept = useConcept(id);

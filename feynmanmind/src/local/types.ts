@@ -1,4 +1,5 @@
 import type { FeynmanEvaluation } from '@/api/functions';
+import type { Course } from '@/content/types';
 import type { ReviewData } from '@/srs/sm2';
 
 /** Everything the app stores, kept on the device. Records are keyed by id. */
@@ -9,12 +10,16 @@ export interface LocalDB {
   sessions: Record<string, FeynmanSession>;
   /** Per local day (YYYY-MM-DD): reviews done and how many were recalled (grade ≥ 3). */
   reviewDays: Record<string, { reviewed: number; correct: number }>;
+  /** Courses the AI generated for this learner (built-in ones ship with the app). */
+  courses: Record<string, Course>;
 }
 
 export interface Subject {
   id: string;
   title: string;
   created_at: string;
+  /** Set when the subject was created from a guided course. */
+  course_id?: string;
 }
 
 export interface Concept {
@@ -24,6 +29,8 @@ export interface Concept {
   /** 0–100, the latest explanation score. */
   mastery_level: number;
   created_at: string;
+  /** The course station this concept was started from (see CourseConcept.key). */
+  course_key?: string;
 }
 
 export interface Flashcard {
@@ -47,7 +54,7 @@ export interface FeynmanSession {
   created_at: string;
 }
 
-export const emptyDB = (): LocalDB => ({ subjects: {}, concepts: {}, cards: {}, sessions: {}, reviewDays: {} });
+export const emptyDB = (): LocalDB => ({ subjects: {}, concepts: {}, cards: {}, sessions: {}, reviewDays: {}, courses: {} });
 
 export class DuplicateError extends Error {
   readonly code = 'duplicate';

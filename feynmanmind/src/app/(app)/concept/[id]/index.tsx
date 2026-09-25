@@ -5,6 +5,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ScoreRing } from '@/components/ScoreRing';
 import { Button, Card, Chevron, ErrorState, IconButton, type IconName, LoadingState, Screen, SectionHeader } from '@/components/ui';
 import { useConcept } from '@/data/concepts';
+import { useConceptStation } from '@/data/courses';
 import { useDeleteFlashcard, useFlashcards, type CardRow } from '@/data/flashcards';
 import { useSessions } from '@/data/sessions';
 import { useT } from '@/i18n';
@@ -19,6 +20,7 @@ export default function ConceptScreen() {
   const styles = useStyles();
   const { colors, typography } = useTheme();
   const concept = useConcept(id);
+  const station = useConceptStation(id);
   const sessions = useSessions(id);
   const cards = useFlashcards(id);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -47,6 +49,14 @@ export default function ConceptScreen() {
           </View>
         </Card>
 
+        {station.data ? (
+          <Button
+            label={t('course.readLesson')}
+            icon="book-outline"
+            variant="secondary"
+            onPress={() => router.push(`/course/${station.data!.course.id}/${station.data!.station.key}`)}
+          />
+        ) : null}
         <View style={styles.actions}>
           <ActionTile icon="chatbubbles" title={t('concept.explain')} hint={t('concept.explainHint')} onPress={() => router.push(`/concept/${id}/explain`)} />
           <ActionTile icon="sparkles" title={t('concept.generate')} hint={t('concept.generateHint')} onPress={() => router.push(`/concept/${id}/generate`)} />

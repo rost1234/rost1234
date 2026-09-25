@@ -6,9 +6,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Button, Card, InlineError, SectionHeader, Segmented, Stepper } from '@/components/ui';
 import { useT } from '@/i18n';
 import { confirmAsync } from '@/lib/dialogs';
-import { isAiConfigured } from '@/lib/env';
 import { formatHour } from '@/lib/format';
 import { useDBStore } from '@/local/store';
+import { AiConnection } from './AiConnection';
 import { emptyDB } from '@/local/types';
 import { exportBackup, pickBackup } from '@/services/backup';
 import { ensureNotificationPermission, remindersSupported } from '@/services/reminders';
@@ -168,6 +168,9 @@ export function SettingsSection() {
         <Stepper value={prefs.defaultCardCount} min={5} max={50} step={5} onChange={(defaultCardCount) => prefs.set({ defaultCardCount })} />
       </Card>
 
+      <SectionHeader title={t('ai.title')} />
+      <AiConnection />
+
       <SectionHeader title={t('settings.account')} />
       <Card>
         <Text style={typography.caption}>{t('settings.dataNote')}</Text>
@@ -182,7 +185,6 @@ export function SettingsSection() {
       <Card>
         <Button label={t('settings.howItWorks')} variant="ghost" icon="help-circle-outline" onPress={() => router.push('/how-it-works')} />
         <Text style={typography.caption}>{t('settings.privacy')}</Text>
-        {!isAiConfigured ? <Text style={[typography.caption, { color: colors.warning }]}>{t('error.aiNotConfigured')}</Text> : null}
         <Text style={typography.caption}>{t('settings.version', { version: Constants.expoConfig?.version ?? '1.0.0' })}</Text>
       </Card>
     </>

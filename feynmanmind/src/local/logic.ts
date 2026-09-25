@@ -4,6 +4,7 @@
  */
 import { calculateNextReview, initialReviewData, type QualityScore } from '@/srs/sm2';
 import type { FeynmanEvaluation } from '@/api/functions';
+import type { Course } from '@/content/types';
 import { DuplicateError, NotFoundError, type Concept, type Flashcard, type LocalDB } from './types';
 
 type NewId = () => string;
@@ -279,5 +280,112 @@ export function fromBackup(text: string): LocalDB {
     cards: d.cards!,
     sessions: d.sessions!,
     reviewDays: isRecord(d.reviewDays) ? d.reviewDays! : {},
+    courses: isRecord(d.courses) ? d.courses! : {},
   };
+}
+
+// ---------------------------------------------------------------------------
+// Guided courses
+// ---------------------------------------------------------------------------
+
+export const MASTERED_AT = 71;
+
+export type StationStatus = 'new' | 'started' | 'mastered';
+
+export interface StationProgress {
+  key: string;
+  status: StationStatus;
+  conceptId?: string;
+  mastery: number;
+}
+
+export interface CourseProgress {
+  stations: StationProgress[];
+  mastered: number;
+  started: number;
+  /** First station that isn't mastered yet, in course order. */
+  nextKey: string | null;
+}
+
+const courseSubject = (db: LocalDB, courseId: string) => Object.values(db.subjects).find((s) => s.course_id === courseId);
+
+export function courseProgress(db: LocalDB, course: Course): CourseProgress {
+  const subject = courseSubject(db, course.id);
+  const byKey = new Map(
+    subject ? Object.values(db.concepts).filter((c) => c.subject_id === subject.id && c.course_key).map((c) => [c.course_key!, c]) : [],
+  );
+  const stations = course.concepts.map((cc): StationProgress => {
+    const concept = byKey.get(cc.key);
+    if (!concept) return { key: cc.key, status: 'new', mastery: 0 };
+    return {
+      key: cc.key,
+      conceptId: concept.id,
+      mastery: concept.mastery_level,
+      status: concept.mastery_level >= MASTERED_AT ? 'mastered' : 'started',
+    };
+  });
+  return {
+    stations,
+    mastered: stations.filter((s) => s.status === 'mastered').length,
+    started: stations.filter((s) => s.status !== 'new').length,
+    nextKey: stations.find((s) => s.status !== 'mastered')?.key ?? null,
+  };
+}
+
+/**
+ * Starts a station: makes sure the course has its subject in the library,
+ * adds the concept and its flashcards (due now). Idempotent: starting an
+ * already-started station returns the existing concept.
+ */
+export function startStation(db: LocalDB, course: Course, key: string, newId: NewId, now: Date): [LocalDB, string] {
+  const station = course.concepts.find((c) => c.key === key);
+  if (!station) throw new NotFoundError('Station');
+
+  let next = db;
+  let subject = courseSubject(next, course.id);
+  if (!subject) {
+    // Don't collide with a subject the learner already made with the same name.
+    const taken = new Set(Object.values(next.subjects).map((s) => titleKey(s.title)));
+    let title = course.title;
+    for (let n = 2; taken.has(titleKey(title)); n++) title = `${course.title} (${n})`;
+    const id = newId();
+    subject = { id, title, created_at: now.toISOString(), course_id: course.id };
+    next = { ...next, subjects: { ...next.subjects, [id]: subject } };
+  }
+
+  const existing = Object.values(next.concepts).find((c) => c.subject_id === subject.id && c.course_key === key);
+  if (existing) return [next, existing.id];
+
+  const conceptId = newId();
+  // Stagger creation times so the library lists stations in course order.
+  const order = course.concepts.indexOf(station);
+  const concept: Concept = {
+    id: conceptId,
+    subject_id: subject.id,
+    title: station.title,
+    mastery_level: 0,
+    created_at: new Date(now.getTime() + order).toISOString(),
+    course_key: key,
+  };
+  next = { ...next, concepts: { ...next.concepts, [conceptId]: concept } };
+  [next] = addCards(next, conceptId, station.cards, newId, now);
+  return [next, conceptId];
+}
+
+/** The course and station a library concept was started from, if any. */
+export function stationOf(db: LocalDB, conceptId: string, findCourse: (id: string) => Course | undefined) {
+  const concept = db.concepts[conceptId];
+  const courseId = concept && db.subjects[concept.subject_id]?.course_id;
+  const course = courseId ? findCourse(courseId) : undefined;
+  const station = course?.concepts.find((c) => c.key === concept?.course_key);
+  return course && station ? { course, station } : null;
+}
+
+export function saveCustomCourse(db: LocalDB, course: Course): LocalDB {
+  return { ...db, courses: { ...db.courses, [course.id]: course } };
+}
+
+/** Removes an AI course from the catalog. Its library subject and progress stay. */
+export function deleteCustomCourse(db: LocalDB, id: string): LocalDB {
+  return { ...db, courses: omit(db.courses, (c) => c.id === id) };
 }

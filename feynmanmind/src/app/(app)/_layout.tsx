@@ -17,6 +17,8 @@ export default function AppLayout() {
       }}
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="course/[id]/index" options={{ title: '' }} />
+      <Stack.Screen name="course/[id]/[key]" options={{ title: '' }} />
       <Stack.Screen name="concept/[id]/index" options={{ title: t('nav.concept') }} />
       <Stack.Screen name="concept/[id]/explain" options={{ title: t('nav.explain') }} />
       <Stack.Screen name="concept/[id]/generate" options={{ title: t('nav.generate'), presentation: 'modal' }} />

@@ -25,7 +25,12 @@ export const useDBStore = create<DBState>()(
     }),
     {
       name: 'feynmanmind.db',
-      version: 1,
+      version: 2,
+      // v2 added AI-generated courses; earlier data just gets an empty set.
+      migrate: (persisted) => {
+        const state = persisted as { db?: Partial<LocalDB> } | undefined;
+        return { db: { ...emptyDB(), ...(state?.db ?? {}) } } as DBState;
+      },
       storage: createJSONStorage(() => storage),
       partialize: (s) => ({ db: s.db }),
     },

@@ -20,6 +20,8 @@ export interface EvaluateInput {
   previousQuestions: string[];
   /** The learner's own flashcards for the concept, used as ground truth. */
   referenceCards: { question: string; answer: string }[];
+  /** The lesson the learner studied (guided courses), also ground truth. */
+  referenceText: string;
 }
 
 export interface EvaluateResult {
@@ -38,6 +40,7 @@ export function parseEvaluateInput(body: Record<string, unknown>): EvaluateInput
     explanation: requireText(body.explanation, 'explanation', MIN_EXPLANATION_CHARS, MAX_EXPLANATION_CHARS),
     previousQuestions: stringList(body.previous_questions, 'previous_questions', 5, 500),
     referenceCards: parseCards(body.reference_cards),
+    referenceText: typeof body.reference_text === 'string' ? body.reference_text.trim().slice(0, 6000) : '',
   };
 }
 
@@ -61,7 +64,7 @@ export async function evaluateExplanation(llm: StructuredLlm, input: EvaluateInp
     user: buildFeynmanUserMessage({
       subjectTitle: input.subjectTitle,
       conceptTitle: input.conceptTitle,
-      referenceMaterial: formatReference(input.referenceCards),
+      referenceMaterial: [input.referenceText, formatReference(input.referenceCards)].filter(Boolean).join('\n\n') || undefined,
       previousQuestions: input.previousQuestions,
       userExplanation: input.explanation,
     }),

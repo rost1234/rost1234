@@ -9,6 +9,7 @@ const body = {
   concept_title: 'Buoyancy',
   explanation: `  ${EXPLANATION}  `,
   previous_questions: ['What pushes up?'],
+  reference_text: 'Buoyancy is the upward push of a fluid.',
   reference_cards: [{ question: 'What is buoyancy?', answer: 'Upward force from a fluid.' }, { question: 'broken' }, null],
 };
 
@@ -47,6 +48,7 @@ Deno.test('sends full context to the tutor and normalises the result', async () 
   assertEquals(result.evaluation.comprehension_score, 55);
   assertStringIncludes(userMessage, 'CONCEPT: Buoyancy');
   assertStringIncludes(userMessage, 'Q: What is buoyancy?');
+  assertStringIncludes(userMessage, 'Buoyancy is the upward push of a fluid.');
   assertStringIncludes(userMessage, '- What pushes up?');
   assertStringIncludes(userMessage, `<learner_explanation>\n${EXPLANATION}\n</learner_explanation>`);
 });

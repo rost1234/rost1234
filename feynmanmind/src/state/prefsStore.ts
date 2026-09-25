@@ -15,6 +15,9 @@ interface PrefsState {
   reminderHour: number;
   /** Cards per generation request. */
   defaultCardCount: number;
+  /** AI server (Supabase project URL) and its public key, set in Settings. Empty = use build-time values. */
+  aiUrl: string;
+  aiKey: string;
   set: (patch: Partial<Omit<PrefsState, 'set'>>) => void;
 }
 
@@ -27,6 +30,8 @@ export const usePrefsStore = create<PrefsState>()(
       remindersEnabled: false,
       reminderHour: 19,
       defaultCardCount: 15,
+      aiUrl: '',
+      aiKey: '',
       set: (patch) => set(patch),
     }),
     {

@@ -43,7 +43,8 @@ export interface LlmConfig {
 
 const DEFAULT_MODELS: Record<Provider, string> = {
   openai: 'gpt-4o-mini',
-  gemini: 'gemini-2.5-flash',
+  // Google points new projects at the 3.x models; 2.5 is limited to existing users.
+  gemini: 'gemini-3.8-flash',
 };
 
 export function llmConfigFromEnv(): LlmConfig {
@@ -65,9 +66,9 @@ export function createStructuredLlm(config: LlmConfig): StructuredLlm {
   const sleep = config.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
   const timeoutMs = config.timeoutMs ?? 45_000;
 
-  async function callOnce(req: StructuredRequest<unknown>): Promise<string> {
+  async function callOnce(req: StructuredRequest<unknown>, legacyGemini = false): Promise<string> {
     const { url, headers, body } =
-      config.provider === 'openai' ? openAiRequest(config, req) : geminiRequest(config, req);
+      config.provider === 'openai' ? openAiRequest(config, req) : geminiRequest(config, req, legacyGemini);
 
     let res: Response;
     try {
@@ -85,6 +86,12 @@ export function createStructuredLlm(config: LlmConfig): StructuredLlm {
       throw new RetryableError(`provider returned ${res.status}`);
     }
     const payload = await res.json().catch(() => null);
+    // Gemini: if the current structured-output fields are rejected, try the
+    // older (deprecated but long-supported) ones once before giving up.
+    if (res.status === 400 && config.provider === 'gemini' && !legacyGemini) {
+      console.warn('[llm] gemini rejected responseFormat, retrying with legacy schema fields');
+      return callOnce(req, true);
+    }
     if (!res.ok) {
       console.error('[llm] provider error', res.status, JSON.stringify(payload)?.slice(0, 500));
       throw new LlmError(`AI provider rejected the request (${res.status})`);
@@ -141,7 +148,10 @@ function openAiText(payload: any): string {
   return message.content;
 }
 
-function geminiRequest(config: LlmConfig, req: StructuredRequest<unknown>) {
+function geminiRequest(config: LlmConfig, req: StructuredRequest<unknown>, legacy: boolean) {
+  const output = legacy
+    ? { responseMimeType: 'application/json', responseJsonSchema: req.schema }
+    : { responseFormat: { text: { mimeType: 'APPLICATION_JSON', schema: req.schema } } };
   return {
     url: `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:generateContent`,
     headers: { 'x-goog-api-key': config.apiKey },
@@ -151,8 +161,7 @@ function geminiRequest(config: LlmConfig, req: StructuredRequest<unknown>) {
       generationConfig: {
         temperature: req.temperature ?? 0.3,
         maxOutputTokens: req.maxOutputTokens ?? 2000,
-        responseMimeType: 'application/json',
-        responseJsonSchema: req.schema,
+        ...output,
       },
     },
   };

@@ -1,5 +1,6 @@
 import { Text, View } from 'react-native';
 import { Screen } from '@/components/ui';
+import { CoursesSection } from '@/features/home/CoursesSection';
 import { LibrarySection } from '@/features/home/LibrarySection';
 import { SettingsSection } from '@/features/home/SettingsSection';
 import { ProgressSection, TodaySection } from '@/features/home/TodaySection';
@@ -8,7 +9,8 @@ import { greetingKey } from '@/lib/format';
 import { spacing, useTheme } from '@/theme';
 
 /**
- * The whole app on one scrolling screen: today's review, stats, the library,
+ * The whole app on one scrolling screen: today's review, stats, guided
+ * learning paths, the library,
  * progress charts and settings. Detail flows (concept, explain, generate,
  * review session) open on top of it.
  */
@@ -24,6 +26,7 @@ export default function HomeScreen() {
         </Text>
       </View>
       <TodaySection />
+      <CoursesSection />
       <LibrarySection />
       <ProgressSection />
       <SettingsSection />

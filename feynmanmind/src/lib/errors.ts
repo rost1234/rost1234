@@ -9,6 +9,7 @@ const API_MESSAGES: Partial<Record<ApiErrorCode, TranslationKey>> = {
   unreadable_pdf: 'error.unreadablePdf',
   payload_too_large: 'error.payloadTooLarge',
   not_configured: 'error.aiNotConfigured',
+  invalid_topic: 'error.invalidTopic',
   invalid_input: 'error.invalidInput',
 };
 

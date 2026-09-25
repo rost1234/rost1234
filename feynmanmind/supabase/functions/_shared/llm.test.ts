@@ -37,13 +37,25 @@ Deno.test('openai: sends strict json_schema and parses content', async () => {
   assertEquals(f.calls[0].body.messages[0], { role: 'system', content: 'sys' });
 });
 
-Deno.test('gemini: uses systemInstruction + responseJsonSchema', async () => {
-  const f = fakeFetch([{ status: 200, body: { candidates: [{ content: { parts: [{ text: '{"ok":' }, { text: 'false}' }] } }] } }]);
+const geminiOk: Reply = { status: 200, body: { candidates: [{ content: { parts: [{ text: '{"ok":' }, { text: 'false}' }] } }] } };
+
+Deno.test('gemini: uses systemInstruction + responseFormat JSON schema', async () => {
+  const f = fakeFetch([geminiOk]);
   const llm = createStructuredLlm({ provider: 'gemini', apiKey: 'g', model: 'gemini-x', fetchImpl: f.impl, sleep: noSleep });
   assertEquals(await llm(req), { ok: false });
+  assertEquals(f.calls[0].url.endsWith('/models/gemini-x:generateContent'), true);
   assertEquals(f.calls[0].headers['x-goog-api-key'], 'g');
-  assertEquals(f.calls[0].body.generationConfig.responseMimeType, 'application/json');
+  assertEquals(f.calls[0].body.generationConfig.responseFormat.text, { mimeType: 'APPLICATION_JSON', schema: { type: 'object' } });
   assertEquals(f.calls[0].body.systemInstruction.parts[0].text, 'sys');
+});
+
+Deno.test('gemini: falls back to legacy schema fields once on 400', async () => {
+  const f = fakeFetch([{ status: 400, body: { error: { message: 'Unknown name "responseFormat"' } } }, geminiOk]);
+  const llm = createStructuredLlm({ provider: 'gemini', apiKey: 'g', model: 'gemini-x', fetchImpl: f.impl, sleep: noSleep });
+  assertEquals(await llm(req), { ok: false });
+  assertEquals(f.calls.length, 2);
+  assertEquals(f.calls[1].body.generationConfig.responseMimeType, 'application/json');
+  assertEquals(f.calls[1].body.generationConfig.responseJsonSchema, { type: 'object' });
 });
 
 Deno.test('retries once on 5xx, then succeeds', async () => {

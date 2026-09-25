@@ -1,8 +1,9 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { evaluateExplanation } from '@/api/functions';
-import { addSession, cardsOf, sessionsOf } from '@/local/logic';
+import { addSession, cardsOf, sessionsOf, stationOf } from '@/local/logic';
 import { commit, getDB, newId } from '@/local/store';
 import { NotFoundError, type FeynmanSession } from '@/local/types';
+import { findCourse } from './courses';
 import { keys } from './keys';
 import { read } from './local';
 
@@ -46,6 +47,8 @@ export function useEvaluateExplanation(conceptId: string) {
         reference_cards: cardsOf(db, conceptId)
           .slice(0, 20)
           .map((c) => ({ question: c.question, answer: c.answer })),
+        // For guided-course concepts, the lesson the learner read is ground truth too.
+        reference_text: stationOf(db, conceptId, findCourse)?.station.explanation,
       });
       const sessionId = commit((current) => addSession(current, conceptId, explanation, response.evaluation, newId, new Date()));
       return { session_id: sessionId, evaluation: response.evaluation };

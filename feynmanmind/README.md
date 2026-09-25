@@ -20,6 +20,7 @@ device's bottom safe-area inset), so nothing is ever stuck under the home indica
 
 | Area | What it does |
 |---|---|
+| Learning paths | 6 built-in guided courses in Hebrew (physics, biology, math, computing & AI, economics, psychology): an ordered map of 7–8 stations, each with a lesson and flashcards, available offline. Type any topic and the AI builds a new map in the same format. |
 | Library | Subjects → concepts. Create, rename, delete. Mastery bar per subject. |
 | Feynman tutor | Write an explanation (drafts are kept per concept). Get a score, verdict, one Socratic question, jargon to unpack and misconceptions, without being told the answer. Revise and resubmit. Past attempts are saved. |
 | Flashcards | Generate from pasted text or a PDF (≤ 10 MB), or add and edit by hand. Duplicates are skipped. |
@@ -35,6 +36,7 @@ Offline, everything works except the two AI actions (explain feedback and card g
 ┌──────────────── device ────────────────┐        ┌──── Supabase Edge Functions ────┐
 │ screens (expo-router)                   │        │ feynman-evaluate    (stateless) │
 │   ↕ React Query hooks  (src/data)       │  HTTPS │ generate-flashcards (stateless) │
+│                                         │        │ generate-course     (stateless) │
 │   ↕ pure logic         (src/local)      │ ─────▶ │   → OpenAI / Gemini             │
 │   ↕ zustand store → SQLite kv / web LS  │        │ no DB, no auth, per-IP limit    │
 └─────────────────────────────────────────┘        └─────────────────────────────────┘
@@ -43,12 +45,13 @@ Offline, everything works except the two AI actions (explain feedback and card g
 - `src/local/logic.ts` holds every data operation as a pure function (`LocalDB → LocalDB`): uniqueness, cascading deletes, mastery, SM-2 reviews, stats, backup format. It's fully unit-tested.
 - `src/local/store.ts` persists the database with zustand, using the expo-sqlite `localStorage` on iOS/Android and the browser's localStorage on web.
 - Any change to the store refreshes the open screens automatically. The review queue is the exception: it stays stable until the session ends.
-- The AI functions receive all the context they need (concept title, recent Socratic questions, your cards) in the request, and store nothing.
+- The AI functions receive all the context they need (concept title, the lesson text, recent Socratic questions, your cards) in the request, and store nothing.
 
 ```
 src/app/            screens: onboarding, (app)/index (the single home screen),
                     concept/[id]/{index,explain,generate}, card/[id], session/[id], study
-src/features/home/  home sections: Today, Library, Progress, Settings
+src/features/home/  home sections: Today, Learning paths, Library, Progress, Settings
+src/content/        built-in courses (Hebrew) and the course type
 src/local/          LocalDB types, pure logic, persisted store
 src/data/           React Query hooks over the local store + AI calls
 src/api/functions   client for the two AI functions
@@ -71,23 +74,23 @@ That's all you need for the library, manual cards and reviews.
 
 ### AI features (optional)
 
+Step-by-step guide (Hebrew): **[docs/AI-SETUP.md](docs/AI-SETUP.md)**. In short:
+
 ```bash
-supabase link --project-ref <ref>
-supabase secrets set LLM_PROVIDER=openai OPENAI_API_KEY=...    # or LLM_PROVIDER=gemini GEMINI_API_KEY=...
-supabase secrets set LLM_MODEL=...                             # optional; defaults gpt-4o-mini / gemini-2.5-flash
-supabase functions deploy feynman-evaluate --no-verify-jwt
-supabase functions deploy generate-flashcards --no-verify-jwt
-cp .env.example .env.local   # EXPO_PUBLIC_SUPABASE_URL + EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+npx supabase link --project-ref <ref>
+npx supabase secrets set LLM_PROVIDER=gemini GEMINI_API_KEY=...   # or LLM_PROVIDER=openai OPENAI_API_KEY=...
+npx supabase functions deploy feynman-evaluate --no-verify-jwt
+npx supabase functions deploy generate-flashcards --no-verify-jwt
+npx supabase functions deploy generate-course --no-verify-jwt
 ```
 
-No database setup is needed. The AI key stays on the server. It never ships
-inside the app, where anyone could extract it.
+Then in the app: **Settings → AI connection**, paste the project URL and publishable key and press
+*Save and test*. The values are stored on the device, so a released APK can be connected without
+rebuilding. (Alternatively bake them in at build time via `.env.local`.) No database is needed.
 
-> **Cost and abuse:** with no accounts, the AI functions are public. They only
-> have a best-effort in-memory limit per IP (30 explanations and 15 card
-> generations per hour). Before a public launch, set a spending cap with your
-> AI provider and put a stronger limit in front (API gateway, CAPTCHA, or app
-> attestation).
+> **Cost and abuse:** with no accounts, the AI functions are public. They only have a best-effort
+> in-memory limit per IP (30 explanations, 15 card generations and 10 course maps per hour). Set a
+> spending cap with your AI provider before sharing the app.
 
 Reminders use `expo-notifications`, so test them in a development build
 (`npx expo run:ios|android` or `eas build --profile development`).

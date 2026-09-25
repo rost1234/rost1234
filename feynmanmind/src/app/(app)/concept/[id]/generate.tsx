@@ -5,7 +5,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Button, Card, InlineError, LoadingState, Screen, Segmented, Stepper, TextField } from '@/components/ui';
 import { useGenerateFlashcards } from '@/data/study';
 import { useT } from '@/i18n';
-import { isAiConfigured } from '@/lib/env';
+import { useAiConfigured } from '@/lib/env';
 import { errorMessage } from '@/lib/errors';
 import { formatBytes } from '@/lib/format';
 import { haptics } from '@/lib/haptics';
@@ -22,6 +22,7 @@ type Source = 'text' | 'pdf';
 export default function GenerateScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const t = useT();
+  const isAiConfigured = useAiConfigured();
   const { colors, typography } = useTheme();
   const generate = useGenerateFlashcards(id);
   const defaultCount = usePrefsStore((s) => s.defaultCardCount);

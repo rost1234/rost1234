@@ -137,3 +137,48 @@ describe('questionKey', () => {
     expect(questionKey('“Why?” (short)')).toBe('whyshort');
   });
 });
+
+describe('guided courses', () => {
+  const { courseProgress, startStation, stationOf, saveSubject: save, addSession: session } = jest.requireActual('../logic');
+  const course = {
+    id: 'demo',
+    title: 'Biology',
+    description: '',
+    icon: 'leaf-outline',
+    builtIn: true,
+    concepts: [
+      { key: 'a', title: 'Cells', summary: 's', explanation: 'e', cards: [{ question: 'Q1?', answer: 'A1' }, { question: 'Q2?', answer: 'A2' }] },
+      { key: 'b', title: 'DNA', summary: 's', explanation: 'e', cards: [{ question: 'Q3?', answer: 'A3' }] },
+    ],
+  };
+  const find = (id: string) => (id === course.id ? course : undefined);
+
+  it('starting a station creates the course subject, the concept and its cards, once', () => {
+    let db = emptyDB();
+    let id1: string, again: string;
+    [db, id1] = startStation(db, course, 'a', newId, NOW);
+    [db, again] = startStation(db, course, 'a', newId, NOW);
+    expect(again).toBe(id1);
+    expect(Object.values(db.subjects)).toHaveLength(1);
+    expect(Object.values(db.subjects)[0]).toMatchObject({ title: 'Biology', course_id: 'demo' });
+    expect(Object.values(db.cards)).toHaveLength(2);
+    expect(stationOf(db, id1, find)?.station.key).toBe('a');
+  });
+
+  it('does not collide with a subject of the same name the learner made', () => {
+    let db = emptyDB();
+    [db] = save(db, { title: 'biology' }, newId, NOW);
+    [db] = startStation(db, course, 'b', newId, NOW);
+    expect(Object.values(db.subjects).map((s: { title: string }) => s.title).sort()).toEqual(['Biology (2)', 'biology']);
+  });
+
+  it('tracks progress and recommends the first unmastered station', () => {
+    let db = emptyDB();
+    expect(courseProgress(db, course)).toMatchObject({ started: 0, mastered: 0, nextKey: 'a' });
+    let id: string;
+    [db, id] = startStation(db, course, 'a', newId, NOW);
+    expect(courseProgress(db, course).stations[0].status).toBe('started');
+    [db] = session(db, id, 'text', { ...evaluation, comprehension_score: 85 }, newId, NOW);
+    expect(courseProgress(db, course)).toMatchObject({ started: 1, mastered: 1, nextKey: 'b' });
+  });
+});

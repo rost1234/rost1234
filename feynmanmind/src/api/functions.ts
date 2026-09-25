@@ -3,7 +3,7 @@
  * the device and sends only the context each request needs.
  */
 import type { FeynmanEvaluation } from '../../supabase/functions/_shared/feynman-tutor.ts';
-import { aiBaseUrl, aiKey, isAiConfigured } from '@/lib/env';
+import { getAiConfig, type AiConfig } from '@/lib/env';
 
 export type { FeynmanEvaluation };
 
@@ -13,6 +13,8 @@ export interface EvaluateRequest {
   explanation: string;
   previous_questions: string[];
   reference_cards: { question: string; answer: string }[];
+  /** The lesson text, for concepts from a guided course. */
+  reference_text?: string;
 }
 
 export interface EvaluateResponse {
@@ -42,6 +44,7 @@ export type ApiErrorCode =
   | 'payload_too_large'
   | 'source_too_short'
   | 'unreadable_pdf'
+  | 'invalid_topic'
   | 'rate_limited'
   | 'llm_error'
   | 'internal'
@@ -63,13 +66,13 @@ export class ApiError extends Error {
   }
 }
 
-async function call<T>(name: string, body: Record<string, unknown>): Promise<T> {
-  if (!isAiConfigured) throw new ApiError('not_configured', 'AI server is not configured');
+async function call<T>(name: string, body: Record<string, unknown>, config: AiConfig | null = getAiConfig()): Promise<T> {
+  if (!config) throw new ApiError('not_configured', 'AI server is not configured');
   let res: Response;
   try {
-    res = await fetch(`${aiBaseUrl}/functions/v1/${name}`, {
+    res = await fetch(`${config.url}/functions/v1/${name}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', apikey: aiKey, Authorization: `Bearer ${aiKey}` },
+      headers: { 'Content-Type': 'application/json', apikey: config.key, Authorization: `Bearer ${config.key}` },
       body: JSON.stringify(body),
     });
   } catch (e) {
@@ -92,4 +95,33 @@ export function generateFlashcards({ source, ...rest }: GenerateRequest) {
     ...rest,
     ...('text' in source ? { text: source.text } : { pdf_base64: source.pdfBase64 }),
   });
+}
+
+export interface GeneratedCourse {
+  title: string;
+  description: string;
+  concepts: { key: string; title: string; summary: string; explanation: string; cards: { question: string; answer: string }[] }[];
+}
+
+export function generateCourse(topic: string, language: 'he' | 'en') {
+  return call<{ prompt_version: string; course: GeneratedCourse }>('generate-course', { topic, language });
+}
+
+export type ConnectionResult = 'ok' | 'unreachable' | 'not_found' | 'server_error';
+
+/**
+ * Checks a server without spending AI tokens: an intentionally empty request
+ * must come back as a 400 validation error from our function.
+ */
+export async function testConnection(config: AiConfig): Promise<ConnectionResult> {
+  try {
+    await call('feynman-evaluate', {}, config);
+    return 'server_error';
+  } catch (e) {
+    if (!(e instanceof ApiError)) return 'server_error';
+    if (e.code === 'invalid_input') return 'ok';
+    if (e.code === 'network') return 'unreachable';
+    if (e.status === 404) return 'not_found';
+    return 'server_error';
+  }
 }
