@@ -70,6 +70,9 @@ export interface WrittenLesson {
 
 const clip = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
+/** A real lesson is several paragraphs; anything shorter is a lazy answer and gets retried. */
+const MIN_LESSON_CHARS = 400;
+
 export function parseLesson(raw: unknown): WrittenLesson {
   const o = (raw ?? {}) as Record<string, unknown>;
   const explanation = clip(o.explanation, 6000);
@@ -79,7 +82,7 @@ export function parseLesson(raw: unknown): WrittenLesson {
     .slice(0, 6);
   // Empty explanation + no cards is the prompt's "can't teach this" answer.
   if (!explanation && cards.length === 0) return { explanation: '', cards: [] };
-  if (explanation.length < 80 || cards.length < 2) throw new Error('lesson is too thin');
+  if (explanation.length < MIN_LESSON_CHARS || cards.length < 2) throw new Error('lesson is too thin');
   return { explanation, cards };
 }
 

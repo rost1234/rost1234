@@ -4,7 +4,7 @@ import type { StructuredLlm } from '../_shared/llm.ts';
 import { parseLesson } from '../_shared/lesson-writer.ts';
 import { parseLessonInput, writeLesson } from './service.ts';
 
-const explanation = 'A lesson paragraph that is long enough to count as a real explanation of the idea. '.repeat(2);
+const explanation = 'A lesson paragraph that is long enough to count as a real explanation of the idea. '.repeat(6);
 
 Deno.test('parseLessonInput defaults and validation', () => {
   const input = parseLessonInput({ concept_title: ' Entropy ', previous_titles: ['Heat', 2] });
@@ -20,6 +20,8 @@ Deno.test('parseLesson keeps valid cards and rejects thin lessons', () => {
   const lesson = parseLesson({ explanation, cards: [{ question: 'Q1?', answer: 'A' }, { question: '', answer: 'x' }, { question: 'Q2?', answer: 'B' }] });
   assertEquals(lesson.cards.length, 2);
   assertThrows(() => parseLesson({ explanation: 'short', cards: [] }));
+  // A one-paragraph answer with cards is still too thin to be a lesson.
+  assertThrows(() => parseLesson({ explanation: 'x'.repeat(200), cards: [{ question: 'Q1?', answer: 'A' }, { question: 'Q2?', answer: 'B' }] }), Error, 'too thin');
   assertEquals(parseLesson({ explanation: '', cards: [] }).cards, []);
 });
 

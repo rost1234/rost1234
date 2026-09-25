@@ -58,6 +58,21 @@ Deno.test('gemini: falls back to legacy schema fields once on 400', async () => 
   assertEquals(f.calls[1].body.generationConfig.responseJsonSchema, { type: 'object' });
 });
 
+Deno.test('gemini: an overloaded main model retries on the fallback model', async () => {
+  const f = fakeFetch([{ status: 503, body: { error: { message: 'high demand' } } }, geminiOk]);
+  const llm = createStructuredLlm({ provider: 'gemini', apiKey: 'g', model: 'main', fallbackModel: 'lite', fetchImpl: f.impl, sleep: noSleep });
+  assertEquals(await llm(req), { ok: false });
+  assertEquals(f.calls[0].url.includes('/models/main:'), true);
+  assertEquals(f.calls[1].url.includes('/models/lite:'), true);
+});
+
+Deno.test('invalid output retries on the same model, not the fallback', async () => {
+  const f = fakeFetch([{ status: 200, body: { candidates: [{ content: { parts: [{ text: '{"nope":1}' }] } }] } }, geminiOk]);
+  const llm = createStructuredLlm({ provider: 'gemini', apiKey: 'g', model: 'main', fallbackModel: 'lite', fetchImpl: f.impl, sleep: noSleep });
+  assertEquals(await llm(req), { ok: false });
+  assertEquals(f.calls[1].url.includes('/models/main:'), true);
+});
+
 Deno.test('retries once on 5xx, then succeeds', async () => {
   const f = fakeFetch([{ status: 503, body: {} }, openAiOk('{"ok":true}')]);
   const llm = createStructuredLlm({ provider: 'openai', apiKey: 'k', model: 'm', fetchImpl: f.impl, sleep: noSleep });

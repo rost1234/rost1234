@@ -50,6 +50,7 @@ npx supabase functions deploy generate-lesson --no-verify-jwt
 ```
 
 - ברירת המחדל היא המודל `gemini-3.8-flash`. אפשר להחליף מודל עם `npx supabase secrets set LLM_MODEL=<שם_מודל>`.
+- כשהמודל הראשי עמוס (שגיאת 503/429), השרת עובר אוטומטית ל-`gemini-3.5-flash-lite`. אפשר לשנות עם `LLM_FALLBACK_MODEL=<שם_מודל>`.
 - אין צורך במסד נתונים: אל תריצו `db push`.
 
 ## שלב 4: חיבור האפליקציה

@@ -35,6 +35,8 @@ export interface LlmConfig {
   provider: Provider;
   apiKey: string;
   model: string;
+  /** Used for the retry when the main model is overloaded or unavailable. */
+  fallbackModel?: string;
   timeoutMs?: number;
   fetchImpl?: typeof fetch;
   /** Waits between retries; injectable so tests don't sleep. */
@@ -47,6 +49,11 @@ const DEFAULT_MODELS: Record<Provider, string> = {
   gemini: 'gemini-3.8-flash',
 };
 
+// The main Gemini model often answers 503 "high demand"; the lighter model keeps working.
+const DEFAULT_FALLBACK_MODELS: Partial<Record<Provider, string>> = {
+  gemini: 'gemini-3.5-flash-lite',
+};
+
 export function llmConfigFromEnv(): LlmConfig {
   const provider = (Deno.env.get('LLM_PROVIDER') ?? 'openai') as Provider;
   if (provider !== 'openai' && provider !== 'gemini') {
@@ -55,7 +62,12 @@ export function llmConfigFromEnv(): LlmConfig {
   const keyName = provider === 'openai' ? 'OPENAI_API_KEY' : 'GEMINI_API_KEY';
   const apiKey = Deno.env.get(keyName);
   if (!apiKey) throw new Error(`Missing environment variable ${keyName}`);
-  return { provider, apiKey, model: Deno.env.get('LLM_MODEL') ?? DEFAULT_MODELS[provider] };
+  return {
+    provider,
+    apiKey,
+    model: Deno.env.get('LLM_MODEL') ?? DEFAULT_MODELS[provider],
+    fallbackModel: Deno.env.get('LLM_FALLBACK_MODEL') ?? DEFAULT_FALLBACK_MODELS[provider],
+  };
 }
 
 /** HTTP status that is worth one retry. */
@@ -66,9 +78,9 @@ export function createStructuredLlm(config: LlmConfig): StructuredLlm {
   const sleep = config.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
   const timeoutMs = config.timeoutMs ?? 45_000;
 
-  async function callOnce(req: StructuredRequest<unknown>, legacyGemini = false): Promise<string> {
+  async function callOnce(req: StructuredRequest<unknown>, model: string, legacyGemini = false): Promise<string> {
     const { url, headers, body } =
-      config.provider === 'openai' ? openAiRequest(config, req) : geminiRequest(config, req, legacyGemini);
+      config.provider === 'openai' ? openAiRequest(config, model, req) : geminiRequest(config, model, req, legacyGemini);
 
     let res: Response;
     try {
@@ -90,7 +102,7 @@ export function createStructuredLlm(config: LlmConfig): StructuredLlm {
     // older (deprecated but long-supported) ones once before giving up.
     if (res.status === 400 && config.provider === 'gemini' && !legacyGemini) {
       console.warn('[llm] gemini rejected responseFormat, retrying with legacy schema fields');
-      return callOnce(req, true);
+      return callOnce(req, model, true);
     }
     if (!res.ok) {
       console.error('[llm] provider error', res.status, JSON.stringify(payload)?.slice(0, 500));
@@ -102,10 +114,12 @@ export function createStructuredLlm(config: LlmConfig): StructuredLlm {
   return async function generate<T>(req: StructuredRequest<T>): Promise<T> {
     let lastError: unknown;
     // Up to 2 attempts: one retry on transient errors or malformed output.
+    // When the main model is overloaded, the retry goes to the fallback model.
     for (let attempt = 0; attempt < 2; attempt++) {
       if (attempt > 0) await sleep(800);
+      const model = attempt > 0 && lastError instanceof RetryableError && config.fallbackModel ? config.fallbackModel : config.model;
       try {
-        const text = await callOnce(req as StructuredRequest<unknown>);
+        const text = await callOnce(req as StructuredRequest<unknown>, model);
         return req.parse(JSON.parse(text));
       } catch (err) {
         if (err instanceof LlmError) throw err;
@@ -121,12 +135,12 @@ export function createStructuredLlm(config: LlmConfig): StructuredLlm {
   };
 }
 
-function openAiRequest(config: LlmConfig, req: StructuredRequest<unknown>) {
+function openAiRequest(config: LlmConfig, model: string, req: StructuredRequest<unknown>) {
   return {
     url: 'https://api.openai.com/v1/chat/completions',
     headers: { Authorization: `Bearer ${config.apiKey}` },
     body: {
-      model: config.model,
+      model,
       temperature: req.temperature ?? 0.3,
       max_completion_tokens: req.maxOutputTokens ?? 2000,
       messages: [
@@ -148,12 +162,12 @@ function openAiText(payload: any): string {
   return message.content;
 }
 
-function geminiRequest(config: LlmConfig, req: StructuredRequest<unknown>, legacy: boolean) {
+function geminiRequest(config: LlmConfig, model: string, req: StructuredRequest<unknown>, legacy: boolean) {
   const output = legacy
     ? { responseMimeType: 'application/json', responseJsonSchema: req.schema }
     : { responseFormat: { text: { mimeType: 'APPLICATION_JSON', schema: req.schema } } };
   return {
-    url: `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:generateContent`,
+    url: `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
     headers: { 'x-goog-api-key': config.apiKey },
     body: {
       systemInstruction: { parts: [{ text: req.system }] },
