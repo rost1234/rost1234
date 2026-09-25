@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { showConfirm } from '@/components/Overlay';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -46,10 +47,15 @@ function ActiveTimer() {
   if (!timer || !snapshot) return null;
 
   const confirmCancel = () =>
-    Alert.alert(t('focus.cancelTitle'), t('focus.cancelBody'), [
-      { text: t('focus.keepGoing'), style: 'cancel' },
-      { text: t('focus.cancelSession'), style: 'destructive', onPress: () => runDetached(cancel()) },
-    ]);
+    showConfirm({
+      title: t('focus.cancelTitle'),
+      message: t('focus.cancelBody'),
+      cancelLabel: t('focus.keepGoing'),
+      confirmLabel: t('focus.cancelSession'),
+      destructive: true,
+      icon: 'stop-circle-outline',
+      onConfirm: () => runDetached(cancel()),
+    });
 
   return (
     <View style={styles.active}>

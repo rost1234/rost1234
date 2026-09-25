@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
+import { showConfirm } from '@/components/Overlay';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { toErrorMessage } from '@/core/errors';
@@ -67,9 +68,9 @@ export function SettingsScreen() {
       }
       const { counts, backup } = picked.pending;
       const exported = backup.exportedAt ? t('set.backupFrom', { date: backup.exportedAt.slice(0, 10) }) : '';
-      Alert.alert(
-        t('set.replaceTitle'),
-        t('set.replaceBody', {
+      showConfirm({
+        title: t('set.replaceTitle'),
+        message: t('set.replaceBody', {
           from: exported,
           habits: counts.habits,
           logs: counts.habit_logs,
@@ -77,11 +78,11 @@ export function SettingsScreen() {
           sessions: counts.focus_sessions,
           reflections: counts.daily_reflections,
         }),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('set.replace'), style: 'destructive', onPress: () => void applyImport(picked.pending) },
-        ],
-      );
+        confirmLabel: t('set.replace'),
+        destructive: true,
+        icon: 'cloud-download-outline',
+        onConfirm: () => void applyImport(picked.pending),
+      });
     } catch (error) {
       setMessage({ tone: 'danger', text: t('set.readFailed', { error: toErrorMessage(error) }) });
     } finally {

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ActionSheetIOS, Alert, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
+import { showActionSheet, type SheetAction } from '@/components/Overlay';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import type { Task } from '@/domain/models';
 import { MAX_OPEN_TASKS_PER_DAY } from '@/domain/taskPlanning';
@@ -9,24 +10,14 @@ import { t, useT } from '@/i18n';
 
 function openTaskMenu(task: Task, isMain: boolean) {
   const { decide, today } = useTaskStore.getState();
-  const actions = [
+  const actions: SheetAction[] = [
     ...(today && !task.isCompleted
-      ? [{ label: isMain ? t('tasks.unsetMain') : t('tasks.setMain'), run: () => useHighlightStore.getState().toggle(today, task.id) }]
+      ? [{ label: isMain ? t('tasks.unsetMain') : t('tasks.setMain'), icon: isMain ? ('star' as const) : ('star-outline' as const), run: () => useHighlightStore.getState().toggle(today, task.id) }]
       : []),
-    { label: t('tasks.moveLater'), run: () => decide(task.id, 'later') },
-    { label: t('tasks.drop'), run: () => decide(task.id, 'drop'), destructive: true },
+    { label: t('tasks.moveLater'), icon: 'time-outline', run: () => decide(task.id, 'later') },
+    { label: t('tasks.drop'), icon: 'trash-outline', run: () => decide(task.id, 'drop'), destructive: true },
   ];
-  if (Platform.OS === 'ios') {
-    ActionSheetIOS.showActionSheetWithOptions(
-      { title: task.title, options: [...actions.map((a) => a.label), t('common.cancel')], destructiveButtonIndex: actions.length - 1, cancelButtonIndex: actions.length },
-      (index) => actions[index]?.run(),
-    );
-    return;
-  }
-  Alert.alert(task.title, undefined, [
-    ...actions.map((a) => ({ text: a.label, onPress: a.run, style: a.destructive ? ('destructive' as const) : ('default' as const) })),
-    { text: t('common.cancel'), style: 'cancel' as const },
-  ]);
+  showActionSheet({ title: task.title, actions });
 }
 
 export function TaskList() {

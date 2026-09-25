@@ -1,7 +1,8 @@
 import { memo, useEffect, useRef, useState } from 'react';
-import { ActionSheetIOS, Alert, Animated, Platform, Pressable, Text, View } from 'react-native';
+import { Animated, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { showActionSheet, type SheetAction } from '@/components/Overlay';
 import { ProgressBar } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { haptics } from '@/core/haptics';
@@ -17,31 +18,15 @@ interface HabitCardProps {
 
 function openHabitMenu(habit: Habit, isSkipped: boolean) {
   const { skipHabit, archiveHabit, undoHabitStep } = useHabitStore.getState();
-  const skipLabel = isSkipped ? t('habit.unskipToday') : t('habit.skipToday');
-  const actions: { label: string; run: () => void; destructive?: boolean }[] = [
-    { label: skipLabel, run: () => skipHabit(habit.id) },
-    { label: t('habit.edit'), run: () => router.push({ pathname: '/habit/[id]', params: { id: habit.id } }) },
-    { label: t('habit.resetToday'), run: () => undoHabitStep(habit.id) },
-    { label: t('habit.archive'), destructive: true, run: () => void archiveHabit(habit.id) },
+  const actions: SheetAction[] = [
+    isSkipped
+      ? { label: t('habit.unskipToday'), icon: 'arrow-undo-outline', run: () => skipHabit(habit.id) }
+      : { label: t('habit.skipToday'), icon: 'play-skip-forward-outline', run: () => skipHabit(habit.id) },
+    { label: t('habit.edit'), icon: 'create-outline', run: () => router.push({ pathname: '/habit/[id]', params: { id: habit.id } }) },
+    { label: t('habit.resetToday'), icon: 'refresh-outline', run: () => undoHabitStep(habit.id) },
+    { label: t('habit.archive'), icon: 'archive-outline', destructive: true, run: () => void archiveHabit(habit.id) },
   ];
-
-  if (Platform.OS === 'ios') {
-    ActionSheetIOS.showActionSheetWithOptions(
-      {
-        title: habit.title,
-        message: habit.why ? t('habit.why', { why: habit.why }) : undefined,
-        options: [...actions.map((a) => a.label), t('common.cancel')],
-        destructiveButtonIndex: actions.findIndex((a) => a.destructive),
-        cancelButtonIndex: actions.length,
-      },
-      (index) => actions[index]?.run(),
-    );
-    return;
-  }
-  Alert.alert(habit.title, habit.why ? t('habit.why', { why: habit.why }) : undefined, [
-    ...actions.map((a) => ({ text: a.label, onPress: a.run, style: a.destructive ? ('destructive' as const) : ('default' as const) })),
-    { text: t('common.cancel'), style: 'cancel' as const },
-  ]);
+  showActionSheet({ title: habit.title, message: habit.why ? t('habit.why', { why: habit.why }) : undefined, actions });
 }
 
 /** Springs the check circle whenever the habit becomes done. */

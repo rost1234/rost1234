@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Stack, type ErrorBoundaryProps } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { runDetached } from '@/core/errors';
+import { OverlayHost } from '@/components/Overlay';
 import { DashboardSkeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
@@ -134,6 +135,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <Bootstrap />
+      <OverlayHost />
     </SafeAreaProvider>
   );
 }
