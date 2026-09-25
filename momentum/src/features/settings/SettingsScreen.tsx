@@ -12,14 +12,17 @@ import { AppearanceSetting } from './AppearanceSetting';
 import { DataTransparency } from './DataTransparency';
 import { PauseSetting } from './PauseSetting';
 import { AutoBackupSetting, ReflectionLockSetting } from './PrivacySetting';
+import { NotificationSetting } from './NotificationSetting';
 import { ReminderSetting } from './ReminderSetting';
 import { useSettingsStore } from '@/state/settingsStore';
 import { type TranslationKey, useT } from '@/i18n';
+import { useBottomSpace } from '@/components/useBottomSpace';
 
 export function SettingsScreen() {
   const t = useT();
   const { typography } = useTheme();
   const styles = useStyles();
+  const bottomSpace = useBottomSpace();
   const freezes = useSettingsStore((s) => s.settings?.streakFreezesAvailable ?? 0);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -88,7 +91,7 @@ export function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}>
         <SheetHeader title={t('set.title')} />
         {message ? <Banner tone={message.tone} message={message.text} onDismiss={() => setMessage(null)} /> : null}
 
@@ -96,6 +99,8 @@ export function SettingsScreen() {
         <AppearanceSetting />
 
         <SectionTitle>{t('set.reminder')}</SectionTitle>
+        <NotificationSetting />
+        <View style={{ height: spacing.md }} />
         <ReminderSetting />
 
         <SectionTitle>{t('set.yourData')}</SectionTitle>
@@ -130,6 +135,6 @@ export function SettingsScreen() {
 
 const useStyles = makeStyles(({ colors }) => ({
   safe: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl },
+  content: { padding: spacing.lg },
   card: { gap: spacing.md },
 }));

@@ -1,4 +1,4 @@
-import { addDays, type LocalDateString } from '@/core/localDate';
+import { addDays, getWeekday, type LocalDateString, type Weekday } from '@/core/localDate';
 import { isHabitDueOn } from './habitSchedule';
 import type { Habit, HabitLog, TimeOfDay } from './models';
 
@@ -44,9 +44,18 @@ const DEFAULT_MINUTES: Record<TimeOfDay, number> = { any: 10 * 60, morning: 8 * 
  * completed (last 30 logs), 15 minutes earlier, rounded to 5 min. Falls back to
  * the habit's part of the day.
  */
-export function usualReminderMinutes(habit: Pick<Habit, 'timeOfDay'>, logs: readonly Pick<HabitLog, 'status' | 'updatedAt'>[]): number {
-  const minutes = logs
-    .filter((l) => l.status === 'completed')
+export function usualReminderMinutes(
+  habit: Pick<Habit, 'timeOfDay'>,
+  logs: readonly Pick<HabitLog, 'status' | 'updatedAt' | 'logDate'>[],
+  weekday?: Weekday,
+): number {
+  const completed = logs.filter((l) => l.status === 'completed');
+  // Weekends often run on a different clock: prefer the same weekday when there's enough of it.
+  if (weekday !== undefined) {
+    const sameDay = completed.slice(-60).filter((l) => getWeekday(l.logDate) === weekday);
+    if (sameDay.length >= 3) return usualReminderMinutes(habit, sameDay);
+  }
+  const minutes = completed
     .slice(-30)
     .map((l) => {
       const d = new Date(l.updatedAt);

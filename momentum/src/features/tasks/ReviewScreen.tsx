@@ -7,12 +7,14 @@ import { formatFriendlyDate } from '@/core/localDate';
 import { MAX_OPEN_TASKS_PER_DAY, hasRoomToday } from '@/domain/taskPlanning';
 import { useTaskStore } from '@/state/taskStore';
 import { useT } from '@/i18n';
+import { useBottomSpace } from '@/components/useBottomSpace';
 
 /** Bullet-journal style migration: every unfinished task gets a conscious decision. */
 export function ReviewScreen() {
   const t = useT();
   const { typography } = useTheme();
   const styles = useStyles();
+  const bottomSpace = useBottomSpace();
   const overdue = useTaskStore((s) => s.overdue);
   const tasks = useTaskStore((s) => s.tasks);
   const today = useTaskStore((s) => s.today);
@@ -26,7 +28,7 @@ export function ReviewScreen() {
   }, [overdue.length]);
 
   return (
-    <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.flex} contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}>
       <Text style={typography.body}>
         {t('review.intro', { max: MAX_OPEN_TASKS_PER_DAY })}
       </Text>

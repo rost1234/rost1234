@@ -14,6 +14,7 @@ import { TrendCharts } from './TrendCharts';
 import { SoundExperimentCard } from './SoundExperimentCard';
 import { UsageCard } from './UsageCard';
 import { useT } from '@/i18n';
+import { useBottomSpace } from '@/components/useBottomSpace';
 
 function StatTile({ value, label, tint }: { value: string; label: string; tint?: string }) {
   const { typography } = useTheme();
@@ -30,6 +31,7 @@ export function AnalyticsScreen() {
   const t = useT();
   const { colors } = useTheme();
   const styles = useStyles();
+  const bottomSpace = useBottomSpace();
   const today = useLocalDate();
   const range = useAnalyticsStore((s) => s.range);
   const data = useAnalyticsStore((s) => s.data);
@@ -49,7 +51,7 @@ export function AnalyticsScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={false} onRefresh={reload} />}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]} refreshControl={<RefreshControl refreshing={false} onRefresh={reload} />}>
         <SheetHeader title={t('ins.title')} />
         <View style={styles.rangeRow}>
           <Chip label={t('ins.week')} selected={range === 'week'} onPress={() => selectRange('week')} />
@@ -99,7 +101,7 @@ export function AnalyticsScreen() {
 
 const useStyles = makeStyles(({ colors }) => ({
   safe: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.sm },
+  content: { padding: spacing.lg, gap: spacing.sm },
   rangeRow: { flexDirection: 'row', gap: spacing.sm, marginVertical: spacing.sm },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   tile: { flexGrow: 1, flexBasis: '45%', gap: 2 },

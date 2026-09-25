@@ -32,6 +32,7 @@ import { MoreSection } from './MoreSection';
 import { ReflectionPrompt } from './ReflectionPrompt';
 import { TaskList } from './TaskList';
 import { useT } from '@/i18n';
+import { useBottomSpace } from '@/components/useBottomSpace';
 
 const EVENING_HOUR = 17;
 
@@ -54,6 +55,8 @@ function useDashboardData(today: string, hour: number) {
 export function DashboardScreen() {
   const t = useT();
   const styles = useStyles();
+  // Extra room for the floating focus button.
+  const bottomSpace = useBottomSpace(72);
   // Re-renders (and reloads) automatically when the local date rolls over.
   const today = useLocalDate();
   const status = useHabitStore((s) => s.status);
@@ -108,7 +111,7 @@ export function DashboardScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}
         refreshControl={<RefreshControl refreshing={false} onRefresh={reload} />}
         keyboardShouldPersistTaps="handled"
       >
@@ -175,6 +178,7 @@ export function DashboardScreen() {
           actionLabel={t('common.undo')}
           onAction={undoLast}
           onHide={dismissLastChange}
+          aboveFab
         />
       ) : null}
       <FocusFab />
@@ -185,7 +189,6 @@ export function DashboardScreen() {
 
 const useStyles = makeStyles(({ colors, typography }) => ({
   safe: { flex: 1, backgroundColor: colors.background },
-  // Room for the floating focus button.
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl + 72 },
+  content: { padding: spacing.lg },
   link: { ...typography.label, color: colors.primary },
 }));

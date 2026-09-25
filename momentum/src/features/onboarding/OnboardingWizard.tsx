@@ -5,16 +5,18 @@ import { router } from 'expo-router';
 import { toErrorMessage } from '@/core/errors';
 import { Banner, Button } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
-import { requestNotificationPermission, scheduleReflectionReminder } from '@/services/notifications';
+import { requestNotificationPermission } from '@/services/notifications';
 import { useSettingsStore } from '@/state/settingsStore';
 import { GoalStep, NotificationStep, PresetStep } from './OnboardingSteps';
 import { canAdvance, initialWizardState, selectedPresets, wizardReducer } from './wizardState';
 import { useT } from '@/i18n';
+import { useBottomSpace } from '@/components/useBottomSpace';
 
 export function OnboardingWizard() {
   const t = useT();
   const { typography } = useTheme();
   const styles = useStyles();
+  const bottomSpace = useBottomSpace();
   const [state, dispatch] = useReducer(wizardReducer, initialWizardState);
   const [isSaving, setIsSaving] = useState(false);
   const [isAsking, setIsAsking] = useState(false);
@@ -25,11 +27,8 @@ export function OnboardingWizard() {
   const askPermission = async () => {
     setIsAsking(true);
     const status = await requestNotificationPermission();
+    // The notification planner schedules the reflection reminder once Today loads.
     dispatch({ type: 'setNotificationStatus', status });
-    if (status === 'granted') {
-      const minutes = useSettingsStore.getState().settings?.reflectionReminderMinutes ?? 21 * 60;
-      await scheduleReflectionReminder(Math.floor(minutes / 60), minutes % 60).catch(() => false);
-    }
     setIsAsking(false);
   };
 
@@ -54,7 +53,7 @@ export function OnboardingWizard() {
         <Text style={[typography.caption, { marginLeft: 'auto' }]}>{t('onb.stepOf', { step: state.step })}</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}>
         {error ? <Banner message={error} onDismiss={() => setError(null)} /> : null}
         {state.step === 1 ? (
           <GoalStep goal={state.goal} onSelect={(goal) => dispatch({ type: 'selectGoal', goal })} />
@@ -88,7 +87,7 @@ const useStyles = makeStyles(({ colors }) => ({
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.xl, paddingTop: spacing.lg },
   dot: { width: 28, height: 6, borderRadius: radius.pill, backgroundColor: colors.border },
   dotActive: { backgroundColor: colors.primary },
-  content: { padding: spacing.xl, paddingBottom: spacing.xxl },
+  content: { padding: spacing.xl },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',

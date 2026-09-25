@@ -10,6 +10,7 @@ import type { DailyReflection, MoodScore } from '@/domain/models';
 import { useReflectionStore } from '@/state/reflectionStore';
 import { MOOD_OPTIONS } from './mood';
 import { type TranslationKey, useT } from '@/i18n';
+import { useBottomSpace } from '@/components/useBottomSpace';
 
 type Step = 1 | 2 | 3;
 
@@ -71,6 +72,7 @@ function ReflectionForm({ logDate, initial }: { logDate: LocalDateString; initia
   const t = useT();
   const { colors, typography } = useTheme();
   const styles = useStyles();
+  const bottomSpace = useBottomSpace();
   const save = useReflectionStore((s) => s.save);
   const [step, setStep] = useState<Step>(1);
   const [mood, setMood] = useState<MoodScore | null>(initial?.moodScore ?? null);
@@ -95,7 +97,7 @@ function ReflectionForm({ logDate, initial }: { logDate: LocalDateString; initia
 
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]} keyboardShouldPersistTaps="handled">
         <Text style={typography.caption}>{t('refl.stepOf', { step })}</Text>
         {error ? <Banner message={error} onDismiss={() => setError(null)} /> : null}
 

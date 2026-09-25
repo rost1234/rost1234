@@ -12,6 +12,7 @@ import { AtomicFields, type AtomicValues } from './AtomicFields';
 import { RhythmFields } from './RhythmFields';
 import { TemplatePicker } from './TemplatePicker';
 import { useT } from '@/i18n';
+import { useBottomSpace } from '@/components/useBottomSpace';
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   const { typography } = useTheme();
@@ -29,6 +30,7 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
   const t = useT();
   const { typography } = useTheme();
   const styles = useStyles();
+  const bottomSpace = useBottomSpace();
   const addHabit = useHabitStore((s) => s.addHabit);
   const updateHabit = useHabitStore((s) => s.updateHabit);
   const [title, setTitle] = useState(habit?.title ?? '');
@@ -115,7 +117,7 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
 
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]} keyboardShouldPersistTaps="handled">
         {error ? <Banner message={error} onDismiss={() => setError(null)} /> : null}
         {!habit ? <TemplatePicker onPick={applyTemplate} /> : null}
         <Field label={t('form.habit')}>

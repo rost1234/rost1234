@@ -126,3 +126,20 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Reflection: 3 steps save; reopening shows the saved answers
 - [ ] Insights: week/month switch, heatmap and trend charts render
 - [ ] Leave the app open across midnight (or change the date) → Today refreshes to the new day
+
+## Smart notifications, main task, bottom buffer
+- [ ] Every screen (Home, Insights, Settings, Library, Focus, habit form, reflection, weekly) scrolls until the last item
+      is fully visible above the navigation bar; on Home it also clears the ▶ Focus button
+- [ ] The Undo toast appears above the ▶ Focus button, not on top of it
+- [ ] Settings → Notifications → Smart notifications: "Coming up" lists the next reminders; ticking a habit on Home removes
+      its reminder from the list
+- [ ] Two habits with smart reminders at a similar time arrive as one notification ("2 habits are waiting")
+- [ ] Quiet hours 22:00–07:00: a habit usually done at 23:00 is reminded at 21:45
+- [ ] Most per day = 1 with reflection reminder on → only the reflection reminder is listed for that day
+- [ ] Streak rescue: a habit with a 3+ day streak not done today → one notification at 20:30 with "Done ✓"; done earlier → none
+- [ ] Morning plan on → next morning "Good morning ☀️ · N habits today. First up: …"
+- [ ] Reflection written today → no evening reminder today; tomorrow's is still listed
+- [ ] With notifications blocked the card says so and "Allow notifications" asks again
+- [ ] After updating, the old daily reflection reminder doesn't fire twice (legacy reminders are replaced)
+- [ ] Long-press a task → "⭐ Make it today's main task": it moves to the top with a ⭐ Main tag; long-press again → remove;
+      tomorrow it is no longer marked

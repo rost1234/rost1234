@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { toErrorMessage } from '@/core/errors';
 import { inTransaction, repositories } from '@/data/repositories';
 import type { AppSettings, NewHabit } from '@/domain/models';
-import { cancelReflectionReminder, scheduleReflectionReminder } from '@/services/notifications';
+import { hasPermission } from '@/services/notifications';
 
 type LoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -15,8 +15,8 @@ interface SettingsState {
   completeOnboarding: (habits: readonly NewHabit[], goal?: string | null) => Promise<void>;
   setFreezesAvailable: (count: number) => void;
   /**
-   * Saves the reminder time (minutes after midnight, null = off) and
-   * reschedules the notification. Returns false if notifications are blocked.
+   * Saves the reminder time (minutes after midnight, null = off); the notification
+   * planner reschedules from it. Returns false if notifications are blocked.
    */
   setReflectionReminder: (minutes: number | null) => Promise<boolean>;
 }
@@ -50,11 +50,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     await repositories.settings.setReflectionReminder(minutes);
     const current = get().settings;
     if (current) set({ settings: { ...current, reflectionReminderMinutes: minutes } });
-    if (minutes === null) {
-      await cancelReflectionReminder();
-      return true;
-    }
-    return scheduleReflectionReminder(Math.floor(minutes / 60), minutes % 60);
+    return minutes === null || hasPermission();
   },
 
   setFreezesAvailable: (count) => {

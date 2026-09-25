@@ -2,7 +2,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { runDetached } from '@/core/errors';
 import { crossedMilestone } from '@/domain/rhythm';
-import { cancelTodaysReminder, syncHabitReminders } from '@/services/habitReminders';
 import { useHabitStore } from './habitStore';
 
 const MILESTONES_KEY = 'momentum.milestones.v1';
@@ -42,12 +41,10 @@ async function celebrateOnce(habitId: string, habitTitle: string, days: number):
 }
 
 let started = false;
-let syncTimer: ReturnType<typeof setTimeout> | null = null;
 
 /**
  * Side effects that follow habit state, kept out of the store itself:
- * milestone celebrations, cancelling today's reminder once done, and
- * (debounced) re-syncing smart reminders when habits change or load.
+ * milestone celebrations. (Reminders follow it too, in `services/notificationPlanner`.)
  */
 export function startHabitEffects(): void {
   if (started) return;
@@ -64,22 +61,6 @@ export function startHabitEffects(): void {
         const milestone = crossedMilestone(before, after);
         if (milestone) runDetached(celebrateOnce(habit.id, habit.title, milestone));
       }
-    }
-
-    // Completed today → no reminder needed any more today.
-    for (const habitId of Object.keys(state.logs)) {
-      const now = state.logs[habitId]?.[today]?.status;
-      const was = prev.logs[habitId]?.[today]?.status;
-      if (now === 'completed' && was !== 'completed') cancelTodaysReminder(habitId, today);
-    }
-
-    // Habits loaded or edited → re-plan smart reminders (debounced).
-    if (state.habits !== prev.habits || (state.status === 'ready' && prev.status !== 'ready')) {
-      if (syncTimer) clearTimeout(syncTimer);
-      syncTimer = setTimeout(() => {
-        const s = useHabitStore.getState();
-        if (s.today) runDetached(syncHabitReminders(s.habits, s.logs, s.today));
-      }, 1500);
     }
   });
 }

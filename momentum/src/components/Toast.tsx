@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Animated, Pressable, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { makeStyles, radius, spacing } from './theme';
 
 interface ToastProps {
@@ -10,11 +11,16 @@ interface ToastProps {
   onAction?: () => void;
   onHide: () => void;
   durationMs?: number;
+  /** Sit above Home's floating Focus button instead of covering it. */
+  aboveFab?: boolean;
 }
 
+const FAB_CLEARANCE = 64;
+
 /** Small bottom toast with an optional action (e.g. Undo). */
-export function Toast({ id, message, actionLabel, onAction, onHide, durationMs = 4000 }: ToastProps) {
+export function Toast({ id, message, actionLabel, onAction, onHide, durationMs = 4000, aboveFab }: ToastProps) {
   const styles = useStyles();
+  const bottom = useSafeAreaInsets().bottom + spacing.lg + (aboveFab ? FAB_CLEARANCE : 0);
   const [opacity] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
@@ -27,7 +33,7 @@ export function Toast({ id, message, actionLabel, onAction, onHide, durationMs =
   }, [id, durationMs, onHide, opacity]);
 
   return (
-    <Animated.View style={[styles.toast, { opacity }]} accessibilityLiveRegion="polite">
+    <Animated.View style={[styles.toast, { opacity, bottom }]} accessibilityLiveRegion="polite">
       <Text style={styles.message} numberOfLines={2}>
         {message}
       </Text>
@@ -45,7 +51,6 @@ const useStyles = makeStyles(({ shadow }) => ({
     position: 'absolute',
     left: spacing.lg,
     right: spacing.lg,
-    bottom: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,

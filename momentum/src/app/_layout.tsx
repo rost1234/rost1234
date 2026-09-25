@@ -14,9 +14,11 @@ import { registerQuickActions } from '@/services/quickActions';
 import { runAutoBackupIfDue } from '@/services/backup';
 import { useDevicePrefsStore } from '@/state/devicePrefsStore';
 import { startNotificationResponses } from '@/services/notificationResponses';
+import { startNotificationPlanner } from '@/services/notificationPlanner';
 import { startHabitEffects } from '@/state/habitEffects';
 import { useFocusSoundStore } from '@/state/focusSoundStore';
 import { useFocusStore } from '@/state/focusStore';
+import { useHighlightStore } from '@/state/highlightStore';
 import { usePrefsStore } from '@/state/prefsStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { resolveLanguage , useT } from '@/i18n';
@@ -60,11 +62,13 @@ function Bootstrap() {
     );
     startHabitEffects();
     const stopResponses = startNotificationResponses();
+    const stopPlanner = startNotificationPlanner();
     configureNotifications();
     startUsageTracking();
     runDetached(useSettingsStore.getState().load());
     runDetached(useFocusSoundStore.getState().hydrate());
     runDetached(useFocusStore.getState().hydrate());
+    runDetached(useHighlightStore.getState().hydrate());
     // Weekly backup to the user's folder, if they set one up.
     runDetached(useDevicePrefsStore.getState().hydrate().then(runAutoBackupIfDue));
     // A session may have been started from the Focus widget while we were away.
@@ -75,6 +79,7 @@ function Bootstrap() {
     });
     return () => {
       stopResponses();
+      stopPlanner();
       appState.remove();
     };
   }, []);

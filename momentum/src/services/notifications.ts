@@ -5,7 +5,6 @@ import { t } from '@/i18n';
 
 const FOCUS_CHANNEL_ID = 'focus';
 const REMINDER_CHANNEL_ID = 'reminders';
-const REFLECTION_REMINDER_KEY = 'reflection-reminder';
 
 let configured = false;
 
@@ -97,29 +96,4 @@ export async function scheduleFocusNotification(endsAt: Date, title: string, bod
 export async function cancelNotification(id: string | null): Promise<void> {
   if (!id || Platform.OS === 'web') return;
   await Notifications.cancelScheduledNotificationAsync(id);
-}
-
-export async function cancelReflectionReminder(): Promise<void> {
-  if (Platform.OS === 'web') return;
-  await Notifications.cancelScheduledNotificationAsync(REFLECTION_REMINDER_KEY).catch(() => undefined);
-}
-
-/**
- * Daily evening nudge to do the 2-minute reflection (idempotent).
- * Returns false when notifications aren't permitted.
- */
-export async function scheduleReflectionReminder(hour = 21, minute = 0): Promise<boolean> {
-  if (!(await hasPermission())) return false;
-  await cancelReflectionReminder();
-  await Notifications.scheduleNotificationAsync({
-    identifier: REFLECTION_REMINDER_KEY,
-    content: { title: t('notif.evening'), body: t('notif.eveningBody') },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.DAILY,
-      hour,
-      minute,
-      channelId: REMINDER_CHANNEL_ID,
-    },
-  });
-  return true;
 }

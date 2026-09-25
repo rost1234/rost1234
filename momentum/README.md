@@ -83,7 +83,15 @@ src/
   `domain/insightPicker.ts` (triggers → goal → unseen, stable per day). Research is done by the `insight-researcher`
   agent (`.claude/agents/`).
 - **Rhythm**: weekly summary (`domain/weekly.ts`), milestone celebrations and time-of-day ordering (`domain/rhythm.ts`),
-  smart reminders with a "Done ✓" action (`services/habitReminders.ts`); side effects live in `state/habitEffects.ts`.
+  and the "Done ✓" notification action (`services/habitReminders.ts`); side effects live in `state/habitEffects.ts`.
+- **Smart notifications**: one pure planner (`domain/notificationPlan.ts`, unit tested) builds the whole week — habit
+  reminders at the learned usual time (per weekday), bundled when within 30 min, every other day and "tiny step only" when
+  ignored, moved out of quiet hours, capped per day by priority; plus streak rescue, an optional morning plan and the
+  reflection reminder (skipped once reflected). `services/notificationPlanner.ts` re-plans on every relevant store change
+  and on resume; nothing is scheduled beyond 7 days, so an unopened app goes quiet. Prefs: `state/notificationPrefsStore.ts`.
+- **Main task**: one of Today's 3 can be starred as the day's main task (`state/highlightStore.ts`, today only) and sorts first.
+- **Bottom buffer**: every scrolling screen pads by the system nav inset + 96 dp (`components/useBottomSpace.ts`); the
+  focus button and toast sit above the nav bar.
 - **Focus extras**: up to two layered sounds with separate volumes (`services/focusSoundPlayer.ts` — one faded player per
   layer). Each session stores the sound mix, planned length and whether it ran to the end (schema v7), and Insights
   compares with/without sound (`domain/soundExperiment.ts`, needs 5+ sessions per group).

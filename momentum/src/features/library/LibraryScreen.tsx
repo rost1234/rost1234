@@ -7,6 +7,7 @@ import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { INSIGHT_CATEGORIES, type InsightCategory } from '@/content/insightSchema';
 import { INSIGHTS, InsightView } from '@/features/insights/InsightCard';
 import { type TranslationKey, useT } from '@/i18n';
+import { useBottomSpace } from '@/components/useBottomSpace';
 
 const CATEGORY_LABEL: Record<InsightCategory, TranslationKey> = {
   habits: 'lib.cat.habits',
@@ -22,6 +23,7 @@ export function LibraryScreen() {
   const t = useT();
   const { typography } = useTheme();
   const styles = useStyles();
+  const bottomSpace = useBottomSpace();
   const [category, setCategory] = useState<InsightCategory | null>(null);
   const items = category ? INSIGHTS.filter((i) => i.category === category) : INSIGHTS;
 
@@ -30,7 +32,7 @@ export function LibraryScreen() {
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}
         ListHeaderComponent={
           <View style={styles.head}>
             <SheetHeader title={t('lib.title')} />
@@ -51,7 +53,7 @@ export function LibraryScreen() {
 
 const useStyles = makeStyles(({ colors }) => ({
   safe: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl },
+  content: { padding: spacing.lg },
   head: { gap: spacing.sm, marginBottom: spacing.md },
   chips: { gap: spacing.sm, paddingVertical: spacing.xs },
 }));

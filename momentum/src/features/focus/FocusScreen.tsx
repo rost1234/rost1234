@@ -19,6 +19,7 @@ import { FocusButton, FocusChip, FocusLabel } from './focusUi';
 import { LinkSelector } from './LinkSelector';
 import { SoundPicker } from './SoundPicker';
 import { useT } from '@/i18n';
+import { useBottomSpace } from '@/components/useBottomSpace';
 
 const DURATIONS = [15, 25, 45, 60] as const;
 
@@ -176,6 +177,7 @@ function DndHint() {
 
 export function FocusScreen() {
   const t = useT();
+  const bottomSpace = useBottomSpace();
   // Deep link from a habit card's "Start Focus" button; keyed so a new habit re-seeds the form.
   const params = useLocalSearchParams<{ habitId?: string }>();
   const initialHabitId = params.habitId ?? null;
@@ -194,7 +196,7 @@ export function FocusScreen() {
   return (
     <LinearGradient colors={[focusColors.backgroundTop, focusColors.backgroundBottom]} style={styles.flex}>
       <SafeAreaView style={styles.flex} edges={['top']}>
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}>
           <View style={styles.titleRow}>
             <Text style={[styles.title, styles.grow]} accessibilityRole="header">
               {t('focus.title')}
@@ -224,7 +226,7 @@ export function FocusScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  content: { padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl },
+  content: { padding: spacing.lg, gap: spacing.lg },
   title: { color: focusColors.text, fontSize: 28, fontWeight: '800', letterSpacing: -0.3 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   minimize: {

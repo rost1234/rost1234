@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { haptics } from '@/core/haptics';
 import { computeSnapshot } from '@/domain/focusTimer';
@@ -41,6 +42,7 @@ function formatClock(seconds: number): string {
 export function FocusFab() {
   const t = useT();
   const styles = useStyles();
+  const bottomInset = useSafeAreaInsets().bottom;
   const timer = useFocusStore((s) => s.timer);
   const running = timer !== null && timer.pausedAt === null;
   const now = useNow(running, 1000);
@@ -52,7 +54,7 @@ export function FocusFab() {
     : t('home.focus');
 
   return (
-    <View pointerEvents="box-none" style={styles.fabWrap}>
+    <View pointerEvents="box-none" style={[styles.fabWrap, { bottom: bottomInset + spacing.lg }]}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label}
@@ -83,7 +85,7 @@ const useStyles = makeStyles(({ colors, shadow }) => ({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  fabWrap: { position: 'absolute', left: 0, right: 0, bottom: spacing.lg, alignItems: 'center' },
+  fabWrap: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
   fab: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -9,6 +9,7 @@ import { formatFriendlyDate, getLocalDeviceDate, parseLocalDate, addDays } from 
 import { repositories } from '@/data/repositories';
 import { buildWeeklySummary, previousWeek, type WeeklySummary } from '@/domain/weekly';
 import { useT } from '@/i18n';
+import { useBottomSpace } from '@/components/useBottomSpace';
 
 async function loadSummary(): Promise<WeeklySummary> {
   const week = previousWeek(getLocalDeviceDate());
@@ -27,6 +28,7 @@ export function WeeklyScreen() {
   const t = useT();
   const { colors, typography } = useTheme();
   const styles = useStyles();
+  const bottomSpace = useBottomSpace();
   const [summary, setSummary] = useState<WeeklySummary | null>(null);
 
   useEffect(() => {
@@ -43,7 +45,7 @@ export function WeeklyScreen() {
   }
 
   return (
-    <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.flex} contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}>
       <Text style={typography.caption}>
         {formatFriendlyDate(summary.start, t.locale)} – {formatFriendlyDate(summary.end, t.locale)}
       </Text>

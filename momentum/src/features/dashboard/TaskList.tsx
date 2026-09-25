@@ -3,18 +3,22 @@ import { ActionSheetIOS, Alert, Platform, Pressable, Text, TextInput, View } fro
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import type { Task } from '@/domain/models';
 import { MAX_OPEN_TASKS_PER_DAY } from '@/domain/taskPlanning';
+import { highlightFor, useHighlightStore } from '@/state/highlightStore';
 import { useTaskStore } from '@/state/taskStore';
 import { t, useT } from '@/i18n';
 
-function openTaskMenu(task: Task) {
-  const { decide } = useTaskStore.getState();
+function openTaskMenu(task: Task, isMain: boolean) {
+  const { decide, today } = useTaskStore.getState();
   const actions = [
+    ...(today && !task.isCompleted
+      ? [{ label: isMain ? t('tasks.unsetMain') : t('tasks.setMain'), run: () => useHighlightStore.getState().toggle(today, task.id) }]
+      : []),
     { label: t('tasks.moveLater'), run: () => decide(task.id, 'later') },
     { label: t('tasks.drop'), run: () => decide(task.id, 'drop'), destructive: true },
   ];
   if (Platform.OS === 'ios') {
     ActionSheetIOS.showActionSheetWithOptions(
-      { title: task.title, options: [...actions.map((a) => a.label), t('common.cancel')], destructiveButtonIndex: 1, cancelButtonIndex: 2 },
+      { title: task.title, options: [...actions.map((a) => a.label), t('common.cancel')], destructiveButtonIndex: actions.length - 1, cancelButtonIndex: actions.length },
       (index) => actions[index]?.run(),
     );
     return;
@@ -32,6 +36,8 @@ export function TaskList() {
   const tasks = useTaskStore((s) => s.tasks);
   const addTask = useTaskStore((s) => s.addTask);
   const toggleTask = useTaskStore((s) => s.toggleTask);
+  const today = useTaskStore((s) => s.today);
+  const mainId = useHighlightStore((s) => highlightFor(s, today));
   const [draft, setDraft] = useState('');
   const [hint, setHint] = useState<string | null>(null);
 
@@ -45,16 +51,19 @@ export function TaskList() {
     setDraft('');
   };
 
+  // The main task goes first: do the most important thing before the day fills up.
+  const ordered = mainId ? [...tasks].sort((a, b) => Number(b.id === mainId) - Number(a.id === mainId)) : tasks;
+
   return (
     <View style={styles.container}>
-      {tasks.map((task) => (
+      {ordered.map((task) => (
         <Pressable
           key={task.id}
           accessibilityRole="checkbox"
           accessibilityState={{ checked: task.isCompleted }}
           accessibilityHint={t('tasks.longPressHint')}
           onPress={() => toggleTask(task.id)}
-          onLongPress={() => openTaskMenu(task)}
+          onLongPress={() => openTaskMenu(task, task.id === mainId)}
           style={styles.row}
         >
           <View style={[styles.box, task.isCompleted && styles.boxDone]}>
@@ -63,6 +72,11 @@ export function TaskList() {
           <Text style={[typography.body, { flex: 1 }, task.isCompleted && styles.done]} numberOfLines={2}>
             {task.title}
           </Text>
+          {task.id === mainId ? (
+            <Text style={styles.main} accessibilityLabel={t('tasks.mainA11y')}>
+              {t('tasks.main')}
+            </Text>
+          ) : null}
         </Pressable>
       ))}
       <View style={styles.inputRow}>
@@ -85,6 +99,7 @@ export function TaskList() {
         </Pressable>
       </View>
       {hint ? <Text style={[typography.caption, styles.hint]}>{hint}</Text> : null}
+      {!mainId && openCount > 1 ? <Text style={[typography.caption, styles.hint]}>{t('tasks.mainHint')}</Text> : null}
     </View>
   );
 }
@@ -116,4 +131,14 @@ const useStyles = makeStyles(({ colors, typography, shadow }) => ({
   add: { padding: spacing.sm },
   addText: { fontSize: 22, color: colors.primary, fontWeight: '700' },
   hint: { paddingBottom: spacing.sm },
+  main: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.primary,
+    backgroundColor: colors.primarySoft,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+  },
 }));
