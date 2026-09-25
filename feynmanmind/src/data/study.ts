@@ -1,50 +1,52 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { generateFlashcards } from '@/api/functions';
-import { deviceTimeZone } from '@/lib/format';
-import { supabase } from '@/lib/supabase';
-import { fetchDueCards } from '@/srs/reviewService';
-import { invalidateCardQueries } from './flashcards';
+import { addCards, cardsOf, computeStats, dueCards, reviewCard } from '@/local/logic';
+import { commit, getDB, newId, useDBStore } from '@/local/store';
+import { NotFoundError } from '@/local/types';
+import type { QualityScore } from '@/srs/sm2';
 import { keys } from './keys';
+import { read } from './local';
 
-export interface StudyStats {
-  due_now: number;
-  due_today: number;
-  reviewed_today: number;
-  correct_today: number;
-  streak_days: number;
-  total_cards: number;
-  total_concepts: number;
-  avg_mastery: number;
-  forecast: { date: string; count: number }[];
-  history: { date: string; count: number }[];
-}
+export type { StudyStats } from '@/local/logic';
 
 export function useStudyStats() {
-  return useQuery({
-    queryKey: keys.stats,
-    queryFn: async (): Promise<StudyStats> => {
-      const { data, error } = await supabase.rpc('get_study_stats', { p_tz: deviceTimeZone() });
-      if (error) throw error;
-      return data as unknown as StudyStats;
-    },
-  });
+  return useQuery({ queryKey: keys.stats, queryFn: () => read(() => computeStats(getDB(), new Date())) });
 }
 
-/** Due queue. Not refetched in the background, so the order is stable mid-session. */
+/** Due queue. Not refreshed on store changes, so the order is stable mid-session. */
 export function useDueCards(conceptId?: string) {
   return useQuery({
     queryKey: keys.due(conceptId),
-    queryFn: () => fetchDueCards(supabase, { conceptId }),
+    queryFn: () => read(() => dueCards(getDB(), new Date(), conceptId)),
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
 }
 
-export function useGenerateFlashcards(conceptId: string) {
-  const qc = useQueryClient();
+export function useReviewCard() {
   return useMutation({
-    mutationFn: ({ source, maxCards }: { source: { text: string } | { pdfBase64: string }; maxCards: number }) =>
-      generateFlashcards(supabase, conceptId, source, maxCards),
-    onSuccess: () => invalidateCardQueries(qc),
+    mutationFn: ({ cardId, quality }: { cardId: string; quality: QualityScore }) =>
+      read(() => useDBStore.getState().update((db) => reviewCard(db, cardId, quality, new Date()))),
+  });
+}
+
+/** Asks the AI to write cards from the material, then stores the new ones locally. */
+export function useGenerateFlashcards(conceptId: string) {
+  return useMutation({
+    mutationFn: async ({ source, maxCards }: { source: { text: string } | { pdfBase64: string }; maxCards: number }) => {
+      const db = getDB();
+      const concept = db.concepts[conceptId];
+      const subject = concept && db.subjects[concept.subject_id];
+      if (!concept || !subject) throw new NotFoundError('Concept');
+      const response = await generateFlashcards({
+        subject_title: subject.title,
+        concept_title: concept.title,
+        source,
+        max_cards: maxCards,
+        existing_questions: cardsOf(db, conceptId).map((c) => c.question),
+      });
+      const added = commit((current) => addCards(current, conceptId, response.cards, newId, new Date()));
+      return { cards: added, source_truncated: response.source_truncated };
+    },
   });
 }

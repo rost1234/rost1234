@@ -61,11 +61,20 @@ export async function readJsonBody(req: Request, maxBytes: number): Promise<Reco
   return body as Record<string, unknown>;
 }
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** Required string field, trimmed, within [min, max] characters. */
+export function requireText(value: unknown, field: string, min: number, max: number): string {
+  const text = typeof value === 'string' ? value.trim() : '';
+  if (text.length < min) throw new HttpError(400, `${field} must be at least ${min} characters`, 'invalid_input');
+  if (text.length > max) throw new HttpError(400, `${field} must be at most ${max} characters`, 'invalid_input');
+  return text;
+}
 
-export function requireUuid(value: unknown, field: string): string {
-  if (typeof value !== 'string' || !UUID_RE.test(value)) {
-    throw new HttpError(400, `${field} must be a UUID`, 'invalid_input');
-  }
-  return value;
+/** Optional list of strings: missing → []; each item trimmed and capped; list capped. */
+export function stringList(value: unknown, field: string, maxItems: number, maxLength: number): string[] {
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value)) throw new HttpError(400, `${field} must be an array`, 'invalid_input');
+  return value
+    .filter((v): v is string => typeof v === 'string' && v.trim().length > 0)
+    .slice(-maxItems)
+    .map((v) => v.trim().slice(0, maxLength));
 }

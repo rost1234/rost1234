@@ -1,58 +1,54 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { evaluateExplanation, type FeynmanEvaluation } from '@/api/functions';
-import { supabase } from '@/lib/supabase';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { evaluateExplanation } from '@/api/functions';
+import { addSession, cardsOf, sessionsOf } from '@/local/logic';
+import { commit, getDB, newId } from '@/local/store';
+import { NotFoundError, type FeynmanSession } from '@/local/types';
 import { keys } from './keys';
+import { read } from './local';
 
-export interface SessionRow {
-  id: string;
-  user_explanation: string;
-  socratic_question: string | null;
-  comprehension_score: number | null;
-  jargon_detected: FeynmanEvaluation['jargon_detected'];
-  misconceptions: FeynmanEvaluation['misconceptions'];
-  created_at: string;
-}
-
-const COLUMNS = 'id, user_explanation, socratic_question, comprehension_score, jargon_detected, misconceptions, created_at';
+export type SessionRow = FeynmanSession;
 
 export function useSessions(conceptId: string) {
   return useQuery({
     queryKey: keys.sessions(conceptId),
-    queryFn: async (): Promise<SessionRow[]> => {
-      const { data, error } = await supabase
-        .from('feynman_sessions')
-        .select(COLUMNS)
-        .eq('concept_id', conceptId)
-        .not('comprehension_score', 'is', null)
-        .order('created_at', { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      return data as unknown as SessionRow[];
-    },
+    queryFn: () => read(() => sessionsOf(getDB(), conceptId)),
   });
 }
 
 export function useSession(id: string) {
   return useQuery({
     queryKey: keys.session(id),
-    queryFn: async (): Promise<SessionRow> => {
-      const { data, error } = await supabase.from('feynman_sessions').select(COLUMNS).eq('id', id).single();
-      if (error) throw error;
-      return data as unknown as SessionRow;
-    },
+    queryFn: () =>
+      read(() => {
+        const s = getDB().sessions[id];
+        if (!s) throw new NotFoundError('Session');
+        return s;
+      }),
   });
 }
 
+/** Sends the explanation (with the concept's context) to the AI tutor and stores the result locally. */
 export function useEvaluateExplanation(conceptId: string) {
-  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (explanation: string) => evaluateExplanation(supabase, conceptId, explanation),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: keys.sessions(conceptId) });
-      // mastery_level is updated by a trigger on the new score.
-      qc.invalidateQueries({ queryKey: ['concepts'] });
-      qc.invalidateQueries({ queryKey: keys.subjects });
-      qc.invalidateQueries({ queryKey: keys.stats });
+    mutationFn: async (explanation: string) => {
+      const db = getDB();
+      const concept = db.concepts[conceptId];
+      const subject = concept && db.subjects[concept.subject_id];
+      if (!concept || !subject) throw new NotFoundError('Concept');
+      const response = await evaluateExplanation({
+        subject_title: subject.title,
+        concept_title: concept.title,
+        explanation,
+        previous_questions: sessionsOf(db, conceptId)
+          .map((s) => s.socratic_question)
+          .filter((q): q is string => !!q)
+          .slice(0, 5),
+        reference_cards: cardsOf(db, conceptId)
+          .slice(0, 20)
+          .map((c) => ({ question: c.question, answer: c.answer })),
+      });
+      const sessionId = commit((current) => addSession(current, conceptId, explanation, response.evaluation, newId, new Date()));
+      return { session_id: sessionId, evaluation: response.evaluation };
     },
   });
 }

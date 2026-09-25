@@ -1,6 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { deleteSubject, saveSubject } from '@/local/logic';
+import { commit, getDB, newId, useDBStore } from '@/local/store';
+import { NotFoundError } from '@/local/types';
 import { keys } from './keys';
+import { read } from './local';
 
 export interface SubjectSummary {
   id: string;
@@ -13,60 +16,44 @@ export interface SubjectSummary {
 export function useSubjects() {
   return useQuery({
     queryKey: keys.subjects,
-    queryFn: async (): Promise<SubjectSummary[]> => {
-      const { data, error } = await supabase
-        .from('subjects')
-        .select('id, title, created_at, concepts(mastery_level)')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data.map((s) => {
-        const levels = s.concepts.map((c) => c.mastery_level);
-        return {
-          id: s.id,
-          title: s.title,
-          created_at: s.created_at,
-          conceptCount: levels.length,
-          avgMastery: levels.length ? Math.round(levels.reduce((a, b) => a + b, 0) / levels.length) : 0,
-        };
-      });
-    },
+    queryFn: () =>
+      read((): SubjectSummary[] => {
+        const db = getDB();
+        return Object.values(db.subjects)
+          .sort((a, b) => b.created_at.localeCompare(a.created_at))
+          .map((s) => {
+            const levels = Object.values(db.concepts).filter((c) => c.subject_id === s.id).map((c) => c.mastery_level);
+            return {
+              ...s,
+              conceptCount: levels.length,
+              avgMastery: levels.length ? Math.round(levels.reduce((a, b) => a + b, 0) / levels.length) : 0,
+            };
+          });
+      }),
   });
 }
 
 export function useSubject(id: string) {
   return useQuery({
     queryKey: keys.subject(id),
-    queryFn: async () => {
-      const { data, error } = await supabase.from('subjects').select('id, title').eq('id', id).single();
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () =>
+      read(() => {
+        const s = getDB().subjects[id];
+        if (!s) throw new NotFoundError('Subject');
+        return s;
+      }),
   });
 }
 
 export function useSaveSubject() {
-  const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, title }: { id?: string; title: string }) => {
-      const query = id
-        ? supabase.from('subjects').update({ title }).eq('id', id)
-        : supabase.from('subjects').insert({ title });
-      const { data, error } = await query.select('id').single();
-      if (error) throw error;
-      return data.id;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.subjects }),
+    mutationFn: ({ id, title }: { id?: string; title: string }) =>
+      read(() => commit((db) => saveSubject(db, { id, title }, newId, new Date()))),
   });
 }
 
 export function useDeleteSubject() {
-  const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('subjects').delete().eq('id', id);
-      if (error) throw error;
-    },
-    // Cascades remove concepts, cards and reviews, so refresh all of them.
-    onSuccess: () => qc.invalidateQueries(),
+    mutationFn: (id: string) => read(() => useDBStore.getState().update((db) => deleteSubject(db, id))),
   });
 }

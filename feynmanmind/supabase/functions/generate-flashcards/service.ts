@@ -1,4 +1,4 @@
-import { HttpError, requireUuid } from '../_shared/http.ts';
+import { HttpError, requireText, stringList } from '../_shared/http.ts';
 import type { StructuredLlm } from '../_shared/llm.ts';
 import {
   buildFlashcardUserMessage,
@@ -17,50 +17,32 @@ export const MIN_SOURCE_CHARS = 200;
 export const MAX_SOURCE_CHARS = 60_000;
 export const DEFAULT_MAX_CARDS = 20;
 export const MAX_CARDS_LIMIT = 50;
-export const MAX_CARDS_PER_HOUR = 300;
 const CHUNK_CHARS = 6000;
 const LLM_CONCURRENCY = 3;
-
-export interface ConceptInfo {
-  id: string;
-  title: string;
-  subjectTitle: string;
-}
-
-export interface InsertedCard {
-  id: string;
-  question: string;
-  answer: string;
-}
-
-export interface FlashcardRepo {
-  getConcept(conceptId: string): Promise<ConceptInfo | null>;
-  /** The caller's cards, across all concepts, created since `since`. */
-  countCardsSince(since: Date): Promise<number>;
-  existingQuestions(conceptId: string): Promise<string[]>;
-  /** Inserts, silently skipping (concept_id, question) duplicates. */
-  insertCards(conceptId: string, cards: GeneratedCard[]): Promise<InsertedCard[]>;
-}
+const MAX_PDF_BYTES = 10 * 1024 * 1024;
 
 export type SourceInput = { kind: 'text'; text: string } | { kind: 'pdf'; bytes: Uint8Array };
 
 export interface GenerateInput {
-  conceptId: string;
+  subjectTitle: string;
+  conceptTitle: string;
   source: SourceInput;
   maxCards: number;
+  /** Questions the learner already has for this concept (stored on their device). */
+  existingQuestions: string[];
 }
 
 export interface GenerateResult {
   prompt_version: string;
-  cards: InsertedCard[];
+  cards: GeneratedCard[];
   chunks_processed: number;
   source_truncated: boolean;
 }
 
-const MAX_PDF_BYTES = 10 * 1024 * 1024;
-
 export function parseGenerateInput(body: Record<string, unknown>): GenerateInput {
-  const conceptId = requireUuid(body.concept_id, 'concept_id');
+  const subjectTitle = requireText(body.subject_title, 'subject_title', 1, 200);
+  const conceptTitle = requireText(body.concept_title, 'concept_title', 1, 200);
+  const existingQuestions = stringList(body.existing_questions, 'existing_questions', 500, 1000);
 
   let maxCards = DEFAULT_MAX_CARDS;
   if (body.max_cards !== undefined) {
@@ -75,7 +57,8 @@ export function parseGenerateInput(body: Record<string, unknown>): GenerateInput
   if (hasText === hasPdf) {
     throw new HttpError(400, 'Provide exactly one of text or pdf_base64', 'invalid_input');
   }
-  if (hasText) return { conceptId, maxCards, source: { kind: 'text', text: body.text as string } };
+  const base = { subjectTitle, conceptTitle, maxCards, existingQuestions };
+  if (hasText) return { ...base, source: { kind: 'text', text: body.text as string } };
 
   let bytes: Uint8Array;
   try {
@@ -88,28 +71,14 @@ export function parseGenerateInput(body: Record<string, unknown>): GenerateInput
   if (!(bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46)) {
     throw new HttpError(400, 'pdf_base64 is not a PDF', 'invalid_input');
   }
-  return { conceptId, maxCards, source: { kind: 'pdf', bytes } };
+  return { ...base, source: { kind: 'pdf', bytes } };
 }
 
 export async function generateFlashcards(
-  deps: {
-    repo: FlashcardRepo;
-    llm: StructuredLlm;
-    extractPdfText: (bytes: Uint8Array) => Promise<string>;
-    now?: () => Date;
-  },
+  deps: { llm: StructuredLlm; extractPdfText: (bytes: Uint8Array) => Promise<string> },
   input: GenerateInput,
 ): Promise<GenerateResult> {
-  const { repo, llm } = deps;
-  const now = deps.now?.() ?? new Date();
-
-  const concept = await repo.getConcept(input.conceptId);
-  if (!concept) throw new HttpError(404, 'Concept not found', 'not_found');
-
-  const recent = await repo.countCardsSince(new Date(now.getTime() - 60 * 60 * 1000));
-  const budget = Math.min(input.maxCards, MAX_CARDS_PER_HOUR - recent);
-  if (budget <= 0) throw new HttpError(429, 'Hourly flashcard limit reached, try again later', 'rate_limited');
-
+  const { llm } = deps;
   const raw = input.source.kind === 'text' ? input.source.text : await extractPdf(deps.extractPdfText, input.source.bytes);
   const text = normalizeText(raw);
   if (text.length < MIN_SOURCE_CHARS) {
@@ -117,19 +86,17 @@ export async function generateFlashcards(
   }
   const truncated = text.length > MAX_SOURCE_CHARS;
   const chunks = chunkText(text.slice(0, MAX_SOURCE_CHARS), CHUNK_CHARS, Math.ceil(MAX_SOURCE_CHARS / CHUNK_CHARS));
-
-  const existingQuestions = await repo.existingQuestions(concept.id);
-  const perChunk = Math.min(budget, Math.ceil(budget / chunks.length) + 2);
+  const perChunk = Math.min(input.maxCards, Math.ceil(input.maxCards / chunks.length) + 2);
 
   const results = await mapWithConcurrency(chunks, LLM_CONCURRENCY, (chunk) =>
     llm({
       name: 'flashcards',
       system: FLASHCARD_SYSTEM_PROMPT,
       user: buildFlashcardUserMessage({
-        subjectTitle: concept.subjectTitle,
-        conceptTitle: concept.title,
+        subjectTitle: input.subjectTitle,
+        conceptTitle: input.conceptTitle,
         maxCards: perChunk,
-        existingQuestions,
+        existingQuestions: input.existingQuestions,
         chunk,
       }),
       schema: FLASHCARD_RESPONSE_SCHEMA,
@@ -139,24 +106,18 @@ export async function generateFlashcards(
     }),
   );
 
-  // Dedupe against existing cards and across chunks, keeping source order.
-  const seen = new Set(existingQuestions.map(questionKey));
-  const selected: GeneratedCard[] = [];
+  // Dedupe against the learner's existing cards and across chunks, keeping source order.
+  const seen = new Set(input.existingQuestions.map(questionKey));
+  const cards: GeneratedCard[] = [];
   for (const card of results.flat()) {
     const key = questionKey(card.question);
     if (!key || seen.has(key)) continue;
     seen.add(key);
-    selected.push(card);
-    if (selected.length >= budget) break;
+    cards.push(card);
+    if (cards.length >= input.maxCards) break;
   }
 
-  const cards = selected.length ? await repo.insertCards(concept.id, selected) : [];
-  return {
-    prompt_version: FLASHCARD_PROMPT_VERSION,
-    cards,
-    chunks_processed: chunks.length,
-    source_truncated: truncated,
-  };
+  return { prompt_version: FLASHCARD_PROMPT_VERSION, cards, chunks_processed: chunks.length, source_truncated: truncated };
 }
 
 async function extractPdf(extract: (b: Uint8Array) => Promise<string>, bytes: Uint8Array): Promise<string> {

@@ -38,10 +38,10 @@ export const usePrefsStore = create<PrefsState>()(
   ),
 );
 
-/** True once saved preferences are loaded (immediate with synchronous storage). */
-export function usePrefsHydrated(): boolean {
+/** True once a persisted zustand store has loaded (immediate with synchronous storage). */
+export function useHydrated(store: { persist: { hasHydrated: () => boolean; onFinishHydration: (fn: () => void) => () => void } }): boolean {
   return useSyncExternalStore(
-    (onChange) => usePrefsStore.persist.onFinishHydration(onChange),
-    () => usePrefsStore.persist.hasHydrated(),
+    (onChange) => store.persist.onFinishHydration(onChange),
+    () => store.persist.hasHydrated(),
   );
 }

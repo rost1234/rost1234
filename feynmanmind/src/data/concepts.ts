@@ -1,6 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { cardsOf, deleteConcept, saveConcept } from '@/local/logic';
+import { commit, getDB, newId, useDBStore } from '@/local/store';
+import { NotFoundError } from '@/local/types';
 import { keys } from './keys';
+import { read } from './local';
 
 export interface ConceptSummary {
   id: string;
@@ -12,20 +15,14 @@ export interface ConceptSummary {
 export function useConcepts(subjectId: string) {
   return useQuery({
     queryKey: keys.concepts(subjectId),
-    queryFn: async (): Promise<ConceptSummary[]> => {
-      const { data, error } = await supabase
-        .from('concepts')
-        .select('id, title, mastery_level, flashcards(count)')
-        .eq('subject_id', subjectId)
-        .order('created_at', { ascending: true });
-      if (error) throw error;
-      return data.map((c) => ({
-        id: c.id,
-        title: c.title,
-        mastery_level: c.mastery_level,
-        cardCount: (c.flashcards as unknown as { count: number }[])[0]?.count ?? 0,
-      }));
-    },
+    queryFn: () =>
+      read((): ConceptSummary[] => {
+        const db = getDB();
+        return Object.values(db.concepts)
+          .filter((c) => c.subject_id === subjectId)
+          .sort((a, b) => a.created_at.localeCompare(b.created_at))
+          .map((c) => ({ id: c.id, title: c.title, mastery_level: c.mastery_level, cardCount: cardsOf(db, c.id).length }));
+      }),
   });
 }
 
@@ -39,15 +36,14 @@ export interface ConceptDetail {
 export function useConcept(id: string) {
   return useQuery({
     queryKey: keys.concept(id),
-    queryFn: async (): Promise<ConceptDetail> => {
-      const { data, error } = await supabase
-        .from('concepts')
-        .select('id, title, mastery_level, subjects!inner(id, title)')
-        .eq('id', id)
-        .single();
-      if (error) throw error;
-      return { id: data.id, title: data.title, mastery_level: data.mastery_level, subject: data.subjects };
-    },
+    queryFn: () =>
+      read((): ConceptDetail => {
+        const db = getDB();
+        const c = db.concepts[id];
+        const s = c && db.subjects[c.subject_id];
+        if (!c || !s) throw new NotFoundError('Concept');
+        return { id: c.id, title: c.title, mastery_level: c.mastery_level, subject: { id: s.id, title: s.title } };
+      }),
   });
 }
 
@@ -55,46 +51,27 @@ export function useConcept(id: string) {
 export function useWeakConcepts(limit = 3) {
   return useQuery({
     queryKey: keys.weakConcepts,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('concepts')
-        .select('id, title, mastery_level, subjects!inner(title)')
-        .lt('mastery_level', 71)
-        .order('mastery_level', { ascending: true })
-        .order('created_at', { ascending: false })
-        .limit(limit);
-      if (error) throw error;
-      return data.map((c) => ({ id: c.id, title: c.title, mastery_level: c.mastery_level, subjectTitle: c.subjects.title }));
-    },
+    queryFn: () =>
+      read(() => {
+        const db = getDB();
+        return Object.values(db.concepts)
+          .filter((c) => c.mastery_level < 71)
+          .sort((a, b) => a.mastery_level - b.mastery_level || b.created_at.localeCompare(a.created_at))
+          .slice(0, limit)
+          .map((c) => ({ id: c.id, title: c.title, mastery_level: c.mastery_level, subjectTitle: db.subjects[c.subject_id]?.title ?? '' }));
+      }),
   });
 }
 
 export function useSaveConcept() {
-  const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, subjectId, title }: { id?: string; subjectId: string; title: string }) => {
-      const query = id
-        ? supabase.from('concepts').update({ title }).eq('id', id)
-        : supabase.from('concepts').insert({ subject_id: subjectId, title });
-      const { data, error } = await query.select('id').single();
-      if (error) throw error;
-      return data.id;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['concepts'] });
-      qc.invalidateQueries({ queryKey: keys.subjects });
-      qc.invalidateQueries({ queryKey: keys.stats });
-    },
+    mutationFn: (input: { id?: string; subjectId: string; title: string }) =>
+      read(() => commit((db) => saveConcept(db, input, newId, new Date()))),
   });
 }
 
 export function useDeleteConcept() {
-  const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('concepts').delete().eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries(),
+    mutationFn: (id: string) => read(() => useDBStore.getState().update((db) => deleteConcept(db, id))),
   });
 }

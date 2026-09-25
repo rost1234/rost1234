@@ -5,14 +5,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Button, EmptyState, ErrorState, IconButton, InlineError, LoadingState, ProgressBar, Screen } from '@/components/ui';
 import { keys } from '@/data/keys';
-import { useDueCards } from '@/data/study';
+import { useDueCards, useReviewCard } from '@/data/study';
 import { useT } from '@/i18n';
 import { errorMessage } from '@/lib/errors';
 import { formatInterval } from '@/lib/format';
 import { haptics } from '@/lib/haptics';
-import { supabase } from '@/lib/supabase';
 import { previewIntervals, QUALITY_OPTIONS } from '@/srs/qualities';
-import { ReviewConflictError, submitReview } from '@/srs/reviewService';
 import { summarizeSession } from '@/srs/session';
 import type { QualityScore } from '@/srs/sm2';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
@@ -24,6 +22,7 @@ export default function StudyScreen() {
   const { colors, typography } = useTheme();
   const qc = useQueryClient();
   const due = useDueCards(conceptId);
+  const review = useReviewCard();
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [grades, setGrades] = useState<QualityScore[]>([]);
@@ -49,15 +48,12 @@ export default function StudyScreen() {
     setSubmitting(true);
     setError(null);
     try {
-      await submitReview(supabase, card, quality);
+      await review.mutateAsync({ cardId: card.id, quality });
       setGrades((g) => [...g, quality]);
     } catch (e) {
-      // Already graded on another device: skip it rather than double-count.
-      if (!(e instanceof ReviewConflictError)) {
-        setError(e);
-        setSubmitting(false);
-        return;
-      }
+      setError(e);
+      setSubmitting(false);
+      return;
     }
     if (quality >= 3) haptics.success();
     else haptics.warning();

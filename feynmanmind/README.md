@@ -5,97 +5,98 @@ Explain a concept in plain words, get one Socratic question back from an AI tuto
 (never the answer), and turn notes or PDFs into flashcards that come back just
 before you'd forget them.
 
-Expo (React Native, iOS / Android / web) · Supabase (Postgres + RLS + Edge Functions) · OpenAI or Gemini.
-English and Hebrew (RTL), light and dark themes.
+Expo (React Native, iOS / Android / web). English and Hebrew (RTL), light and dark themes.
+
+**No sign-in, no account, no cloud copy.** Everything is stored on the device.
+The only thing that goes over the network is the text of an AI request.
 
 ## Features
 
 | Area | What it does |
 |---|---|
-| No sign-in | The app opens straight into the library. Each device gets a private Supabase anonymous user on first launch. "Delete all my data" in Settings wipes it and starts fresh. |
 | Library | Subjects → concepts. Create, rename, delete. Mastery bar per subject. |
 | Feynman tutor | Write an explanation (drafts are kept per concept). Get a score, verdict, one Socratic question, jargon to unpack and misconceptions, without being told the answer. Revise and resubmit. Past attempts are saved. |
 | Flashcards | Generate from pasted text or a PDF (≤ 10 MB), or add and edit by hand. Duplicates are skipped. |
-| Review | SM-2 queue with all six grades (0–5) and the next interval shown on each button. Safe across devices. |
+| Review | SM-2 queue with all six grades (0–5) and the next interval shown on each button. |
 | Today | Cards due, streak, today's recall rate, totals, a 7-day forecast and history, and the weakest concepts to explain next. |
-| Settings | Language (device / English / Hebrew), theme, daily reminder time, cards per generation, delete all my data. |
+| Settings | Language, theme, daily reminder, cards per generation, **export / restore backup**, delete all data. |
 
-## Project layout
+Offline, everything works except the two AI actions (explain feedback and card generation).
+
+## Architecture
 
 ```
-src/app/                  expo-router screens
-  _layout.tsx             providers, RTL, onboarding gate (Stack.Protected), silent anonymous sign-in
-  onboarding.tsx
-  (app)/(tabs)/           Today · Library · Review · Settings
-  (app)/subject/[id]      concepts in a subject
-  (app)/concept/[id]/     concept hub · explain (Feynman) · generate (cards)
-  (app)/card/[id]         create / edit a flashcard
-  (app)/session/[id]      a past explanation + feedback
-  (app)/study             review session
-src/data/                 React Query hooks per table/RPC
-src/srs/                  SM-2 (sm2.ts), review submission, grade previews
-src/api/functions.ts      typed Edge Function client
-src/components/, theme/, i18n/, lib/, services/reminders.ts, state/
-supabase/migrations/      schema, RLS, triggers, review_logs, RPCs
-supabase/functions/       feynman-evaluate · generate-flashcards · delete-account
+┌──────────────── device ────────────────┐        ┌──── Supabase Edge Functions ────┐
+│ screens (expo-router)                   │        │ feynman-evaluate    (stateless) │
+│   ↕ React Query hooks  (src/data)       │  HTTPS │ generate-flashcards (stateless) │
+│   ↕ pure logic         (src/local)      │ ─────▶ │   → OpenAI / Gemini             │
+│   ↕ zustand store → SQLite kv / web LS  │        │ no DB, no auth, per-IP limit    │
+└─────────────────────────────────────────┘        └─────────────────────────────────┘
+```
+
+- `src/local/logic.ts` holds every data operation as a pure function (`LocalDB → LocalDB`): uniqueness, cascading deletes, mastery, SM-2 reviews, stats, backup format. It's fully unit-tested.
+- `src/local/store.ts` persists the database with zustand, using the expo-sqlite `localStorage` on iOS/Android and the browser's localStorage on web.
+- Any change to the store refreshes the open screens automatically. The review queue is the exception: it stays stable until the session ends.
+- The AI functions receive all the context they need (concept title, recent Socratic questions, your cards) in the request, and store nothing.
+
+```
+src/app/            screens: onboarding, (app)/(tabs) Today·Library·Review·Settings,
+                    subject/[id], concept/[id]/{index,explain,generate}, card/[id], session/[id], study
+src/local/          LocalDB types, pure logic, persisted store
+src/data/           React Query hooks over the local store + AI calls
+src/api/functions   client for the two AI functions
+src/services/       daily reminders, backup export/import
+supabase/functions/ stateless AI Edge Functions (Deno)
+supabase/migrations/  Postgres schema + RLS, NOT used by the current local-only app;
+                      kept for a future optional cloud sync
 ```
 
 ## Setup
 
-### 1. Supabase
+### App
+
+```bash
+npm install
+npm start          # press w for web, or scan with a development build
+```
+
+That's all you need for the library, manual cards and reviews.
+
+### AI features (optional)
 
 ```bash
 supabase link --project-ref <ref>
-supabase db push                                   # both migrations
-supabase secrets set LLM_PROVIDER=openai OPENAI_API_KEY=...
-#   or: LLM_PROVIDER=gemini GEMINI_API_KEY=...
-supabase secrets set LLM_MODEL=...                 # optional; defaults gpt-4o-mini / gemini-2.5-flash
-supabase functions deploy feynman-evaluate
-supabase functions deploy generate-flashcards
-supabase functions deploy delete-account
+supabase secrets set LLM_PROVIDER=openai OPENAI_API_KEY=...    # or LLM_PROVIDER=gemini GEMINI_API_KEY=...
+supabase secrets set LLM_MODEL=...                             # optional; defaults gpt-4o-mini / gemini-2.5-flash
+supabase functions deploy feynman-evaluate --no-verify-jwt
+supabase functions deploy generate-flashcards --no-verify-jwt
+cp .env.example .env.local   # EXPO_PUBLIC_SUPABASE_URL + EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 ```
 
-**Enable anonymous sign-ins:** turn on **Authentication → Sign In / Providers →
-Allow anonymous sign-ins** (locally: `[auth] enable_anonymous_sign_ins = true`).
-There is no sign-in screen, so the app can't start without it.
-Anonymous users get the `authenticated` role and their own `auth.uid()`, so
-every RLS policy works unchanged. To limit abuse, keep Supabase's per-IP rate
-limit for anonymous sign-ins and consider enabling CAPTCHA (Turnstile/hCaptcha).
+No database setup is needed. The AI key stays on the server. It never ships
+inside the app, where anyone could extract it.
 
-### 2. App
+> **Cost and abuse:** with no accounts, the AI functions are public. They only
+> have a best-effort in-memory limit per IP (30 explanations and 15 card
+> generations per hour). Before a public launch, set a spending cap with your
+> AI provider and put a stronger limit in front (API gateway, CAPTCHA, or app
+> attestation).
 
-```bash
-cp .env.example .env.local     # set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-npm install
-npm start                      # Expo dev server (press w for web)
-```
-
-Without these values the app shows a setup screen instead of failing.
 Reminders use `expo-notifications`, so test them in a development build
 (`npx expo run:ios|android` or `eas build --profile development`).
-
-### 3. Builds
-
-`eas.json` has development, preview and production profiles
-(`npx eas-cli@latest build --profile production`).
 
 ## Checks
 
 ```bash
-npm run typecheck          # tsc
+npm run typecheck          # tsc (with typed routes)
 npm run lint               # expo lint
-npm test                   # jest: SM-2, grades, i18n completeness, errors, formatting
-npm run test:functions     # Deno: Edge Function services, LLM client, chunking
+npm test                   # jest: local data logic, SM-2, grades, i18n completeness, errors, formatting
+npm run test:functions     # Deno: AI function services, LLM client, rate limit, chunking
 npm run check:functions    # Deno type-check
 npx expo-doctor
 ```
 
-## How the data stays safe and consistent
+## Data safety
 
-- **Access rules:** RLS on every table. Ownership flows from `subjects.user_id`, and triggers stop flashcards or reviews being attached to someone else's rows.
-- **Scores can't be faked:** clients can't write AI fields. The `feynman-evaluate` function writes them with the service role.
-- **Reviews:** `submit_card_review` saves the SM-2 result and a `review_logs` entry in one transaction. It only applies if the card hasn't changed since it was fetched, so grading the same card on two devices counts once.
-- **Dashboard:** `get_study_stats` computes due counts, streak, forecast and history in the user's time zone.
-- **Data deletion:** "Delete all my data" deletes the anonymous user, which removes all their rows via `ON DELETE CASCADE`.
-- **Data lives with the device:** there's no account to sign back into, so uninstalling the app or clearing its storage loses access to that library.
-- **Limits:** 30 evaluations and 300 generated cards per user per hour. One retry on AI errors.
+- **One device only:** data lives on this device. Uninstalling the app or clearing its storage deletes it. Use **Settings → Export backup** to keep a copy or move to another device, and **Restore from backup** to load one.
+- **Delete all my data** wipes the local library and drafts.

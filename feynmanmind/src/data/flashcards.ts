@@ -1,6 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { addCards, cardsOf, deleteCard, updateCard } from '@/local/logic';
+import { commit, getDB, newId, useDBStore } from '@/local/store';
+import { DuplicateError, NotFoundError } from '@/local/types';
 import { keys } from './keys';
+import { read } from './local';
 
 export interface CardRow {
   id: string;
@@ -12,20 +15,10 @@ export interface CardRow {
 export function useFlashcards(conceptId: string) {
   return useQuery({
     queryKey: keys.cards(conceptId),
-    queryFn: async (): Promise<CardRow[]> => {
-      const { data, error } = await supabase
-        .from('flashcards')
-        .select('id, question, answer, card_reviews(next_review_date)')
-        .eq('concept_id', conceptId)
-        .order('created_at', { ascending: true });
-      if (error) throw error;
-      return data.map((c) => ({
-        id: c.id,
-        question: c.question,
-        answer: c.answer,
-        next_review_date: (c.card_reviews as { next_review_date: string } | null)?.next_review_date ?? null,
-      }));
-    },
+    queryFn: () =>
+      read((): CardRow[] =>
+        cardsOf(getDB(), conceptId).map((c) => ({ id: c.id, question: c.question, answer: c.answer, next_review_date: c.review.next_review_date })),
+      ),
   });
 }
 
@@ -33,45 +26,31 @@ export function useFlashcard(id: string | undefined) {
   return useQuery({
     queryKey: keys.card(id ?? 'new'),
     enabled: !!id,
-    queryFn: async () => {
-      const { data, error } = await supabase.from('flashcards').select('id, concept_id, question, answer').eq('id', id!).single();
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () =>
+      read(() => {
+        const c = getDB().cards[id!];
+        if (!c) throw new NotFoundError('Flashcard');
+        return c;
+      }),
   });
 }
 
-function invalidateCardQueries(qc: ReturnType<typeof useQueryClient>) {
-  qc.invalidateQueries({ queryKey: ['cards'] });
-  qc.invalidateQueries({ queryKey: ['concepts'] });
-  qc.invalidateQueries({ queryKey: ['due'] });
-  qc.invalidateQueries({ queryKey: keys.stats });
-}
-
 export function useSaveFlashcard() {
-  const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (card: { id?: string; conceptId: string; question: string; answer: string }) => {
-      const values = { question: card.question.trim(), answer: card.answer.trim() };
-      const query = card.id
-        ? supabase.from('flashcards').update(values).eq('id', card.id)
-        : supabase.from('flashcards').insert({ concept_id: card.conceptId, ...values });
-      const { error } = await query;
-      if (error) throw error;
-    },
-    onSuccess: () => invalidateCardQueries(qc),
+    mutationFn: (card: { id?: string; conceptId: string; question: string; answer: string }) =>
+      read(() => {
+        if (card.id) {
+          useDBStore.getState().update((db) => updateCard(db, card.id!, card));
+          return;
+        }
+        const added = commit((db) => addCards(db, card.conceptId, [card], newId, new Date()));
+        if (added.length === 0) throw new DuplicateError();
+      }),
   });
 }
 
 export function useDeleteFlashcard() {
-  const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('flashcards').delete().eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => invalidateCardQueries(qc),
+    mutationFn: (id: string) => read(() => useDBStore.getState().update((db) => deleteCard(db, id))),
   });
 }
-
-export { invalidateCardQueries };

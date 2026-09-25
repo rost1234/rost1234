@@ -8,8 +8,7 @@ const API_MESSAGES: Partial<Record<ApiErrorCode, TranslationKey>> = {
   source_too_short: 'error.sourceTooShort',
   unreadable_pdf: 'error.unreadablePdf',
   payload_too_large: 'error.payloadTooLarge',
-  not_found: 'error.notFound',
-  unauthorized: 'error.unauthorized',
+  not_configured: 'error.aiNotConfigured',
   invalid_input: 'error.invalidInput',
 };
 
@@ -20,10 +19,9 @@ export function errorMessage(error: unknown, t: Translator): string {
 
   if (error && typeof error === 'object') {
     const e = error as { code?: unknown; message?: unknown; name?: unknown; status?: unknown };
-    // PostgREST: unique violation (e.g. two subjects with the same title).
-    if (e.code === '23505') return t('error.duplicate');
-    if (e.code === 'PGRST116') return t('error.notFound');
-    if (e.status === 401 || e.code === 'PGRST301') return t('error.unauthorized');
+    // Local store errors (see local/types.ts).
+    if (e.code === 'duplicate') return t('error.duplicate');
+    if (e.code === 'not_found') return t('error.notFound');
     if (typeof e.message === 'string' && /network request failed|failed to fetch|fetch failed/i.test(e.message)) {
       return t('error.network');
     }

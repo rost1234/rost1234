@@ -26,9 +26,6 @@ export const he: Record<TranslationKey, string> = {
   'nav.session': 'הסבר',
   'nav.study': 'חזרה',
 
-  'setup.title': 'כמעט שם',
-  'setup.body':
-    'FeynmanMind צריכה פרויקט Supabase. העתיקו את ‎.env.example ל-‎.env.local, מלאו את EXPO_PUBLIC_SUPABASE_URL ואת EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY, והפעילו מחדש את האפליקציה.',
   'error.title': 'משהו השתבש',
   'error.generic': 'משהו השתבש. נסו שוב.',
   'error.network': 'אין חיבור. בדקו את האינטרנט ונסו שוב.',
@@ -38,10 +35,9 @@ export const he: Record<TranslationKey, string> = {
   'error.unreadablePdf': 'לא הצלחנו לקרוא טקסט מה-PDF הזה. קבצים סרוקים או מוגנים בסיסמה עדיין לא נתמכים.',
   'error.payloadTooLarge': 'הקובץ גדול מדי. המגבלה היא 10MB.',
   'error.notFound': 'הפריט הזה כבר לא קיים.',
-  'error.unauthorized': 'פג תוקף ההתחברות. התחברו שוב.',
   'error.invalidInput': 'בדקו את מה שהזנתם ונסו שוב.',
   'error.duplicate': 'כבר קיים פריט בשם הזה.',
-  'error.startFailed': 'לא הצלחנו להתחבר ל-FeynmanMind. בדקו את חיבור האינטרנט ונסו שוב.',
+  'error.aiNotConfigured': 'תכונות ה-AI כבויות: לא הוגדר שרת AI. כל השאר עובד גם בלי אינטרנט.',
 
 
   'onboarding.1.title': 'לומדים דרך הסבר',
@@ -203,9 +199,16 @@ export const he: Record<TranslationKey, string> = {
 
   'settings.account': 'המידע שלכם',
   'settings.deleteAccount': 'מחיקת כל המידע שלי',
-  'settings.dataNote': 'אין צורך בהרשמה. הספרייה שלכם פרטית למכשיר הזה. הסרת האפליקציה או ניקוי הנתונים שלה יאבדו את הגישה אליה.',
+  'settings.dataNote': 'הספרייה שלכם נשמרת רק במכשיר הזה. ייצאו גיבוי כדי לשמור עליה או להעביר אותה למכשיר אחר.',
+  'settings.export': 'ייצוא גיבוי',
+  'settings.import': 'שחזור מגיבוי',
+  'settings.importConfirm.title': 'להחליף את הספרייה?',
+  'settings.importConfirm.body': 'כל מה שנמצא עכשיו במכשיר יוחלף בתוכן הגיבוי.',
+  'settings.imported': 'הגיבוי שוחזר.',
+  'settings.deleted': 'כל המידע נמחק.',
+  'settings.backupFailed': 'זה לא הצליח. ודאו שבחרתם קובץ גיבוי של FeynmanMind.',
   'settings.deleteConfirm.title': 'למחוק את כל המידע?',
-  'settings.deleteConfirm.body': 'כל הנושאים, ההסברים והכרטיסיות שלכם יימחקו לצמיתות, והאפליקציה תתחיל מחדש.',
+  'settings.deleteConfirm.body': 'כל הנושאים, ההסברים והכרטיסיות שלכם יימחקו לצמיתות מהמכשיר הזה.',
   'settings.language': 'שפה',
   'settings.lang.auto': 'כמו במכשיר',
   'settings.lang.en': 'English',
@@ -225,7 +228,7 @@ export const he: Record<TranslationKey, string> = {
   'settings.about': 'אודות',
   'settings.howItWorks': 'איך FeynmanMind עובדת',
   'settings.privacy':
-    'ההסברים וחומרי הלימוד שלכם נשלחים לספק AI רק כדי להפיק משוב וכרטיסיות. המידע שלכם פרטי לכם ואפשר למחוק אותו בכל רגע.',
+    'ההסברים וחומרי הלימוד שלכם נשלחים לספק AI רק כדי להפיק משוב וכרטיסיות. שום דבר אחר לא יוצא מהמכשיר: אין חשבון ואין עותק בענן.',
   'settings.version': 'גרסה {version}',
 
   'notif.title': 'הגיע הזמן לחזרה',

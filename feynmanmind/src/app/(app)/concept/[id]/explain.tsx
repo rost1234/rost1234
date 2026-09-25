@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import type { EvaluateResponse } from '@/api/functions';
+import type { FeynmanEvaluation } from '@/api/functions';
 import { Button, Card, ErrorState, InlineError, LoadingState, Screen, TextField } from '@/components/ui';
 import { useConcept } from '@/data/concepts';
 import { useEvaluateExplanation, useSessions } from '@/data/sessions';
 import { EvaluationView } from '@/features/feynman/EvaluationView';
 import { useT } from '@/i18n';
+import { isAiConfigured } from '@/lib/env';
 import { errorMessage } from '@/lib/errors';
 import { haptics } from '@/lib/haptics';
 import { useDraftsStore } from '@/state/draftsStore';
@@ -28,7 +29,7 @@ export default function ExplainScreen() {
   const draft = useDraftsStore((s) => s.drafts[id] ?? '');
   const setDraft = useDraftsStore((s) => s.setDraft);
   const clearDraft = useDraftsStore((s) => s.clearDraft);
-  const [result, setResult] = useState<{ response: EvaluateResponse; explanation: string } | null>(null);
+  const [result, setResult] = useState<{ response: { evaluation: FeynmanEvaluation }; explanation: string } | null>(null);
   const [touched, setTouched] = useState(false);
 
   if (concept.isPending) return <LoadingState />;
@@ -104,12 +105,12 @@ export default function ExplainScreen() {
           footer={t('explain.chars', { count: draft.length, max: MAX_CHARS })}
         />
 
-        <InlineError message={evaluate.error ? errorMessage(evaluate.error, t) : null} />
+        <InlineError message={!isAiConfigured ? t('error.aiNotConfigured') : evaluate.error ? errorMessage(evaluate.error, t) : null} />
 
         {evaluate.isPending ? (
           <LoadingState label={t('explain.evaluating')} />
         ) : (
-          <Button label={t('explain.submit')} icon="send" onPress={submit} disabled={text.length === 0} />
+          <Button label={t('explain.submit')} icon="send" onPress={submit} disabled={text.length === 0 || !isAiConfigured} />
         )}
       </Screen>
     </KeyboardAvoidingView>

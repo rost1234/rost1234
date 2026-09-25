@@ -1,4 +1,4 @@
-import { HttpError, requireUuid } from '../_shared/http.ts';
+import { HttpError, requireText, stringList } from '../_shared/http.ts';
 import type { StructuredLlm } from '../_shared/llm.ts';
 import {
   buildFeynmanUserMessage,
@@ -11,97 +11,68 @@ import {
 
 export const MIN_EXPLANATION_CHARS = 20;
 export const MAX_EXPLANATION_CHARS = 8000;
-export const MAX_SESSIONS_PER_HOUR = 30;
 
-export interface ConceptInfo {
-  id: string;
-  title: string;
+export interface EvaluateInput {
   subjectTitle: string;
-}
-
-/** Data access for this function; the Supabase version lives in repo.ts. */
-export interface FeynmanRepo {
-  /** null when the concept doesn't exist or isn't the caller's. */
-  getConcept(conceptId: string): Promise<ConceptInfo | null>;
-  /** The caller's sessions, across all concepts, since `since`. */
-  countSessionsSince(since: Date): Promise<number>;
-  previousQuestions(conceptId: string, limit: number): Promise<string[]>;
-  referenceCards(conceptId: string, limit: number): Promise<{ question: string; answer: string }[]>;
-  createSession(conceptId: string, explanation: string): Promise<string>;
-  saveEvaluation(sessionId: string, evaluation: FeynmanEvaluation): Promise<void>;
-  deleteSession(sessionId: string): Promise<void>;
+  conceptTitle: string;
+  explanation: string;
+  /** Recent Socratic questions for this concept, so the tutor doesn't repeat itself. */
+  previousQuestions: string[];
+  /** The learner's own flashcards for the concept, used as ground truth. */
+  referenceCards: { question: string; answer: string }[];
 }
 
 export interface EvaluateResult {
-  session_id: string;
   prompt_version: string;
   evaluation: FeynmanEvaluation;
 }
 
-export function parseEvaluateInput(body: Record<string, unknown>) {
-  const conceptId = requireUuid(body.concept_id, 'concept_id');
-  const explanation = typeof body.explanation === 'string' ? body.explanation.trim() : '';
-  if (explanation.length < MIN_EXPLANATION_CHARS) {
-    throw new HttpError(400, `explanation must be at least ${MIN_EXPLANATION_CHARS} characters`, 'invalid_input');
-  }
-  if (explanation.length > MAX_EXPLANATION_CHARS) {
-    throw new HttpError(400, `explanation must be at most ${MAX_EXPLANATION_CHARS} characters`, 'invalid_input');
-  }
-  return { conceptId, explanation };
+/**
+ * The app stores everything locally, so the request carries all context the
+ * tutor needs. Nothing is persisted server-side.
+ */
+export function parseEvaluateInput(body: Record<string, unknown>): EvaluateInput {
+  return {
+    subjectTitle: requireText(body.subject_title, 'subject_title', 1, 200),
+    conceptTitle: requireText(body.concept_title, 'concept_title', 1, 200),
+    explanation: requireText(body.explanation, 'explanation', MIN_EXPLANATION_CHARS, MAX_EXPLANATION_CHARS),
+    previousQuestions: stringList(body.previous_questions, 'previous_questions', 5, 500),
+    referenceCards: parseCards(body.reference_cards),
+  };
 }
 
-export async function evaluateExplanation(
-  deps: { repo: FeynmanRepo; llm: StructuredLlm; now?: () => Date },
-  input: { conceptId: string; explanation: string },
-): Promise<EvaluateResult> {
-  const { repo, llm } = deps;
-  const now = deps.now?.() ?? new Date();
-
-  const concept = await repo.getConcept(input.conceptId);
-  if (!concept) throw new HttpError(404, 'Concept not found', 'not_found');
-
-  const recent = await repo.countSessionsSince(new Date(now.getTime() - 60 * 60 * 1000));
-  if (recent >= MAX_SESSIONS_PER_HOUR) {
-    throw new HttpError(429, 'Too many explanations this hour, take a break and try again soon', 'rate_limited');
+function parseCards(value: unknown): { question: string; answer: string }[] {
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value)) throw new HttpError(400, 'reference_cards must be an array', 'invalid_input');
+  const cards: { question: string; answer: string }[] = [];
+  for (const c of value) {
+    const { question, answer } = (c ?? {}) as Record<string, unknown>;
+    if (typeof question !== 'string' || typeof answer !== 'string' || !question.trim() || !answer.trim()) continue;
+    cards.push({ question: question.trim().slice(0, 1000), answer: answer.trim().slice(0, 2000) });
+    if (cards.length === 30) break;
   }
-
-  const [previousQuestions, cards] = await Promise.all([
-    repo.previousQuestions(concept.id, 5),
-    repo.referenceCards(concept.id, 20),
-  ]);
-
-  // Insert first, as the user: RLS validates ownership before any tokens are
-  // spent, and the row id is ready for the service-role update.
-  const sessionId = await repo.createSession(concept.id, input.explanation);
-
-  let evaluation: FeynmanEvaluation;
-  try {
-    evaluation = await llm({
-      name: 'feynman_evaluation',
-      system: FEYNMAN_SYSTEM_PROMPT,
-      user: buildFeynmanUserMessage({
-        subjectTitle: concept.subjectTitle,
-        conceptTitle: concept.title,
-        referenceMaterial: formatReference(cards),
-        previousQuestions,
-        userExplanation: input.explanation,
-      }),
-      schema: FEYNMAN_RESPONSE_SCHEMA,
-      parse: parseFeynmanEvaluation,
-      temperature: 0.3,
-      maxOutputTokens: 1500,
-    });
-  } catch (err) {
-    // Don't leave an unscored attempt behind; the client simply resubmits.
-    await repo.deleteSession(sessionId).catch((e) => console.error('[feynman] cleanup failed', e));
-    throw err;
-  }
-
-  await repo.saveEvaluation(sessionId, evaluation);
-  return { session_id: sessionId, prompt_version: FEYNMAN_PROMPT_VERSION, evaluation };
+  return cards;
 }
 
-/** The user's own flashcards act as the ground truth the tutor judges against. */
+export async function evaluateExplanation(llm: StructuredLlm, input: EvaluateInput): Promise<EvaluateResult> {
+  const evaluation = await llm({
+    name: 'feynman_evaluation',
+    system: FEYNMAN_SYSTEM_PROMPT,
+    user: buildFeynmanUserMessage({
+      subjectTitle: input.subjectTitle,
+      conceptTitle: input.conceptTitle,
+      referenceMaterial: formatReference(input.referenceCards),
+      previousQuestions: input.previousQuestions,
+      userExplanation: input.explanation,
+    }),
+    schema: FEYNMAN_RESPONSE_SCHEMA,
+    parse: parseFeynmanEvaluation,
+    temperature: 0.3,
+    maxOutputTokens: 1500,
+  });
+  return { prompt_version: FEYNMAN_PROMPT_VERSION, evaluation };
+}
+
 function formatReference(cards: { question: string; answer: string }[]): string | undefined {
   if (!cards.length) return undefined;
   let out = '';

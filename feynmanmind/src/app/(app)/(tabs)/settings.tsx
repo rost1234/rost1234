@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { Switch, Text, View } from 'react-native';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
-import { deleteAccount } from '@/api/functions';
 import { Button, Card, InlineError, Screen, SectionHeader, Segmented, Stepper } from '@/components/ui';
 import { useT } from '@/i18n';
 import { confirmAsync } from '@/lib/dialogs';
-import { errorMessage } from '@/lib/errors';
+import { isAiConfigured } from '@/lib/env';
 import { formatHour } from '@/lib/format';
-import { supabase } from '@/lib/supabase';
+import { useDBStore } from '@/local/store';
+import { emptyDB } from '@/local/types';
+import { exportBackup, pickBackup } from '@/services/backup';
 import { ensureNotificationPermission, remindersSupported } from '@/services/reminders';
 import { useDraftsStore } from '@/state/draftsStore';
 import { usePrefsStore, type LanguagePref, type ThemePref } from '@/state/prefsStore';
@@ -20,7 +21,7 @@ export default function SettingsScreen() {
   const prefs = usePrefsStore();
   const [languageChanged, setLanguageChanged] = useState(false);
   const [reminderDenied, setReminderDenied] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const toggleReminders = async (enabled: boolean) => {
@@ -31,29 +32,52 @@ export default function SettingsScreen() {
     else setReminderDenied(true);
   };
 
-  const removeAccount = async () => {
-    const ok = await confirmAsync({
-      title: t('settings.deleteConfirm.title'),
-      message: t('settings.deleteConfirm.body'),
-      confirmLabel: t('common.delete'),
-      cancelLabel: t('common.cancel'),
-      destructive: true,
-    });
-    if (!ok) return;
-    setDeleting(true);
+  const runDataAction = async (fn: () => Promise<string | null>) => {
+    setNotice(null);
     setError(null);
     try {
-      await deleteAccount(supabase);
-      // The user no longer exists server-side. Dropping the local session makes
-      // AuthProvider start a fresh anonymous user; local drafts go too.
-      useDraftsStore.setState({ drafts: {} });
-      await supabase.auth.signOut({ scope: 'local' });
-      setDeleting(false);
-    } catch (e) {
-      setError(errorMessage(e, t));
-      setDeleting(false);
+      setNotice(await fn());
+    } catch {
+      setError(t('settings.backupFailed'));
     }
   };
+
+  const exportData = () =>
+    runDataAction(async () => {
+      await exportBackup();
+      return null;
+    });
+
+  const importData = () =>
+    runDataAction(async () => {
+      const db = await pickBackup();
+      if (!db) return null;
+      const ok = await confirmAsync({
+        title: t('settings.importConfirm.title'),
+        message: t('settings.importConfirm.body'),
+        confirmLabel: t('settings.import'),
+        cancelLabel: t('common.cancel'),
+        destructive: true,
+      });
+      if (!ok) return null;
+      useDBStore.getState().replace(db);
+      return t('settings.imported');
+    });
+
+  const deleteAll = () =>
+    runDataAction(async () => {
+      const ok = await confirmAsync({
+        title: t('settings.deleteConfirm.title'),
+        message: t('settings.deleteConfirm.body'),
+        confirmLabel: t('common.delete'),
+        cancelLabel: t('common.cancel'),
+        destructive: true,
+      });
+      if (!ok) return null;
+      useDBStore.getState().replace(emptyDB());
+      useDraftsStore.setState({ drafts: {} });
+      return t('settings.deleted');
+    });
 
   return (
     <Screen>
@@ -118,7 +142,10 @@ export default function SettingsScreen() {
       <SectionHeader title={t('settings.account')} />
       <Card>
         <Text style={typography.caption}>{t('settings.dataNote')}</Text>
-        <Button label={t('settings.deleteAccount')} variant="danger" icon="trash-outline" onPress={() => void removeAccount()} loading={deleting} />
+        <Button label={t('settings.export')} variant="secondary" icon="share-outline" onPress={() => void exportData()} />
+        <Button label={t('settings.import')} variant="secondary" icon="download-outline" onPress={() => void importData()} />
+        <Button label={t('settings.deleteAccount')} variant="danger" icon="trash-outline" onPress={() => void deleteAll()} />
+        {notice ? <Text style={[typography.caption, { color: colors.success }]} accessibilityLiveRegion="polite">{notice}</Text> : null}
         <InlineError message={error} />
       </Card>
 
@@ -126,6 +153,7 @@ export default function SettingsScreen() {
       <Card>
         <Button label={t('settings.howItWorks')} variant="ghost" icon="help-circle-outline" onPress={() => router.push('/how-it-works')} />
         <Text style={typography.caption}>{t('settings.privacy')}</Text>
+        {!isAiConfigured ? <Text style={[typography.caption, { color: colors.warning }]}>{t('error.aiNotConfigured')}</Text> : null}
         <Text style={typography.caption}>{t('settings.version', { version: Constants.expoConfig?.version ?? '1.0.0' })}</Text>
       </Card>
     </Screen>

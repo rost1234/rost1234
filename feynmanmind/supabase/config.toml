@@ -1,0 +1,7 @@
+# The app has no accounts, so the AI functions are public: skip JWT checks.
+# They store nothing and are rate-limited per IP (see _shared/rateLimit.ts).
+[functions.feynman-evaluate]
+verify_jwt = false
+
+[functions.generate-flashcards]
+verify_jwt = false

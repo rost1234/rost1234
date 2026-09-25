@@ -26,10 +26,7 @@ export const en = {
   'nav.session': 'Explanation',
   'nav.study': 'Review',
 
-  // setup / errors
-  'setup.title': 'Almost there',
-  'setup.body':
-    'FeynmanMind needs a Supabase project. Copy .env.example to .env.local, fill in EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY, then restart the app.',
+  // errors
   'error.title': 'Something went wrong',
   'error.generic': 'Something went wrong. Please try again.',
   'error.network': 'No connection. Check your internet and try again.',
@@ -39,10 +36,9 @@ export const en = {
   'error.unreadablePdf': "We couldn't read text from this PDF. Scanned or password-protected PDFs aren't supported yet.",
   'error.payloadTooLarge': 'That file is too large. The limit is 10 MB.',
   'error.notFound': 'This item no longer exists.',
-  'error.unauthorized': 'Your session expired. Please sign in again.',
   'error.invalidInput': 'Please check what you entered and try again.',
   'error.duplicate': 'An item with this name already exists.',
-  'error.startFailed': "Couldn't connect to FeynmanMind. Check your internet connection and try again.",
+  'error.aiNotConfigured': 'AI features are off: no AI server is configured. Everything else works offline.',
 
 
   // onboarding
@@ -216,9 +212,16 @@ export const en = {
   // settings
   'settings.account': 'Your data',
   'settings.deleteAccount': 'Delete all my data',
-  'settings.dataNote': 'No sign-up needed. Your library is private to this device; uninstalling the app or clearing its data removes access to it.',
+  'settings.dataNote': 'Your library is stored only on this device. Export a backup to keep it safe or move it to another device.',
+  'settings.export': 'Export backup',
+  'settings.import': 'Restore from backup',
+  'settings.importConfirm.title': 'Replace your library?',
+  'settings.importConfirm.body': 'Everything currently on this device will be replaced with the backup.',
+  'settings.imported': 'Backup restored.',
+  'settings.deleted': 'All data deleted.',
+  'settings.backupFailed': "That didn't work. Make sure you chose a FeynmanMind backup file.",
   'settings.deleteConfirm.title': 'Delete all your data?',
-  'settings.deleteConfirm.body': 'All your subjects, explanations and flashcards will be permanently deleted and the app will start fresh.',
+  'settings.deleteConfirm.body': 'All your subjects, explanations and flashcards will be permanently deleted from this device.',
   'settings.language': 'Language',
   'settings.lang.auto': 'Device',
   'settings.lang.en': 'English',
@@ -238,7 +241,7 @@ export const en = {
   'settings.about': 'About',
   'settings.howItWorks': 'How FeynmanMind works',
   'settings.privacy':
-    'Your explanations and study material are sent to an AI provider only to produce feedback and flashcards. Your data is private to you and can be deleted at any time.',
+    'Your explanations and study material are sent to an AI provider only to produce feedback and flashcards. Nothing else leaves your device: there is no account and no cloud copy.',
   'settings.version': 'Version {version}',
 
   // notifications

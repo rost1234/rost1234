@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import type { GenerateFlashcardsResponse } from '@/api/functions';
 import { Button, Card, InlineError, LoadingState, Screen, Segmented, Stepper, TextField } from '@/components/ui';
 import { useGenerateFlashcards } from '@/data/study';
 import { useT } from '@/i18n';
+import { isAiConfigured } from '@/lib/env';
 import { errorMessage } from '@/lib/errors';
 import { formatBytes } from '@/lib/format';
 import { haptics } from '@/lib/haptics';
@@ -30,7 +30,7 @@ export default function GenerateScreen() {
   const [pdf, setPdf] = useState<PickedPdf | null>(null);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [count, setCount] = useState(defaultCount);
-  const [result, setResult] = useState<GenerateFlashcardsResponse | null>(null);
+  const [result, setResult] = useState<{ cards: { id: string; question: string; answer: string }[]; source_truncated: boolean } | null>(null);
 
   const choosePdf = async () => {
     setPdfError(null);
@@ -133,12 +133,12 @@ export default function GenerateScreen() {
         <Stepper value={count} min={5} max={50} step={5} onChange={setCount} />
       </Card>
 
-      <InlineError message={generate.error ? errorMessage(generate.error, t) : null} />
+      <InlineError message={!isAiConfigured ? t('error.aiNotConfigured') : generate.error ? errorMessage(generate.error, t) : null} />
 
       {generate.isPending ? (
         <LoadingState label={t('generate.working')} />
       ) : (
-        <Button label={t('generate.submit')} icon="sparkles" onPress={submit} disabled={!ready} />
+        <Button label={t('generate.submit')} icon="sparkles" onPress={submit} disabled={!ready || !isAiConfigured} />
       )}
     </Screen>
   );
