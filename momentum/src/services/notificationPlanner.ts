@@ -11,7 +11,7 @@ import { usePrefsStore } from '@/state/prefsStore';
 import { useReflectionStore } from '@/state/reflectionStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { currentLanguage, t, tPlural } from '@/i18n';
-import { HABIT_REMINDER_CATEGORY } from './habitReminders';
+import { CHECKIN_CATEGORY, HABIT_REMINDER_CATEGORY } from './habitReminders';
 import { hasPermission } from './notifications';
 
 const REMINDER_CHANNEL_ID = 'reminders';
@@ -76,11 +76,17 @@ export function describePlanned(item: PlannedNotification, habits: readonly Habi
       return { title: t('notif.morningTitle'), body: tPlural(lang, 'notif.morningBody', item.count ?? 0, { first: first?.title ?? '' }) };
     case 'reflection':
       return { title: t('notif.evening'), body: t('notif.eveningBody') };
+    case 'checkin':
+      if (titles.length === 1 && first) return { title: t('notif.checkinOne', { title: first.title }), body: t('notif.checkinOneBody') };
+      return { title: tPlural(lang, 'notif.checkinMany', titles.length), body: titles.join(' · ') };
   }
 }
 
-/** Only a notification about exactly one habit can offer "Done ✓". */
-const canMarkDone = (item: PlannedNotification) => (item.kind === 'habit' || item.kind === 'rescue') && item.habitIds.length === 1;
+/** Only a notification about exactly one habit can offer "Done ✓"; a check-in about several offers "All done ✓". */
+function categoryOf(item: PlannedNotification): string | null {
+  if (item.kind === 'checkin') return item.habitIds.length === 1 ? HABIT_REMINDER_CATEGORY : CHECKIN_CATEGORY;
+  return (item.kind === 'habit' || item.kind === 'rescue') && item.habitIds.length === 1 ? HABIT_REMINDER_CATEGORY : null;
+}
 
 /** The plan for the coming week, or [] before the data is loaded. */
 export function upcomingPlan(): PlannedNotification[] {
@@ -104,12 +110,13 @@ async function syncNow(): Promise<void> {
     when.setHours(Math.floor(item.minutes / 60), item.minutes % 60, 0, 0);
     if (when.getTime() <= Date.now() + 30_000) continue;
     const text = describePlanned(item, input.habits);
+    const category = categoryOf(item);
     await Notifications.scheduleNotificationAsync({
       identifier: `${PLAN_PREFIX}${item.kind}-${item.date}-${item.minutes}`,
       content: {
         ...text,
-        ...(canMarkDone(item) ? { categoryIdentifier: HABIT_REMINDER_CATEGORY } : {}),
-        data: canMarkDone(item) ? { habitId: item.habitIds[0], date: item.date } : { kind: item.kind },
+        ...(category ? { categoryIdentifier: category } : {}),
+        data: category ? { kind: item.kind, habitIds: item.habitIds, date: item.date } : { kind: item.kind },
       },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: when, channelId: REMINDER_CHANNEL_ID },
     });

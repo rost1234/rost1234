@@ -101,7 +101,10 @@ describe('habits and logs', () => {
     const first = await r.logs.upsert({ habitId: habit.id, logDate: '2026-09-23', currentCount: 3, status: 'in_progress' });
     const second = await r.logs.upsert({ habitId: habit.id, logDate: '2026-09-23', currentCount: 10, status: 'completed' });
     expect(second.id).toBe(first.id);
+    expect(first.source).toBe('app');
     expect(second).toMatchObject({ currentCount: 10, status: 'completed' });
+    const fromCheckIn = await r.logs.upsert({ habitId: habit.id, logDate: '2026-09-23', currentCount: 10, status: 'completed', source: 'checkin' });
+    expect(fromCheckIn.source).toBe('checkin');
 
     await r.logs.upsert({ habitId: habit.id, logDate: '2026-09-22', currentCount: 2, status: 'in_progress' });
     await r.logs.forgive([

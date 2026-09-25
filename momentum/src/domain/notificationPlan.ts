@@ -17,6 +17,9 @@ export interface NotificationPrefs {
   /** A short "here's today" note in the morning. */
   morningPlan: boolean;
   morningMinutes: number;
+  /** Evening "did you already do these?" for habits still unlogged, so a habit done away from the phone still gets logged. */
+  checkIn: boolean;
+  checkInMinutes: number;
 }
 
 export const DEFAULT_NOTIFICATION_PREFS: NotificationPrefs = {
@@ -27,6 +30,8 @@ export const DEFAULT_NOTIFICATION_PREFS: NotificationPrefs = {
   rescueMinutes: 20 * 60 + 30,
   morningPlan: false,
   morningMinutes: 8 * 60,
+  checkIn: true,
+  checkInMinutes: 21 * 60,
 };
 
 export const DAILY_LIMIT_RANGE = { min: 1, max: 8 } as const;
@@ -37,7 +42,7 @@ export const RESCUE_MIN_STREAK = 3;
 /** Days ahead that are planned; nothing is scheduled beyond, so an unopened app goes quiet on its own. */
 export const PLAN_DAYS = 7;
 
-export type PlannedKind = 'habit' | 'habits' | 'rescue' | 'morning' | 'reflection';
+export type PlannedKind = 'habit' | 'habits' | 'rescue' | 'morning' | 'reflection' | 'checkin';
 
 export interface PlannedNotification {
   kind: PlannedKind;
@@ -66,7 +71,7 @@ export interface PlanInput {
   reflectedToday: boolean;
 }
 
-const PRIORITY: Record<PlannedKind, number> = { reflection: 4, rescue: 3, morning: 2, habit: 1, habits: 1 };
+const PRIORITY: Record<PlannedKind, number> = { reflection: 4, rescue: 3, checkin: 3, morning: 2, habit: 1, habits: 1 };
 
 function isQuiet(minutes: number, start: number, end: number): boolean {
   if (start === end) return false;
@@ -170,6 +175,30 @@ function streakRescue(input: PlanInput): PlannedNotification[] {
   return [{ kind: 'rescue', date: today, minutes: prefs.rescueMinutes, habitIds: atRisk.map((h) => h.id) }];
 }
 
+/**
+ * One evening check-in per day listing the due habits not logged yet. Today it
+ * skips what's done, skipped or already in the streak rescue; later days list
+ * every due habit (the plan is redone whenever something is logged).
+ */
+function checkIns(input: PlanInput, rescued: ReadonlySet<string>): PlannedNotification[] {
+  const { today, habits, logsByHabit, pauses, prefs } = input;
+  if (!prefs.checkIn) return [];
+  const minutes = fitQuietHours(prefs.checkInMinutes, prefs.quietStart, prefs.quietEnd);
+  const result: PlannedNotification[] = [];
+  for (let i = 0; i < PLAN_DAYS; i += 1) {
+    const date = addDays(today, i);
+    if (isPaused(pauses, date)) continue;
+    const open = habits.filter(
+      (h) =>
+        !h.isArchived &&
+        isHabitDueOn(h, date) &&
+        (date !== today || (!isDoneOrSkipped(logsByHabit[h.id]?.[today]) && !rescued.has(h.id))),
+    );
+    if (open.length > 0) result.push({ kind: 'checkin', date, minutes, habitIds: open.map((h) => h.id) });
+  }
+  return result;
+}
+
 function morningPlans(input: PlanInput): PlannedNotification[] {
   const { today, habits, pauses, prefs } = input;
   if (!prefs.morningPlan) return [];
@@ -217,7 +246,9 @@ function applyDailyLimit(items: PlannedNotification[], limit: number): PlannedNo
  * ones back off, quiet hours and the daily limit are respected.
  */
 export function planNotifications(input: PlanInput): PlannedNotification[] {
-  const all = [...habitReminders(input), ...streakRescue(input), ...morningPlans(input), ...reflections(input)].filter(
+  const rescue = streakRescue(input);
+  const rescued = new Set(rescue.flatMap((n) => n.habitIds));
+  const all = [...habitReminders(input), ...rescue, ...checkIns(input, rescued), ...morningPlans(input), ...reflections(input)].filter(
     (n) => n.date !== input.today || n.minutes > input.nowMinutes,
   );
   return applyDailyLimit(all, input.prefs.dailyLimit).sort((a, b) => a.date.localeCompare(b.date) || a.minutes - b.minutes);

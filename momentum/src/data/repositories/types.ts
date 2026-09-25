@@ -11,6 +11,7 @@ import type {
   Habit,
   HabitLog,
   HabitLogStatus,
+  LogSource,
   NewFocusSession,
   NewHabit,
   NewTask,
@@ -52,6 +53,8 @@ export interface HabitLogUpsert {
   logDate: LocalDateString;
   currentCount: number;
   status: HabitLogStatus;
+  /** Defaults to `app`. */
+  source?: LogSource;
 }
 
 export interface HabitLogRepository {

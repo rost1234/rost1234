@@ -4,15 +4,21 @@ import { runDetached } from '@/core/errors';
 import { getLocalDeviceDate, isLocalDateString } from '@/core/localDate';
 import { useHabitStore } from '@/state/habitStore';
 import { refreshTodayWidget } from '@/widget/refreshWidget';
-import { DONE_ACTION, completeFromNotification } from './habitReminders';
+import { DONE_ACTION, DONE_ALL_ACTION, completeFromNotification } from './habitReminders';
+
+function habitIdsOf(data: Record<string, unknown> | undefined): string[] {
+  if (Array.isArray(data?.habitIds)) return data.habitIds.filter((id): id is string => typeof id === 'string');
+  return typeof data?.habitId === 'string' ? [data.habitId] : [];
+}
 
 async function handle(response: Notifications.NotificationResponse): Promise<void> {
-  if (response.actionIdentifier !== DONE_ACTION) return;
+  if (response.actionIdentifier !== DONE_ACTION && response.actionIdentifier !== DONE_ALL_ACTION) return;
   const data = response.notification.request.content.data as Record<string, unknown> | undefined;
-  const habitId = typeof data?.habitId === 'string' ? data.habitId : null;
-  if (!habitId) return;
+  const habitIds = habitIdsOf(data);
+  if (habitIds.length === 0) return;
   const date = typeof data?.date === 'string' && isLocalDateString(data.date) ? data.date : getLocalDeviceDate();
-  await completeFromNotification(habitId, date);
+  const source = data?.kind === 'checkin' ? 'checkin' : 'reminder';
+  for (const habitId of habitIds) await completeFromNotification(habitId, date, source);
   await Notifications.dismissNotificationAsync(response.notification.request.identifier).catch(() => undefined);
   await Notifications.clearLastNotificationResponseAsync().catch(() => undefined);
   const today = useHabitStore.getState().today;
@@ -21,7 +27,7 @@ async function handle(response: Notifications.NotificationResponse): Promise<voi
 }
 
 /**
- * "Done ✓" on a habit reminder. Handled while the app is running, and — if the
+ * "Done ✓" / "All done ✓" on a habit notification. Handled while the app is running, and — if the
  * tap happened while it was closed — the next time it opens.
  */
 export function startNotificationResponses(): () => void {

@@ -29,12 +29,14 @@ export function parseNotificationPrefs(raw: string | null): NotificationPrefs {
     rescueMinutes: isMinutes(data.rescueMinutes) ? data.rescueMinutes : d.rescueMinutes,
     morningPlan: typeof data.morningPlan === 'boolean' ? data.morningPlan : d.morningPlan,
     morningMinutes: isMinutes(data.morningMinutes) ? data.morningMinutes : d.morningMinutes,
+    checkIn: typeof data.checkIn === 'boolean' ? data.checkIn : d.checkIn,
+    checkInMinutes: isMinutes(data.checkInMinutes) ? data.checkInMinutes : d.checkInMinutes,
   };
 }
 
 function pick(state: NotificationPrefs): NotificationPrefs {
-  const { quietStart, quietEnd, dailyLimit, streakRescue, rescueMinutes, morningPlan, morningMinutes } = state;
-  return { quietStart, quietEnd, dailyLimit, streakRescue, rescueMinutes, morningPlan, morningMinutes };
+  const { quietStart, quietEnd, dailyLimit, streakRescue, rescueMinutes, morningPlan, morningMinutes, checkIn, checkInMinutes } = state;
+  return { quietStart, quietEnd, dailyLimit, streakRescue, rescueMinutes, morningPlan, morningMinutes, checkIn, checkInMinutes };
 }
 
 /** Smart-notification settings (per device, not part of backups). */

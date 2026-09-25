@@ -19,7 +19,6 @@ import { startHabitEffects } from '@/state/habitEffects';
 import { useFocusSoundStore } from '@/state/focusSoundStore';
 import { useFocusStore } from '@/state/focusStore';
 import { useHighlightStore } from '@/state/highlightStore';
-import { useHabitReminderStore } from '@/state/habitReminderStore';
 import { usePrefsStore } from '@/state/prefsStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { resolveLanguage , useT } from '@/i18n';
@@ -70,7 +69,6 @@ function Bootstrap() {
     runDetached(useFocusSoundStore.getState().hydrate());
     runDetached(useFocusStore.getState().hydrate());
     runDetached(useHighlightStore.getState().hydrate());
-    runDetached(useHabitReminderStore.getState().hydrate());
     // Weekly backup to the user's folder, if they set one up.
     runDetached(useDevicePrefsStore.getState().hydrate().then(runAutoBackupIfDue));
     // A session may have been started from the Focus widget while we were away.

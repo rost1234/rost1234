@@ -152,6 +152,11 @@ ALTER TABLE focus_sessions ADD COLUMN target_minutes INTEGER NULL;
 ALTER TABLE focus_sessions ADD COLUMN completed INTEGER NULL;
 `;
 
+/** v8: how a habit log was made (app / reminder button / evening check-in). */
+const MIGRATION_8 = `
+ALTER TABLE habit_logs ADD COLUMN source TEXT NULL;
+`;
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, statements: MIGRATION_1 },
   { version: 2, statements: MIGRATION_2 },
@@ -160,6 +165,7 @@ export const MIGRATIONS: readonly Migration[] = [
   { version: 5, statements: MIGRATION_5 },
   { version: 6, statements: MIGRATION_6 },
   { version: 7, statements: MIGRATION_7 },
+  { version: 8, statements: MIGRATION_8 },
 ];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS.reduce((max, m) => Math.max(max, m.version), 0);
@@ -225,6 +231,7 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     current_count: 'integer',
     status: 'text',
     updated_at: 'text',
+    source: 'nullable_text',
   },
   tasks: {
     id: 'text',

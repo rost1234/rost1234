@@ -34,13 +34,14 @@ export class SqliteHabitLogRepository implements HabitLogRepository {
       const updatedAt = nowIso();
       const currentCount = Math.max(0, Math.trunc(entry.currentCount));
       await db.runAsync(
-        `INSERT INTO habit_logs (id, habit_id, log_date, current_count, status, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?)
+        `INSERT INTO habit_logs (id, habit_id, log_date, current_count, status, updated_at, source)
+         VALUES (?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT (habit_id, log_date) DO UPDATE SET
            current_count = excluded.current_count,
            status = excluded.status,
-           updated_at = excluded.updated_at`,
-        [createId(), entry.habitId, entry.logDate, currentCount, entry.status, updatedAt],
+           updated_at = excluded.updated_at,
+           source = excluded.source`,
+        [createId(), entry.habitId, entry.logDate, currentCount, entry.status, updatedAt, entry.source ?? 'app'],
       );
       const row = await db.getFirstAsync<HabitLogRow>(
         'SELECT * FROM habit_logs WHERE habit_id = ? AND log_date = ?',

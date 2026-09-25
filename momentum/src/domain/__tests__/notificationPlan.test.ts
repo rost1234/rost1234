@@ -31,7 +31,7 @@ function input(overrides: Partial<PlanInput> = {}): PlanInput {
     logsByHabit: {},
     streaks: {},
     pauses: [],
-    prefs: { ...DEFAULT_NOTIFICATION_PREFS, streakRescue: false },
+    prefs: { ...DEFAULT_NOTIFICATION_PREFS, checkIn: false, streakRescue: false },
     reflectionMinutes: null,
     reflectedToday: false,
     ...overrides,
@@ -57,6 +57,19 @@ describe('usualReminderMinutes by weekday', () => {
     const logs = [...saturdays, ...weekdays].sort((a, b) => a.logDate.localeCompare(b.logDate));
     expect(usualReminderMinutes(makeHabit(), logs, 6)).toBe(9 * 60 + 45);
     expect(usualReminderMinutes(makeHabit(), logs, 1)).toBe(6 * 60 + 45);
+  });
+});
+
+describe('usualReminderMinutes and log source', () => {
+  it('ignores completions made from a notification', () => {
+    const days = ['2026-09-14', '2026-09-15', '2026-09-16'];
+    const inApp = days.map((d) => log('h', d, 'completed', 7));
+    const fromNotif = ['2026-09-17', '2026-09-18', '2026-09-19', '2026-09-20'].map((d, i) => ({
+      ...log('h', d, 'completed', 21),
+      source: i % 2 ? ('checkin' as const) : ('reminder' as const),
+    }));
+    expect(usualReminderMinutes(makeHabit(), [...inApp, ...fromNotif])).toBe(6 * 60 + 45);
+    expect(usualReminderMinutes(makeHabit({ timeOfDay: 'afternoon' }), fromNotif)).toBe(13 * 60);
   });
 });
 
@@ -113,7 +126,7 @@ describe('planNotifications', () => {
 
   it('adds a streak rescue only for open streaks of 3+ days', () => {
     const plain = [makeHabit({ id: 'a' }), makeHabit({ id: 'b' }), makeHabit({ id: 'c' })];
-    const prefs = { ...DEFAULT_NOTIFICATION_PREFS, streakRescue: true };
+    const prefs = { ...DEFAULT_NOTIFICATION_PREFS, checkIn: false, streakRescue: true };
     const logs = index([log('c', TODAY, 'completed')]);
     const plan = planNotifications(input({ habits: plain, prefs, logsByHabit: logs, streaks: { a: 2, b: 5, c: 9 } }));
     expect(plan).toEqual([expect.objectContaining({ kind: 'rescue', date: TODAY, minutes: prefs.rescueMinutes, habitIds: ['b'] })]);
@@ -126,7 +139,7 @@ describe('planNotifications', () => {
   });
 
   it('plans the morning note with the count and the first habit of the morning', () => {
-    const prefs = { ...DEFAULT_NOTIFICATION_PREFS, streakRescue: false, morningPlan: true };
+    const prefs = { ...DEFAULT_NOTIFICATION_PREFS, checkIn: false, streakRescue: false, morningPlan: true };
     const habits = [makeHabit({ id: 'eve', timeOfDay: 'evening' }), makeHabit({ id: 'morn', timeOfDay: 'morning' })];
     const [first] = planNotifications(input({ habits, prefs }));
     expect(first).toMatchObject({ kind: 'morning', count: 2, habitIds: ['morn', 'eve'] });
@@ -136,15 +149,37 @@ describe('planNotifications', () => {
     const many = ['a', 'b', 'c'].map((id, i) =>
       makeHabit({ id, reminder: 'smart', timeOfDay: (['morning', 'afternoon', 'evening'] as const)[i], createdAt: '2026-09-20T08:00:00' }),
     );
-    const prefs = { ...DEFAULT_NOTIFICATION_PREFS, streakRescue: false, dailyLimit: 2 };
+    const prefs = { ...DEFAULT_NOTIFICATION_PREFS, checkIn: false, streakRescue: false, dailyLimit: 2 };
     const today = planNotifications(input({ habits: many, prefs, reflectionMinutes: 21 * 60 })).filter((n) => n.date === TODAY);
     expect(today.map((n) => n.kind)).toEqual(['habit', 'reflection']);
     expect(today[0]?.habitIds).toEqual(['a']);
   });
 
+  it('asks in the evening about due habits not logged yet, leaving out rescued ones', () => {
+    const habits = [makeHabit({ id: 'a' }), makeHabit({ id: 'b' }), makeHabit({ id: 'c' }), makeHabit({ id: 'd' })];
+    const prefs = { ...DEFAULT_NOTIFICATION_PREFS, checkIn: true, streakRescue: true };
+    const logs = index([log('a', TODAY, 'completed'), log('b', TODAY, 'skipped')]);
+    const plan = planNotifications(input({ habits, prefs, logsByHabit: logs, streaks: { d: 4 } }));
+    const today = plan.filter((n) => n.date === TODAY);
+    expect(today).toEqual([
+      expect.objectContaining({ kind: 'rescue', habitIds: ['d'] }),
+      expect.objectContaining({ kind: 'checkin', minutes: 21 * 60, habitIds: ['c'] }),
+    ]);
+    expect(plan.find((n) => n.date === addDays(TODAY, 1))).toMatchObject({ kind: 'checkin', habitIds: ['a', 'b', 'c', 'd'] });
+  });
+
+  it('skips the check-in when everything is logged and keeps it out of quiet hours', () => {
+    const habits = [makeHabit({ id: 'a' })];
+    const logs = index([log('a', TODAY, 'completed')]);
+    const late = { ...DEFAULT_NOTIFICATION_PREFS, checkIn: true, streakRescue: false, checkInMinutes: 23 * 60 };
+    const plan = planNotifications(input({ habits, prefs: late, logsByHabit: logs }));
+    expect(plan.some((n) => n.date === TODAY)).toBe(false);
+    expect(plan[0]).toMatchObject({ kind: 'checkin', date: addDays(TODAY, 1), minutes: 21 * 60 + 45 });
+  });
+
   it('plans nothing on paused days', () => {
     const pause = { id: 'p', startDate: TODAY, endDate: addDays(TODAY, 2), reason: 'sick' as const, createdAt: 'x' };
-    const prefs = { ...DEFAULT_NOTIFICATION_PREFS, streakRescue: true };
+    const prefs = { ...DEFAULT_NOTIFICATION_PREFS, checkIn: false, streakRescue: true };
     const plan = planNotifications(input({ habits: [water], pauses: [pause], prefs, streaks: { water: 5 } }));
     expect(plan[0]?.date).toBe(addDays(TODAY, 3));
   });

@@ -42,6 +42,7 @@ export interface HabitLogRow {
   current_count: number;
   status: string;
   updated_at: string;
+  source: string | null;
 }
 
 export interface TaskRow {

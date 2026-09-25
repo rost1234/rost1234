@@ -93,7 +93,12 @@ export interface HabitLog {
   currentCount: number;
   status: HabitLogStatus;
   updatedAt: string;
+  /** How it was logged; absent on logs from before v8. */
+  source?: LogSource;
 }
+
+/** `reminder` = Done ✓ on a habit reminder; `checkin` = the evening "did you already?" notification. */
+export type LogSource = 'app' | 'reminder' | 'checkin';
 
 export interface Task {
   id: string;

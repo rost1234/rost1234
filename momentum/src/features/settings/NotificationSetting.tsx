@@ -140,6 +140,11 @@ export function NotificationSetting() {
         <TimeStepper small minutes={prefs.rescueMinutes} onChange={(rescueMinutes) => prefs.update({ rescueMinutes })} />
       ) : null}
 
+      <ToggleRow title={t('sn.checkin')} lead={t('sn.checkinLead')} value={prefs.checkIn} onChange={(checkIn) => prefs.update({ checkIn })} />
+      {prefs.checkIn ? (
+        <TimeStepper small minutes={prefs.checkInMinutes} onChange={(checkInMinutes) => prefs.update({ checkInMinutes })} />
+      ) : null}
+
       <ToggleRow title={t('sn.morning')} lead={t('sn.morningLead')} value={prefs.morningPlan} onChange={(morningPlan) => prefs.update({ morningPlan })} />
       {prefs.morningPlan ? (
         <TimeStepper small minutes={prefs.morningMinutes} onChange={(morningMinutes) => prefs.update({ morningMinutes })} />

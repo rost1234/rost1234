@@ -7,6 +7,7 @@ import {
   type Habit,
   type HabitLog,
   type HabitLogStatus,
+  type LogSource,
   type Pause,
   type Task,
   type TargetFrequency,
@@ -31,6 +32,9 @@ function toLogStatus(value: string): HabitLogStatus {
   const match = LOG_STATUSES.find((status) => status === value);
   return match ?? 'in_progress';
 }
+
+const LOG_SOURCES: readonly LogSource[] = ['app', 'reminder', 'checkin'];
+const toLogSource = (value: string | null): LogSource | undefined => LOG_SOURCES.find((s) => s === value);
 
 function toFrequency(value: string): TargetFrequency {
   return value === 'specific_days' ? 'specific_days' : 'daily';
@@ -100,6 +104,7 @@ export const mapHabitLog = (row: HabitLogRow): HabitLog => ({
   currentCount: row.current_count,
   status: toLogStatus(row.status),
   updatedAt: row.updated_at,
+  ...(toLogSource(row.source) ? { source: toLogSource(row.source) } : {}),
 });
 
 export const mapTask = (row: TaskRow): Task => ({

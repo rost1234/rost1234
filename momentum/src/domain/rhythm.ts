@@ -43,13 +43,17 @@ const DEFAULT_MINUTES: Record<TimeOfDay, number> = { any: 10 * 60, morning: 8 * 
  * "Usual time" for a smart reminder: the median time of day the habit was
  * completed (last 30 logs), 15 minutes earlier, rounded to 5 min. Falls back to
  * the habit's part of the day.
+ *
+ * Logs made from a notification are left out: their time is the notification's,
+ * not the habit's. Counting reminder taps would pull the reminder 15 minutes
+ * earlier every round, and evening check-ins would drag every habit to the evening.
  */
 export function usualReminderMinutes(
   habit: Pick<Habit, 'timeOfDay'>,
-  logs: readonly Pick<HabitLog, 'status' | 'updatedAt' | 'logDate'>[],
+  logs: readonly Pick<HabitLog, 'status' | 'updatedAt' | 'logDate' | 'source'>[],
   weekday?: Weekday,
 ): number {
-  const completed = logs.filter((l) => l.status === 'completed');
+  const completed = logs.filter((l) => l.status === 'completed' && (l.source === undefined || l.source === 'app'));
   // Weekends often run on a different clock: prefer the same weekday when there's enough of it.
   if (weekday !== undefined) {
     const sameDay = completed.slice(-60).filter((l) => getWeekday(l.logDate) === weekday);
