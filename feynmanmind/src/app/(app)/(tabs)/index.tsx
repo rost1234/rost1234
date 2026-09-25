@@ -6,7 +6,6 @@ import { ScoreRing } from '@/components/ScoreRing';
 import { Button, Card, Chevron, EmptyState, ErrorState, LoadingState, Screen, SectionHeader, StatTile } from '@/components/ui';
 import { useWeakConcepts } from '@/data/concepts';
 import { useStudyStats } from '@/data/study';
-import { useAuth } from '@/features/auth/AuthProvider';
 import { useT } from '@/i18n';
 import { errorMessage } from '@/lib/errors';
 import { formatWeekday, greetingKey } from '@/lib/format';
@@ -16,7 +15,6 @@ export default function TodayScreen() {
   const t = useT();
   const styles = useStyles();
   const { colors, typography } = useTheme();
-  const { session } = useAuth();
   const stats = useStudyStats();
   const weak = useWeakConcepts();
 
@@ -26,7 +24,6 @@ export default function TodayScreen() {
     void weak.refetch();
   };
 
-  const name = session?.user.email?.split('@')[0];
 
   return (
     <Screen edges={['top']} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.primary} />}>
@@ -34,7 +31,6 @@ export default function TodayScreen() {
         <Text style={typography.caption}>{new Date().toLocaleDateString(t.locale, { weekday: 'long', day: 'numeric', month: 'long' })}</Text>
         <Text style={typography.title} accessibilityRole="header">
           {t(greetingKey())}
-          {name ? `, ${name}` : ''}
         </Text>
       </View>
 

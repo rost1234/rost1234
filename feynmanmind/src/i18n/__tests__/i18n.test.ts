@@ -21,7 +21,7 @@ describe('translations', () => {
   });
 
   it('interpolates params and picks plural forms', () => {
-    expect(translate('en', 'auth.codeSent', { email: 'a@b.co' })).toBe('We sent a code to a@b.co.');
+    expect(translate('en', 'generate.pdfInfo', { name: 'a.pdf', size: '2 KB' })).toBe('a.pdf · 2 KB');
     expect(translatePlural('en', 'today.due', 1)).toBe('1 card due');
     expect(translatePlural('en', 'today.due', 3)).toBe('3 cards due');
     expect(translatePlural('he', 'interval.days', 6)).toBe('6 ימים');

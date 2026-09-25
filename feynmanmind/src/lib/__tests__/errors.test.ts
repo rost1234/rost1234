@@ -9,7 +9,6 @@ describe('errorMessage', () => {
     [new ApiError('rate_limited', 'x', 429), "You've hit the hourly limit. Take a short break and try again."],
     [new ApiError('unreadable_pdf', 'x', 422), expect.stringContaining('PDF')],
     [new ApiError('db_error', 'x', 500), 'Something went wrong. Please try again.'],
-    [{ code: 'invalid_credentials', message: 'Invalid login credentials' }, 'Wrong email or password.'],
     [{ code: '23505', message: 'duplicate key value' }, 'An item with this name already exists.'],
     [new TypeError('Network request failed'), 'No connection. Check your internet and try again.'],
     ['weird', 'Something went wrong. Please try again.'],

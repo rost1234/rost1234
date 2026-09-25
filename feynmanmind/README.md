@@ -12,20 +12,20 @@ English and Hebrew (RTL), light and dark themes.
 
 | Area | What it does |
 |---|---|
-| Auth | Email + password, or passwordless 6-digit email code. Account deletion in Settings. |
+| No sign-in | The app opens straight into the library. Each device gets a private Supabase anonymous user on first launch. "Delete all my data" in Settings wipes it and starts fresh. |
 | Library | Subjects → concepts. Create, rename, delete. Mastery bar per subject. |
 | Feynman tutor | Write an explanation (drafts are kept per concept). Get a score, verdict, one Socratic question, jargon to unpack and misconceptions, without being told the answer. Revise and resubmit. Past attempts are saved. |
 | Flashcards | Generate from pasted text or a PDF (≤ 10 MB), or add and edit by hand. Duplicates are skipped. |
 | Review | SM-2 queue with all six grades (0–5) and the next interval shown on each button. Safe across devices. |
 | Today | Cards due, streak, today's recall rate, totals, a 7-day forecast and history, and the weakest concepts to explain next. |
-| Settings | Language (device / English / Hebrew), theme, daily reminder time, cards per generation, sign out, delete account. |
+| Settings | Language (device / English / Hebrew), theme, daily reminder time, cards per generation, delete all my data. |
 
 ## Project layout
 
 ```
 src/app/                  expo-router screens
-  _layout.tsx             providers, RTL, auth + onboarding gate (Stack.Protected)
-  onboarding.tsx, sign-in.tsx
+  _layout.tsx             providers, RTL, onboarding gate (Stack.Protected), silent anonymous sign-in
+  onboarding.tsx
   (app)/(tabs)/           Today · Library · Review · Settings
   (app)/subject/[id]      concepts in a subject
   (app)/concept/[id]/     concept hub · explain (Feynman) · generate (cards)
@@ -55,8 +55,12 @@ supabase functions deploy generate-flashcards
 supabase functions deploy delete-account
 ```
 
-For **email-code sign-in**, the *Magic Link* email template must include the
-code: add `{{ .Token }}` under **Authentication → Email Templates**.
+**Enable anonymous sign-ins:** turn on **Authentication → Sign In / Providers →
+Allow anonymous sign-ins** (locally: `[auth] enable_anonymous_sign_ins = true`).
+There is no sign-in screen, so the app can't start without it.
+Anonymous users get the `authenticated` role and their own `auth.uid()`, so
+every RLS policy works unchanged. To limit abuse, keep Supabase's per-IP rate
+limit for anonymous sign-ins and consider enabling CAPTCHA (Turnstile/hCaptcha).
 
 ### 2. App
 
@@ -92,5 +96,6 @@ npx expo-doctor
 - **Scores can't be faked:** clients can't write AI fields. The `feynman-evaluate` function writes them with the service role.
 - **Reviews:** `submit_card_review` saves the SM-2 result and a `review_logs` entry in one transaction. It only applies if the card hasn't changed since it was fetched, so grading the same card on two devices counts once.
 - **Dashboard:** `get_study_stats` computes due counts, streak, forecast and history in the user's time zone.
-- **Account deletion:** deleting the account removes all data via `ON DELETE CASCADE`.
+- **Data deletion:** "Delete all my data" deletes the anonymous user, which removes all their rows via `ON DELETE CASCADE`.
+- **Data lives with the device:** there's no account to sign back into, so uninstalling the app or clearing its storage loses access to that library.
 - **Limits:** 30 evaluations and 300 generated cards per user per hour. One retry on AI errors.

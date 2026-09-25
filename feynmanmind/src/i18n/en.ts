@@ -42,29 +42,8 @@ export const en = {
   'error.unauthorized': 'Your session expired. Please sign in again.',
   'error.invalidInput': 'Please check what you entered and try again.',
   'error.duplicate': 'An item with this name already exists.',
+  'error.startFailed': "Couldn't connect to FeynmanMind. Check your internet connection and try again.",
 
-  // auth
-  'auth.tagline': 'Understand it. Explain it. Remember it.',
-  'auth.email': 'Email',
-  'auth.password': 'Password',
-  'auth.code': '6-digit code',
-  'auth.signIn': 'Sign in',
-  'auth.signUp': 'Create account',
-  'auth.switchToSignUp': 'New here? Create an account',
-  'auth.switchToSignIn': 'Already have an account? Sign in',
-  'auth.useCode': 'Sign in with an email code instead',
-  'auth.usePassword': 'Sign in with a password instead',
-  'auth.sendCode': 'Email me a code',
-  'auth.verifyCode': 'Verify and sign in',
-  'auth.codeSent': 'We sent a code to {email}.',
-  'auth.resendCode': 'Send a new code',
-  'auth.checkInbox': 'Check your inbox to confirm your email, then sign in.',
-  'auth.invalidEmail': 'Enter a valid email address.',
-  'auth.passwordTooShort': 'Use at least 8 characters.',
-  'auth.invalidCredentials': 'Wrong email or password.',
-  'auth.emailNotConfirmed': 'Confirm your email first. We sent you a link.',
-  'auth.userExists': 'An account with this email already exists. Sign in instead.',
-  'auth.invalidCode': 'That code is wrong or expired.',
 
   // onboarding
   'onboarding.1.title': 'Learn by explaining',
@@ -235,12 +214,11 @@ export const en = {
   'review.upcoming': 'Coming up',
 
   // settings
-  'settings.account': 'Account',
-  'settings.signedInAs': 'Signed in as {email}',
-  'settings.signOut': 'Sign out',
-  'settings.deleteAccount': 'Delete account',
-  'settings.deleteConfirm.title': 'Delete your account?',
-  'settings.deleteConfirm.body': 'All your subjects, explanations and flashcards will be permanently deleted.',
+  'settings.account': 'Your data',
+  'settings.deleteAccount': 'Delete all my data',
+  'settings.dataNote': 'No sign-up needed. Your library is private to this device; uninstalling the app or clearing its data removes access to it.',
+  'settings.deleteConfirm.title': 'Delete all your data?',
+  'settings.deleteConfirm.body': 'All your subjects, explanations and flashcards will be permanently deleted and the app will start fresh.',
   'settings.language': 'Language',
   'settings.lang.auto': 'Device',
   'settings.lang.en': 'English',
@@ -260,7 +238,7 @@ export const en = {
   'settings.about': 'About',
   'settings.howItWorks': 'How FeynmanMind works',
   'settings.privacy':
-    'Your explanations and study material are sent to an AI provider only to produce feedback and flashcards. Your data is private to your account and deleted with it.',
+    'Your explanations and study material are sent to an AI provider only to produce feedback and flashcards. Your data is private to you and can be deleted at any time.',
   'settings.version': 'Version {version}',
 
   // notifications

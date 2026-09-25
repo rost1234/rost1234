@@ -4,20 +4,19 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { deleteAccount } from '@/api/functions';
 import { Button, Card, InlineError, Screen, SectionHeader, Segmented, Stepper } from '@/components/ui';
-import { useAuth } from '@/features/auth/AuthProvider';
 import { useT } from '@/i18n';
 import { confirmAsync } from '@/lib/dialogs';
 import { errorMessage } from '@/lib/errors';
 import { formatHour } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import { ensureNotificationPermission, remindersSupported } from '@/services/reminders';
+import { useDraftsStore } from '@/state/draftsStore';
 import { usePrefsStore, type LanguagePref, type ThemePref } from '@/state/prefsStore';
 import { spacing, useTheme } from '@/theme';
 
 export default function SettingsScreen() {
   const t = useT();
   const { colors, typography } = useTheme();
-  const { session } = useAuth();
   const prefs = usePrefsStore();
   const [languageChanged, setLanguageChanged] = useState(false);
   const [reminderDenied, setReminderDenied] = useState(false);
@@ -45,8 +44,11 @@ export default function SettingsScreen() {
     setError(null);
     try {
       await deleteAccount(supabase);
-      // The user no longer exists server-side; drop the local session.
+      // The user no longer exists server-side. Dropping the local session makes
+      // AuthProvider start a fresh anonymous user; local drafts go too.
+      useDraftsStore.setState({ drafts: {} });
       await supabase.auth.signOut({ scope: 'local' });
+      setDeleting(false);
     } catch (e) {
       setError(errorMessage(e, t));
       setDeleting(false);
@@ -115,8 +117,7 @@ export default function SettingsScreen() {
 
       <SectionHeader title={t('settings.account')} />
       <Card>
-        {session?.user.email ? <Text style={typography.caption}>{t('settings.signedInAs', { email: session.user.email })}</Text> : null}
-        <Button label={t('settings.signOut')} variant="secondary" icon="log-out-outline" onPress={() => void supabase.auth.signOut()} />
+        <Text style={typography.caption}>{t('settings.dataNote')}</Text>
         <Button label={t('settings.deleteAccount')} variant="danger" icon="trash-outline" onPress={() => void removeAccount()} loading={deleting} />
         <InlineError message={error} />
       </Card>

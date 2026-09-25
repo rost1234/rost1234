@@ -5,7 +5,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack, type ErrorBoundaryProps } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { Button, EmptyState, Screen } from '@/components/ui';
+import { Button, EmptyState, ErrorState, LoadingState, Screen } from '@/components/ui';
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
 import { resolveLanguage, useT } from '@/i18n';
 import { isSupabaseConfigured } from '@/lib/env';
@@ -55,18 +55,17 @@ function SetupRequired() {
 }
 
 function RootNavigator() {
-  const { session, ready } = useAuth();
+  const t = useT();
+  const { session, status, retry } = useAuth();
   const prefsReady = usePrefsHydrated();
   const onboardingDone = usePrefsStore((s) => s.onboardingDone);
   const remindersEnabled = usePrefsStore((s) => s.remindersEnabled);
   const reminderHour = usePrefsStore((s) => s.reminderHour);
   const language = usePrefsStore((s) => s.language);
   const { colors } = useTheme();
-  const loading = !ready || !prefsReady;
-
   useEffect(() => {
-    if (!loading) SplashScreen.hideAsync().catch(() => {});
-  }, [loading]);
+    if (prefsReady) SplashScreen.hideAsync().catch(() => {});
+  }, [prefsReady]);
 
   // Keep the daily reminder in sync with settings and the UI language.
   useEffect(() => {
@@ -74,18 +73,24 @@ function RootNavigator() {
   }, [session, remindersEnabled, reminderHour, language]);
 
   if (!isSupabaseConfigured) return <SetupRequired />;
-  if (loading) return null;
+  if (!prefsReady) return null;
 
-  const signedIn = session !== null;
+  // Onboarding needs no backend, so it shows while the anonymous user is created.
+  const appReady = session !== null;
+  if (onboardingDone && !appReady) {
+    return (
+      <Screen edges={['top', 'bottom']} contentStyle={{ flexGrow: 1, justifyContent: 'center' }}>
+        {status === 'error' ? <ErrorState message={t('error.startFailed')} onRetry={retry} /> : <LoadingState />}
+      </Screen>
+    );
+  }
+
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
       <Stack.Protected guard={!onboardingDone}>
         <Stack.Screen name="onboarding" />
       </Stack.Protected>
-      <Stack.Protected guard={onboardingDone && !signedIn}>
-        <Stack.Screen name="sign-in" />
-      </Stack.Protected>
-      <Stack.Protected guard={onboardingDone && signedIn}>
+      <Stack.Protected guard={onboardingDone && appReady}>
         <Stack.Screen name="(app)" />
       </Stack.Protected>
     </Stack>

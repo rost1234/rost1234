@@ -5,7 +5,7 @@
  *
  * Deletes the caller's auth user. Every table references auth.users with
  * ON DELETE CASCADE, so all of the user's data goes with it.
- * Required by the App Store / Play Store for apps that let users sign up.
+ * Backs "Delete all my data" in Settings; the app then starts a fresh anonymous user.
  */
 import { handle, HttpError, json, readJsonBody } from '../_shared/http.ts';
 import { getAdminClient, getUserClient } from '../_shared/supabase.ts';
