@@ -6,18 +6,13 @@ export const en = {
   'common.rename': 'Rename',
   'common.retry': 'Try again',
   'common.done': 'Done',
-  'common.continue': 'Continue',
   'common.add': 'Add',
   'common.edit': 'Edit',
   'common.options': 'More options',
-  'common.loading': 'Loading…',
 
   // navigation titles
-  'tabs.today': 'Today',
   'tabs.library': 'Library',
-  'tabs.review': 'Review',
   'tabs.settings': 'Settings',
-  'nav.subject': 'Subject',
   'nav.concept': 'Concept',
   'nav.explain': 'Explain it simply',
   'nav.generate': 'Create flashcards',
@@ -78,11 +73,8 @@ export const en = {
   'today.weakBody': 'Your lowest-mastery concepts. Explaining them is the fastest way to improve.',
   'today.emptyTitle': 'Start your library',
   'today.emptyBody': 'Add a subject and a concept you want to understand, then explain it or turn your notes into flashcards.',
-  'today.goLibrary': 'Open library',
 
   // library
-  'library.empty.title': 'No subjects yet',
-  'library.empty.body': 'Subjects group related concepts, like "Biology" or "Macroeconomics".',
   'library.addSubject': 'New subject',
   'library.subjectName': 'Subject name',
   'library.concepts_one': '{count} concept',
@@ -93,7 +85,6 @@ export const en = {
   // subject
   'subject.addConcept': 'New concept',
   'subject.conceptName': 'Concept name',
-  'subject.empty.title': 'No concepts yet',
   'subject.empty.body': 'A concept is one idea you want to understand, like "Photosynthesis" or "Opportunity cost".',
   'subject.deleteConcept.title': 'Delete "{title}"?',
   'subject.deleteConcept.body': 'Its explanations and flashcards will be deleted. This cannot be undone.',
@@ -116,8 +107,6 @@ export const en = {
   'concept.addCard': 'Add card',
   'concept.deleteCard.title': 'Delete this flashcard?',
   'concept.deleteCard.body': 'Its review history will be deleted too.',
-  'concept.scored': 'Score {score}',
-  'concept.unscored': 'Not scored',
 
   // explain
   'explain.prompt': 'Explain "{concept}" as if to a curious 12-year-old.',
@@ -203,11 +192,6 @@ export const en = {
   // review tab
   'review.title': 'Spaced review',
   'review.body': 'Each card returns just before you would forget it. Grade yourself honestly; it sets the next interval.',
-  'review.dueNow_one': '{count} card is due now',
-  'review.dueNow_other': '{count} cards are due now',
-  'review.start': 'Start review',
-  'review.nothingDue': 'Nothing is due right now.',
-  'review.upcoming': 'Coming up',
 
   // settings
   'settings.account': 'Your data',

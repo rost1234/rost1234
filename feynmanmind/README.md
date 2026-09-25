@@ -12,6 +12,12 @@ The only thing that goes over the network is the text of an AI request.
 
 ## Features
 
+The whole app is **one scrolling home screen**, top to bottom: today's review and streak, stats,
+concepts to explain next, the library (subjects open in place to show their concepts), 7-day
+charts and settings. Concept pages, the Feynman editor, card generation and the review session
+open on top of it. Every scrolling screen ends with extra space below the last item (plus the
+device's bottom safe-area inset), so nothing is ever stuck under the home indicator.
+
 | Area | What it does |
 |---|---|
 | Library | Subjects → concepts. Create, rename, delete. Mastery bar per subject. |
@@ -40,8 +46,9 @@ Offline, everything works except the two AI actions (explain feedback and card g
 - The AI functions receive all the context they need (concept title, recent Socratic questions, your cards) in the request, and store nothing.
 
 ```
-src/app/            screens: onboarding, (app)/(tabs) Today·Library·Review·Settings,
-                    subject/[id], concept/[id]/{index,explain,generate}, card/[id], session/[id], study
+src/app/            screens: onboarding, (app)/index (the single home screen),
+                    concept/[id]/{index,explain,generate}, card/[id], session/[id], study
+src/features/home/  home sections: Today, Library, Progress, Settings
 src/local/          LocalDB types, pure logic, persisted store
 src/data/           React Query hooks over the local store + AI calls
 src/api/functions   client for the two AI functions

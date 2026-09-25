@@ -10,7 +10,7 @@ import {
   type TextInputProps,
   type ViewStyle,
 } from 'react-native';
-import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets, type Edge } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useT } from '@/i18n';
 import { haptics } from '@/lib/haptics';
@@ -25,26 +25,36 @@ export type IconName = ComponentProps<typeof Ionicons>['name'];
 interface ScreenProps {
   children: ReactNode;
   scroll?: boolean;
-  /** Safe-area edges to pad. Screens under a native header only need bottom. */
+  /** Safe-area edges to pad (top for screens without a header). Bottom is always handled. */
   edges?: Edge[];
   contentStyle?: StyleProp<ViewStyle>;
   refreshControl?: ComponentProps<typeof ScrollView>['refreshControl'];
 }
 
-export function Screen({ children, scroll = true, edges = ['bottom'], contentStyle, refreshControl }: ScreenProps) {
+/** Extra space below the last item so it can be scrolled well clear of the screen edge. */
+export const SCROLL_BOTTOM_BUFFER = 96;
+
+export function Screen({ children, scroll = true, edges = [], contentStyle, refreshControl }: ScreenProps) {
   const styles = useStyles();
+  const insets = useSafeAreaInsets();
+  // The bottom inset (home indicator / gesture bar) is added inside the scroll
+  // content rather than as outer padding, so content scrolls edge to edge but
+  // the last item always ends above the indicator with room to spare.
+  const bottom = { paddingBottom: insets.bottom + (scroll ? SCROLL_BOTTOM_BUFFER : spacing.xl) };
   return (
-    <SafeAreaView edges={edges} style={styles.screen}>
+    <SafeAreaView edges={edges.filter((e) => e !== 'bottom')} style={styles.screen}>
       {scroll ? (
         <ScrollView
-          contentContainerStyle={[styles.screenContent, contentStyle]}
+          contentContainerStyle={[styles.screenContent, contentStyle, bottom]}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           refreshControl={refreshControl}
+          scrollIndicatorInsets={{ bottom: insets.bottom }}
         >
           {children}
         </ScrollView>
       ) : (
-        <View style={[styles.screenContent, styles.flex, contentStyle]}>{children}</View>
+        <View style={[styles.screenContent, styles.flex, contentStyle, bottom]}>{children}</View>
       )}
     </SafeAreaView>
   );
@@ -359,7 +369,7 @@ export function InlineError({ message }: { message: string | null | undefined })
 const useStyles = makeStyles(({ colors }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: colors.background },
-  screenContent: { padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl },
+  screenContent: { padding: spacing.lg, gap: spacing.lg },
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,

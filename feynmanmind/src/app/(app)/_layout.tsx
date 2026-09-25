@@ -16,8 +16,7 @@ export default function AppLayout() {
         headerBackButtonDisplayMode: 'minimal',
       }}
     >
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="subject/[id]" options={{ title: t('nav.subject') }} />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="concept/[id]/index" options={{ title: t('nav.concept') }} />
       <Stack.Screen name="concept/[id]/explain" options={{ title: t('nav.explain') }} />
       <Stack.Screen name="concept/[id]/generate" options={{ title: t('nav.generate'), presentation: 'modal' }} />

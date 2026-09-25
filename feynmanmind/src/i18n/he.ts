@@ -7,17 +7,12 @@ export const he: Record<TranslationKey, string> = {
   'common.rename': 'שינוי שם',
   'common.retry': 'לנסות שוב',
   'common.done': 'סיום',
-  'common.continue': 'המשך',
   'common.add': 'הוספה',
   'common.edit': 'עריכה',
   'common.options': 'אפשרויות נוספות',
-  'common.loading': 'טוען…',
 
-  'tabs.today': 'היום',
   'tabs.library': 'ספרייה',
-  'tabs.review': 'חזרה',
   'tabs.settings': 'הגדרות',
-  'nav.subject': 'נושא',
   'nav.concept': 'מושג',
   'nav.explain': 'להסביר בפשטות',
   'nav.generate': 'יצירת כרטיסיות',
@@ -75,10 +70,7 @@ export const he: Record<TranslationKey, string> = {
   'today.weakBody': 'המושגים עם השליטה הנמוכה ביותר. להסביר אותם זו הדרך המהירה ביותר להשתפר.',
   'today.emptyTitle': 'בואו נבנה את הספרייה',
   'today.emptyBody': 'הוסיפו נושא ומושג שאתם רוצים להבין, ואז הסבירו אותו או הפכו את הסיכומים שלכם לכרטיסיות.',
-  'today.goLibrary': 'לספרייה',
 
-  'library.empty.title': 'עדיין אין נושאים',
-  'library.empty.body': 'נושא מקבץ מושגים קשורים, למשל "ביולוגיה" או "מאקרו-כלכלה".',
   'library.addSubject': 'נושא חדש',
   'library.subjectName': 'שם הנושא',
   'library.concepts_one': 'מושג אחד',
@@ -88,7 +80,6 @@ export const he: Record<TranslationKey, string> = {
 
   'subject.addConcept': 'מושג חדש',
   'subject.conceptName': 'שם המושג',
-  'subject.empty.title': 'עדיין אין מושגים',
   'subject.empty.body': 'מושג הוא רעיון אחד שאתם רוצים להבין, למשל "פוטוסינתזה" או "עלות אלטרנטיבית".',
   'subject.deleteConcept.title': 'למחוק את "{title}"?',
   'subject.deleteConcept.body': 'ההסברים והכרטיסיות שלו יימחקו. אי אפשר לבטל את זה.',
@@ -110,8 +101,6 @@ export const he: Record<TranslationKey, string> = {
   'concept.addCard': 'הוספת כרטיסייה',
   'concept.deleteCard.title': 'למחוק את הכרטיסייה?',
   'concept.deleteCard.body': 'גם היסטוריית החזרות שלה תימחק.',
-  'concept.scored': 'ציון {score}',
-  'concept.unscored': 'ללא ציון',
 
   'explain.prompt': 'הסבירו את "{concept}" כאילו אתם מסבירים לילד סקרן בן 12.',
   'explain.tip1': 'השתמשו במילים יומיומיות. אם צריך מונח מקצועי, הסבירו אותו.',
@@ -191,11 +180,6 @@ export const he: Record<TranslationKey, string> = {
 
   'review.title': 'חזרה מרווחת',
   'review.body': 'כל כרטיסייה חוזרת רגע לפני שהייתם שוכחים אותה. דרגו את עצמכם בכנות, כי זה קובע מתי היא תחזור.',
-  'review.dueNow_one': 'כרטיסייה אחת מחכה לחזרה',
-  'review.dueNow_other': '{count} כרטיסיות מחכות לחזרה',
-  'review.start': 'להתחיל חזרה',
-  'review.nothingDue': 'אין כרגע כרטיסיות לחזרה.',
-  'review.upcoming': 'בקרוב',
 
   'settings.account': 'המידע שלכם',
   'settings.deleteAccount': 'מחיקת כל המידע שלי',
