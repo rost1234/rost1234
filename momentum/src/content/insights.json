@@ -1949,5 +1949,386 @@
       "action": "לוותר היום על ה\"שוחד\", ובמקום זה לכתוב דבר אחד שהצליח בהרגל.",
       "caveat": "יש ויכוח בין חוקרים: מטא-אנליזות קודמות באותו נושא הגיעו למסקנות שונות."
     }
+  },
+  {
+    "id": "keep-temptations-out-of-reach",
+    "category": "habits",
+    "goals": [
+      "health"
+    ],
+    "finding": "Across 12 studies, people ate less of a snack when it was placed farther away from them, on average. A little distance made a moderate difference.",
+    "action": "Move one snack or distraction you want less of out of sight or into another room.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Altering the availability or proximity of food, alcohol, and tobacco products to change their selection and consumption",
+      "authors": "Hollands, Carter, Anwer, King, Jebb, Ogilvie, Shemilt, Higgins & Marteau",
+      "year": 2019,
+      "institution": "University of Cambridge",
+      "venue": "Cochrane Database of Systematic Reviews",
+      "doi": "10.1002/14651858.CD012573.pub2",
+      "url": "https://doi.org/10.1002/14651858.CD012573.pub2"
+    },
+    "evidence": "moderate",
+    "caveat": "Cochrane rated the certainty as low: most studies were short lab studies with some risk of bias, and all tested food only.",
+    "triggers": [
+      "new_habit"
+    ],
+    "verifiedOn": "2026-09-25",
+    "he": {
+      "finding": "ב-12 מחקרים, אנשים אכלו פחות מחטיף כשהוא הונח רחוק יותר מהם, בממוצע. מעט מרחק עשה הבדל בינוני.",
+      "action": "להרחיק חטיף או הסחת דעת אחת שרוצים פחות ממנה – מחוץ לטווח הראייה או לחדר אחר.",
+      "caveat": "קוקרן דירגו את רמת הוודאות כנמוכה: רוב המחקרים היו קצרים, במעבדה ועם סיכון מסוים להטיה, וכולם בדקו רק אוכל."
+    }
+  },
+  {
+    "id": "new-place-new-habit-window",
+    "category": "habits",
+    "goals": [],
+    "finding": "In a study of 800 households, advice to change daily habits worked better for people who had moved home recently, with the window lasting about three months.",
+    "action": "If your routine recently changed (move, new job, new term), pick one habit to attach to the new routine today.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Empowering interventions to promote sustainable lifestyles: Testing the habit discontinuity hypothesis in a field experiment",
+      "authors": "Verplanken & Roy",
+      "year": 2016,
+      "institution": "University of Bath",
+      "venue": "Journal of Environmental Psychology",
+      "doi": "10.1016/j.jenvp.2015.11.008",
+      "url": "https://doi.org/10.1016/j.jenvp.2015.11.008"
+    },
+    "evidence": "moderate",
+    "caveat": "One field experiment on eco-friendly behaviours, measured by self-report over eight weeks.",
+    "triggers": [
+      "new_habit"
+    ],
+    "verifiedOn": "2026-09-25",
+    "he": {
+      "finding": "במחקר על 800 משקי בית, עצות לשינוי הרגלים יומיומיים עבדו טוב יותר אצל מי שעבר דירה לאחרונה, וה\"חלון\" נמשך כשלושה חודשים.",
+      "action": "אם השגרה השתנתה לאחרונה (מעבר דירה, עבודה חדשה, סמסטר חדש), לבחור היום הרגל אחד ולחבר אותו לשגרה החדשה.",
+      "caveat": "ניסוי שדה אחד על התנהגויות ידידותיות לסביבה, שנמדדו בדיווח עצמי לאורך שמונה שבועות."
+    }
+  },
+  {
+    "id": "same-time-stronger-habit",
+    "category": "habits",
+    "goals": [
+      "health"
+    ],
+    "finding": "Across 14 studies, people who exercised at a consistent time of day or right after the same routine tended to have stronger exercise habits.",
+    "action": "Give one habit a fixed slot: the same time each day, or right after something you already do daily.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Not all cues are equal: A systematic review and three-level meta-analysis of context consistency, physical activity and habit strength",
+      "authors": "Zhu, Tao, Zhou, Ma, Kaushal, Ma, Guo, Zhao, Oguntuase, Li & Zhang",
+      "year": 2026,
+      "institution": "Tianjin University of Sport",
+      "venue": "Applied Psychology: Health and Well-Being",
+      "doi": "10.1111/aphw.70204",
+      "url": "https://doi.org/10.1111/aphw.70204"
+    },
+    "evidence": "moderate",
+    "caveat": "Correlational and the links were small (r = 0.20 with habit strength). A single recent meta-analysis focused on physical activity.",
+    "triggers": [
+      "new_habit"
+    ],
+    "verifiedOn": "2026-09-25",
+    "he": {
+      "finding": "ב-14 מחקרים, אנשים שהתאמנו בשעה קבועה ביום או מיד אחרי אותה שגרה נטו להרגל אימון חזק יותר.",
+      "action": "לתת להרגל אחד משבצת קבועה: אותה שעה בכל יום, או מיד אחרי משהו שכבר עושים כל יום.",
+      "caveat": "מתאמי ומדובר בקשרים קטנים (r = 0.20 עם עוצמת ההרגל). מטא-אנליזה אחת וחדשה, שהתמקדה בפעילות גופנית."
+    }
+  },
+  {
+    "id": "move-before-thinking-work",
+    "category": "focus",
+    "goals": [
+      "focus",
+      "health"
+    ],
+    "finding": "Across 79 studies, a single bout of exercise gave thinking and memory tasks a small boost, during the exercise and afterward.",
+    "action": "Before your next focus session, do 5 minutes of brisk walking or stairs.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "The effects of acute exercise on cognitive performance: A meta-analysis",
+      "authors": "Chang, Labban, Gapin & Etnier",
+      "year": 2012,
+      "institution": "University of North Carolina at Greensboro",
+      "venue": "Brain Research",
+      "doi": "10.1016/j.brainres.2012.02.068",
+      "url": "https://doi.org/10.1016/j.brainres.2012.02.068"
+    },
+    "evidence": "strong",
+    "caveat": "The average effect was small (g = 0.097) and depended on how long and how hard people exercised.",
+    "triggers": [
+      "missed_focus"
+    ],
+    "verifiedOn": "2026-09-25",
+    "he": {
+      "finding": "ב-79 מחקרים, אימון גופני בודד נתן שיפור קטן במשימות חשיבה וזיכרון, גם בזמן האימון וגם אחריו.",
+      "action": "לפני סשן המיקוד הבא, ללכת 5 דקות בקצב מהיר או לעלות מדרגות.",
+      "caveat": "האפקט הממוצע היה קטן (g = 0.097) ותלוי במשך ובעצימות האימון."
+    }
+  },
+  {
+    "id": "mix-up-practice",
+    "category": "focus",
+    "goals": [
+      "focus"
+    ],
+    "finding": "Mixing different types of problems or examples in one practice session helped people learn to tell them apart better than practicing one type at a time.",
+    "stat": {
+      "value": "0.42",
+      "label": "average effect size (Hedges' g), a moderate effect"
+    },
+    "action": "In your next study session, shuffle practice questions from two or three topics instead of doing them in blocks.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Similarity matters: A meta-analysis of interleaved learning and its moderators",
+      "authors": "Brunmair & Richter",
+      "year": 2019,
+      "institution": "University of Würzburg",
+      "venue": "Psychological Bulletin",
+      "doi": "10.1037/bul0000209",
+      "url": "https://doi.org/10.1037/bul0000209"
+    },
+    "evidence": "strong",
+    "caveat": "Worked best for visual material like paintings and a bit for math. For learning word lists, practicing in blocks was better.",
+    "triggers": [],
+    "verifiedOn": "2026-09-25",
+    "he": {
+      "finding": "ערבוב סוגים שונים של בעיות או דוגמאות באותו תרגול עזר לאנשים ללמוד להבדיל ביניהם טוב יותר מתרגול של סוג אחד בכל פעם.",
+      "action": "בסשן הלמידה הבא, לערבב שאלות תרגול משניים-שלושה נושאים במקום לפתור אותן בבלוקים.",
+      "statLabel": "גודל אפקט ממוצע (Hedges' g), אפקט בינוני",
+      "caveat": "עבד הכי טוב בחומר חזותי כמו ציורים, ומעט במתמטיקה. בלמידת רשימות מילים, תרגול בבלוקים היה עדיף."
+    }
+  },
+  {
+    "id": "quiet-or-no-lyrics-for-reading",
+    "category": "focus",
+    "goals": [
+      "focus"
+    ],
+    "finding": "Across 65 studies, background noise, talking and music all hurt reading a little. Speech you can understand and songs with lyrics distracted the most.",
+    "action": "For your next reading or writing session, pick silence or music without lyrics.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Auditory distraction during reading: A Bayesian meta-analysis of a continuing controversy",
+      "authors": "Vasilev, Kirkby & Angele",
+      "year": 2018,
+      "institution": "Bournemouth University",
+      "venue": "Perspectives on Psychological Science",
+      "doi": "10.1177/1745691617747398",
+      "url": "https://doi.org/10.1177/1745691617747398"
+    },
+    "evidence": "strong",
+    "caveat": "The overall effect was small, and it was measured on reading tasks, not all kinds of work.",
+    "triggers": [
+      "missed_focus"
+    ],
+    "verifiedOn": "2026-09-25",
+    "he": {
+      "finding": "ב-65 מחקרים, רעש רקע, דיבור ומוזיקה פגעו כולם מעט בקריאה. דיבור מובן ושירים עם מילים הסיחו את הדעת הכי הרבה.",
+      "action": "לסשן הקריאה או הכתיבה הבא, לבחור שקט או מוזיקה בלי מילים.",
+      "caveat": "האפקט הכולל היה קטן, והוא נמדד במשימות קריאה, לא בכל סוגי העבודה."
+    }
+  },
+  {
+    "id": "music-to-ease-stress",
+    "category": "mood",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "Across 104 trials with about 9,600 people, music interventions lowered stress, both in how stressed people felt and in body signs like heart rate.",
+    "action": "When you feel tense today, play one song you find calming and just listen to it.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Effects of music interventions on stress-related outcomes: A systematic review and two meta-analyses",
+      "authors": "de Witte, Spruit, van Hooren, Moonen & Stams",
+      "year": 2020,
+      "institution": "University of Amsterdam",
+      "venue": "Health Psychology Review",
+      "doi": "10.1080/17437199.2019.1627897",
+      "url": "https://doi.org/10.1080/17437199.2019.1627897"
+    },
+    "evidence": "strong",
+    "caveat": "Effects were small to medium on average, and many trials took place in medical settings. Not a substitute for professional help.",
+    "triggers": [
+      "low_mood"
+    ],
+    "verifiedOn": "2026-09-25",
+    "he": {
+      "finding": "ב-104 ניסויים עם כ-9,600 אנשים, התערבויות מוזיקליות הפחיתו לחץ, גם בתחושה וגם בסימנים גופניים כמו דופק.",
+      "action": "כשמרגישים מתח היום, לשים שיר אחד שמרגיע אתכם ופשוט להקשיב לו.",
+      "caveat": "האפקטים היו קטנים עד בינוניים בממוצע, ורבים מהניסויים נערכו במסגרות רפואיות. לא תחליף לעזרה מקצועית."
+    }
+  },
+  {
+    "id": "breathing-practice-eases-stress",
+    "category": "mood",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "Across 12 trials, people who practiced breathing techniques reported less stress than people who didn't, with a small-to-medium effect.",
+    "action": "Take 2 minutes now to breathe slowly, making each out-breath a little longer than the in-breath.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Effect of breathwork on stress and mental health: A meta-analysis of randomised-controlled trials",
+      "authors": "Fincham, Strauss, Montero-Marin & Cavanagh",
+      "year": 2023,
+      "institution": "University of Sussex",
+      "venue": "Scientific Reports",
+      "doi": "10.1038/s41598-022-27247-y",
+      "url": "https://doi.org/10.1038/s41598-022-27247-y"
+    },
+    "evidence": "moderate",
+    "caveat": "Only 785 adults, and most trials had a moderate risk of bias. The authors warn against hype. Not a substitute for professional help.",
+    "triggers": [
+      "low_mood"
+    ],
+    "verifiedOn": "2026-09-25",
+    "he": {
+      "finding": "ב-12 ניסויים, אנשים שתרגלו טכניקות נשימה דיווחו על פחות לחץ מאלה שלא תרגלו, באפקט קטן עד בינוני.",
+      "action": "לקחת עכשיו 2 דקות לנשימה איטית, כשכל נשיפה קצת יותר ארוכה מהשאיפה.",
+      "caveat": "רק 785 מבוגרים, ולרוב הניסויים היה סיכון בינוני להטיה. החוקרים מזהירים מהייפ. לא תחליף לעזרה מקצועית."
+    }
+  },
+  {
+    "id": "savor-a-good-moment",
+    "category": "mood",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "Savoring, which means slowing down to notice and enjoy good moments, raised positive feelings and eased low mood with a moderate effect across 20 trials.",
+    "action": "Pick one good moment from today and spend a minute replaying it: what you saw, heard and felt.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Effectiveness of savoring interventions: A systematic review and meta-analysis of randomized controlled trials",
+      "authors": "Chen, Tung, Wu & Sie",
+      "year": 2026,
+      "institution": "National Yang Ming Chiao Tung University",
+      "venue": "Applied Psychology: Health and Well-Being",
+      "doi": "10.1111/aphw.70134",
+      "url": "https://doi.org/10.1111/aphw.70134"
+    },
+    "evidence": "moderate",
+    "caveat": "One recent meta-analysis. Effects looked larger against no-activity controls than against other activities.",
+    "triggers": [
+      "low_mood",
+      "perfect_week"
+    ],
+    "verifiedOn": "2026-09-25",
+    "he": {
+      "finding": "התענגות – להאט כדי לשים לב לרגעים טובים וליהנות מהם – העלתה רגשות חיוביים והקלה על מצב רוח ירוד, באפקט בינוני ב-20 ניסויים.",
+      "action": "לבחור רגע טוב אחד מהיום ולהקדיש דקה לשחזר אותו: מה ראיתם, שמעתם והרגשתם.",
+      "caveat": "מטא-אנליזה אחת וחדשה. האפקטים נראו גדולים יותר מול קבוצות ביקורת בלי פעילות מאשר מול פעילויות אחרות."
+    }
+  },
+  {
+    "id": "alcohol-cuts-dream-sleep",
+    "category": "sleep_energy",
+    "goals": [
+      "health"
+    ],
+    "finding": "Across 27 studies, even about two standard drinks before bed reduced REM (dreaming) sleep, and the effect grew with more alcohol.",
+    "action": "If you drink tonight, stop early in the evening instead of having a drink right before bed.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "The effect of alcohol on subsequent sleep in healthy adults: A systematic review and meta-analysis",
+      "authors": "Gardiner, Weakley, Burke, Roach, Sargent, Maniar, Huynh, Miller, Townshend & Halson",
+      "year": 2025,
+      "institution": "Australian Catholic University",
+      "venue": "Sleep Medicine Reviews",
+      "doi": "10.1016/j.smrv.2024.102030",
+      "url": "https://doi.org/10.1016/j.smrv.2024.102030"
+    },
+    "evidence": "strong",
+    "caveat": "Effects on total sleep time were uncertain. Falling asleep faster only showed up at about five drinks, which further disrupted REM.",
+    "triggers": [],
+    "verifiedOn": "2026-09-25",
+    "he": {
+      "finding": "ב-27 מחקרים, אפילו כשתי מנות אלכוהול סטנדרטיות לפני השינה הפחיתו את שנת ה-REM (שנת החלומות), והאפקט גדל ככל ששתו יותר.",
+      "action": "אם שותים הערב, לסיים מוקדם בערב במקום לשתות ממש לפני השינה.",
+      "caveat": "ההשפעה על משך השינה הכולל לא הייתה ברורה. הירדמות מהירה יותר נראתה רק בכחמש מנות, וזה פגע עוד יותר בשנת ה-REM."
+    }
+  },
+  {
+    "id": "ask-follow-up-questions",
+    "category": "social",
+    "goals": [],
+    "finding": "In conversations, people who asked more questions, especially follow-up questions, were liked more, yet people didn't expect questions to have this effect.",
+    "action": "In your next conversation, ask one follow-up question about something the other person just said.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "It doesn't hurt to ask: Question-asking increases liking",
+      "authors": "Huang, Yeomans, Brooks, Minson & Gino",
+      "year": 2017,
+      "institution": "Harvard University",
+      "venue": "Journal of Personality and Social Psychology",
+      "doi": "10.1037/pspi0000097",
+      "url": "https://doi.org/10.1037/pspi0000097"
+    },
+    "evidence": "moderate",
+    "caveat": "Three studies of get-to-know-you chats and speed dates from one research team; not yet widely replicated.",
+    "triggers": [],
+    "verifiedOn": "2026-09-25",
+    "he": {
+      "finding": "בשיחות, אנשים ששאלו יותר שאלות, ובמיוחד שאלות המשך, היו אהודים יותר, אבל אנשים לא ציפו שלשאלות תהיה השפעה כזו.",
+      "action": "בשיחה הבאה, לשאול שאלת המשך אחת על משהו שהאדם השני אמר עכשיו.",
+      "caveat": "שלושה מחקרים על שיחות היכרות ודייטים מהירים מצוות מחקר אחד; עדיין לא שוחזרו באופן רחב."
+    }
+  },
+  {
+    "id": "call-instead-of-text",
+    "category": "social",
+    "goals": [],
+    "finding": "When people reconnected with an old friend or chatted with a stranger, voice or video felt more connecting than text, and wasn't more awkward than people feared.",
+    "action": "Instead of texting one person today, give them a quick call or voice message.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "It's surprisingly nice to hear you: Misunderstanding the impact of communication media can lead to suboptimal choices of how to connect with others",
+      "authors": "Kumar & Epley",
+      "year": 2021,
+      "institution": "University of Texas at Austin / University of Chicago",
+      "venue": "Journal of Experimental Psychology: General",
+      "doi": "10.1037/xge0000962",
+      "url": "https://doi.org/10.1037/xge0000962"
+    },
+    "evidence": "moderate",
+    "caveat": "A field experiment and lab studies from one team; not yet broadly replicated.",
+    "triggers": [],
+    "verifiedOn": "2026-09-25",
+    "he": {
+      "finding": "כשאנשים חידשו קשר עם חבר ותיק או שוחחו עם זר, שיחה קולית או וידאו יצרה יותר קרבה מטקסט, ולא הייתה מביכה יותר ממה שחששו.",
+      "action": "במקום לשלוח הודעה לאדם אחד היום, להתקשר אליו לשיחה קצרה או לשלוח הודעה קולית.",
+      "caveat": "ניסוי שדה ומחקרי מעבדה מצוות אחד; עדיין לא שוחזרו באופן רחב."
+    }
+  },
+  {
+    "id": "find-your-own-reason",
+    "category": "motivation",
+    "goals": [],
+    "finding": "Across 73 studies, programs that helped people act for reasons they truly valued, not pressure or guilt, led to small-to-medium gains in healthy behaviour.",
+    "action": "Write one sentence on why your habit matters to you personally, in your own words, not a 'should'.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "A meta-analysis of self-determination theory-informed intervention studies in the health domain: Effects on motivation, health behavior, physical, and psychological health",
+      "authors": "Ntoumanis, Ng, Prestwich, Quested, Hancox, Thøgersen-Ntoumani, Deci, Ryan, Lonsdale & Williams",
+      "year": 2021,
+      "institution": "Curtin University",
+      "venue": "Health Psychology Review",
+      "doi": "10.1080/17437199.2020.1718529",
+      "url": "https://doi.org/10.1080/17437199.2020.1718529"
+    },
+    "evidence": "strong",
+    "caveat": "Effects were modest and varied a lot between programs, most of which were run by coaches or health professionals.",
+    "triggers": [
+      "new_habit"
+    ],
+    "verifiedOn": "2026-09-25",
+    "he": {
+      "finding": "ב-73 מחקרים, תוכניות שעזרו לאנשים לפעול מסיבות שבאמת חשובות להם, ולא מלחץ או מאשמה, הביאו לשיפור קטן עד בינוני בהתנהגות בריאה.",
+      "action": "לכתוב משפט אחד על למה ההרגל שלכם חשוב לכם אישית, במילים שלכם, בלי \"צריך\".",
+      "caveat": "האפקטים היו צנועים והשתנו מאוד בין תוכניות, שרובן הועברו על ידי מאמנים או אנשי מקצוע בתחום הבריאות."
+    }
   }
 ]
