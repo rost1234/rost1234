@@ -1,9 +1,27 @@
-import { dateRange, type LocalDateString } from '@/core/localDate';
+import { addDays, dateRange, type LocalDateString } from '@/core/localDate';
 import type { HabitLogStatus, Pause } from './models';
 import type { StatusByDate } from './streaks';
 
 export function isPaused(pauses: readonly Pause[], date: LocalDateString): boolean {
   return pauses.some((p) => date >= p.startDate && date <= p.endDate);
+}
+
+export type EndPauseChange = { kind: 'delete' } | { kind: 'shorten'; endDate: LocalDateString } | { kind: 'none' };
+
+/**
+ * Ending a pause early must not rewrite the past: days already paused stay
+ * paused (otherwise they turn into misses and can break streaks or spend
+ * freezes). Only a pause that hasn't started yet is removed outright.
+ */
+export function endPauseChange(pause: Pause, today: LocalDateString): EndPauseChange {
+  if (pause.startDate >= today) return { kind: 'delete' };
+  if (pause.endDate < today) return { kind: 'none' };
+  return { kind: 'shorten', endDate: addDays(today, -1) };
+}
+
+/** Inclusive length of a date range in days. */
+export function pauseLength(startDate: LocalDateString, endDate: LocalDateString): number {
+  return dateRange(startDate, endDate).length;
 }
 
 /** The pause covering `date`, if any (for the "vacation mode" banner). */

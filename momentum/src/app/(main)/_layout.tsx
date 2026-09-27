@@ -23,6 +23,8 @@ export default function MainLayout() {
       <Stack.Screen name="analytics" options={sheet} />
       <Stack.Screen name="library" options={sheet} />
       <Stack.Screen name="settings" options={sheet} />
+      <Stack.Screen name="calendar" options={sheet} />
+      <Stack.Screen name="streaks" options={sheet} />
     </Stack>
   );
 }

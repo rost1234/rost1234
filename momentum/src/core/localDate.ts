@@ -94,6 +94,57 @@ export function weekdayLabel(day: Weekday, locale = 'en-US'): string {
   return intlFormat(reference, locale, { weekday: 'short' }) ?? WEEKDAY_SHORT[day];
 }
 
+/** First day of the month containing `value`. */
+export function monthStart(value: LocalDateString): LocalDateString {
+  return `${value.slice(0, 7)}-01`;
+}
+
+/** First day of the month `months` away from the month containing `value`. */
+export function addMonths(value: LocalDateString, months: number): LocalDateString {
+  const date = parseLocalDate(monthStart(value));
+  return formatLocalDate(new Date(date.getFullYear(), date.getMonth() + months, 1, 12));
+}
+
+/** Every day of the month containing `value`. */
+export function monthDays(value: LocalDateString): LocalDateString[] {
+  const first = monthStart(value);
+  return dateRange(first, addDays(addMonths(first, 1), -1));
+}
+
+/** The month as Sunday-first weeks; `null` pads the first and last week. */
+export function monthGrid(value: LocalDateString): (LocalDateString | null)[][] {
+  const days = monthDays(value);
+  const cells: (LocalDateString | null)[] = [...Array<null>(getWeekday(days[0] ?? value)).fill(null), ...days];
+  while (cells.length % 7 !== 0) cells.push(null);
+  const weeks: (LocalDateString | null)[][] = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+  return weeks;
+}
+
+export function dayOfMonth(value: LocalDateString): number {
+  return Number(value.slice(8, 10));
+}
+
+/** e.g. "September 2026" / "ספטמבר 2026" */
+export function monthLabel(value: LocalDateString, locale = 'en-US'): string {
+  const date = parseLocalDate(monthStart(value));
+  return intlFormat(date, locale, { month: 'long', year: 'numeric' }) ?? `${MONTH_SHORT[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+/** e.g. "Tuesday, September 22" / "יום שלישי, 22 בספטמבר" */
+export function formatLongDate(value: LocalDateString, locale = 'en-US'): string {
+  const date = parseLocalDate(value);
+  return (
+    intlFormat(date, locale, { weekday: 'long', month: 'long', day: 'numeric' }) ??
+    `${WEEKDAY_SHORT[date.getDay()]}, ${MONTH_SHORT[date.getMonth()]} ${date.getDate()}`
+  );
+}
+
+/** e.g. "22.9" — compact day.month for lists and ranges. */
+export function formatShortDate(value: LocalDateString): string {
+  return `${dayOfMonth(value)}.${Number(value.slice(5, 7))}`;
+}
+
 /** e.g. "Thu, Sep 24" / "יום ה׳, 24 בספט׳" */
 export function formatFriendlyDate(value: LocalDateString, locale = 'en-US'): string {
   const date = parseLocalDate(value);

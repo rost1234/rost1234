@@ -25,7 +25,7 @@ export function HardDayBar({ today }: { today: LocalDateString }) {
   return (
     <View style={styles.container}>
       {pause ? (
-        <Pressable accessibilityRole="button" onPress={() => router.push('/settings')} style={[styles.banner, styles.pause]}>
+        <Pressable accessibilityRole="button" onPress={() => router.push('/streaks')} style={[styles.banner, styles.pause]}>
           <Ionicons name="airplane-outline" size={18} color={colors.freeze} />
           <Text style={[typography.body, styles.bannerText]}>
             {t('hardDay.pauseBanner', { reason: t(REASON_KEY[pause.reason]), date: formatFriendlyDate(pause.endDate, t.locale) })}

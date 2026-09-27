@@ -209,6 +209,8 @@ describe('wave 2 tables', () => {
 
     const pause = await planning.pauses.create('2026-10-01', '2026-10-07', 'vacation');
     expect(await planning.pauses.getAll()).toEqual([pause]);
+    await planning.pauses.update(pause.id, { startDate: '2026-10-02', endDate: '2026-10-01', reason: 'sick' });
+    expect(await planning.pauses.getAll()).toEqual([{ ...pause, startDate: '2026-10-02', endDate: '2026-10-02', reason: 'sick' }]);
     await planning.pauses.delete(pause.id);
     expect(await planning.pauses.getAll()).toEqual([]);
   });

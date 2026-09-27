@@ -42,12 +42,20 @@ export function DashboardHeader({ today, hour, percent, doneCount, totalCount, f
           {formatFriendlyDate(today, t.locale)}
         </Text>
         <Text style={styles.message}>{message}</Text>
-        <View style={styles.freeze} accessibilityLabel={t('today.freezesA11y', { count: freezes })}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('today.freezesA11y', { count: freezes })}
+          accessibilityHint={t('protect.title')}
+          onPress={() => router.push('/streaks')}
+          hitSlop={8}
+          style={({ pressed }) => [styles.freeze, pressed && { opacity: 0.8 }]}
+        >
           <Ionicons name="snow" size={13} color="#FFFFFF" />
           <Text style={styles.freezeText}>
             {t.plural('today.freezes', freezes)}
           </Text>
-        </View>
+          <Ionicons name={t.isRTL ? 'chevron-back' : 'chevron-forward'} size={12} color="rgba(255,255,255,0.8)" />
+        </Pressable>
       </View>
       {/* The ring is the door to Insights (charts, heatmap, trends). */}
       <Pressable

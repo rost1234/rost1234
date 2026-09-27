@@ -1,12 +1,13 @@
 import { useCallback } from 'react';
-import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { runDetached } from '@/core/errors';
 import { SheetHeader } from '@/components/SheetHeader';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { Banner, Card, Chip, SectionTitle } from '@/components/ui';
-import { makeStyles, spacing, useTheme } from '@/components/theme';
+import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { useLocalDate } from '@/hooks/useLocalDate';
 import { useAnalyticsStore, type AnalyticsRange } from '@/state/analyticsStore';
 import { Heatmap } from './Heatmap';
@@ -29,7 +30,7 @@ function StatTile({ value, label, tint }: { value: string; label: string; tint?:
 
 export function AnalyticsScreen() {
   const t = useT();
-  const { colors } = useTheme();
+  const { colors, typography } = useTheme();
   const styles = useStyles();
   const bottomSpace = useBottomSpace();
   const today = useLocalDate();
@@ -57,6 +58,15 @@ export function AnalyticsScreen() {
           <Chip label={t('ins.week')} selected={range === 'week'} onPress={() => selectRange('week')} />
           <Chip label={t('ins.month')} selected={range === 'month'} onPress={() => selectRange('month')} />
         </View>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push('/calendar')}
+          style={({ pressed }) => [styles.calendarLink, pressed && { opacity: 0.85 }]}
+        >
+          <Ionicons name="calendar-outline" size={20} color={colors.primary} />
+          <Text style={[typography.label, { flex: 1, color: colors.primary }]}>{t('cal.title')}</Text>
+          <Ionicons name={t.isRTL ? 'chevron-back' : 'chevron-forward'} size={18} color={colors.primary} />
+        </Pressable>
         {error ? <Banner message={error} /> : null}
 
         {!data && isLoading ? (
@@ -105,5 +115,13 @@ const useStyles = makeStyles(({ colors }) => ({
   rangeRow: { flexDirection: 'row', gap: spacing.sm, marginVertical: spacing.sm },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   tile: { flexGrow: 1, flexBasis: '45%', gap: 2 },
+  calendarLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radius.lg,
+    backgroundColor: colors.primarySoft,
+  },
   tileValue: { fontSize: 24, fontWeight: '700', color: colors.text, fontVariant: ['tabular-nums'] },
 }));

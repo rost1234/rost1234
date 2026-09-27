@@ -143,3 +143,18 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] After updating, the old daily reflection reminder doesn't fire twice (legacy reminders are replaced)
 - [ ] Long-press a task → "⭐ Make it today's main task": it moves to the top with a ⭐ Main tag; long-press again → remove;
       tomorrow it is no longer marked
+
+## Streak protection & monthly calendar
+- [ ] Tap the 🧊 freezes pill on Home → "Streak protection" opens: balance (❄❄◌), progress "n of 7 perfect days", and
+      recent uses (date · habit · streak kept)
+- [ ] Settings → Streaks → the card shows the freeze count (and "Paused until …" during a pause) and opens the same screen
+- [ ] New pause: pick reason, step From/To day by day (From can't go before today, To can't go before From), "Add pause ·
+      N days" → it appears as an upcoming pause; ✎ loads it into the form, 🗑 asks before deleting
+- [ ] During an active pause started yesterday: "End today" → yesterday stays ✈ in the calendar and the heatmap, today is
+      a normal day, and no freeze is used for yesterday on the next open
+- [ ] "Extend by a day" moves the end date by one day; the Home banner (tap → Streak protection) shows the new date
+- [ ] Insights → "Monthly calendar": rings fill per day, perfect days are green, ❄ badge on frozen days, ✈ band over
+      paused days, today outlined; ‹ › change months (no future months)
+- [ ] Habit chips filter the calendar to one habit; tapping a day opens its sheet with every habit's status, focus minutes
+      and mood
+- [ ] Hebrew: weekdays start on Sunday at the right, arrows point the right way; dark mode looks right

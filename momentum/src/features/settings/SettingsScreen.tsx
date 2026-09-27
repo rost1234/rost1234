@@ -11,7 +11,7 @@ import { exportBackup, pickBackupFile, restoreBackup, type PendingImport } from 
 import { reloadAllData } from '@/state/reloadAll';
 import { AppearanceSetting } from './AppearanceSetting';
 import { DataTransparency } from './DataTransparency';
-import { PauseSetting } from './PauseSetting';
+import { StreakProtectionLink } from './StreakProtectionLink';
 import { AutoBackupSetting, ReflectionLockSetting } from './PrivacySetting';
 import { NotificationSetting } from './NotificationSetting';
 import { ReminderSetting } from './ReminderSetting';
@@ -120,15 +120,7 @@ export function SettingsScreen() {
         <ReflectionLockSetting />
 
         <SectionTitle>{t('set.breaks')}</SectionTitle>
-        <PauseSetting />
-
-        <SectionTitle>{t('set.freezes')}</SectionTitle>
-        <Card style={styles.card}>
-          <Text style={typography.heading}>{t('set.freezesAvailable', { count: freezes })}</Text>
-          <Text style={typography.caption}>
-            {t('set.freezesBody')}
-          </Text>
-        </Card>
+        <StreakProtectionLink freezes={freezes} />
       </ScrollView>
     </SafeAreaView>
   );

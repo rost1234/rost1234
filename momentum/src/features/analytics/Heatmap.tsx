@@ -15,6 +15,8 @@ function cellColor(state: HeatCellState, colors: Theme['colors']): string {
       return colors.freeze;
     case 'skipped':
       return colors.border;
+    case 'paused':
+      return colors.primarySoft;
     case 'missed':
       return colors.dangerSoft;
     case 'pending':
@@ -31,6 +33,7 @@ const CELL_SYMBOL: Record<HeatCellState, string> = {
   forgiven: '❄',
   missed: '·',
   skipped: '–',
+  paused: '✈',
   pending: '',
   not_scheduled: '',
 };
@@ -44,6 +47,8 @@ function cellInk(state: HeatCellState, colors: Theme['colors']): string {
       return colors.text;
     case 'missed':
       return colors.danger;
+    case 'paused':
+      return colors.primary;
     default:
       return colors.textMuted;
   }
@@ -55,6 +60,7 @@ const LEGEND: { state: HeatCellState; label: TranslationKey }[] = [
   { state: 'forgiven', label: 'heat.freeze' },
   { state: 'missed', label: 'heat.missed' },
   { state: 'skipped', label: 'heat.skipped' },
+  { state: 'paused', label: 'heat.paused' },
 ];
 
 const LABEL_WIDTH = 96;

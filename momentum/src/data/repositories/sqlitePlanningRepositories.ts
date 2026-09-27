@@ -64,6 +64,19 @@ export class SqlitePauseRepository implements PauseRepository {
     });
   }
 
+  update(id: string, changes: { startDate: LocalDateString; endDate: LocalDateString; reason: PauseReason }): Promise<void> {
+    return guardDb('pauses.update', async () => {
+      const db = await this.db();
+      const endDate = changes.endDate < changes.startDate ? changes.startDate : changes.endDate;
+      await db.runAsync('UPDATE pauses SET start_date = ?, end_date = ?, reason = ? WHERE id = ?', [
+        changes.startDate,
+        endDate,
+        changes.reason,
+        id,
+      ]);
+    });
+  }
+
   delete(id: string): Promise<void> {
     return guardDb('pauses.delete', async () => {
       const db = await this.db();

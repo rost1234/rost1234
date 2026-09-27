@@ -10,6 +10,7 @@ export type HeatCellState =
   | 'missed'
   | 'forgiven'
   | 'skipped'
+  | 'paused'
   | 'pending'
   | 'not_scheduled';
 
@@ -60,6 +61,18 @@ function cellState(habit: Habit, log: HabitLog | undefined, date: LocalDateStrin
   }
 }
 
+/** One habit on one day. A planned pause turns a miss (or an open day) into `paused`. */
+export function habitDayState(
+  habit: Habit,
+  log: HabitLog | undefined,
+  date: LocalDateString,
+  today: LocalDateString,
+  pauses: readonly Pause[],
+): HeatCellState {
+  const state = cellState(habit, log, date, today);
+  return (state === 'missed' || state === 'pending') && isPaused(pauses, date) ? 'paused' : state;
+}
+
 export function buildHeatmap(
   habits: readonly Habit[],
   logs: readonly HabitLog[],
@@ -73,11 +86,7 @@ export function buildHeatmap(
     return {
       habitId: habit.id,
       title: habit.title,
-      cells: dates.map((date) => {
-        const state = cellState(habit, byDate?.get(date), date, today);
-        // Planned pauses read as neutral "skipped" days, not misses.
-        return { date, state: (state === 'missed' || state === 'pending') && isPaused(pauses, date) ? 'skipped' : state };
-      }),
+      cells: dates.map((date) => ({ date, state: habitDayState(habit, byDate?.get(date), date, today, pauses) })),
     };
   });
 }

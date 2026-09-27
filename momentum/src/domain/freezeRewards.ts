@@ -1,7 +1,7 @@
 import { addDays, lastNDays, type LocalDateString } from '@/core/localDate';
 import { habitStartDate, isHabitDueOn } from './habitSchedule';
 import type { Habit } from './models';
-import type { StatusByDate } from './streaks';
+import { computeStreak, type StatusByDate } from './streaks';
 
 /** The pool never grows beyond this, so freezes stay a safety net, not a bank. */
 export const MAX_STREAK_FREEZES = 3;
@@ -28,6 +28,49 @@ export function isPerfectDay(
     else if (status !== 'skipped') return false;
   }
   return completed > 0;
+}
+
+/**
+ * Perfect days in a row ending yesterday that count toward the next freeze
+ * (0..7). Days on or before the last award don't count again, matching
+ * `shouldAwardFreeze`.
+ */
+export function perfectDaysTowardNextFreeze(
+  habits: readonly RewardHabit[],
+  statusesByHabit: ReadonlyMap<string, StatusByDate>,
+  today: LocalDateString,
+  lastAwardDate: LocalDateString | null,
+): number {
+  let count = 0;
+  let cursor = addDays(today, -1);
+  while (count < PERFECT_WEEK_DAYS && (lastAwardDate === null || cursor > lastAwardDate) && isPerfectDay(habits, statusesByHabit, cursor)) {
+    count += 1;
+    cursor = addDays(cursor, -1);
+  }
+  return count;
+}
+
+export interface FreezeUse {
+  date: LocalDateString;
+  habitId: string;
+  /** The streak the freeze kept alive (as it stood on that day). */
+  streakSaved: number;
+}
+
+/** Days a freeze covered (logs written as `forgiven`), newest first. */
+export function freezeHistory(
+  habits: readonly RewardHabit[],
+  statusesByHabit: ReadonlyMap<string, StatusByDate>,
+): FreezeUse[] {
+  const uses: FreezeUse[] = [];
+  for (const habit of habits) {
+    const statuses = statusesByHabit.get(habit.id);
+    if (!statuses) continue;
+    for (const [date, status] of statuses) {
+      if (status === 'forgiven') uses.push({ date, habitId: habit.id, streakSaved: computeStreak(habit, statuses, date) });
+    }
+  }
+  return uses.sort((a, b) => b.date.localeCompare(a.date) || a.habitId.localeCompare(b.habitId));
 }
 
 /**
