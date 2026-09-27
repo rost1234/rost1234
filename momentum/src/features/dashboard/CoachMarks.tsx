@@ -12,7 +12,7 @@ const KEY = 'momentum.coach.v1';
 const TIPS = [
   { icon: 'hand-left-outline', text: 'coach.tap' },
   { icon: 'ellipsis-horizontal-circle-outline', text: 'coach.longPress' },
-  { icon: 'swap-horizontal-outline', text: 'coach.swipe' },
+  { icon: 'compass-outline', text: 'coach.home' },
 ] as const satisfies readonly { icon: string; text: TranslationKey }[];
 
 /** Three one-time tips on first use. Remembered per device. */
