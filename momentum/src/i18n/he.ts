@@ -345,7 +345,6 @@ export const he: Record<TranslationKey, string> = {
   'protect.add_other': 'הוספת הפסקה · {count} ימים',
   'protect.allHabits': 'כל ההרגלים',
   'protect.balance': '{count} מתוך {max} הקפאות',
-  'protect.calendarLink': 'לוח חודשי',
   'protect.daysLeft_one': 'זה היום האחרון',
   'protect.daysLeft_other': 'נשארו {count} ימים',
   'protect.deleteA11y': 'מחיקת ההפסקה',

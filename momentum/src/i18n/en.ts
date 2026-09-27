@@ -343,7 +343,6 @@ export const en = {
   'protect.add_other': 'Add pause · {count} days',
   'protect.allHabits': 'All habits',
   'protect.balance': '{count} of {max} freezes',
-  'protect.calendarLink': 'Monthly calendar',
   'protect.daysLeft_one': 'Last day',
   'protect.daysLeft_other': '{count} days left',
   'protect.deleteA11y': 'Delete pause',

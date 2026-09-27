@@ -20,7 +20,7 @@ function IconButton({ icon, label, onPress }: { icon: ComponentProps<typeof Ioni
   );
 }
 
-/** The two doors out of Home that aren't about today: settings and the research library. */
+/** The doors out of Home that aren't about today: settings, the month and the research library. */
 export function HomeTopBar() {
   const t = useT();
   const styles = useStyles();
@@ -28,6 +28,7 @@ export function HomeTopBar() {
     <View style={styles.bar}>
       <IconButton icon="settings-outline" label={t('home.settings')} onPress={() => router.push('/settings')} />
       <View style={{ flex: 1 }} />
+      <IconButton icon="calendar-outline" label={t('cal.title')} onPress={() => router.push('/calendar')} />
       <IconButton icon="library-outline" label={t('home.library')} onPress={() => router.push('/library')} />
     </View>
   );
@@ -74,7 +75,7 @@ export function FocusFab() {
 }
 
 const useStyles = makeStyles(({ colors, shadow }) => ({
-  bar: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm },
+  bar: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
   icon: {
     width: 40,
     height: 40,

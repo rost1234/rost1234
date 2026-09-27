@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { showConfirm } from '@/components/Overlay';
 import { SheetHeader } from '@/components/SheetHeader';
 import { Banner, Button, Card, Chip, ProgressBar, SectionTitle } from '@/components/ui';
@@ -351,11 +351,6 @@ export function StreakProtectionScreen() {
         />
         <Text style={[typography.caption, styles.footer]}>{t('protect.footer')}</Text>
 
-        <Pressable accessibilityRole="button" onPress={() => router.push('/calendar')} style={({ pressed }) => [styles.link, pressed && { opacity: 0.8 }]}>
-          <Ionicons name="calendar-outline" size={20} color={colors.primary} />
-          <Text style={[typography.label, { flex: 1, color: colors.primary }]}>{t('protect.calendarLink')}</Text>
-          <Ionicons name={t.isRTL ? 'chevron-back' : 'chevron-forward'} size={18} color={colors.primary} />
-        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -377,5 +372,4 @@ const useStyles = makeStyles(({ colors }) => ({
   buttonRow: { flexDirection: 'row', gap: spacing.sm },
   iconButton: { width: 36, height: 36, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceMuted },
   footer: { textAlign: 'center', marginTop: spacing.sm },
-  link: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.primarySoft, marginTop: spacing.sm },
 }));
