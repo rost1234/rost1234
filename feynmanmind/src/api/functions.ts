@@ -103,7 +103,7 @@ export interface GeneratedCourse {
   description: string;
   levels: {
     key: LevelKey;
-    stations: { key: string; title: string; summary: string }[];
+    stations: { key: string; title: string; summary: string; unit?: string }[];
     quiz: { question: string; options: string[]; correct: number }[];
   }[];
 }

@@ -25,6 +25,13 @@ Deno.test('parseCourse keeps level order, keys stations per level and dedupes ti
   assertEquals(course.levels[3]!.stations[0]!.key, 'm1');
 });
 
+Deno.test('parseCourse keeps each station\'s unit when the model gives one', () => {
+  const withUnits = { ...plan, levels: plan.levels.map((l) => ({ ...l, stations: l.stations.map((s) => ({ ...s, unit: ' Sky ' })) })) };
+  const course = parseCourse(withUnits);
+  assertEquals(course.levels[0]!.stations[0]!.unit, 'Sky');
+  assertEquals('unit' in parseCourse(plan).levels[0]!.stations[0]!, false);
+});
+
 Deno.test('parseCourse drops broken quiz questions', () => {
   const bad = { question: 'Bad', options: ['only one'], correct: 0 };
   const outOfRange = { question: 'Bad', options: ['a', 'b'], correct: 5 };

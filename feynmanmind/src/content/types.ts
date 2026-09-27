@@ -28,6 +28,8 @@ export interface CourseConcept {
   title: string;
   /** One line shown on the map. */
   summary: string;
+  /** The unit (a group of a few stations) this station belongs to on the map. */
+  unit?: string;
   /**
    * The lesson (paragraphs separated by blank lines) and its flashcards.
    * Built-in foundations ship with them; higher stations get them from the AI
@@ -50,6 +52,30 @@ export interface StationRef {
   levelIndex: number;
   /** Position in the whole course (0-based). */
   index: number;
+}
+
+/** Builds a level's stations from named units (each unit's stations share its title). */
+export function fromUnits(units: { unit: string; stations: Omit<CourseConcept, 'unit'>[] }[]): CourseConcept[] {
+  return units.flatMap(({ unit, stations }) => stations.map((s) => ({ ...s, unit })));
+}
+
+export interface UnitGroup {
+  /** Unit title, or null for stations saved without one (the map numbers those). */
+  title: string | null;
+  stations: CourseConcept[];
+}
+
+/** Splits a level into its units: consecutive stations with the same unit, or chunks of `size` when there are none. */
+export function unitsOf(stations: CourseConcept[], size = 4): UnitGroup[] {
+  const out: UnitGroup[] = [];
+  for (const s of stations) {
+    const last = out[out.length - 1];
+    const title = s.unit?.trim() || null;
+    const fits = last && (title ? last.title === title : last.title === null && last.stations.length < size);
+    if (fits) last.stations.push(s);
+    else out.push({ title, stations: [s] });
+  }
+  return out;
 }
 
 /** All stations in course order, with the level each belongs to. */

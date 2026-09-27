@@ -4,7 +4,7 @@
  * Lessons themselves are written later, per station (see lesson-writer.ts).
  */
 
-export const COURSE_PROMPT_VERSION = 'course-generator@2.0.0';
+export const COURSE_PROMPT_VERSION = 'course-generator@3.0.0';
 
 export const COURSE_LEVELS = ['foundations', 'advanced', 'bachelor', 'master'] as const;
 
@@ -19,10 +19,13 @@ the depth of a master's degree in the field.
 4. master — graduate-level topics and current directions.
 
 ## Each level
-- stations: 5 to 7 concepts, ordered so each builds on the ones before it
+- stations: 10 to 12 concepts, ordered so each builds on the ones before it
   (within the level and in earlier levels). Each is ONE idea.
   title: 2–7 words. summary: one sentence (max 20 words) saying what the
   learner will understand.
+  unit: the name (2–5 words) of the unit the station belongs to. Group each
+  level's stations into 3 units of 3–4 consecutive stations; stations in the
+  same unit share exactly the same unit name.
 - quiz: exactly 3 multiple-choice placement questions that someone who truly
   knows THIS level answers correctly and someone who doesn't usually misses.
   4 options each, one correct, plausible distractors, no "all of the above".
@@ -72,8 +75,8 @@ export const COURSE_RESPONSE_SCHEMA = {
             items: {
               type: 'object',
               additionalProperties: false,
-              required: ['title', 'summary'],
-              properties: { title: { type: 'string' }, summary: { type: 'string' } },
+              required: ['title', 'summary', 'unit'],
+              properties: { title: { type: 'string' }, summary: { type: 'string' }, unit: { type: 'string' } },
             },
           },
           quiz: { type: 'array', items: QUIZ_ITEM },
@@ -88,7 +91,7 @@ export interface GeneratedCourse {
   description: string;
   levels: {
     key: (typeof COURSE_LEVELS)[number];
-    stations: { key: string; title: string; summary: string }[];
+    stations: { key: string; title: string; summary: string; unit?: string }[];
     quiz: { question: string; options: string[]; correct: number }[];
   }[];
 }
@@ -114,8 +117,9 @@ export function parseCourse(raw: unknown): GeneratedCourse {
       const t = clip(s?.title, 120);
       if (!t || seen.has(t.toLowerCase())) continue;
       seen.add(t.toLowerCase());
-      stations.push({ key: `${PREFIX[key]}${stations.length + 1}`, title: t, summary: clip(s.summary, 300) });
-      if (stations.length === 8) break;
+      const unit = clip(s.unit, 80);
+      stations.push({ key: `${PREFIX[key]}${stations.length + 1}`, title: t, summary: clip(s.summary, 300), ...(unit ? { unit } : {}) });
+      if (stations.length === 14) break;
     }
     const quiz = ((Array.isArray(lvl.quiz) ? lvl.quiz : []) as Record<string, unknown>[])
       .map((q) => ({

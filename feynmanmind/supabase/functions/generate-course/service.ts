@@ -31,7 +31,7 @@ export async function generateCourse(llm: StructuredLlm, input: CourseInput): Pr
     schema: COURSE_RESPONSE_SCHEMA,
     parse: parseCourse,
     temperature: 0.4,
-    maxOutputTokens: 6000,
+    maxOutputTokens: 12000,
   });
   if (course.levels.length === 0) {
     throw new HttpError(422, 'That topic could not be turned into a course', 'invalid_topic');

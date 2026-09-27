@@ -1,5 +1,5 @@
 import { BUILT_IN_COURSES } from '../catalog';
-import { LEVEL_KEYS, stationsOf } from '../types';
+import { LEVEL_KEYS, stationsOf, unitsOf } from '../types';
 
 describe('built-in courses', () => {
   it('have unique ids, and unique station keys and titles within each course', () => {
@@ -14,7 +14,7 @@ describe('built-in courses', () => {
   it.each(BUILT_IN_COURSES.map((c) => [c.id, c] as const))('%s climbs all four levels, from foundations to master', (_id, course) => {
     expect(course.levels.map((l) => l.key)).toEqual([...LEVEL_KEYS]);
     for (const level of course.levels) {
-      expect(level.stations.length).toBeGreaterThanOrEqual(5);
+      expect(level.stations.length).toBeGreaterThanOrEqual(12);
       expect(level.quiz.length).toBe(3);
       for (const q of level.quiz) {
         expect(q.options.length).toBe(4);
@@ -47,5 +47,41 @@ describe('built-in courses', () => {
         }
       }
     }
+  });
+
+  it('group every level into named units of 3 to 5 stations', () => {
+    for (const course of BUILT_IN_COURSES) {
+      for (const level of course.levels) {
+        const units = unitsOf(level.stations);
+        expect(units.length).toBeGreaterThanOrEqual(3);
+        for (const unit of units) {
+          expect(unit.title).toBeTruthy();
+          expect(unit.stations.length).toBeGreaterThanOrEqual(3);
+          expect(unit.stations.length).toBeLessThanOrEqual(5);
+        }
+        // A unit name appears in one run only, so the map never splits it.
+        expect(new Set(units.map((u) => u.title)).size).toBe(units.length);
+      }
+    }
+  });
+});
+
+describe('unitsOf', () => {
+  const s = (key: string, unit?: string) => ({ key, title: key, summary: '', ...(unit ? { unit } : {}) });
+
+  it('groups consecutive stations that share a unit', () => {
+    const units = unitsOf([s('a', 'U1'), s('b', 'U1'), s('c', 'U2')]);
+    expect(units.map((u) => [u.title, u.stations.map((x) => x.key)])).toEqual([
+      ['U1', ['a', 'b']],
+      ['U2', ['c']],
+    ]);
+  });
+
+  it('chunks stations without units (older AI courses) into groups of four', () => {
+    const units = unitsOf(['a', 'b', 'c', 'd', 'e', 'f'].map((k) => s(k)));
+    expect(units.map((u) => [u.title, u.stations.length])).toEqual([
+      [null, 4],
+      [null, 2],
+    ]);
   });
 });

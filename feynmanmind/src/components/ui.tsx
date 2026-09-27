@@ -1,4 +1,4 @@
-import type { ComponentProps, ReactNode } from 'react';
+import type { ComponentProps, ReactNode, Ref } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -29,12 +29,14 @@ interface ScreenProps {
   edges?: Edge[];
   contentStyle?: StyleProp<ViewStyle>;
   refreshControl?: ComponentProps<typeof ScrollView>['refreshControl'];
+  /** For screens that scroll themselves to a spot (e.g. the current station on a map). */
+  scrollRef?: Ref<ScrollView>;
 }
 
 /** Extra space below the last item so it can be scrolled well clear of the screen edge. */
 export const SCROLL_BOTTOM_BUFFER = 96;
 
-export function Screen({ children, scroll = true, edges = [], contentStyle, refreshControl }: ScreenProps) {
+export function Screen({ children, scroll = true, edges = [], contentStyle, refreshControl, scrollRef }: ScreenProps) {
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   // The bottom inset (home indicator / gesture bar) is added inside the scroll
@@ -45,6 +47,7 @@ export function Screen({ children, scroll = true, edges = [], contentStyle, refr
     <SafeAreaView edges={edges.filter((e) => e !== 'bottom')} style={styles.screen}>
       {scroll ? (
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={[styles.screenContent, contentStyle, bottom]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
