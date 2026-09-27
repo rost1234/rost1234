@@ -112,7 +112,7 @@ export function isReminderIgnored(
   for (let i = 1; i <= 28 && due < 7; i += 1) {
     const date = addDays(today, -i);
     if (date < start) break;
-    if (!isHabitDueOn(habit, date) || isPaused(pauses, date)) continue;
+    if (!isHabitDueOn(habit, date) || isPaused(pauses, date, habit.id)) continue;
     due += 1;
     if (logs[date]?.status === 'completed') done += 1;
   }
@@ -127,7 +127,7 @@ function habitReminders(input: PlanInput): PlannedNotification[] {
     const logs = logsByHabit[habit.id] ?? {};
     const history = Object.values(logs).sort((a, b) => a.logDate.localeCompare(b.logDate));
     const gentle = isReminderIgnored(habit, logs, pauses, today);
-    const dates = reminderDates(habit, today, isDoneOrSkipped(logs[today]), PLAN_DAYS).filter((d) => !isPaused(pauses, d));
+    const dates = reminderDates(habit, today, isDoneOrSkipped(logs[today]), PLAN_DAYS).filter((d) => !isPaused(pauses, d, habit.id));
     dates.forEach((date, index) => {
       if (gentle && index % 2 === 1) return;
       const usual = usualReminderMinutes(habit, history, getWeekday(date));
@@ -167,7 +167,7 @@ function streakRescue(input: PlanInput): PlannedNotification[] {
   const { today, habits, logsByHabit, streaks, pauses, prefs } = input;
   if (!prefs.streakRescue || isPaused(pauses, today)) return [];
   const atRisk = habits
-    .filter((h) => !h.isArchived && isHabitDueOn(h, today))
+    .filter((h) => !h.isArchived && isHabitDueOn(h, today) && !isPaused(pauses, today, h.id))
     .filter((h) => !isDoneOrSkipped(logsByHabit[h.id]?.[today]))
     .filter((h) => (streaks[h.id] ?? 0) >= RESCUE_MIN_STREAK)
     .sort((a, b) => (streaks[b.id] ?? 0) - (streaks[a.id] ?? 0));
@@ -192,6 +192,7 @@ function checkIns(input: PlanInput, rescued: ReadonlySet<string>): PlannedNotifi
       (h) =>
         !h.isArchived &&
         isHabitDueOn(h, date) &&
+        !isPaused(pauses, date, h.id) &&
         (date !== today || (!isDoneOrSkipped(logsByHabit[h.id]?.[today]) && !rescued.has(h.id))),
     );
     if (open.length > 0) result.push({ kind: 'checkin', date, minutes, habitIds: open.map((h) => h.id) });
@@ -208,7 +209,7 @@ function morningPlans(input: PlanInput): PlannedNotification[] {
     if (isPaused(pauses, date)) continue;
     // Same order as Today at that hour, so "first up" matches what the user will see.
     const due = orderByTimeOfDay(
-      habits.filter((h) => !h.isArchived && isHabitDueOn(h, date)),
+      habits.filter((h) => !h.isArchived && isHabitDueOn(h, date) && !isPaused(pauses, date, h.id)),
       Math.floor(prefs.morningMinutes / 60),
     );
     if (due.length === 0) continue;

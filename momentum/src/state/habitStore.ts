@@ -72,7 +72,7 @@ function indexLogs(logs: readonly HabitLog[]): LogIndex {
 function streakFor(habit: Habit, logs: LogIndex, today: LocalDateString): number {
   const statuses = statusesByHabit(Object.values(logs[habit.id] ?? {})).get(habit.id) ?? new Map();
   // Planned pauses (vacation / sick) count as neutral days.
-  return computeStreak(habit, applyPauses(statuses, usePlanningStore.getState().pauses, today), today);
+  return computeStreak(habit, applyPauses(statuses, usePlanningStore.getState().pauses, today, habit.id), today);
 }
 
 function allStreaks(habits: readonly Habit[], logs: LogIndex, today: LocalDateString): Record<string, number> {

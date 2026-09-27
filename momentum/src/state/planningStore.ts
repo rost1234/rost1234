@@ -13,9 +13,9 @@ interface PlanningState {
   error: string | null;
   load: (today: LocalDateString) => Promise<void>;
   toggleMinimumDay: () => Promise<void>;
-  /** Pauses streaks from `start` to `end`, inclusive. */
-  addPause: (start: LocalDateString, end: LocalDateString, reason: PauseReason) => Promise<void>;
-  updatePause: (id: string, start: LocalDateString, end: LocalDateString, reason: PauseReason) => Promise<void>;
+  /** Pauses streaks from `start` to `end`, inclusive: one habit, or every habit when `habitId` is null. */
+  addPause: (start: LocalDateString, end: LocalDateString, reason: PauseReason, habitId: string | null) => Promise<void>;
+  updatePause: (id: string, start: LocalDateString, end: LocalDateString, reason: PauseReason, habitId: string | null) => Promise<void>;
   /** Ends a pause today while keeping the days that already passed paused. */
   endPause: (id: string, today: LocalDateString) => Promise<void>;
   /** Deletes a pause entirely (only offered for pauses that haven't started). */
@@ -52,15 +52,15 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     }
   },
 
-  addPause: async (start, end, reason) => {
-    const pause = await repositories.pauses.create(start, end, reason);
+  addPause: async (start, end, reason, habitId) => {
+    const pause = await repositories.pauses.create(start, end, reason, habitId);
     set({ pauses: [...get().pauses, pause].sort(byStart) });
   },
 
-  updatePause: async (id, start, end, reason) => {
+  updatePause: async (id, start, end, reason, habitId) => {
     const endDate = end < start ? start : end;
-    await repositories.pauses.update(id, { startDate: start, endDate, reason });
-    set({ pauses: get().pauses.map((p) => (p.id === id ? { ...p, startDate: start, endDate, reason } : p)).sort(byStart) });
+    await repositories.pauses.update(id, { startDate: start, endDate, reason, habitId });
+    set({ pauses: get().pauses.map((p) => (p.id === id ? { ...p, startDate: start, endDate, reason, habitId } : p)).sort(byStart) });
   },
 
   endPause: async (id, today) => {
@@ -70,7 +70,7 @@ export const usePlanningStore = create<PlanningState>((set, get) => ({
     if (change.kind === 'delete') {
       await get().removePause(id);
     } else if (change.kind === 'shorten') {
-      await get().updatePause(id, pause.startDate, change.endDate, pause.reason);
+      await get().updatePause(id, pause.startDate, change.endDate, pause.reason, pause.habitId ?? null);
     }
   },
 

@@ -4,7 +4,7 @@ import { buildHeatmap } from '../analytics';
 import { buildCalendarDays, habitDayDetails, summarizeMonth } from '../calendar';
 import { freezeHistory, perfectDaysTowardNextFreeze } from '../freezeRewards';
 import type { HabitLog, HabitLogStatus, Pause } from '../models';
-import { endPauseChange } from '../pauses';
+import { activePause, applyPausesToAll, endPauseChange, isPaused } from '../pauses';
 
 const log = (habitId: string, logDate: string, status: HabitLogStatus, currentCount = status === 'completed' ? 1 : 0): HabitLog => ({
   id: `${habitId}-${logDate}`,
@@ -113,5 +113,30 @@ describe('freeze progress and history', () => {
       ['h', new Map<string, HabitLogStatus>([...dateRange('2026-09-18', '2026-09-21').map((d) => [d, 'completed'] as const), ['2026-09-22', 'forgiven']])],
     ]);
     expect(freezeHistory([habit], withFreeze)).toEqual([{ date: '2026-09-22', habitId: 'h', streakSaved: 4 }]);
+  });
+});
+
+describe('single-habit pauses', () => {
+  const a = makeHabit({ id: 'a' });
+  const b = makeHabit({ id: 'b' });
+  const gymOnly: Pause = { id: 'g', startDate: '2026-09-03', endDate: '2026-09-04', reason: 'sick', createdAt: 'x', habitId: 'b' };
+  const logs = [log('a', '2026-09-03', 'completed')];
+
+  it('covers only the named habit', () => {
+    expect(isPaused([gymOnly], '2026-09-03', 'b')).toBe(true);
+    expect(isPaused([gymOnly], '2026-09-03', 'a')).toBe(false);
+    expect(isPaused([gymOnly], '2026-09-03')).toBe(false);
+    expect(activePause([gymOnly], '2026-09-03')).toBeNull();
+    const statuses = applyPausesToAll(new Map(), ['a', 'b'], [gymOnly], '2026-09-04');
+    expect(statuses.get('a')?.get('2026-09-03')).toBeUndefined();
+    expect(statuses.get('b')?.get('2026-09-03')).toBe('skipped');
+  });
+
+  it('leaves the paused habit out of the day instead of banding the whole calendar', () => {
+    const [all] = buildCalendarDays([a, b], logs, [gymOnly], ['2026-09-03'], '2026-09-10');
+    expect(all).toMatchObject({ percent: 100, perfect: true, pause: null });
+    const [gym] = buildCalendarDays([a, b], logs, [gymOnly], ['2026-09-03'], '2026-09-10', 'b');
+    expect(gym).toMatchObject({ percent: null, pause: gymOnly });
+    expect(habitDayDetails([a, b], logs, [gymOnly], '2026-09-03', '2026-09-10').map((d) => d.state)).toEqual(['completed', 'paused']);
   });
 });

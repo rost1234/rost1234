@@ -111,10 +111,17 @@ export interface DayModeRepository {
   set(date: LocalDateString, mode: DayMode | null): Promise<void>;
 }
 
+export interface PauseChanges {
+  startDate: LocalDateString;
+  endDate: LocalDateString;
+  reason: PauseReason;
+  habitId: string | null;
+}
+
 export interface PauseRepository {
   getAll(): Promise<Pause[]>;
-  create(startDate: LocalDateString, endDate: LocalDateString, reason: PauseReason): Promise<Pause>;
-  update(id: string, changes: { startDate: LocalDateString; endDate: LocalDateString; reason: PauseReason }): Promise<void>;
+  create(startDate: LocalDateString, endDate: LocalDateString, reason: PauseReason, habitId?: string | null): Promise<Pause>;
+  update(id: string, changes: PauseChanges): Promise<void>;
   delete(id: string): Promise<void>;
 }
 

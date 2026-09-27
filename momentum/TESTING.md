@@ -158,3 +158,7 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Habit chips filter the calendar to one habit; tapping a day opens its sheet with every habit's status, focus minutes
       and mood
 - [ ] Hebrew: weekdays start on Sunday at the right, arrows point the right way; dark mode looks right
+- [ ] Long-press a habit → "Pause this habit" → Streak protection opens with that habit selected under "Applies to";
+      add the pause → the habit card shows "⏸ until …", its reminders and check-in stop, the other habits go on as usual
+- [ ] In the calendar that day isn't banded for "All habits"; filter to the paused habit → the ✈ band appears
+- [ ] Deleting a habit also removes its single-habit pauses; an update from the previous version keeps old pauses app-wide

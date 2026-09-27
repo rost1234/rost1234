@@ -35,8 +35,16 @@ export interface HabitDayDetail {
 
 type LogIndex = ReadonlyMap<string, ReadonlyMap<LocalDateString, HabitLog>>;
 
-function dayOf(habits: readonly Habit[], index: LogIndex, pauses: readonly Pause[], date: LocalDateString, today: LocalDateString): CalendarDay {
-  const pause = activePause(pauses, date);
+function dayOf(
+  habits: readonly Habit[],
+  index: LogIndex,
+  pauses: readonly Pause[],
+  date: LocalDateString,
+  today: LocalDateString,
+  habitId: string | null,
+): CalendarDay {
+  // All habits: only app-wide pauses make a band (a paused habit just doesn't count that day).
+  const pause = activePause(pauses, date, habitId ?? undefined);
   if (date > today) return { date, future: true, percent: null, perfect: false, freezes: 0, pause };
 
   let counted = 0;
@@ -82,7 +90,7 @@ export function buildCalendarDays(
 ): CalendarDay[] {
   const index = indexLogs(logs);
   const selected = habitId ? habits.filter((h) => h.id === habitId) : habits;
-  return dates.map((date) => dayOf(selected, index, pauses, date, today));
+  return dates.map((date) => dayOf(selected, index, pauses, date, today, habitId));
 }
 
 export function summarizeMonth(days: readonly CalendarDay[]): MonthSummary {

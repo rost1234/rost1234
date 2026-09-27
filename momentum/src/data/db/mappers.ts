@@ -95,6 +95,7 @@ export const mapPause = (row: PauseRow): Pause => ({
   endDate: row.end_date,
   reason: row.reason === 'sick' || row.reason === 'other' ? row.reason : 'vacation',
   createdAt: row.created_at,
+  habitId: row.habit_id ?? null,
 });
 
 export const mapHabitLog = (row: HabitLogRow): HabitLog => ({

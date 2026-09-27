@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { showConfirm } from '@/components/Overlay';
 import { SheetHeader } from '@/components/SheetHeader';
 import { Banner, Button, Card, Chip, ProgressBar, SectionTitle } from '@/components/ui';
@@ -28,6 +28,13 @@ const REASONS: { id: PauseReason; label: TranslationKey }[] = [
 ];
 
 const reasonLabel = (reason: PauseReason): TranslationKey => REASONS.find((r) => r.id === reason)?.label ?? 'pause.other';
+
+/** "Gym" for a single-habit pause, "All habits" otherwise. */
+function useScopeLabel() {
+  const t = useT();
+  const habits = useHabitStore((s) => s.habits);
+  return (pause: Pause) => (pause.habitId ? (habits.find((h) => h.id === pause.habitId)?.title ?? t('protect.allHabits')) : t('protect.allHabits'));
+}
 
 /** How far back freeze history is shown. */
 const HISTORY_DAYS = 120;
@@ -156,12 +163,24 @@ function DayStepper({
   );
 }
 
-function PauseForm({ today, editing, onDone }: { today: LocalDateString; editing: Pause | null; onDone: () => void }) {
+function PauseForm({
+  today,
+  editing,
+  initialHabitId,
+  onDone,
+}: {
+  today: LocalDateString;
+  editing: Pause | null;
+  initialHabitId: string | null;
+  onDone: () => void;
+}) {
   const t = useT();
   const { typography } = useTheme();
   const styles = useStyles();
+  const habits = useHabitStore((s) => s.habits);
   const addPause = usePlanningStore((s) => s.addPause);
   const updatePause = usePlanningStore((s) => s.updatePause);
+  const [habitId, setHabitId] = useState<string | null>(editing ? (editing.habitId ?? null) : initialHabitId);
   const [reason, setReason] = useState<PauseReason>(editing?.reason ?? 'vacation');
   const [start, setStart] = useState<LocalDateString>(editing?.startDate ?? today);
   const [end, setEnd] = useState<LocalDateString>(editing?.endDate ?? addDays(today, 6));
@@ -176,7 +195,7 @@ function PauseForm({ today, editing, onDone }: { today: LocalDateString; editing
 
   const save = () =>
     runDetached(
-      (editing ? updatePause(editing.id, start, end, reason) : addPause(start, end, reason)).then(() => {
+      (editing ? updatePause(editing.id, start, end, reason, habitId) : addPause(start, end, reason, habitId)).then(() => {
         setError(null);
         onDone();
       }),
@@ -195,6 +214,17 @@ function PauseForm({ today, editing, onDone }: { today: LocalDateString; editing
         <DayStepper label={t('protect.from')} value={start} min={today} max={addDays(today, 365)} onChange={changeStart} />
         <DayStepper label={t('protect.to')} value={end} min={start} max={addDays(start, MAX_PAUSE_DAYS - 1)} onChange={setEnd} />
       </View>
+      {habits.length > 0 ? (
+        <View style={{ gap: spacing.xs }}>
+          <Text style={typography.caption}>{t('protect.scope')}</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+            <Chip label={t('protect.allHabits')} selected={habitId === null} onPress={() => setHabitId(null)} />
+            {habits.map((h) => (
+              <Chip key={h.id} label={h.title} selected={habitId === h.id} onPress={() => setHabitId(h.id)} />
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
       <Button label={editing ? t('common.save') : t.plural('protect.add', days)} onPress={save} />
       {editing ? <Button label={t('common.cancel')} variant="ghost" onPress={onDone} /> : null}
       {error ? <Banner message={error} /> : null}
@@ -213,6 +243,9 @@ export function StreakProtectionScreen() {
   const endPause = usePlanningStore((s) => s.endPause);
   const updatePause = usePlanningStore((s) => s.updatePause);
   const removePause = usePlanningStore((s) => s.removePause);
+  const scopeLabel = useScopeLabel();
+  // "Pause this habit" in a habit's menu opens this screen with the habit preselected.
+  const { habitId: habitParam } = useLocalSearchParams<{ habitId?: string }>();
   const [data, setData] = useState<FreezeData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Pause | null>(null);
@@ -246,7 +279,7 @@ export function StreakProtectionScreen() {
   const confirmDelete = (pause: Pause) =>
     showConfirm({
       title: t('protect.deleteTitle'),
-      message: `${t(reasonLabel(pause.reason))} · ${formatShortDate(pause.startDate)} – ${formatShortDate(pause.endDate)}`,
+      message: `${t(reasonLabel(pause.reason))} · ${scopeLabel(pause)} · ${formatShortDate(pause.startDate)} – ${formatShortDate(pause.endDate)}`,
       confirmLabel: t('protect.deleteConfirm'),
       destructive: true,
       icon: 'trash-outline',
@@ -268,7 +301,8 @@ export function StreakProtectionScreen() {
             <View style={{ gap: 2 }}>
               <Text style={typography.label}>{t('protect.now', { reason: t(reasonLabel(pause.reason)) })}</Text>
               <Text style={typography.caption}>
-                {formatShortDate(pause.startDate)} – {formatShortDate(pause.endDate)} · {t.plural('protect.daysLeft', pauseLength(today, pause.endDate))}
+                {scopeLabel(pause)} · {formatShortDate(pause.startDate)} – {formatShortDate(pause.endDate)} ·{' '}
+                {t.plural('protect.daysLeft', pauseLength(today, pause.endDate))}
               </Text>
             </View>
             <View style={styles.buttonRow}>
@@ -277,7 +311,7 @@ export function StreakProtectionScreen() {
                 style={{ flex: 1 }}
                 variant="secondary"
                 label={t('protect.extend')}
-                onPress={() => run(updatePause(pause.id, pause.startDate, addDays(pause.endDate, 1), pause.reason))}
+                onPress={() => run(updatePause(pause.id, pause.startDate, addDays(pause.endDate, 1), pause.reason, pause.habitId ?? null))}
               />
             </View>
             <Text style={typography.caption}>{t('protect.endNote')}</Text>
@@ -290,7 +324,8 @@ export function StreakProtectionScreen() {
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={typography.label}>{t(reasonLabel(pause.reason))}</Text>
                 <Text style={typography.caption}>
-                  {formatShortDate(pause.startDate)} – {formatShortDate(pause.endDate)} · {t.plural('pause.days', pauseLength(pause.startDate, pause.endDate))}
+                  {formatShortDate(pause.startDate)} – {formatShortDate(pause.endDate)} · {t.plural('pause.days', pauseLength(pause.startDate, pause.endDate))} ·{' '}
+                  {scopeLabel(pause)}
                 </Text>
               </View>
               <Pressable accessibilityRole="button" accessibilityLabel={t('protect.editA11y')} onPress={() => setEditing(pause)} hitSlop={6} style={styles.iconButton}>
@@ -307,6 +342,7 @@ export function StreakProtectionScreen() {
           key={editing ? `edit-${editing.id}` : `new-${formKey}`}
           today={today}
           editing={editing}
+          initialHabitId={typeof habitParam === 'string' ? habitParam : null}
           onDone={() => {
             setEditing(null);
             setFormKey((k) => k + 1);

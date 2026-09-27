@@ -92,4 +92,5 @@ export interface PauseRow {
   end_date: string;
   reason: string;
   created_at: string;
+  habit_id: string | null;
 }

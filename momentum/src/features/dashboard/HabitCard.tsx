@@ -6,10 +6,12 @@ import { showActionSheet, type SheetAction } from '@/components/Overlay';
 import { ProgressBar } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { haptics } from '@/core/haptics';
+import { formatShortDate } from '@/core/localDate';
 import { completionRatio, progressOf } from '@/domain/habitProgress';
 import type { Habit } from '@/domain/models';
 import { hasCompletionBefore } from '@/domain/streaks';
 import { useHabitStore } from '@/state/habitStore';
+import { usePlanningStore } from '@/state/planningStore';
 import { t, useT } from '@/i18n';
 
 interface HabitCardProps {
@@ -24,6 +26,7 @@ function openHabitMenu(habit: Habit, isSkipped: boolean) {
       : { label: t('habit.skipToday'), icon: 'play-skip-forward-outline', run: () => skipHabit(habit.id) },
     { label: t('habit.edit'), icon: 'create-outline', run: () => router.push({ pathname: '/habit/[id]', params: { id: habit.id } }) },
     { label: t('habit.resetToday'), icon: 'refresh-outline', run: () => undoHabitStep(habit.id) },
+    { label: t('habit.pause'), icon: 'pause-circle-outline', run: () => router.push({ pathname: '/streaks', params: { habitId: habit.id } }) },
     { label: t('habit.archive'), icon: 'archive-outline', destructive: true, run: () => void archiveHabit(habit.id) },
   ];
   showActionSheet({ title: habit.title, message: habit.why ? t('habit.why', { why: habit.why }) : undefined, actions });
@@ -56,6 +59,12 @@ function HabitCardComponent({ habit }: HabitCardProps) {
     const byDate = s.logs[habit.id];
     if (!s.today || !byDate || (s.streaks[habit.id] ?? 0) > 0) return false;
     return hasCompletionBefore(new Map(Object.entries(byDate).map(([d, l]) => [d, l.status])), s.today);
+  });
+  // A pause for just this habit (app-wide pauses have their own banner).
+  const pausedUntil = usePlanningStore((s) => {
+    const today = s.today;
+    if (!today) return undefined;
+    return s.pauses.find((p) => p.habitId === habit.id && p.startDate <= today && p.endDate >= today)?.endDate;
   });
   const tapHabit = useHabitStore((s) => s.tapHabit);
   const undoHabitStep = useHabitStore((s) => s.undoHabitStep);
@@ -105,7 +114,12 @@ function HabitCardComponent({ habit }: HabitCardProps) {
             <Text style={[typography.label, styles.title, isSkipped && styles.strike]} numberOfLines={1}>
               {habit.title}
             </Text>
-            {streak > 0 ? (
+            {pausedUntil && !isDone ? (
+              <View style={[styles.streak, { backgroundColor: colors.primarySoft }]}>
+                <Ionicons name="pause" size={11} color={colors.primary} />
+                <Text style={[styles.streakText, { color: colors.primary }]}>{t('habit.pausedUntil', { date: formatShortDate(pausedUntil) })}</Text>
+              </View>
+            ) : streak > 0 ? (
               <View style={styles.streak}>
                 <Ionicons name="flame" size={12} color={colors.warning} />
                 <Text style={styles.streakText}>{streak}</Text>

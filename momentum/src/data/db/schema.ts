@@ -157,6 +157,11 @@ const MIGRATION_8 = `
 ALTER TABLE habit_logs ADD COLUMN source TEXT NULL;
 `;
 
+/** v9: a pause can cover a single habit (NULL = every habit). */
+const MIGRATION_9 = `
+ALTER TABLE pauses ADD COLUMN habit_id TEXT NULL REFERENCES habits(id) ON DELETE CASCADE;
+`;
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, statements: MIGRATION_1 },
   { version: 2, statements: MIGRATION_2 },
@@ -166,6 +171,7 @@ export const MIGRATIONS: readonly Migration[] = [
   { version: 6, statements: MIGRATION_6 },
   { version: 7, statements: MIGRATION_7 },
   { version: 8, statements: MIGRATION_8 },
+  { version: 9, statements: MIGRATION_9 },
 ];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS.reduce((max, m) => Math.max(max, m.version), 0);
@@ -275,6 +281,7 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     end_date: 'text',
     reason: 'text',
     created_at: 'text',
+    habit_id: 'nullable_text',
   },
   shown_insights: {
     insight_id: 'text',

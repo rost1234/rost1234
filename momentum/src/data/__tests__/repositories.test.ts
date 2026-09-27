@@ -209,10 +209,27 @@ describe('wave 2 tables', () => {
 
     const pause = await planning.pauses.create('2026-10-01', '2026-10-07', 'vacation');
     expect(await planning.pauses.getAll()).toEqual([pause]);
-    await planning.pauses.update(pause.id, { startDate: '2026-10-02', endDate: '2026-10-01', reason: 'sick' });
+    expect(pause.habitId).toBeNull();
+    await planning.pauses.update(pause.id, { startDate: '2026-10-02', endDate: '2026-10-01', reason: 'sick', habitId: null });
     expect(await planning.pauses.getAll()).toEqual([{ ...pause, startDate: '2026-10-02', endDate: '2026-10-02', reason: 'sick' }]);
-    await planning.pauses.delete(pause.id);
+    // A single-habit pause goes away with its habit.
+    const gym = await r.habits.create({ ...newHabit, title: 'Gym' });
+    await planning.pauses.update(pause.id, { startDate: '2026-10-02', endDate: '2026-10-03', reason: 'sick', habitId: gym.id });
+    expect((await planning.pauses.getAll())[0]?.habitId).toBe(gym.id);
+    await r.habits.delete(gym.id);
     expect(await planning.pauses.getAll()).toEqual([]);
+  });
+});
+
+describe('v9 single-habit pauses', () => {
+  it('keeps existing pauses app-wide after the upgrade', async () => {
+    const { db, executor } = createTestDatabase({ upToVersion: 8 });
+    db.exec("INSERT INTO pauses (id, start_date, end_date, reason, created_at) VALUES ('old', '2026-09-01', '2026-09-03', 'vacation', 'x')");
+    applyRemainingMigrations(db, 8);
+    const pauses = new SqlitePauseRepository(() => Promise.resolve(executor));
+    expect(await pauses.getAll()).toEqual([
+      { id: 'old', startDate: '2026-09-01', endDate: '2026-09-03', reason: 'vacation', createdAt: 'x', habitId: null },
+    ]);
   });
 });
 

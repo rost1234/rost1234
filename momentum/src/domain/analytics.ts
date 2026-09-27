@@ -70,7 +70,7 @@ export function habitDayState(
   pauses: readonly Pause[],
 ): HeatCellState {
   const state = cellState(habit, log, date, today);
-  return (state === 'missed' || state === 'pending') && isPaused(pauses, date) ? 'paused' : state;
+  return (state === 'missed' || state === 'pending') && isPaused(pauses, date, habit.id) ? 'paused' : state;
 }
 
 export function buildHeatmap(

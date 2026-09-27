@@ -45,7 +45,7 @@ function firstSuggestion(
 ): { s: LevelSuggestion; habit: Habit } | null {
   for (const habit of habits) {
     const statuses = statusesByHabit(Object.values(logs[habit.id] ?? {})).get(habit.id) ?? new Map();
-    const s = suggestLevelChange(habit, applyPauses(statuses, pauses, today), today);
+    const s = suggestLevelChange(habit, applyPauses(statuses, pauses, today, habit.id), today);
     if (s) return { s, habit };
   }
   return null;

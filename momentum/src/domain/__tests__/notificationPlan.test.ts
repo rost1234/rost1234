@@ -183,4 +183,15 @@ describe('planNotifications', () => {
     const plan = planNotifications(input({ habits: [water], pauses: [pause], prefs, streaks: { water: 5 } }));
     expect(plan[0]?.date).toBe(addDays(TODAY, 3));
   });
+
+  it('keeps reminding the other habits when a pause names just one', () => {
+    const gym = makeHabit({ id: 'gym', title: 'Gym', reminder: 'smart', timeOfDay: 'morning', createdAt: '2026-09-20T08:00:00' });
+    const pause = { id: 'p', startDate: TODAY, endDate: addDays(TODAY, 2), reason: 'sick' as const, createdAt: 'x', habitId: 'gym' };
+    const prefs = { ...DEFAULT_NOTIFICATION_PREFS, checkIn: true, streakRescue: true };
+    const plan = planNotifications(input({ habits: [water, gym], pauses: [pause], prefs, streaks: { water: 5, gym: 5 } }));
+    const paused = new Set([TODAY, addDays(TODAY, 1), addDays(TODAY, 2)]);
+    expect(plan.filter((n) => paused.has(n.date)).some((n) => n.habitIds.includes('gym'))).toBe(false);
+    expect(plan.filter((n) => n.date === TODAY).some((n) => n.habitIds.includes('water'))).toBe(true);
+    expect(plan.some((n) => n.date === addDays(TODAY, 3) && n.habitIds.includes('gym'))).toBe(true);
+  });
 });

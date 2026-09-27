@@ -4,7 +4,7 @@ import type { LocalDateString } from '@/core/localDate';
 import type { DayMode, Pause, PauseReason } from '@/domain/models';
 import { mapPause } from '../db/mappers';
 import type { DayModeRow, PauseRow } from '../db/rows';
-import type { DayModeRepository, ExecutorProvider, PauseRepository, ShownInsightRepository } from './types';
+import type { DayModeRepository, ExecutorProvider, PauseChanges, PauseRepository, ShownInsightRepository } from './types';
 
 export class SqliteDayModeRepository implements DayModeRepository {
   constructor(private readonly db: ExecutorProvider) {}
@@ -43,7 +43,7 @@ export class SqlitePauseRepository implements PauseRepository {
     });
   }
 
-  create(startDate: LocalDateString, endDate: LocalDateString, reason: PauseReason): Promise<Pause> {
+  create(startDate: LocalDateString, endDate: LocalDateString, reason: PauseReason, habitId: string | null = null): Promise<Pause> {
     return guardDb('pauses.create', async () => {
       const db = await this.db();
       const pause: Pause = {
@@ -52,26 +52,29 @@ export class SqlitePauseRepository implements PauseRepository {
         endDate: endDate < startDate ? startDate : endDate,
         reason,
         createdAt: nowIso(),
+        habitId,
       };
-      await db.runAsync('INSERT INTO pauses (id, start_date, end_date, reason, created_at) VALUES (?, ?, ?, ?, ?)', [
+      await db.runAsync('INSERT INTO pauses (id, start_date, end_date, reason, created_at, habit_id) VALUES (?, ?, ?, ?, ?, ?)', [
         pause.id,
         pause.startDate,
         pause.endDate,
         pause.reason,
         pause.createdAt,
+        habitId,
       ]);
       return pause;
     });
   }
 
-  update(id: string, changes: { startDate: LocalDateString; endDate: LocalDateString; reason: PauseReason }): Promise<void> {
+  update(id: string, changes: PauseChanges): Promise<void> {
     return guardDb('pauses.update', async () => {
       const db = await this.db();
       const endDate = changes.endDate < changes.startDate ? changes.startDate : changes.endDate;
-      await db.runAsync('UPDATE pauses SET start_date = ?, end_date = ?, reason = ? WHERE id = ?', [
+      await db.runAsync('UPDATE pauses SET start_date = ?, end_date = ?, reason = ?, habit_id = ? WHERE id = ?', [
         changes.startDate,
         endDate,
         changes.reason,
+        changes.habitId,
         id,
       ]);
     });

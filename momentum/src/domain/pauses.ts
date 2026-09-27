@@ -2,8 +2,19 @@ import { addDays, dateRange, type LocalDateString } from '@/core/localDate';
 import type { HabitLogStatus, Pause } from './models';
 import type { StatusByDate } from './streaks';
 
-export function isPaused(pauses: readonly Pause[], date: LocalDateString): boolean {
-  return pauses.some((p) => date >= p.startDate && date <= p.endDate);
+/**
+ * Does this pause cover the habit? A pause without a habit covers every habit.
+ * Without a `habitId` only such app-wide pauses count.
+ */
+export function pauseAppliesTo(pause: Pause, habitId?: string): boolean {
+  return !pause.habitId || pause.habitId === habitId;
+}
+
+const covers = (pause: Pause, date: LocalDateString) => date >= pause.startDate && date <= pause.endDate;
+
+/** Is `date` paused for this habit (or, without a habit, for the whole app)? */
+export function isPaused(pauses: readonly Pause[], date: LocalDateString, habitId?: string): boolean {
+  return pauses.some((p) => covers(p, date) && pauseAppliesTo(p, habitId));
 }
 
 export type EndPauseChange = { kind: 'delete' } | { kind: 'shorten'; endDate: LocalDateString } | { kind: 'none' };
@@ -24,9 +35,12 @@ export function pauseLength(startDate: LocalDateString, endDate: LocalDateString
   return dateRange(startDate, endDate).length;
 }
 
-/** The pause covering `date`, if any (for the "vacation mode" banner). */
-export function activePause(pauses: readonly Pause[], date: LocalDateString): Pause | null {
-  return pauses.find((p) => date >= p.startDate && date <= p.endDate) ?? null;
+/**
+ * The pause covering `date` for this habit, if any. Without a habit it only
+ * finds app-wide pauses (for the "vacation mode" banner).
+ */
+export function activePause(pauses: readonly Pause[], date: LocalDateString, habitId?: string): Pause | null {
+  return pauses.find((p) => covers(p, date) && pauseAppliesTo(p, habitId)) ?? null;
 }
 
 /**
@@ -34,10 +48,15 @@ export function activePause(pauses: readonly Pause[], date: LocalDateString): Pa
  * reuses the streak engine's bridging rule: streaks neither break nor grow and
  * no freezes are spent. Only dates up to `until` are touched.
  */
-export function applyPauses(statuses: StatusByDate, pauses: readonly Pause[], until: LocalDateString): Map<LocalDateString, HabitLogStatus> {
+export function applyPauses(
+  statuses: StatusByDate,
+  pauses: readonly Pause[],
+  until: LocalDateString,
+  habitId?: string,
+): Map<LocalDateString, HabitLogStatus> {
   const result = new Map(statuses);
   for (const pause of pauses) {
-    if (pause.startDate > until) continue;
+    if (pause.startDate > until || !pauseAppliesTo(pause, habitId)) continue;
     const end = pause.endDate < until ? pause.endDate : until;
     for (const date of dateRange(pause.startDate, end)) {
       const status = result.get(date);
@@ -56,7 +75,7 @@ export function applyPausesToAll(
 ): Map<string, Map<LocalDateString, HabitLogStatus>> {
   const result = new Map<string, Map<LocalDateString, HabitLogStatus>>();
   for (const id of habitIds) {
-    result.set(id, applyPauses(byHabit.get(id) ?? new Map(), pauses, until));
+    result.set(id, applyPauses(byHabit.get(id) ?? new Map(), pauses, until, id));
   }
   return result;
 }

@@ -84,6 +84,8 @@ export interface Pause {
   endDate: LocalDateString;
   reason: PauseReason;
   createdAt: string;
+  /** Only this habit is paused; absent or null = every habit. */
+  habitId?: string | null;
 }
 
 export interface HabitLog {
