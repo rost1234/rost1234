@@ -33,9 +33,10 @@ Deno.test('writeLesson pitches the prompt at the level and passes context', asyn
     user = req.user;
     return req.parse({ explanation, cards: [{ question: 'Q1?', answer: 'A' }, { question: 'Q2?', answer: 'B' }] });
   };
-  await writeLesson(llm, parseLessonInput({ concept_title: 'Noether', level: 'master', course_title: 'Physics', previous_titles: ['Lagrangian'] }));
+  await writeLesson(llm, parseLessonInput({ concept_title: 'Noether', level: 'master', course_title: 'Physics', unit: 'Classical Mechanics II', previous_titles: ['Lagrangian'] }));
   assertStringIncludes(system, "master's student");
   assertStringIncludes(user, 'COURSE: Physics');
+  assertStringIncludes(user, 'UNIT: Classical Mechanics II');
   assertStringIncludes(user, '- Lagrangian');
   assertStringIncludes(user, '<concept>\nNoether\n</concept>');
 });

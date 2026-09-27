@@ -4,9 +4,13 @@ import { foundationsQuiz, upperLevels } from './biology.path';
 export const biology: Course = {
   id: 'biology',
   title: 'ביולוגיה',
-  description: 'מהתא הבודד ועד האבולוציה: איך החיים עובדים.',
+  description: 'מהתא הבודד ועד גנומיקה ו-CRISPR: איך החיים עובדים.',
   icon: 'leaf-outline',
   builtIn: true,
+  sources: [
+    { label: 'תואר ראשון בביולוגיה (MIT)', url: 'https://catalog.mit.edu/degree-charts/biology-course-7/' },
+    { label: 'דרישות הלימוד לתארים מתקדמים בביולוגיה (MIT)', url: 'https://biologyopenhouse.mit.edu/requirements' },
+  ],
   levels: [
     {
       key: 'foundations',

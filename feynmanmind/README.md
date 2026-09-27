@@ -20,7 +20,7 @@ device's bottom safe-area inset), so nothing is ever stuck under the home indica
 
 | Area | What it does |
 |---|---|
-| Learning paths | 6 built-in guided courses in Hebrew (physics, biology, math, computing & AI, economics, psychology), each climbing **four levels: foundations → advanced (high school) → bachelor's → master's**. Foundations lessons and flashcards ship with the app (offline); higher stations are mapped out and their lessons are written by the AI on first visit, pitched at that level and saved on the device. Type any topic and the AI builds a new four-level map. |
+| Learning paths | 6 built-in guided courses in Hebrew (physics, biology, math, computing & AI, economics, psychology), each climbing **four levels: foundations → advanced (high school) → bachelor's → master's**, about 60–75 stations in units. The upper levels follow real curricula: each unit matches a course in a university degree program (MIT, Hebrew University, Stanford, Israeli matriculation syllabi), and every course lists its sources on the map. Foundations lessons and flashcards ship with the app (offline); higher stations are mapped out and their lessons are written by the AI on first visit, pitched at that level and saved on the device. Type any topic and the AI builds a new four-level map. |
 | Placement test | Adaptive multiple-choice test per course (3 questions per level, bottom-up, with "I don't know"). Pass 2 of 3 to climb; the first level you don't pass is where you start. Levels below are marked *known* but stay open. |
 | Standalone concepts | Add any concept without choosing a subject; the AI can write it a lesson and flashcards. |
 | Library | Subjects → concepts. Create, rename, delete. Mastery bar per subject. |

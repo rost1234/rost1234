@@ -4,9 +4,13 @@ import { foundationsQuiz, upperLevels } from './economics.path';
 export const economics: Course = {
   id: 'economics',
   title: 'כלכלה',
-  description: 'למה דברים עולים מה שהם עולים, ואיך כסף עובד.',
+  description: 'מהיצע וביקוש ועד תורת המשחקים ואקונומטריקה.',
   icon: 'cash-outline',
   builtIn: true,
+  sources: [
+    { label: 'המחלקה לכלכלה, תואר ראשון (MIT)', url: 'https://catalog.mit.edu/schools/humanities-arts-social-sciences/economics/' },
+    { label: 'תוכנית הדוקטורט בכלכלה, קורסי ליבה (MIT)', url: 'https://economics.mit.edu/academic-programs/phd-program/curriculum-and-thesis' },
+  ],
   levels: [
     {
       key: 'foundations',

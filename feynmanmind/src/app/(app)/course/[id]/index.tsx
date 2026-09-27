@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Animated, Easing, Pressable, ScrollView, Text, View } from 'react-native';
+import { Animated, Easing, Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Button, Card, ErrorState, IconButton, LoadingState, ProgressBar, Screen, type IconName } from '@/components/ui';
@@ -202,6 +202,27 @@ export default function CourseMapScreen() {
         )}
 
         {rows}
+
+        {course.sources?.length ? (
+          <View style={styles.sources}>
+            <View style={styles.row}>
+              <Ionicons name="library-outline" size={18} color={colors.textMuted} />
+              <Text style={[typography.subheading, { flex: 1 }]}>{t('course.sourcesTitle')}</Text>
+            </View>
+            <Text style={typography.caption}>{t('course.sourcesBody')}</Text>
+            {course.sources.map((source) => (
+              <Pressable
+                key={source.url}
+                accessibilityRole="link"
+                onPress={() => void Linking.openURL(source.url)}
+                style={({ pressed }) => [styles.sourceRow, pressed && { opacity: 0.7 }]}
+              >
+                <Ionicons name="open-outline" size={16} color={colors.primary} />
+                <Text style={[typography.body, { color: colors.primary, flex: 1 }]}>{source.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
       </Screen>
     </>
   );
@@ -394,6 +415,16 @@ const useStyles = makeStyles(({ colors }) => ({
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
   },
+  sources: {
+    gap: spacing.sm,
+    marginTop: spacing.xl,
+    padding: spacing.lg,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  sourceRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.xs },
   trophyRow: { alignItems: 'center', marginTop: spacing.md },
   trophy: {
     width: 64,

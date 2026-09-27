@@ -4,9 +4,13 @@ import { foundationsQuiz, upperLevels } from './math.path';
 export const math: Course = {
   id: 'math',
   title: 'מתמטיקה',
-  description: 'משברים ועד נגזרות: הרעיונות שמאחורי החישובים.',
+  description: 'משברים ועד טופולוגיה ואנליזה פונקציונלית, כמו בתואר במתמטיקה.',
   icon: 'calculator-outline',
   builtIn: true,
+  sources: [
+    { label: 'תוכנית הלימודים במתמטיקה (האוניברסיטה העברית)', url: 'https://he.mathematics.huji.ac.il/%D7%AA%D7%95%D7%9B%D7%A0%D7%99%D7%95%D7%AA-%D7%95%D7%9E%D7%91%D7%A0%D7%94-%D7%9C%D7%99%D7%9E%D7%95%D7%93%D7%99%D7%9D/' },
+    { label: 'תואר ראשון במתמטיקה (MIT)', url: 'https://catalog.mit.edu/degree-charts/mathematics-course-18/' },
+  ],
   levels: [
     {
       key: 'foundations',

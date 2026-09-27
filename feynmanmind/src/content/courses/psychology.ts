@@ -4,9 +4,13 @@ import { foundationsQuiz, upperLevels } from './psychology.path';
 export const psychology: Course = {
   id: 'psychology',
   title: 'פסיכולוגיה',
-  description: 'איך אנחנו קשובים, זוכרים, לומדים ומחליטים.',
+  description: 'מקשב וזיכרון ועד מדעי המוח ופסיכולוגיה קלינית.',
   icon: 'happy-outline',
   builtIn: true,
+  sources: [
+    { label: 'תוכנית התואר הראשון בפסיכולוגיה (תל-חי)', url: 'https://www.telhai.ac.il/sites/default/files/2023-08/psicology_tshpd_omer.pdf' },
+    { label: 'תואר ראשון במדעי המוח והקוגניציה (MIT)', url: 'https://catalog.mit.edu/degree-charts/brain-cognitive-sciences-course-9/' },
+  ],
   levels: [
     {
       key: 'foundations',

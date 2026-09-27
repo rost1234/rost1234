@@ -111,6 +111,8 @@ export interface GeneratedCourse {
 export interface LessonRequest {
   concept_title: string;
   summary?: string;
+  /** The unit (usually a real university course) the station belongs to. */
+  unit?: string;
   course_title?: string;
   level: LevelKey | 'standalone';
   previous_titles?: string[];

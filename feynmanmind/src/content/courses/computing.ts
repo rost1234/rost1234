@@ -4,9 +4,13 @@ import { foundationsQuiz, upperLevels } from './computing.path';
 export const computing: Course = {
   id: 'computing',
   title: 'מחשבים ובינה מלאכותית',
-  description: 'מהו אלגוריתם, איך מחשב חושב, ואיך מכונה לומדת.',
+  description: 'מאלגוריתם ראשון ועד טרנספורמרים ומחשוב קוונטי.',
   icon: 'hardware-chip-outline',
   builtIn: true,
+  sources: [
+    { label: 'תואר ראשון במדעי המחשב (MIT)', url: 'https://catalog.mit.edu/degree-charts/computer-science-engineering-course-6-3/' },
+    { label: 'תואר שני במדעי המחשב (סטנפורד)', url: 'https://bulletin.stanford.edu/programs/CS-MS' },
+  ],
   levels: [
     {
       key: 'foundations',

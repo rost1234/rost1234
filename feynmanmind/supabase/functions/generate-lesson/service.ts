@@ -19,6 +19,7 @@ export interface LessonInput {
   courseTitle: string;
   conceptTitle: string;
   summary: string;
+  unit: string;
   previousTitles: string[];
 }
 
@@ -33,6 +34,7 @@ export function parseLessonInput(body: Record<string, unknown>): LessonInput {
     courseTitle: typeof body.course_title === 'string' ? body.course_title.trim().slice(0, 200) : '',
     conceptTitle: requireText(body.concept_title, 'concept_title', 1, 200),
     summary: typeof body.summary === 'string' ? body.summary.trim().slice(0, 500) : '',
+    unit: typeof body.unit === 'string' ? body.unit.trim().slice(0, 120) : '',
     previousTitles: stringList(body.previous_titles, 'previous_titles', 40, 200),
   };
 }

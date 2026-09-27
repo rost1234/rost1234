@@ -101,6 +101,7 @@ export function useWriteStationLesson() {
       const { lesson } = await generateLesson({
         concept_title: ref.station.title,
         summary: ref.station.summary,
+        unit: ref.station.unit,
         course_title: course.title,
         level: ref.level.key,
         // Everything before this station, so the lesson builds on it.

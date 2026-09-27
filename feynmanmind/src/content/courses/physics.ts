@@ -4,9 +4,14 @@ import { foundationsQuiz, upperLevels } from './physics.path';
 export const physics: Course = {
   id: 'physics',
   title: 'פיזיקה',
-  description: 'מהתנועה הפשוטה ועד חשמל: איך העולם זז ולמה.',
+  description: 'מניוטון ועד תורת השדות הקוונטית, לפי תוכניות התואר באוניברסיטאות.',
   icon: 'planet-outline',
   builtIn: true,
+  sources: [
+    { label: 'תואר ראשון בפיזיקה (MIT)', url: 'https://catalog.mit.edu/degree-charts/physics-course-8/' },
+    { label: 'קורסי הליבה לתארים מתקדמים בפיזיקה (MIT)', url: 'https://physics.mit.edu/academic-programs/graduate-students/information-on-graduate-course-requirements' },
+    { label: 'תוכנית הלימודים בפיזיקה, 5 יח״ל (משרד החינוך)', url: 'https://pop.education.gov.il/tchumey_daat/physics/high-school/pedagogy/curriculum/' },
+  ],
   levels: [
     {
       key: 'foundations',
