@@ -1,133 +1,164 @@
-import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
-import { showConfirm } from '@/components/Overlay';
+import type { ComponentProps } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { toErrorMessage } from '@/core/errors';
+import { Ionicons } from '@expo/vector-icons';
+import { router, type Href } from 'expo-router';
 import { SheetHeader } from '@/components/SheetHeader';
-import { Banner, Button, Card, SectionTitle } from '@/components/ui';
-import { makeStyles, spacing, useTheme } from '@/components/theme';
-import { exportBackup, pickBackupFile, restoreBackup, type PendingImport } from '@/services/backup';
-import { reloadAllData } from '@/state/reloadAll';
-import { AppearanceSetting } from './AppearanceSetting';
-import { DataTransparency } from './DataTransparency';
-import { StreakProtectionLink } from './StreakProtectionLink';
-import { AutoBackupSetting, ReflectionLockSetting } from './PrivacySetting';
-import { NotificationSetting } from './NotificationSetting';
-import { ReminderSetting } from './ReminderSetting';
-import { useSettingsStore } from '@/state/settingsStore';
-import { type TranslationKey, useT } from '@/i18n';
+import { SectionTitle } from '@/components/ui';
+import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { useBottomSpace } from '@/components/useBottomSpace';
+import { formatFriendlyDate } from '@/core/localDate';
+import { activePause } from '@/domain/pauses';
+import { formatMinutesOfDay } from '@/domain/usage';
+import { useLocalDate } from '@/hooks/useLocalDate';
+import { type TranslationKey, useT } from '@/i18n';
+import { useDevicePrefsStore } from '@/state/devicePrefsStore';
+import { useNotificationPrefsStore } from '@/state/notificationPrefsStore';
+import { usePlanningStore } from '@/state/planningStore';
+import { usePrefsStore } from '@/state/prefsStore';
+import { useSettingsStore } from '@/state/settingsStore';
 
+type IconName = ComponentProps<typeof Ionicons>['name'];
+
+const THEME_LABEL = { system: 'app.system', light: 'app.light', dark: 'app.dark' } as const satisfies Record<string, TranslationKey>;
+const LANGUAGE_LABEL = { auto: 'app.auto', en: 'app.english', he: 'app.hebrew' } as const satisfies Record<string, TranslationKey>;
+
+function Row({
+  icon,
+  tint,
+  title,
+  status,
+  warn,
+  href,
+  last,
+}: {
+  icon: IconName;
+  tint: [string, string];
+  title: string;
+  status: string;
+  warn?: boolean;
+  href: Href;
+  last?: boolean;
+}) {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${title}. ${status}`}
+      onPress={() => router.push(href)}
+      style={({ pressed }) => [styles.row, !last && styles.divider, pressed && { backgroundColor: colors.surfaceMuted }]}
+    >
+      <View style={[styles.icon, { backgroundColor: tint[0] }]}>
+        <Ionicons name={icon} size={20} color={tint[1]} />
+      </View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={typography.label}>{title}</Text>
+        <Text style={[typography.caption, warn && { color: colors.warning }]} numberOfLines={2}>
+          {status}
+        </Text>
+      </View>
+      <Ionicons name={t.isRTL ? 'chevron-back' : 'chevron-forward'} size={18} color={colors.textMuted} />
+    </Pressable>
+  );
+}
+
+/** Settings as a short list of topics; each opens its own screen. */
 export function SettingsScreen() {
   const t = useT();
-  const { typography } = useTheme();
+  const { colors } = useTheme();
   const styles = useStyles();
   const bottomSpace = useBottomSpace();
+  const today = useLocalDate();
+  const theme = usePrefsStore((s) => s.theme);
+  const language = usePrefsStore((s) => s.language);
+  const dailyLimit = useNotificationPrefsStore((s) => s.dailyLimit);
+  const quietStart = useNotificationPrefsStore((s) => s.quietStart);
+  const quietEnd = useNotificationPrefsStore((s) => s.quietEnd);
   const freezes = useSettingsStore((s) => s.settings?.streakFreezesAvailable ?? 0);
-  const [isExporting, setIsExporting] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
-  const [message, setMessage] = useState<{ text: string; tone: 'info' | 'danger' } | null>(null);
+  const pause = activePause(usePlanningStore((s) => s.pauses), today);
+  const backupFolder = useDevicePrefsStore((s) => s.backupFolderUri);
+  const lastBackup = useDevicePrefsStore((s) => s.lastAutoBackup);
+  const backupFailed = useDevicePrefsStore((s) => s.autoBackupFailed);
+  const locked = useDevicePrefsStore((s) => s.lockReflections);
 
-  const runExport = async () => {
-    setIsExporting(true);
-    setMessage(null);
-    try {
-      const result = await exportBackup();
-      setMessage({ tone: 'info', text: result.kind === 'shared' ? t('set.exported') : t('set.savedTo', { uri: result.uri }) });
-    } catch (error) {
-      setMessage({ tone: 'danger', text: t('set.exportFailed', { error: toErrorMessage(error) }) });
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const applyImport = async (pending: PendingImport) => {
-    setIsImporting(true);
-    try {
-      await restoreBackup(pending);
-      await reloadAllData();
-      setMessage({ tone: 'info', text: t('set.restored') });
-      router.replace('/');
-    } catch (error) {
-      setMessage({ tone: 'danger', text: t('set.restoreFailed', { error: toErrorMessage(error) }) });
-    } finally {
-      setIsImporting(false);
-    }
-  };
-
-  const runImport = async () => {
-    setMessage(null);
-    setIsImporting(true);
-    try {
-      const picked = await pickBackupFile();
-      if (picked.kind === 'canceled') return;
-      if (picked.kind === 'invalid') {
-        setMessage({ tone: 'danger', text: t(`backup.err.${picked.error.code}` as TranslationKey, { detail: picked.error.detail ?? '' }) });
-        return;
-      }
-      const { counts, backup } = picked.pending;
-      const exported = backup.exportedAt ? t('set.backupFrom', { date: backup.exportedAt.slice(0, 10) }) : '';
-      showConfirm({
-        title: t('set.replaceTitle'),
-        message: t('set.replaceBody', {
-          from: exported,
-          habits: counts.habits,
-          logs: counts.habit_logs,
-          tasks: counts.tasks,
-          sessions: counts.focus_sessions,
-          reflections: counts.daily_reflections,
-        }),
-        confirmLabel: t('set.replace'),
-        destructive: true,
-        icon: 'cloud-download-outline',
-        onConfirm: () => void applyImport(picked.pending),
-      });
-    } catch (error) {
-      setMessage({ tone: 'danger', text: t('set.readFailed', { error: toErrorMessage(error) }) });
-    } finally {
-      setIsImporting(false);
-    }
-  };
+  const streakStatus = [t.plural('today.freezes', freezes), pause ? t('protect.pausedUntil', { date: formatFriendlyDate(pause.endDate, t.locale) }) : null]
+    .filter(Boolean)
+    .join(' · ');
+  const backupStatus = backupFailed
+    ? t('set.st.backupFailed')
+    : backupFolder
+      ? lastBackup
+        ? t('set.st.backupAutoLast', { date: formatFriendlyDate(lastBackup, t.locale) })
+        : t('set.st.backupAuto')
+      : t('set.st.backupManual');
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}>
         <SheetHeader title={t('set.title')} />
-        {message ? <Banner tone={message.tone} message={message.text} onDismiss={() => setMessage(null)} /> : null}
 
-        <SectionTitle>{t('app.title')}</SectionTitle>
-        <AppearanceSetting />
-
-        <SectionTitle>{t('set.reminder')}</SectionTitle>
-        <NotificationSetting />
-        <View style={{ height: spacing.md }} />
-        <ReminderSetting />
-
-        <SectionTitle>{t('set.yourData')}</SectionTitle>
-        <DataTransparency />
-        <View style={{ height: spacing.md }} />
-        <Card style={styles.card}>
-          <Text style={typography.body}>
-            {t('set.dataLead')}
-          </Text>
-          <Button label={t('set.export')} variant="secondary" onPress={() => void runExport()} loading={isExporting} />
-          <Button label={t('set.restore')} variant="ghost" onPress={() => void runImport()} loading={isImporting} />
-        </Card>
-        <View style={{ height: spacing.md }} />
-        <AutoBackupSetting />
-        <View style={{ height: spacing.md }} />
-        <ReflectionLockSetting />
+        <SectionTitle>{t('set.group.general')}</SectionTitle>
+        <View style={styles.group}>
+          <Row
+            icon="color-palette-outline"
+            tint={[colors.primarySoft, colors.primary]}
+            title={t('set.sec.appearance')}
+            status={`${t(THEME_LABEL[theme])} · ${t(LANGUAGE_LABEL[language])}`}
+            href="/settings/appearance"
+          />
+          <Row
+            icon="notifications-outline"
+            tint={[colors.warningSoft, colors.warning]}
+            title={t('set.sec.notifications')}
+            status={t('set.st.notifications', { limit: dailyLimit, from: formatMinutesOfDay(quietStart), to: formatMinutesOfDay(quietEnd) })}
+            href="/settings/notifications"
+            last
+          />
+        </View>
 
         <SectionTitle>{t('set.breaks')}</SectionTitle>
-        <StreakProtectionLink freezes={freezes} />
+        <View style={styles.group}>
+          <Row
+            icon="shield-checkmark-outline"
+            tint={[colors.freezeSoft, colors.freeze]}
+            title={t('protect.title')}
+            status={streakStatus}
+            href="/streaks"
+            last
+          />
+        </View>
+
+        <SectionTitle>{t('set.yourData')}</SectionTitle>
+        <View style={styles.group}>
+          <Row
+            icon="cloud-upload-outline"
+            tint={[colors.successSoft, colors.success]}
+            title={t('set.sec.backup')}
+            status={backupStatus}
+            warn={backupFailed}
+            href="/settings/backup"
+          />
+          <Row
+            icon="lock-closed-outline"
+            tint={[colors.surfaceMuted, colors.text]}
+            title={t('set.sec.privacy')}
+            status={locked ? t('set.st.privacyLocked') : t('set.st.privacyOpen')}
+            href="/settings/privacy"
+            last
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const useStyles = makeStyles(({ colors }) => ({
+const useStyles = makeStyles(({ colors, shadow }) => ({
   safe: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg },
-  card: { gap: spacing.md },
+  group: { borderRadius: radius.lg, backgroundColor: colors.surface, overflow: 'hidden', ...shadow },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, minHeight: 64 },
+  divider: { borderBottomWidth: 1, borderBottomColor: colors.border },
+  icon: { width: 38, height: 38, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
 }));

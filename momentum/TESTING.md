@@ -162,3 +162,10 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
       add the pause → the habit card shows "⏸ until …", its reminders and check-in stop, the other habits go on as usual
 - [ ] In the calendar that day isn't banded for "All habits"; filter to the paused habit → the ✈ band appears
 - [ ] Deleting a habit also removes its single-habit pauses; an update from the previous version keeps old pauses app-wide
+
+## Settings list
+- [ ] ⚙️ opens a short list: General (Appearance & language, Notifications), Streaks (Streak protection), Your data
+      (Backup & restore, Privacy); each row shows its current state and opens its own screen; ✕ / back returns to the list
+- [ ] Change theme or quiet hours, go back → the row's status line shows the new value
+- [ ] Backup & restore: export, restore (with the confirmation) and weekly auto-backup still work; a failed auto-backup
+      shows in orange on the list
