@@ -8,6 +8,8 @@ export const computing: Course = {
   icon: 'hardware-chip-outline',
   builtIn: true,
   sources: [
+    { label: 'תוכנית הלימודים במדעי המחשב לחטיבה העליונה (משרד החינוך)', url: 'https://meyda.education.gov.il/files/CSIT/CS_1-2-4_ver_2-63.pdf' },
+    { label: 'מדעי המחשב בתיכון, נתיב עיוני: פרקי בחירה (משרד החינוך)', url: 'https://pop.education.gov.il/tchumey_daat/computer-science-software-engineering-cyber/high-school/pedagogy-of/high-school-theoretical-path/' },
     { label: 'תואר ראשון במדעי המחשב (MIT)', url: 'https://catalog.mit.edu/degree-charts/computer-science-engineering-course-6-3/' },
     { label: 'תואר שני במדעי המחשב (סטנפורד)', url: 'https://bulletin.stanford.edu/programs/CS-MS' },
   ],
