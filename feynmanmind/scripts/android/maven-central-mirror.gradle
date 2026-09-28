@@ -1,0 +1,26 @@
+// Maven Central rate-limits this environment's shared egress (HTTP 429), which
+// Gradle treats as fatal. Resolve Maven Central artifacts from Google's official
+// mirror instead — also for the plugin portal, which redirects to Maven Central.
+def MIRROR = 'https://maven-central.storage-download.googleapis.com/maven2/'
+def useMirror = { RepositoryHandler repos, boolean pluginRepos = false ->
+  // An empty plugin repository list means "use the plugin portal"; keep that.
+  if (pluginRepos && repos.isEmpty()) repos.gradlePluginPortal()
+  repos.withType(MavenArtifactRepository).configureEach { r ->
+    def u = r.url.toString()
+    if (u.contains('repo.maven.apache.org') || u.contains('repo1.maven.org')) r.url = MIRROR
+  }
+  if (!repos.findByName('MavenCentralMirror')) {
+    def m = repos.maven { name = 'MavenCentralMirror'; url = MIRROR }
+    repos.remove(m)
+    repos.addFirst(m)
+  }
+}
+beforeSettings { s ->
+  useMirror(s.pluginManagement.repositories, true)
+  useMirror(s.buildscript.repositories)
+  s.gradle.settingsEvaluated { if (!s.dependencyResolutionManagement.repositories.isEmpty()) useMirror(s.dependencyResolutionManagement.repositories) }
+}
+allprojects { p ->
+  useMirror(p.buildscript.repositories)
+  useMirror(p.repositories)
+}

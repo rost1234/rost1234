@@ -6,8 +6,8 @@ supabase/.temp/
 .expo/
 dist/
 expo-env.d.ts
-ios/
-android/
+/ios/
+/android/
 *.tsbuildinfo
 
 # Tooling output
