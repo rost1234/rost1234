@@ -89,7 +89,7 @@ export const upperLevels: CourseLevel[] = [
       {
         unit: 'ביולוגיה מולקולרית',
         stations: [
-          { key: 'b-replication', title: 'שכפול DNA ותיקונו', summary: 'איך התא מעתיק שלושה מיליארד אותיות כמעט בלי טעויות.' },
+          { key: 'b-replication', title: 'שכפול DNA ותיקונו', summary: 'איך התא מעתיק מיליארדי אותיות של DNA כמעט בלי טעויות.' },
           { key: 'b-regulation', title: 'בקרת ביטוי גנים', summary: 'גורמי שעתוק, מקדמים ואופרונים: איך התא מחליט אילו גנים להפעיל.' },
           { key: 'b-rna-processing', title: 'עיבוד RNA ושחבור', summary: 'איך גן אחד יכול לייצר כמה חלבונים שונים.' },
           { key: 'b-molecular-methods', title: 'שיטות מולקולריות: ריצוף, בלוטינג ו-qPCR', summary: 'הכלים שבהם מודדים DNA, RNA וחלבון במעבדה.' },
@@ -153,7 +153,7 @@ export const upperLevels: CourseLevel[] = [
         unit: 'ביולוגיה מבנית ומולקולרית',
         stations: [
           { key: 'm-structural', title: 'ביולוגיה מבנית וחיזוי מבנה חלבונים', summary: 'קריו-EM, קריסטלוגרפיה ו-AlphaFold.' },
-          { key: 'm-noncoding', title: 'RNA לא מקודד', summary: 'מיקרו-RNA ו-RNA ארוך שמווסתים את הגנום.' },
+          { key: 'm-noncoding', title: 'RNA לא מקודד', summary: 'מיקרו-RNA ו-RNA ארוך לא מקודד שמווסתים ביטוי גנים.' },
           { key: 'm-protein-dynamics', title: 'מכונות מולקולריות ודינמיקה של חלבונים', summary: 'ריבוזום, מנועים מולקולריים ושינויי צורה.' },
         ],
       },
@@ -170,7 +170,7 @@ export const upperLevels: CourseLevel[] = [
         unit: 'אבולוציה',
         stations: [
           { key: 'm-evodevo', title: 'אבולוציה של התפתחות (אבו-דבו)', summary: 'איך שינויים בגנים שמכוונים התפתחות יוצרים צורות גוף חדשות.' },
-          { key: 'm-molecular-evo', title: 'אבולוציה מולקולרית והתיאוריה הניטרלית', summary: 'איך רוב השינויים ב-DNA מתפשטים במקרה.' },
+          { key: 'm-molecular-evo', title: 'אבולוציה מולקולרית והתיאוריה הניטרלית', summary: 'למה רוב השינויים ב-DNA שמתקבעים באוכלוסייה הם ניטרליים ומתפשטים במקרה.' },
           { key: 'm-cancer-evo', title: 'סרטן כתהליך אבולוציוני', summary: 'ברירה טבעית בין תאים בתוך הגוף, ועמידות לטיפול.' },
         ],
       },
