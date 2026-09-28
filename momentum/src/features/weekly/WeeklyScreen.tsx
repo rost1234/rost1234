@@ -5,22 +5,31 @@ import { router } from 'expo-router';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { Button, Card } from '@/components/ui';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
-import { formatFriendlyDate, getLocalDeviceDate, parseLocalDate, addDays } from '@/core/localDate';
+import { formatFriendlyDate, getLocalDeviceDate, parseLocalDate, addDays, type LocalDateString } from '@/core/localDate';
 import { repositories } from '@/data/repositories';
+import { pickInsight } from '@/domain/insightPicker';
 import { buildWeeklySummary, previousWeek, type WeeklySummary } from '@/domain/weekly';
+import { INSIGHTS, InsightView } from '@/features/insights/InsightCard';
+import { useSettingsStore } from '@/state/settingsStore';
 import { useT } from '@/i18n';
 import { useBottomSpace } from '@/components/useBottomSpace';
 
-async function loadSummary(): Promise<WeeklySummary> {
+interface WeeklyData {
+  summary: WeeklySummary;
+  shown: Record<string, LocalDateString>;
+}
+
+async function loadSummary(): Promise<WeeklyData> {
   const week = previousWeek(getLocalDeviceDate());
   const startIso = new Date(parseLocalDate(week.start).setHours(0, 0, 0, 0)).toISOString();
   const endIso = new Date(parseLocalDate(addDays(week.end, 1)).setHours(0, 0, 0, 0)).toISOString();
-  const [habits, logs, sessions] = await Promise.all([
+  const [habits, logs, sessions, shown] = await Promise.all([
     repositories.habits.getAll(),
     repositories.habitLogs.getInRange(week.start, week.end),
     repositories.focusSessions.getInRange(startIso, endIso),
+    repositories.shownInsights.getAll().catch(() => ({})),
   ]);
-  return buildWeeklySummary(habits, logs, sessions, week);
+  return { summary: buildWeeklySummary(habits, logs, sessions, week), shown };
 }
 
 /** A 30-second look back at last week: what worked, one thing to adjust. */
@@ -29,13 +38,14 @@ export function WeeklyScreen() {
   const { colors, typography } = useTheme();
   const styles = useStyles();
   const bottomSpace = useBottomSpace();
-  const [summary, setSummary] = useState<WeeklySummary | null>(null);
+  const goal = useSettingsStore((s) => s.settings?.goal ?? null);
+  const [data, setData] = useState<WeeklyData | null>(null);
 
   useEffect(() => {
-    loadSummary().then(setSummary, () => router.back());
+    loadSummary().then(setData, () => router.back());
   }, []);
 
-  if (!summary) {
+  if (!data) {
     return (
       <View style={styles.content}>
         <SkeletonBlock height={80} />
@@ -43,6 +53,19 @@ export function WeeklyScreen() {
       </View>
     );
   }
+
+  const { summary } = data;
+  // Seeded by the week, not the day, and not recorded as shown: it doesn't touch the daily card.
+  // The card shown as the daily one on the week's first day is left out, or it would just repeat.
+  const shownBefore = Object.fromEntries(Object.entries(data.shown).filter(([, date]) => date !== summary.start));
+  const repeat = Object.entries(data.shown).find(([, date]) => date === summary.start)?.[0];
+  const insight = pickInsight(
+    INSIGHTS.filter((i) => i.id !== repeat),
+    summary.start,
+    goal,
+    [],
+    shownBefore,
+  );
 
   return (
     <ScrollView style={styles.flex} contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}>
@@ -84,15 +107,13 @@ export function WeeklyScreen() {
           <View style={styles.row}>
             <Ionicons name="construct-outline" size={18} color={colors.primary} />
             <Text style={[typography.body, { flex: 1 }]}>
-              {t('weekly.adjustBody', {
-                title: summary.toImprove.title,
-                done: summary.toImprove.completed,
-                scheduled: summary.toImprove.scheduled,
-              })}
+              {t('weekly.adjustBody', { title: summary.toImprove.title })}
             </Text>
           </View>
         </Card>
       ) : null}
+
+      {insight ? <InsightView insight={insight} title={t('weekly.insight')} /> : null}
 
       <Button label={t('weekly.close')} onPress={() => router.back()} />
     </ScrollView>

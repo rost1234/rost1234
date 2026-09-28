@@ -1,6 +1,25 @@
-import type { LocalDateString } from '@/core/localDate';
+import { addDays, localDateFromIso, type LocalDateString } from '@/core/localDate';
 
 export type InsightTriggerId = 'new_habit' | 'streak_broken' | 'perfect_week' | 'low_mood' | 'missed_focus';
+
+/** Mood at or below this (1–5) makes "low mood" cards more likely the next day. */
+const LOW_MOOD = 2;
+
+/**
+ * Triggers that come from what happened recently rather than from habits:
+ * a low mood yesterday or today, or a focus session given up in the last two days.
+ */
+export function contextTriggers(
+  reflections: readonly { logDate: LocalDateString; moodScore: number }[],
+  sessions: readonly { startTime: string; completed: boolean | null }[],
+  today: LocalDateString,
+): InsightTriggerId[] {
+  const yesterday = addDays(today, -1);
+  const triggers: InsightTriggerId[] = [];
+  if (reflections.some((r) => (r.logDate === today || r.logDate === yesterday) && r.moodScore <= LOW_MOOD)) triggers.push('low_mood');
+  if (sessions.some((s) => s.completed === false && localDateFromIso(s.startTime) >= yesterday)) triggers.push('missed_focus');
+  return triggers;
+}
 
 export interface PickableInsight {
   id: string;

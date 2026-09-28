@@ -98,7 +98,9 @@ function HabitCardComponent({ habit }: HabitCardProps) {
         delayLongPress={350}
         accessibilityRole={habit.isQuantitative ? 'adjustable' : 'checkbox'}
         accessibilityState={habit.isQuantitative ? undefined : { checked: isDone }}
-        accessibilityLabel={`${habit.title}, ${countLabel}${streak > 0 ? t('habit.streakA11y', { count: streak }) : ''}`}
+        accessibilityLabel={`${habit.title}, ${countLabel}${
+          pausedUntil ? `, ${t('habit.pausedA11y', { date: formatShortDate(pausedUntil) })}` : streak > 0 ? t('habit.streakA11y', { count: streak }) : ''
+        }`}
         accessibilityHint={habit.isQuantitative ? t('habit.hintCount') : t('habit.hintBinary')}
         style={({ pressed }) => [styles.main, pressed && { opacity: 0.75 }]}
       >

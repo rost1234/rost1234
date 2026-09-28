@@ -184,6 +184,17 @@ describe('planNotifications', () => {
     expect(plan[0]?.date).toBe(addDays(TODAY, 3));
   });
 
+  it('skips the reflection reminder on app-wide paused days only', () => {
+    const vacation = { id: 'p', startDate: TODAY, endDate: addDays(TODAY, 1), reason: 'vacation' as const, createdAt: 'x' };
+    const gymOnly = { ...vacation, id: 'g', habitId: 'gym' };
+    const reflectionDays = (pauses: (typeof vacation)[]) =>
+      planNotifications(input({ pauses, reflectionMinutes: 21 * 60 })).filter((n) => n.kind === 'reflection').map((n) => n.date);
+    expect(reflectionDays([vacation])).not.toContain(TODAY);
+    expect(reflectionDays([vacation])).not.toContain(addDays(TODAY, 1));
+    expect(reflectionDays([vacation])).toContain(addDays(TODAY, 2));
+    expect(reflectionDays([gymOnly])).toContain(TODAY);
+  });
+
   it('keeps reminding the other habits when a pause names just one', () => {
     const gym = makeHabit({ id: 'gym', title: 'Gym', reminder: 'smart', timeOfDay: 'morning', createdAt: '2026-09-20T08:00:00' });
     const pause = { id: 'p', startDate: TODAY, endDate: addDays(TODAY, 2), reason: 'sick' as const, createdAt: 'x', habitId: 'gym' };

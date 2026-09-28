@@ -13,7 +13,7 @@ import { addDays, formatFriendlyDate, formatShortDate, type LocalDateString } fr
 import { repositories } from '@/data/repositories';
 import { freezeHistory, MAX_STREAK_FREEZES, perfectDaysTowardNextFreeze, PERFECT_WEEK_DAYS, type FreezeUse } from '@/domain/freezeRewards';
 import type { Pause, PauseReason } from '@/domain/models';
-import { applyPausesToAll, pauseLength } from '@/domain/pauses';
+import { applyPausesToAll, endPauseChange, pauseLength } from '@/domain/pauses';
 import { useLocalDate } from '@/hooks/useLocalDate';
 import { useT, type TranslationKey } from '@/i18n';
 import { statusesByHabit } from '@/services/streakService';
@@ -106,7 +106,7 @@ function FreezeCard({ data }: { data: FreezeData | null }) {
           <Text style={[typography.body, { flex: 1 }]} numberOfLines={1}>
             {data.titles.get(use.habitId) ?? ''}
           </Text>
-          {use.streakSaved > 0 ? <Text style={typography.caption}>{t('protect.saved', { count: use.streakSaved })}</Text> : null}
+          {use.streakSaved > 0 ? <Text style={typography.caption}>{t.plural('protect.saved', use.streakSaved)}</Text> : null}
         </View>
       ))}
     </Card>
@@ -286,16 +286,51 @@ export function StreakProtectionScreen() {
       onConfirm: () => run(removePause(pause.id)),
     });
 
+  // A pause that began today leaves nothing behind when it ends, so ending it deletes it: ask first.
+  const endActive = (pause: Pause) =>
+    endPauseChange(pause, today).kind === 'delete'
+      ? showConfirm({
+          title: t('protect.cancelTodayTitle'),
+          message: t('protect.cancelTodayBody'),
+          confirmLabel: t('protect.cancelTodayConfirm'),
+          destructive: true,
+          icon: 'close-circle-outline',
+          onConfirm: () => run(endPause(pause.id, today)),
+        })
+      : run(endPause(pause.id, today));
+
+  // Opened from "Pause this habit": the form is what the user came for, so it goes first.
+  const fromHabit = typeof habitParam === 'string';
+  const form = (
+    <PauseForm
+      key={editing ? `edit-${editing.id}` : `new-${formKey}`}
+      today={today}
+      editing={editing}
+      initialHabitId={fromHabit ? habitParam : null}
+      onDone={() => {
+        setEditing(null);
+        setFormKey((k) => k + 1);
+        afterChange();
+      }}
+    />
+  );
+  const freezes = (
+    <>
+      <SectionTitle>{t('protect.freezes')}</SectionTitle>
+      <FreezeCard data={data} />
+    </>
+  );
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}>
         <SheetHeader title={t('protect.title')} />
         {error ? <Banner message={error} /> : null}
 
-        <SectionTitle>{t('protect.freezes')}</SectionTitle>
-        <FreezeCard data={data} />
+        {fromHabit ? null : freezes}
 
         <SectionTitle>{t('protect.pauses')}</SectionTitle>
+        {fromHabit ? form : null}
         {active.map((pause) => (
           <Card key={pause.id} style={[styles.card, { borderWidth: 1.5, borderColor: colors.primary }]}>
             <View style={{ gap: 2 }}>
@@ -306,7 +341,7 @@ export function StreakProtectionScreen() {
               </Text>
             </View>
             <View style={styles.buttonRow}>
-              <Button style={{ flex: 1 }} variant="secondary" label={t('protect.endToday')} onPress={() => run(endPause(pause.id, today))} />
+              <Button style={{ flex: 1 }} variant="secondary" label={t('protect.endToday')} onPress={() => endActive(pause)} />
               <Button
                 style={{ flex: 1 }}
                 variant="secondary"
@@ -338,18 +373,9 @@ export function StreakProtectionScreen() {
           </Card>
         ))}
 
-        <PauseForm
-          key={editing ? `edit-${editing.id}` : `new-${formKey}`}
-          today={today}
-          editing={editing}
-          initialHabitId={typeof habitParam === 'string' ? habitParam : null}
-          onDone={() => {
-            setEditing(null);
-            setFormKey((k) => k + 1);
-            afterChange();
-          }}
-        />
+        {fromHabit ? null : form}
         <Text style={[typography.caption, styles.footer]}>{t('protect.footer')}</Text>
+        {fromHabit ? freezes : null}
 
       </ScrollView>
     </SafeAreaView>

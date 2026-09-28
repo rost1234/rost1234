@@ -219,11 +219,14 @@ function morningPlans(input: PlanInput): PlannedNotification[] {
 }
 
 function reflections(input: PlanInput): PlannedNotification[] {
-  const { today, reflectionMinutes, reflectedToday } = input;
+  const { today, reflectionMinutes, reflectedToday, pauses } = input;
   if (reflectionMinutes === null) return [];
   const result: PlannedNotification[] = [];
   for (let i = reflectedToday ? 1 : 0; i < PLAN_DAYS; i += 1) {
-    result.push({ kind: 'reflection', date: addDays(today, i), minutes: reflectionMinutes, habitIds: [] });
+    const date = addDays(today, i);
+    // Only an app-wide pause silences it: a single paused habit says nothing about the day.
+    if (isPaused(pauses, date)) continue;
+    result.push({ kind: 'reflection', date, minutes: reflectionMinutes, habitIds: [] });
   }
   return result;
 }

@@ -5,9 +5,9 @@ import rawInsights from '@/content/insights.json';
 import type { Insight } from '@/content/insightSchema';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { runDetached } from '@/core/errors';
-import { addDays, localDateFromIso, type LocalDateString } from '@/core/localDate';
+import { addDays, localDateFromIso, parseLocalDate, type LocalDateString } from '@/core/localDate';
 import { repositories } from '@/data/repositories';
-import { pickInsight, type InsightTriggerId } from '@/domain/insightPicker';
+import { contextTriggers, pickInsight, type InsightTriggerId } from '@/domain/insightPicker';
 import { hasCompletionBefore } from '@/domain/streaks';
 import { useT } from '@/i18n';
 import { useHabitStore } from '@/state/habitStore';
@@ -33,18 +33,44 @@ function useActiveTriggers(today: LocalDateString): InsightTriggerId[] {
   return triggers;
 }
 
+/** What was shown before, plus triggers from recent reflections and focus sessions. Never throws. */
+async function loadPickContext(today: LocalDateString): Promise<{ shown: Record<string, LocalDateString>; context: InsightTriggerId[] }> {
+  const yesterday = addDays(today, -1);
+  const since = new Date(parseLocalDate(yesterday).setHours(0, 0, 0, 0)).toISOString();
+  const until = new Date(parseLocalDate(addDays(today, 1)).setHours(0, 0, 0, 0)).toISOString();
+  const [shown, reflections, sessions] = await Promise.all([
+    repositories.shownInsights.getAll().catch(() => ({})),
+    repositories.reflections.getInRange(yesterday, today).catch(() => []),
+    repositories.focusSessions.getInRange(since, until).catch(() => []),
+  ]);
+  return { shown, context: contextTriggers(reflections, sessions, today) };
+}
+
 /** "One insight a day": research-backed, sourced, and one small action. */
 export function InsightCard({ today }: { today: LocalDateString }) {
   const t = useT();
   const goal = useSettingsStore((s) => s.settings?.goal ?? null);
-  const triggers = useActiveTriggers(today);
-  const [shown, setShown] = useState<Record<string, LocalDateString> | null>(null);
+  const habitTriggers = useActiveTriggers(today);
+  // The first pick of the day is saved and kept all day, so wait until everything about *this*
+  // day is in: the recent context, and the habit store reloaded for it (after midnight it lags).
+  const [loaded, setLoaded] = useState<{ date: LocalDateString; shown: Record<string, LocalDateString>; context: InsightTriggerId[] } | null>(null);
+  const habitsReady = useHabitStore((s) => s.today === today && s.status === 'ready');
 
   useEffect(() => {
-    repositories.shownInsights.getAll().then(setShown, () => setShown({}));
-  }, []);
+    let current = true;
+    runDetached(
+      loadPickContext(today).then((result) => {
+        if (current) setLoaded({ date: today, ...result });
+      }),
+    );
+    return () => {
+      current = false;
+    };
+  }, [today]);
 
-  const insight = shown ? pickInsight(INSIGHTS, today, goal, triggers, shown) : null;
+  const ready = habitsReady && loaded?.date === today;
+  const insight = ready && loaded ? pickInsight(INSIGHTS, today, goal, [...habitTriggers, ...loaded.context], loaded.shown) : null;
+  const shown = ready && loaded ? loaded.shown : null;
 
   useEffect(() => {
     if (insight && shown && shown[insight.id] !== today) {

@@ -140,3 +140,18 @@ describe('single-habit pauses', () => {
     expect(habitDayDetails([a, b], logs, [gymOnly], '2026-09-03', '2026-09-10').map((d) => d.state)).toEqual(['completed', 'paused']);
   });
 });
+
+describe('archived habits in the calendar', () => {
+  const active = makeHabit({ id: 'a' });
+  const archived = makeHabit({ id: 'old', isArchived: true });
+  const logs = [log('a', '2026-09-02', 'completed'), log('old', '2026-09-02', 'completed'), log('a', '2026-09-03', 'completed')];
+
+  it('counts an archived habit only on days it was logged', () => {
+    const days = buildCalendarDays([active, archived], logs, [], ['2026-09-02', '2026-09-03'], '2026-09-10');
+    // Logged before archiving: still part of that day.
+    expect(days[0]).toMatchObject({ percent: 100, perfect: true });
+    // Nothing logged: the archived habit doesn't turn the day into a miss.
+    expect(days[1]).toMatchObject({ percent: 100, perfect: true });
+    expect(habitDayDetails([active, archived], logs, [], '2026-09-03', '2026-09-10').map((d) => d.habit.id)).toEqual(['a']);
+  });
+});

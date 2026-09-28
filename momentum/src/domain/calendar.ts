@@ -35,6 +35,15 @@ export interface HabitDayDetail {
 
 type LogIndex = ReadonlyMap<string, ReadonlyMap<LocalDateString, HabitLog>>;
 
+/**
+ * Archived habits have no archive date, so they only count on days they were
+ * actually logged; otherwise every day after archiving would read as a miss.
+ */
+function stateOf(habit: Habit, log: HabitLog | undefined, date: LocalDateString, today: LocalDateString, pauses: readonly Pause[]): HeatCellState {
+  if (habit.isArchived && !log) return 'not_scheduled';
+  return habitDayState(habit, log, date, today, pauses);
+}
+
 function dayOf(
   habits: readonly Habit[],
   index: LogIndex,
@@ -52,7 +61,7 @@ function dayOf(
   let freezes = 0;
   for (const habit of habits) {
     const log = index.get(habit.id)?.get(date);
-    switch (habitDayState(habit, log, date, today, pauses)) {
+    switch (stateOf(habit, log, date, today, pauses)) {
       case 'not_scheduled':
       case 'skipped':
       case 'paused':
@@ -116,7 +125,7 @@ export function habitDayDetails(
   return habits
     .map((habit) => {
       const log = index.get(habit.id)?.get(date);
-      return { habit, state: habitDayState(habit, log, date, today, pauses), count: log?.currentCount ?? 0 };
+      return { habit, state: stateOf(habit, log, date, today, pauses), count: log?.currentCount ?? 0 };
     })
     .filter((d) => d.state !== 'not_scheduled');
 }

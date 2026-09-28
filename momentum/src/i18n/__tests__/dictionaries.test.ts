@@ -21,7 +21,8 @@ describe('dictionaries', () => {
 
   it('fills placeholders and plural forms', () => {
     expect(translate('en', 'today.doneOf', { done: 2, total: 5 })).toBe('2 of 5 habits done');
-    expect(tPlural('en', 'today.freezes', 1)).toBe('1 freeze');
+    expect(tPlural('en', 'today.freezes', 1)).toBe('One freeze');
+    expect(tPlural('en', 'today.freezes', 2)).toBe('2 freezes');
     expect(tPlural('he', 'today.freezes', 3)).toBe('3 הקפאות');
   });
 });

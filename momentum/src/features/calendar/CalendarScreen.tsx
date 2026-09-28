@@ -54,7 +54,7 @@ async function loadMonth(month: LocalDateString): Promise<MonthData> {
   const startIso = new Date(parseLocalDate(start).setHours(0, 0, 0, 0)).toISOString();
   const endIso = new Date(parseLocalDate(addDays(end, 1)).setHours(0, 0, 0, 0)).toISOString();
   const [habits, logs, pauses, reflections, sessions] = await Promise.all([
-    repositories.habits.getAll(),
+    repositories.habits.getAll({ includeArchived: true }),
     repositories.habitLogs.getInRange(start, end),
     repositories.pauses.getAll(),
     repositories.reflections.getInRange(start, end),
@@ -95,7 +95,7 @@ function DayRing({ day, isToday }: { day: CalendarDay; isToday: boolean }) {
       </Svg>
       <View style={styles.ringLabel}>
         <Text
-          allowFontScaling={false}
+          maxFontSizeMultiplier={1.3}
           style={[
             styles.dayNumber,
             day.perfect && { color: colors.success, fontWeight: '800' },
@@ -262,14 +262,26 @@ function DetailRow({ detail }: { detail: HabitDayDetail }) {
   );
 }
 
-function DaySheet({ date, data, today, onClose }: { date: LocalDateString | null; data: MonthData; today: LocalDateString; onClose: () => void }) {
+function DaySheet({
+  date,
+  data,
+  today,
+  habitId,
+  onClose,
+}: {
+  date: LocalDateString | null;
+  data: MonthData;
+  today: LocalDateString;
+  habitId: string | null;
+  onClose: () => void;
+}) {
   const t = useT();
   const { colors, typography } = useTheme();
   const styles = useStyles();
   const bottom = useSafeAreaInsets().bottom;
   const details = useMemo(
-    () => (date ? habitDayDetails(data.habits, data.logs, data.pauses, date, today) : []),
-    [date, data, today],
+    () => (date ? habitDayDetails(habitId ? data.habits.filter((h) => h.id === habitId) : data.habits, data.logs, data.pauses, date, today) : []),
+    [date, data, today, habitId],
   );
   if (!date) return null;
 
@@ -288,7 +300,7 @@ function DaySheet({ date, data, today, onClose }: { date: LocalDateString | null
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent navigationBarTranslucent>
-      <Pressable style={styles.scrim} accessibilityLabel={t('common.cancel')} onPress={onClose} />
+      <Pressable style={styles.scrim} accessibilityRole="button" accessibilityLabel={t('common.cancel')} onPress={onClose} />
       <View style={[styles.sheet, { paddingBottom: bottom + spacing.lg }]}>
         <View style={styles.grab} />
         <View style={styles.sheetHeader}>
@@ -354,6 +366,8 @@ export function CalendarScreen() {
     return { byDate: new Map(list.map((d) => [d.date, d] as const)), summary: summarizeMonth(list) };
   }, [data, month, today, habitId]);
 
+  // Archived habits still count toward past days, but can't be picked as a filter.
+  const activeHabits = useMemo(() => data?.habits.filter((h) => !h.isArchived) ?? [], [data]);
   const canGoBack = month > addMonths(thisMonth, -MAX_MONTHS_BACK);
   const canGoForward = month < thisMonth;
   const prevIcon = t.isRTL ? 'chevron-forward' : 'chevron-back';
@@ -365,10 +379,10 @@ export function CalendarScreen() {
         <SheetHeader title={t('cal.title')} />
         {error ? <Banner message={error} /> : null}
 
-        {data && data.habits.length > 1 ? (
+        {activeHabits.length > 1 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
             <Chip label={t('cal.allHabits')} selected={habitId === null} onPress={() => setHabitId(null)} />
-            {data.habits.map((h) => (
+            {activeHabits.map((h) => (
               <Chip key={h.id} label={h.title} selected={habitId === h.id} onPress={() => setHabitId(h.id)} />
             ))}
           </ScrollView>
@@ -414,7 +428,7 @@ export function CalendarScreen() {
         ) : null}
         <Text style={[styles.hint]}>{t('cal.tapHint')}</Text>
       </ScrollView>
-      {data && selected ? <DaySheet date={selected} data={data} today={today} onClose={() => setSelected(null)} /> : null}
+      {data && selected ? <DaySheet date={selected} data={data} today={today} habitId={habitId} onClose={() => setSelected(null)} /> : null}
     </SafeAreaView>
   );
 }

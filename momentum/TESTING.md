@@ -169,3 +169,15 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Change theme or quiet hours, go back → the row's status line shows the new value
 - [ ] Backup & restore: export, restore (with the confirmation) and weekly auto-backup still work; a failed auto-backup
       shows in orange on the list
+
+## Agent-review fixes (build 25)
+- [ ] Leave the app open on Today past midnight (or reopen next morning): the day's insight card changes; after a mood of 1–2 in
+      yesterday's reflection it's a low-mood card; after giving up a focus session, a missed-focus card
+- [ ] App-wide vacation pause today → no evening reflection reminder in Settings → Notifications → "Coming up"; with only one
+      habit paused it's still listed
+- [ ] Start a pause today, tap "Resume today" → "Remove this pause?" dialog; the other button keeps it
+- [ ] Calendar: an archived habit shows only on days it was logged and isn't in the filter chips; with a habit filter, the
+      day sheet lists only that habit
+- [ ] Onboarding: picking a goal pre-selects exactly one habit
+- [ ] Weekly summary shows "Insight of the week" (not the same card as that week's first daily card)
+- [ ] Settings list with a daily limit of 1 reads "Up to 1 reminder a day"; Home freeze pill with one freeze reads "One freeze"

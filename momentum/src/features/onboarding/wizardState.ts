@@ -26,10 +26,10 @@ export const initialWizardState: WizardState = {
 export function wizardReducer(state: WizardState, action: WizardAction): WizardState {
   switch (action.type) {
     case 'selectGoal':
-      // Changing goal pre-selects all three of its presets.
+      // Changing goal pre-selects only the first preset: starting with one or two habits holds up better.
       return state.goal === action.goal
         ? state
-        : { ...state, goal: action.goal, selectedPresetKeys: presetsForGoal(action.goal, 'en').map((p) => p.key) };
+        : { ...state, goal: action.goal, selectedPresetKeys: presetsForGoal(action.goal, 'en').slice(0, 1).map((p) => p.key) };
     case 'togglePreset': {
       const selected = state.selectedPresetKeys.includes(action.key)
         ? state.selectedPresetKeys.filter((k) => k !== action.key)

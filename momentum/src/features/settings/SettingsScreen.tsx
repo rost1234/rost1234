@@ -112,7 +112,7 @@ export function SettingsScreen() {
             icon="notifications-outline"
             tint={[colors.warningSoft, colors.warning]}
             title={t('set.sec.notifications')}
-            status={t('set.st.notifications', { limit: dailyLimit, from: formatMinutesOfDay(quietStart), to: formatMinutesOfDay(quietEnd) })}
+            status={t.plural('set.st.notifications', dailyLimit, { from: formatMinutesOfDay(quietStart), to: formatMinutesOfDay(quietEnd) })}
             href="/settings/notifications"
             last
           />
