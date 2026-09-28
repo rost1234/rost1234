@@ -64,6 +64,26 @@ describe('built-in courses', () => {
       }
     }
   });
+  it('cite their sources as https links', () => {
+    for (const course of BUILT_IN_COURSES) {
+      expect(course.sources?.length ?? 0).toBeGreaterThan(0);
+      for (const source of course.sources ?? []) {
+        expect(source.label.trim()).not.toBe('');
+        expect(source.url).toMatch(/^https:\/\/\S+$/);
+      }
+    }
+  });
+
+  it('keep map summaries short and placement questions distinct', () => {
+    for (const course of BUILT_IN_COURSES) {
+      for (const { station } of stationsOf(course)) expect(station.summary.length).toBeLessThanOrEqual(160);
+      const questions = course.levels.flatMap((l) => l.quiz.map((q) => q.question));
+      expect(new Set(questions).size).toBe(questions.length);
+      for (const q of course.levels.flatMap((l) => l.quiz)) {
+        for (const option of q.options) expect(option.trim()).not.toBe('');
+      }
+    }
+  });
 });
 
 describe('unitsOf', () => {

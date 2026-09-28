@@ -110,6 +110,14 @@ npm run check:functions    # Deno type-check
 npx expo-doctor
 ```
 
+## Development agents
+
+Maintenance is split across Claude Code agents in `/.claude/agents/` (repo root):
+`curriculum-researcher`, `lesson-author`, `content-reviewer`, `ai-functions-engineer`, `qa-tester`
+and `release-builder`. What each one does, and the rules they share, are in [CLAUDE.md](CLAUDE.md).
+Tooling they use: `scripts/e2e/` (browser smoke test with screenshots) and `scripts/android/`
+(SDK setup and APK build).
+
 ## Data safety
 
 - **One device only:** data lives on this device. Uninstalling the app or clearing its storage deletes it. Use **Settings → Export backup** to keep a copy or move to another device, and **Restore from backup** to load one.
