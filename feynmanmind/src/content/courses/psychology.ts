@@ -8,6 +8,7 @@ export const psychology: Course = {
   icon: 'happy-outline',
   builtIn: true,
   sources: [
+    { label: 'תוכנית הלימודים בפסיכולוגיה לחטיבה העליונה (משרד החינוך)', url: 'https://pop.education.gov.il/tchumey_daat/social-sciences/high-school/pedagogy-of-social-sciences/psychology-curriculum/' },
     { label: 'תוכנית התואר הראשון בפסיכולוגיה (תל-חי)', url: 'https://www.telhai.ac.il/sites/default/files/2023-08/psicology_tshpd_omer.pdf' },
     { label: 'תואר ראשון במדעי המוח והקוגניציה (MIT)', url: 'https://catalog.mit.edu/degree-charts/brain-cognitive-sciences-course-9/' },
   ],
