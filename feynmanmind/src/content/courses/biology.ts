@@ -10,6 +10,8 @@ export const biology: Course = {
   sources: [
     { label: 'תואר ראשון בביולוגיה (MIT)', url: 'https://catalog.mit.edu/degree-charts/biology-course-7/' },
     { label: 'דרישות הלימוד לתארים מתקדמים בביולוגיה (MIT)', url: 'https://biologyopenhouse.mit.edu/requirements' },
+    { label: 'קורסי תואר מתקדם באימונולוגיה ובמחלות זיהומיות (MIT)', url: 'https://catalog.mit.edu/subjects/7/' },
+    { label: 'קורסי ליבה בתואר מתקדם במדעי המוח (MIT)', url: 'https://catalog.mit.edu/subjects/9/' },
   ],
   levels: [
     {
