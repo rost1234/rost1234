@@ -107,7 +107,7 @@ export function CopyButton({ onCopy, label }: { onCopy: () => Promise<unknown> |
   );
 }
 
-const useStyles = makeStyles(({ colors }) => ({
+const useStyles = makeStyles(({ colors, textScale }) => ({
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -117,7 +117,7 @@ const useStyles = makeStyles(({ colors }) => ({
     gap: spacing.md,
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  paragraph: { color: colors.text, fontSize: 17, lineHeight: 29 },
+  paragraph: { color: colors.text, fontSize: Math.round(17 * textScale), lineHeight: Math.round(29 * textScale) },
   lead: { fontWeight: '600' },
   points: {
     gap: spacing.md,

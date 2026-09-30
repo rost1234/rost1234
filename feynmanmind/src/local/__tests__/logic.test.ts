@@ -324,3 +324,46 @@ describe('calendarMonth', () => {
     expect(L.calendarMonth(db, 2026, 1, NOW)).toHaveLength(28);
   });
 });
+
+describe('reviewQueue and study time', () => {
+  const L = jest.requireActual('../logic');
+  const opts = { newPerDay: 100, maxPerDay: 1000, order: 'due' as const };
+
+  function withCards() {
+    const { db: seeded, conceptId, subjectId } = seed();
+    const cards = Array.from({ length: 6 }, (_, i) => ({ question: `q${i}?`, answer: `a${i}` }));
+    let db = addCards(seeded, conceptId, cards, newId, NOW)[0];
+    const ids = Object.keys(db.cards);
+    // Cards 0–2 were reviewed before (easiness 2.6, 2.0, 1.5), due yesterday; 3–5 are new.
+    [2.6, 2.0, 1.5].forEach((ef, i) => {
+      const c = db.cards[ids[i]!]!;
+      db = { ...db, cards: { ...db.cards, [c.id]: { ...c, review: { ...c.review, easiness_factor: ef, last_reviewed_at: '2026-09-20T10:00:00.000Z', next_review_date: `2026-09-23T0${i}:00:00.000Z` } } } };
+    });
+    return { db, ids, conceptId, subjectId };
+  }
+
+  it('puts reviews first, then new cards, within the daily limits', () => {
+    const { db, ids } = withCards();
+    expect(L.reviewQueue(db, NOW, opts).map((c: { id: string }) => c.id)).toEqual(ids);
+    expect(L.reviewQueue(db, NOW, { ...opts, newPerDay: 1 })).toHaveLength(4);
+    expect(L.reviewQueue(db, NOW, { ...opts, maxPerDay: 2 })).toHaveLength(2);
+    const busy = { ...db, reviewDays: { [dayKey(NOW)]: { reviewed: 5, correct: 5, introduced: 1 } } };
+    expect(L.reviewQueue(busy, NOW, { ...opts, newPerDay: 2, maxPerDay: 7 })).toHaveLength(2);
+  });
+
+  it('orders hardest first and filters hard cards and subjects', () => {
+    const { db, ids, subjectId } = withCards();
+    expect(L.reviewQueue(db, NOW, { ...opts, order: 'hardest' }).slice(0, 3).map((c: { id: string }) => c.id)).toEqual([ids[2], ids[1], ids[0]]);
+    expect(L.reviewQueue(db, NOW, { ...opts, hardOnly: true }).map((c: { id: string }) => c.id)).toEqual([ids[1], ids[2]]);
+    expect(L.reviewQueue(db, NOW, { ...opts, subjectId })).toHaveLength(6);
+    expect(L.reviewQueue(db, NOW, { ...opts, subjectId: 'other' })).toHaveLength(0);
+  });
+
+  it('counts new cards introduced today, and estimates minutes studied', () => {
+    const { db, ids } = withCards();
+    let next = reviewCard(db, ids[3]!, 4, NOW); // new card
+    next = reviewCard(next, ids[0]!, 4, NOW); // seen before
+    expect(next.reviewDays[dayKey(NOW)]).toEqual({ reviewed: 2, correct: 2, introduced: 1 });
+    expect(L.studyMinutesToday({ ...next, reviewDays: { [dayKey(NOW)]: { reviewed: 30, correct: 20 } } }, NOW)).toBe(10);
+  });
+});

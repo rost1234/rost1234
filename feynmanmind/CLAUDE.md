@@ -22,6 +22,14 @@ Expo SDK 57 / React Native 0.86 / expo-router. Hebrew-first UI (RTL), English al
   - `types.ts` — `Course`, `CourseLevel`, `CourseConcept`, `unitsOf`, `stationsOf`, `sources`.
   - Each built-in course cites the curricula it follows in `sources` (shown at the end of its map).
 
+## Navigation
+
+`src/app/(app)/(tabs)/` holds the four swipeable tabs (`expo-router/js-top-tabs` with the bar at the
+bottom — Expo Router 57 refuses `@react-navigation/*` packages, use its wrappers). Everything else
+(course maps, stations, concept pages, the review session) is a stack screen in `src/app/(app)/`.
+Review limits and accessibility live in `src/state/prefsStore.ts`; the theme reads text size and
+contrast from it (`useTheme().textScale`), `useReduceMotion()` covers animations.
+
 ## Rules that must not be broken
 
 1. **Never change or remove an existing station `key`.** Saved progress (`Concept.course_key`) points at

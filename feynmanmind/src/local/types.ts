@@ -9,7 +9,7 @@ export interface LocalDB {
   cards: Record<string, Flashcard>;
   sessions: Record<string, FeynmanSession>;
   /** Per local day (YYYY-MM-DD): reviews done and how many were recalled (grade ≥ 3). */
-  reviewDays: Record<string, { reviewed: number; correct: number }>;
+  reviewDays: Record<string, ReviewDay>;
   /** Courses the AI generated for this learner (built-in ones ship with the app). */
   courses: Record<string, Course>;
   /** AI-written lessons for course stations that don't ship with one, keyed `${courseId}/${stationKey}`. */
@@ -27,6 +27,13 @@ export interface QaTurn {
   /** Suggested next questions from the AI. */
   follow_ups: string[];
   asked_at: string;
+}
+
+export interface ReviewDay {
+  reviewed: number;
+  correct: number;
+  /** New cards (never reviewed before) seen for the first time that day. */
+  introduced?: number;
 }
 
 export interface Lesson {

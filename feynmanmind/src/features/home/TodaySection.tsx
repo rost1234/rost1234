@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { ScoreRing } from '@/components/ScoreRing';
 import { Button, Card, Chevron, ErrorState, LoadingState, SectionHeader, StatTile } from '@/components/ui';
 import { useWeakConcepts } from '@/data/concepts';
-import { useStudyStats } from '@/data/study';
+import { useQueueCount, useStudyStats } from '@/data/study';
 import { useT } from '@/i18n';
 import { errorMessage } from '@/lib/errors';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
@@ -16,6 +16,7 @@ export function TodaySection({ children }: { children?: ReactNode }) {
   const { typography } = useTheme();
   const stats = useStudyStats();
   const weak = useWeakConcepts();
+  const due = useQueueCount();
 
   if (stats.isPending) return <LoadingState />;
   if (stats.isError) return <ErrorState message={errorMessage(stats.error, t)} onRetry={() => void stats.refetch()} />;
@@ -24,20 +25,22 @@ export function TodaySection({ children }: { children?: ReactNode }) {
 
   return (
     <>
-      <View style={[styles.hero, s.due_now === 0 && styles.heroCalm]}>
+      <View style={[styles.hero, due === 0 && styles.heroCalm]}>
         <View style={styles.heroTop}>
           <View style={{ flex: 1, gap: spacing.xs }}>
-            <Text style={[typography.heading, styles.heroText]}>{s.due_now > 0 ? t.plural('today.due', s.due_now) : t('today.caughtUp')}</Text>
+            <Text style={[typography.heading, styles.heroText]}>{due > 0 ? t.plural('today.due', due) : s.due_now > 0 ? t('review.limitReached') : t('today.caughtUp')}</Text>
             <Text style={[typography.caption, styles.heroSub]}>
-              {s.due_now > 0
+              {due > 0
                 ? s.due_today > s.due_now
                   ? t('today.dueLater', { count: s.due_today - s.due_now })
                   : t('review.body')
-                : t('today.caughtUpBody')}
+                : s.due_now > 0
+                  ? t('review.limitReachedBody', { count: s.due_now })
+                  : t('today.caughtUpBody')}
             </Text>
           </View>
         </View>
-        {s.due_now > 0 ? <Button label={t('today.startReview')} icon="play" variant="secondary" onPress={() => router.push('/study')} /> : null}
+        {due > 0 ? <Button label={t('today.startReview')} icon="play" variant="secondary" onPress={() => router.push('/study')} /> : null}
       </View>
 
       {children}

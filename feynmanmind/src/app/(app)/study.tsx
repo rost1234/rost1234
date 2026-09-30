@@ -16,12 +16,12 @@ import type { QualityScore } from '@/srs/sm2';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
 export default function StudyScreen() {
-  const { conceptId } = useLocalSearchParams<{ conceptId?: string }>();
+  const { conceptId, subjectId, filter } = useLocalSearchParams<{ conceptId?: string; subjectId?: string; filter?: 'hard' }>();
   const t = useT();
   const styles = useStyles();
   const { colors, typography } = useTheme();
   const qc = useQueryClient();
-  const due = useDueCards(conceptId);
+  const due = useDueCards({ conceptId, subjectId, hardOnly: filter === 'hard' });
   const review = useReviewCard();
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);

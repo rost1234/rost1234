@@ -63,8 +63,8 @@ const coursePlan = {
     await page.evaluate((prefs) => localStorage.setItem('feynmanmind.prefs', JSON.stringify(prefs)), PREFS);
     await page.goto(APP);
     await page.waitForTimeout(1200);
-    await shot('01-home');
-    await expectText('פיזיקה', 'home lists built-in courses');
+    await shot('01-today');
+    await expectText('התוכנית של היום', 'today tab shows the daily plan');
 
     await page.goto(`${APP}/course/physics`);
     await page.waitForTimeout(1200);
@@ -116,32 +116,67 @@ const coursePlan = {
       await page.waitForTimeout(700);
       await shot('06-station-started');
 
-      // AI-built course.
+      // AI-built course (on the Learn tab).
       await page.goto(APP);
       await page.waitForTimeout(900);
+      await page.getByRole('tab', { name: /^לימוד/ }).click();
+      await page.waitForTimeout(700);
       await page.getByLabel('מסלול על כל נושא').fill('אסטרונומיה');
       await page.getByRole('button', { name: 'לבנות מפת לימוד' }).click();
       await page.waitForTimeout(1500);
       await expectText('תחנה 4.1', 'AI course map');
       await shot('07-ai-course');
 
-      // Home: learn/review modes, the calendar, and settings behind the gear button.
+      // Tabs: Today (plan), Learn, Review (calendar, settings), Me (accessibility, settings).
       await page.goto(APP);
       await page.waitForTimeout(1000);
+      await expectText('שיעור חדש', 'plan suggests the next lesson');
+      await shot('08-today-plan');
+      await page.getByRole('tab', { name: /^לימוד/ }).click();
+      await page.waitForTimeout(700);
       await expectText('המשך מאיפה שעצרת', 'continue card');
-      await shot('08-home-learn');
-      await page.getByRole('tab', { name: /חזרות/ }).click();
+      await shot('09-learn');
+      await page.getByRole('tab', { name: /^חזרות/ }).click();
       await page.waitForTimeout(700);
       await expectText('ימים שחזרתם', 'calendar legend');
-      await expectText('מחכות לחזרה', 'calendar today detail');
-      await shot('09-home-review');
-      await page.evaluate(() => { const d = [...document.querySelectorAll('div')].filter((d) => d.scrollHeight > d.clientHeight + 5 && getComputedStyle(d).overflowY !== 'visible').sort((a, b) => b.scrollHeight - a.scrollHeight)[0]; if (d) d.scrollTop = 330; });
-      await page.waitForTimeout(400);
-      await shot('09b-calendar');
-      await page.getByRole('button', { name: 'הגדרות' }).click();
-      await page.waitForTimeout(800);
-      await expectText('חיבור ל-AI', 'settings screen');
-      await shot('10-settings');
+      await expectText('הגדרות חזרה', 'review settings');
+      await shot('10-review');
+      await page.getByRole('tab', { name: /^אני/ }).click();
+      await page.waitForTimeout(700);
+      await expectText('נגישות', 'accessibility settings');
+      await expectText('חיבור ל-AI', 'AI settings');
+      await shot('11-me');
+      // Larger text applies app-wide.
+      await page.getByRole('tab', { name: 'גדול מאוד' }).click();
+      await page.waitForTimeout(500);
+      await shot('12-me-xlarge-text');
+      await page.getByRole('tab', { name: 'רגיל' }).click();
+
+      // Swiping between tabs: drag across the screen and the selected tab should change.
+      // Start from the top of Learn (it kept its scroll from earlier steps), then go back to Today.
+      await page.getByRole('tab', { name: /^לימוד/ }).click();
+      await page.waitForTimeout(500);
+      await page.evaluate(() => document.querySelectorAll('div').forEach((d) => { if (d.scrollTop) d.scrollTop = 0; }));
+      await page.getByRole('tab', { name: /^היום/ }).click();
+      await page.waitForTimeout(600);
+      const selected = () => page.evaluate(() => location.pathname);
+      const before = await selected();
+      // Drag along the title row (no buttons there on either tab). On web the first mouse gesture is
+      // swallowed, so drag right-to-left first (toward no tab: nothing happens), then left-to-right,
+      // which in RTL moves to the next tab.
+      for (const [from, to] of [[370, 20], [20, 370]]) {
+        await page.mouse.move(from, 90);
+        await page.mouse.down();
+        for (let i = 1; i <= 30; i++) {
+          await page.mouse.move(from + ((to - from) * i) / 30, 90);
+          await page.waitForTimeout(10);
+        }
+        await page.mouse.up();
+        await page.waitForTimeout(900);
+      }
+      const after = await selected();
+      if (after !== "/learn") failures.push(`swipe went from ${before} to ${after}, expected /learn`);
+      else console.log(`swipe: ${before} → ${after}`);
     }
     await ctx.close();
   }

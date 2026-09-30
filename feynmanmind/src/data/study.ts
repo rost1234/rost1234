@@ -1,10 +1,11 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { generateFlashcards } from '@/api/functions';
-import { addCards, calendarMonth, cardsOf, computeStats, dueCards, reviewCard } from '@/local/logic';
+import { addCards, calendarMonth, cardsOf, computeStats, reviewCard, reviewQueue, type QueueOptions } from '@/local/logic';
 import { commit, getDB, newId, useDBStore } from '@/local/store';
 import { NotFoundError } from '@/local/types';
 import type { QualityScore } from '@/srs/sm2';
-import { keys } from './keys';
+import { usePrefsStore } from '@/state/prefsStore';
+import { keys, type ReviewFilter } from './keys';
 import { read } from './local';
 
 export type { CalendarDay, StudyStats } from '@/local/logic';
@@ -18,14 +19,38 @@ export function useStudyStats() {
   return useQuery({ queryKey: keys.stats, queryFn: () => read(() => computeStats(getDB(), new Date())) });
 }
 
-/** Due queue. Not refreshed on store changes, so the order is stable mid-session. */
-export function useDueCards(conceptId?: string) {
+/**
+ * Queue options from the review settings. Reviewing one concept on purpose
+ * ignores the daily limits; the general queue respects them.
+ */
+export function queueOptions(filter: ReviewFilter): QueueOptions {
+  const p = usePrefsStore.getState();
+  const limited = !filter.conceptId;
+  return {
+    ...filter,
+    newPerDay: limited ? p.newCardsPerDay : Number.MAX_SAFE_INTEGER,
+    maxPerDay: limited ? p.maxReviewsPerDay : Number.MAX_SAFE_INTEGER,
+    order: p.reviewOrder,
+  };
+}
+
+/** Review queue. Not refreshed on store changes, so the order is stable mid-session. */
+export function useDueCards(filter: ReviewFilter = {}) {
   return useQuery({
-    queryKey: keys.due(conceptId),
-    queryFn: () => read(() => dueCards(getDB(), new Date(), conceptId)),
+    queryKey: keys.due(filter),
+    queryFn: () => read(() => reviewQueue(getDB(), new Date(), queueOptions(filter))),
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
+}
+
+/** How many cards today's general queue holds (follows the store and the review settings). */
+export function useQueueCount(): number {
+  const db = useDBStore((s) => s.db);
+  const newPerDay = usePrefsStore((s) => s.newCardsPerDay);
+  const maxPerDay = usePrefsStore((s) => s.maxReviewsPerDay);
+  const order = usePrefsStore((s) => s.reviewOrder);
+  return reviewQueue(db, new Date(), { newPerDay, maxPerDay, order }).length;
 }
 
 export function useReviewCard() {

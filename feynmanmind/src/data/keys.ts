@@ -1,3 +1,9 @@
+export interface ReviewFilter {
+  conceptId?: string;
+  subjectId?: string;
+  hardOnly?: boolean;
+}
+
 /** Query keys. Prefix-based so invalidating ['concepts'] hits every concept query. */
 export const keys = {
   subjects: ['subjects'] as const,
@@ -9,6 +15,7 @@ export const keys = {
   card: (id: string) => ['cards', id] as const,
   sessions: (conceptId: string) => ['sessions', 'byConcept', conceptId] as const,
   session: (id: string) => ['sessions', id] as const,
-  due: (conceptId?: string) => ['due', conceptId ?? 'all'] as const,
+  due: (filter: ReviewFilter) => ['due', filter.conceptId ?? '', filter.subjectId ?? '', filter.hardOnly ? 'hard' : 'all'] as const,
+  queueCount: ['queueCount'] as const,
   stats: ['stats'] as const,
 };

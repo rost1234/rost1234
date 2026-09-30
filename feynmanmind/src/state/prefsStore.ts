@@ -5,6 +5,8 @@ import { storage } from '@/lib/storage';
 
 export type LanguagePref = 'auto' | 'en' | 'he';
 export type ThemePref = 'auto' | 'light' | 'dark';
+export type TextSizePref = 'normal' | 'large' | 'xlarge';
+export type ReviewOrder = 'due' | 'hardest';
 
 interface PrefsState {
   language: LanguagePref;
@@ -18,6 +20,17 @@ interface PrefsState {
   /** AI server (Supabase project URL) and its public key, set in Settings. Empty = use build-time values. */
   aiUrl: string;
   aiKey: string;
+  /** Daily study goal in minutes (the "Today" ring). */
+  dailyGoalMinutes: number;
+  /** New (never reviewed) cards per day. */
+  newCardsPerDay: number;
+  /** Reviews per day, new cards included. */
+  maxReviewsPerDay: number;
+  reviewOrder: ReviewOrder;
+  textSize: TextSizePref;
+  highContrast: boolean;
+  reduceMotion: boolean;
+  hapticsEnabled: boolean;
   set: (patch: Partial<Omit<PrefsState, 'set'>>) => void;
 }
 
@@ -32,6 +45,14 @@ export const usePrefsStore = create<PrefsState>()(
       defaultCardCount: 15,
       aiUrl: '',
       aiKey: '',
+      dailyGoalMinutes: 20,
+      newCardsPerDay: 20,
+      maxReviewsPerDay: 200,
+      reviewOrder: 'due',
+      textSize: 'normal',
+      highContrast: false,
+      reduceMotion: false,
+      hapticsEnabled: true,
       set: (patch) => set(patch),
     }),
     {

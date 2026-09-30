@@ -132,7 +132,7 @@ function Turn({ turn }: { turn: QaTurn }) {
   );
 }
 
-const useStyles = makeStyles(({ colors }) => ({
+const useStyles = makeStyles(({ colors, textScale }) => ({
   question: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -153,7 +153,7 @@ const useStyles = makeStyles(({ colors }) => ({
     padding: spacing.md,
     gap: spacing.sm,
   },
-  answerText: { color: colors.text, fontSize: 16, lineHeight: 26 },
+  answerText: { color: colors.text, fontSize: Math.round(16 * textScale), lineHeight: Math.round(26 * textScale) },
   answerFooter: { flexDirection: 'row', justifyContent: 'flex-end' },
   pending: {
     gap: spacing.xs,

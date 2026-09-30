@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { StyleSheet, useColorScheme, type TextStyle } from 'react-native';
-import { usePrefsStore } from '@/state/prefsStore';
+import { usePrefsStore, type TextSizePref } from '@/state/prefsStore';
 
 export interface Palette {
   background: string;
@@ -66,32 +66,54 @@ export const darkColors: Palette = {
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
 export const radius = { sm: 8, md: 12, lg: 18, pill: 999 } as const;
 
-function makeTypography(colors: Palette) {
+export const TEXT_SCALE: Record<TextSizePref, number> = { normal: 1, large: 1.15, xlarge: 1.3 };
+
+function makeTypography(colors: Palette, scale = 1) {
   const base: TextStyle = { color: colors.text };
+  const s = (n: number) => Math.round(n * scale);
   return {
-    title: { ...base, fontSize: 28, fontWeight: '800', letterSpacing: -0.3 },
-    heading: { ...base, fontSize: 20, fontWeight: '700' },
-    subheading: { ...base, fontSize: 16, fontWeight: '600' },
-    body: { ...base, fontSize: 16, lineHeight: 23 },
-    caption: { ...base, fontSize: 13, lineHeight: 18, color: colors.textMuted },
-    label: { ...base, fontSize: 12, fontWeight: '700', letterSpacing: 0.6, color: colors.textMuted },
+    title: { ...base, fontSize: s(28), fontWeight: '800', letterSpacing: -0.3 },
+    heading: { ...base, fontSize: s(20), fontWeight: '700' },
+    subheading: { ...base, fontSize: s(16), fontWeight: '600' },
+    body: { ...base, fontSize: s(16), lineHeight: s(23) },
+    caption: { ...base, fontSize: s(13), lineHeight: s(18), color: colors.textMuted },
+    label: { ...base, fontSize: s(12), fontWeight: '700', letterSpacing: 0.6, color: colors.textMuted },
   } satisfies Record<string, TextStyle>;
 }
+
+/** Stronger secondary text and borders for the high-contrast setting. */
+const highContrastLight: Partial<Palette> = { textMuted: '#34354A', border: '#8E8FAA', text: '#000000' };
+const highContrastDark: Partial<Palette> = { textMuted: '#DADBEE', border: '#7A7AA0', text: '#FFFFFF' };
 
 export interface Theme {
   colors: Palette;
   isDark: boolean;
+  /** Multiplier from the text-size setting, for sizes set outside `typography`. */
+  textScale: number;
   typography: ReturnType<typeof makeTypography>;
 }
 
-const lightTheme: Theme = { colors: lightColors, isDark: false, typography: makeTypography(lightColors) };
-const darkTheme: Theme = { colors: darkColors, isDark: true, typography: makeTypography(darkColors) };
+// One shared object per combination, so style caches keyed by theme keep working.
+const themes = new Map<string, Theme>();
+function buildTheme(dark: boolean, highContrast: boolean, textSize: TextSizePref): Theme {
+  const key = `${dark}-${highContrast}-${textSize}`;
+  let theme = themes.get(key);
+  if (!theme) {
+    const colors = { ...(dark ? darkColors : lightColors), ...(highContrast ? (dark ? highContrastDark : highContrastLight) : {}) };
+    const textScale = TEXT_SCALE[textSize];
+    theme = { colors, isDark: dark, textScale, typography: makeTypography(colors, textScale) };
+    themes.set(key, theme);
+  }
+  return theme;
+}
 
 export function useTheme(): Theme {
   const system = useColorScheme();
   const pref = usePrefsStore((s) => s.theme);
+  const highContrast = usePrefsStore((s) => s.highContrast);
+  const textSize = usePrefsStore((s) => s.textSize);
   const dark = pref === 'dark' || (pref === 'auto' && system === 'dark');
-  return dark ? darkTheme : lightTheme;
+  return buildTheme(dark, highContrast, textSize);
 }
 
 /** Theme-aware StyleSheet factory: `const useStyles = makeStyles(({ colors }) => ({ ... }))`. */

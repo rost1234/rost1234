@@ -8,6 +8,7 @@ import { useCourse, useDeleteCourse } from '@/data/courses';
 import { useT } from '@/i18n';
 import { confirmAsync } from '@/lib/dialogs';
 import { errorMessage } from '@/lib/errors';
+import { useReduceMotion } from '@/lib/motion';
 import type { StationProgress } from '@/local/logic';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
@@ -35,6 +36,7 @@ export default function CourseMapScreen() {
   const remove = useDeleteCourse();
   const scrollRef = useRef<ScrollView>(null);
   const scrolled = useRef(false);
+  const reduceMotion = useReduceMotion();
 
   if (query.isPending) return <LoadingState />;
   if (query.isError) return <ErrorState message={errorMessage(query.error, t)} onRetry={() => void query.refetch()} />;
@@ -56,7 +58,7 @@ export default function CourseMapScreen() {
   const onCurrentLayout = (y: number) => {
     if (scrolled.current) return;
     scrolled.current = true;
-    if (y > 400) scrollRef.current?.scrollTo({ y: y - 260, animated: true });
+    if (y > 400) scrollRef.current?.scrollTo({ y: y - 260, animated: !reduceMotion });
   };
 
   const hasQuiz = course.levels.some((l) => l.quiz.length > 0);
@@ -249,9 +251,10 @@ function PathNode({
   const styles = useStyles();
   const { colors, typography } = useTheme();
   const [pulse] = useState(() => new Animated.Value(0));
+  const reduceMotion = useReduceMotion();
 
   useEffect(() => {
-    if (!current) return;
+    if (!current || reduceMotion) return;
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulse, { toValue: 1, duration: 900, easing: Easing.out(Easing.quad), useNativeDriver: true }),
@@ -260,7 +263,7 @@ function PathNode({
     );
     loop.start();
     return () => loop.stop();
-  }, [current, pulse]);
+  }, [current, pulse, reduceMotion]);
 
   const mastered = progress.status === 'mastered';
   const active = current || progress.status !== 'new';

@@ -38,6 +38,9 @@ function useTextDirection() {
     if (Platform.OS === 'web') {
       document.documentElement.dir = rtl ? 'rtl' : 'ltr';
       document.documentElement.lang = rtl ? 'he' : 'en';
+      // Horizontal swipes switch tabs; don't let the browser turn them into back/forward navigation.
+      document.documentElement.style.overscrollBehaviorX = 'none';
+      document.body.style.overscrollBehaviorX = 'none';
       return;
     }
     I18nManager.allowRTL(true);

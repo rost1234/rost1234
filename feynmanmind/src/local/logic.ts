@@ -198,15 +198,70 @@ export function dueCards(db: LocalDB, now: Date, conceptId?: string): Flashcard[
 }
 
 /** Applies an SM-2 grade to a card and counts it in today's review totals. */
+export interface QueueOptions {
+  conceptId?: string;
+  subjectId?: string;
+  /** Only cards you've found hard (reviewed before, low easiness). */
+  hardOnly?: boolean;
+  /** New (never reviewed) cards allowed per day. */
+  newPerDay: number;
+  /** Reviews allowed per day, new cards included. */
+  maxPerDay: number;
+  order: 'due' | 'hardest';
+}
+
+/** A card counts as hard once reviewed with its easiness below this (default is 2.5). */
+export const HARD_EASINESS = 2.3;
+
+export const isHardCard = (c: Flashcard) => c.review.last_reviewed_at !== null && c.review.easiness_factor < HARD_EASINESS;
+
+/**
+ * Today's review queue: due cards matching the filters, reviews first (by due
+ * date or hardest first), then new cards, within the daily limits left.
+ */
+export function reviewQueue(db: LocalDB, now: Date, opts: QueueOptions): Flashcard[] {
+  const today = db.reviewDays[dayKey(now)] ?? { reviewed: 0, correct: 0 };
+  const newLeft = Math.max(0, opts.newPerDay - (today.introduced ?? 0));
+  const totalLeft = Math.max(0, opts.maxPerDay - today.reviewed);
+  const inSubject = (c: Flashcard) => !opts.subjectId || db.concepts[c.concept_id]?.subject_id === opts.subjectId;
+  const due = dueCards(db, now, opts.conceptId).filter((c) => inSubject(c) && (!opts.hardOnly || isHardCard(c)));
+  const seen = due.filter((c) => c.review.last_reviewed_at !== null);
+  if (opts.order === 'hardest') seen.sort((a, b) => a.review.easiness_factor - b.review.easiness_factor);
+  const fresh = due.filter((c) => c.review.last_reviewed_at === null).slice(0, newLeft);
+  return [...seen, ...fresh].slice(0, totalLeft);
+}
+
+export interface TodayActivity {
+  reviews: number;
+  explanations: number;
+  stationsStarted: number;
+  /** Rough minutes: ~20 s per review, 3 min per explanation, 5 min per station started. */
+  minutes: number;
+}
+
+export function todayActivity(db: LocalDB, now: Date): TodayActivity {
+  const day = dayKey(now);
+  const reviews = db.reviewDays[day]?.reviewed ?? 0;
+  const explanations = Object.values(db.sessions).filter((s) => dayKey(new Date(s.created_at)) === day).length;
+  const stationsStarted = Object.values(db.concepts).filter((c) => c.course_key && dayKey(new Date(c.created_at)) === day).length;
+  return { reviews, explanations, stationsStarted, minutes: Math.round(reviews / 3 + explanations * 3 + stationsStarted * 5) };
+}
+
+export const studyMinutesToday = (db: LocalDB, now: Date) => todayActivity(db, now).minutes;
+
 export function reviewCard(db: LocalDB, cardId: string, quality: QualityScore, now: Date): LocalDB {
   const card = db.cards[cardId];
   if (!card) throw new NotFoundError('Flashcard');
   const day = dayKey(now);
   const prev = db.reviewDays[day] ?? { reviewed: 0, correct: 0 };
+  const isNew = card.review.last_reviewed_at === null;
   return {
     ...db,
     cards: { ...db.cards, [cardId]: { ...card, review: calculateNextReview(card.review, quality, now) } },
-    reviewDays: { ...db.reviewDays, [day]: { reviewed: prev.reviewed + 1, correct: prev.correct + (quality >= 3 ? 1 : 0) } },
+    reviewDays: {
+      ...db.reviewDays,
+      [day]: { reviewed: prev.reviewed + 1, correct: prev.correct + (quality >= 3 ? 1 : 0), introduced: (prev.introduced ?? 0) + (isNew ? 1 : 0) },
+    },
   };
 }
 

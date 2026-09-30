@@ -12,10 +12,13 @@ The only thing that goes over the network is the text of an AI request.
 
 ## Features
 
-The home screen has two clear modes, switched at the top: **Learn** (continue where you left off,
-learning paths, library) and **Review** (cards due now, a month calendar of the days you reviewed and
-the cards coming due, today's numbers, concepts to explain again). **Settings** open from the gear
-button at the top. Lessons, the Feynman editor, card generation and the review session open on top.
+The app has four areas, switched from the bar at the bottom **or by swiping left and right**:
+**Today** (a daily-goal ring and a short plan: review what's due → learn the next station → explain
+the weakest concept), **Learn** (continue where you left off, learning paths, library), **Review**
+(the day's queue, focused reviews by subject or hard cards, a month calendar, and the review
+settings: new cards per day, max reviews per day, order) and **Me** (progress, daily goal,
+accessibility — text size, high contrast, reduce motion, vibration — and all other settings).
+Lessons, the Feynman editor, card generation and the review session open on top.
 Every scrolling screen ends with extra space below the last item (plus the device's bottom safe-area
 inset), so nothing is ever stuck under the home indicator.
 
@@ -53,9 +56,10 @@ Offline, everything works except the two AI actions (explain feedback and card g
 - The AI functions receive all the context they need (concept title, the lesson text, recent Socratic questions, your cards) in the request, and store nothing.
 
 ```
-src/app/            screens: onboarding, (app)/index (home: learn / review), settings,
+src/app/            screens: onboarding, (app)/(tabs)/{index,learn,review,me} (swipeable tabs),
                     concept/[id]/{index,explain,generate}, card/[id], session/[id], study
-src/features/home/  home: continue card, learning paths, library, review summary, calendar
+src/features/today/ daily plan · review/ focused review, review settings · me/ goal, accessibility
+src/features/home/  continue card, learning paths, library, review summary, calendar
 src/features/lesson/ lesson card (copy, key points) and questions to the AI
 src/features/settings/ settings screen content
 src/content/        built-in courses (Hebrew): foundations lessons + four-level maps and placement quizzes
