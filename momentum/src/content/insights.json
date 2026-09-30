@@ -2330,5 +2330,700 @@
       "action": "לכתוב משפט אחד על למה ההרגל שלכם חשוב לכם אישית, במילים שלכם, בלי \"צריך\".",
       "caveat": "האפקטים היו צנועים והשתנו מאוד בין תוכניות, שרובן הועברו על ידי מאמנים או אנשי מקצוע בתחום הבריאות."
     }
+  },
+  {
+    "id": "broken-streak-restart-small",
+    "category": "habits",
+    "goals": [],
+    "finding": "When a tracker showed a broken streak, people did the activity less afterward than when it showed an unbroken one, even with the same real effort. Being able to 'repair' the streak helped.",
+    "action": "Do a tiny version of your habit today to start a fresh streak. One gap doesn't erase what you've already built.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "On or Off Track: How (Broken) Streaks Affect Consumer Decisions",
+      "authors": "Silverman & Barasch",
+      "year": 2023,
+      "venue": "Journal of Consumer Research",
+      "doi": "10.1093/jcr/ucac029",
+      "url": "https://doi.org/10.1093/jcr/ucac029"
+    },
+    "evidence": "moderate",
+    "caveat": "Seven studies in one paper; not yet widely replicated by other research teams.",
+    "triggers": [
+      "streak_broken"
+    ],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "כשמעקב הרגלים הראה רצף שנשבר, אנשים עשו את הפעילות פחות לאחר מכן מאשר כשהראה רצף שלם, גם כשהמאמץ בפועל היה זהה. האפשרות \"לתקן\" את הרצף עזרה.",
+      "action": "לעשות היום גרסה קטנטנה של ההרגל כדי להתחיל רצף חדש. יום אחד שהוחמץ לא מוחק את מה שכבר נבנה.",
+      "caveat": "שבעה מחקרים במאמר אחד; עדיין לא שוחזר באופן רחב על ידי צוותי מחקר אחרים."
+    }
+  },
+  {
+    "id": "never-miss-twice",
+    "category": "habits",
+    "goals": [
+      "health"
+    ],
+    "finding": "In 4 years of check-ins from about 30,000 gym members, the best predictor of skipping was time since the last visit: the longer someone had been away, the less likely they were to go.",
+    "action": "If you missed yesterday, do even a 2-minute version of your habit today so one missed day doesn't turn into two.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "What can machine learning teach us about habit formation? Evidence from exercise and hygiene",
+      "authors": "Buyalskaya, Ho, Milkman, Li, Duckworth & Camerer",
+      "year": 2023,
+      "institution": "University of Pennsylvania and Caltech",
+      "venue": "PNAS",
+      "doi": "10.1073/pnas.2216115120",
+      "url": "https://doi.org/10.1073/pnas.2216115120"
+    },
+    "evidence": "moderate",
+    "caveat": "Data from one gym chain. The pattern predicts behaviour but doesn't prove that coming back fast is what makes a habit stick.",
+    "triggers": [
+      "streak_broken"
+    ],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "בנתוני כניסות של כ-30,000 מנויי חדר כושר לאורך 4 שנים, המנבא החזק ביותר לדילוג היה הזמן מאז הביקור האחרון: ככל שעבר יותר זמן, הסיכוי ללכת ירד.",
+      "action": "אם יום אתמול הוחמץ, לעשות היום אפילו גרסה של 2 דקות של ההרגל, כדי שיום אחד שהוחמץ לא יהפוך לשניים.",
+      "caveat": "נתונים מרשת חדרי כושר אחת. הדפוס מנבא התנהגות, אבל לא מוכיח שחזרה מהירה היא מה שגורם להרגל להחזיק."
+    }
+  },
+  {
+    "id": "phone-nudges-cut-screen-time",
+    "category": "habits",
+    "goals": [
+      "focus"
+    ],
+    "finding": "In two small trials, people who picked a few phone tweaks, like turning off non-essential notifications and switching the screen to grayscale, cut their screen time and problem phone use.",
+    "action": "Switch your phone screen to grayscale for the rest of today and notice whether you pick it up less.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "A Nudge-Based Intervention to Reduce Problematic Smartphone Use: Randomised Controlled Trial",
+      "authors": "Olson, Sandra, Chmoulevitch, Raz & Veissière",
+      "year": 2022,
+      "institution": "McGill University",
+      "venue": "International Journal of Mental Health and Addiction",
+      "doi": "10.1007/s11469-022-00826-w",
+      "url": "https://doi.org/10.1007/s11469-022-00826-w"
+    },
+    "evidence": "emerging",
+    "caveat": "Two small studies (51 and 70 people) lasting a few weeks. People chose a mix of tips, so it's unclear which one did the work.",
+    "triggers": [],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "בשני ניסויים קטנים, אנשים שבחרו כמה שינויים בטלפון, כמו כיבוי התראות לא חיוניות ומעבר למסך בגווני אפור, צמצמו את זמן המסך ואת השימוש הבעייתי בטלפון.",
+      "action": "להעביר את מסך הטלפון לגווני אפור עד סוף היום ולשים לב אם מרימים אותו פחות.",
+      "caveat": "שני מחקרים קטנים (51 ו-70 משתתפים) שנמשכו כמה שבועות. המשתתפים בחרו שילוב של כמה טיפים, כך שלא ברור איזה מהם עבד."
+    }
+  },
+  {
+    "id": "add-variety-after-a-good-week",
+    "category": "habits",
+    "goals": [
+      "health"
+    ],
+    "finding": "Inactive students who got a varied exercise program stuck with it more over 6 weeks than students who repeated the same routine.",
+    "action": "Keep your habit, but swap in one new twist for next week, like a different route, playlist or exercise.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Variety support and exercise adherence behavior: experimental and mediating effects",
+      "authors": "Sylvester, Standage, McEwan, Wolf, Lubans, Eather, Kaulius, Ruissen, Crocker, Zumbo & Beauchamp",
+      "year": 2016,
+      "institution": "University of British Columbia",
+      "venue": "Journal of Behavioral Medicine",
+      "doi": "10.1007/s10865-015-9688-4",
+      "url": "https://doi.org/10.1007/s10865-015-9688-4"
+    },
+    "evidence": "moderate",
+    "caveat": "One trial with 121 university students, and the effect was modest.",
+    "triggers": [
+      "perfect_week"
+    ],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "סטודנטים שלא היו פעילים גופנית וקיבלו תוכנית אימונים מגוונת התמידו בה יותר לאורך 6 שבועות מסטודנטים שחזרו על אותה שגרה.",
+      "action": "לשמור על ההרגל, אבל להכניס שינוי חדש אחד לשבוע הבא, כמו מסלול, פלייליסט או תרגיל אחר.",
+      "caveat": "ניסוי אחד עם 121 סטודנטים, והאפקט היה צנוע."
+    }
+  },
+  {
+    "id": "plan-for-interruptions",
+    "category": "focus",
+    "goals": [
+      "focus"
+    ],
+    "finding": "In a 2-week study of workers, a to-do list helped on calm days, but planning ahead for likely interruptions helped people stay engaged and perform well even on busy days.",
+    "action": "Write tomorrow's top 3 tasks, plus one line on what you'll do if you get interrupted.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "When daily planning improves employee performance: The importance of planning type, engagement, and interruptions",
+      "authors": "Parke, Weinhardt, Brodsky, Tangirala & DeVoe",
+      "year": 2018,
+      "venue": "Journal of Applied Psychology",
+      "doi": "10.1037/apl0000278",
+      "url": "https://doi.org/10.1037/apl0000278"
+    },
+    "evidence": "moderate",
+    "caveat": "A 2-week diary study of employees. It shows links across days, not a controlled trial.",
+    "triggers": [
+      "missed_focus"
+    ],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "במחקר של שבועיים על עובדים, רשימת משימות עזרה בימים רגועים, אבל תכנון מראש של הפרעות צפויות עזר לשמור על מעורבות וביצועים טובים גם בימים עמוסים.",
+      "action": "לכתוב את 3 המשימות החשובות למחר, ועוד שורה אחת על מה לעשות אם תגיע הפרעה.",
+      "caveat": "מחקר יומנים של שבועיים בקרב עובדים. הוא מראה קשרים בין ימים, ולא ניסוי מבוקר."
+    }
+  },
+  {
+    "id": "planning-fallacy-check-last-time",
+    "category": "focus",
+    "goals": [
+      "focus"
+    ],
+    "finding": "People usually underestimate how long their own tasks will take. In one study, the bias went away when they first linked the plan to how long similar tasks took before.",
+    "action": "Before planning next week, check how long one similar task really took last time, and plan around that.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Exploring the \"planning fallacy\": Why people underestimate their task completion times",
+      "authors": "Buehler, Griffin & Ross",
+      "year": 1994,
+      "venue": "Journal of Personality and Social Psychology",
+      "doi": "10.1037/0022-3514.67.3.366",
+      "url": "https://doi.org/10.1037/0022-3514.67.3.366"
+    },
+    "evidence": "moderate",
+    "caveat": "Over-optimistic planning is widely replicated, but the fix of recalling past tasks was tested in only one of the paper's five studies.",
+    "triggers": [
+      "perfect_week",
+      "missed_focus"
+    ],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "אנשים בדרך כלל מעריכים בחסר כמה זמן ייקחו המשימות שלהם. במחקר אחד, ההטיה נעלמה כשהם קודם קישרו את התוכנית לזמן שמשימות דומות לקחו בעבר.",
+      "action": "לפני תכנון השבוע הבא, לבדוק כמה זמן משימה דומה אחת לקחה בפועל בפעם הקודמת, ולתכנן לפי זה.",
+      "caveat": "האופטימיות בתכנון שוחזרה רבות, אבל התיקון של היזכרות במשימות קודמות נבדק רק באחד מחמשת המחקרים במאמר."
+    }
+  },
+  {
+    "id": "paper-for-deep-reading",
+    "category": "focus",
+    "goals": [
+      "focus"
+    ],
+    "finding": "Across 54 studies with about 171,000 readers, people understood informational texts a bit better on paper than on screens, and the gap grew when they were short on time.",
+    "action": "For the next article you need to really understand, print it or read it slowly without rushing.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Don't throw away your printed books: A meta-analysis on the effects of reading media on reading comprehension",
+      "authors": "Delgado, Vargas, Ackerman & Salmerón",
+      "year": 2018,
+      "venue": "Educational Research Review",
+      "doi": "10.1016/j.edurev.2018.09.003",
+      "url": "https://doi.org/10.1016/j.edurev.2018.09.003"
+    },
+    "evidence": "strong",
+    "caveat": "The average effect was small, and no gap showed up for stories alone.",
+    "triggers": [],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "ב-54 מחקרים עם כ-171,000 קוראים, אנשים הבינו טקסטים מידעיים קצת יותר טוב על נייר מאשר על מסך, והפער גדל כשהיה להם מעט זמן.",
+      "action": "את המאמר הבא שחשוב להבין לעומק, להדפיס או לקרוא לאט בלי למהר.",
+      "caveat": "האפקט הממוצע קטן, ולא נמצא הבדל בטקסטים סיפוריים בלבד."
+    }
+  },
+  {
+    "id": "batch-your-notifications",
+    "category": "focus",
+    "goals": [
+      "focus"
+    ],
+    "finding": "In a field experiment with 237 people, getting phone notifications in 3 batches a day left people more attentive, in a better mood and more in control. Turning them all off raised anxiety.",
+    "action": "Pick one noisy app and set its notifications to a scheduled summary, or check it only at set times today.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Batching smartphone notifications can improve well-being",
+      "authors": "Fitz, Kushlev, Jagannathan, Lewis, Paliwal & Ariely",
+      "year": 2019,
+      "venue": "Computers in Human Behavior",
+      "doi": "10.1016/j.chb.2019.07.016",
+      "url": "https://doi.org/10.1016/j.chb.2019.07.016"
+    },
+    "evidence": "moderate",
+    "caveat": "One field experiment measured by self-report; not yet widely replicated.",
+    "triggers": [
+      "missed_focus"
+    ],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "בניסוי שדה עם 237 אנשים, קבלת התראות הטלפון ב-3 מקבצים ביום השאירה אנשים קשובים יותר, במצב רוח טוב יותר ועם יותר שליטה. כיבוי מוחלט שלהן העלה חרדה.",
+      "action": "לבחור אפליקציה רועשת אחת ולהגדיר לה סיכום התראות מתוזמן, או לבדוק אותה היום רק בשעות קבועות.",
+      "caveat": "ניסוי שדה אחד שנמדד בדיווח עצמי; עדיין לא שוחזר באופן רחב."
+    }
+  },
+  {
+    "id": "switch-off-from-work",
+    "category": "sleep_energy",
+    "goals": [],
+    "finding": "Across 54 samples with about 26,600 workers, mentally switching off from work in free time was linked to feeling less worn out, more than just relaxing was.",
+    "action": "Choose one evening or day this week with no work messages, and put it in your calendar now.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Recovery from work-related effort: A meta-analysis",
+      "authors": "Bennett, Bakker & Field",
+      "year": 2018,
+      "venue": "Journal of Organizational Behavior",
+      "doi": "10.1002/job.2217",
+      "url": "https://doi.org/10.1002/job.2217"
+    },
+    "evidence": "strong",
+    "caveat": "Most studies were correlational, so they show a link, not cause and effect.",
+    "triggers": [],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "ב-54 מדגמים עם כ-26,600 עובדים, ניתוק מחשבתי מהעבודה בזמן הפנוי נקשר לתחושת שחיקה נמוכה יותר, יותר מאשר רק מנוחה.",
+      "action": "לבחור ערב או יום אחד השבוע בלי הודעות עבודה, ולסמן אותו ביומן כבר עכשיו.",
+      "caveat": "רוב המחקרים מתאמיים, כך שהם מראים קשר ולא סיבה ותוצאה."
+    }
+  },
+  {
+    "id": "water-for-focus",
+    "category": "sleep_energy",
+    "goals": [
+      "focus",
+      "health"
+    ],
+    "finding": "Across 33 studies, being dehydrated slightly worsened attention and thinking, and the effect was bigger once people lost more than 2% of their body weight in fluid.",
+    "stat": {
+      "value": "2%",
+      "label": "body weight lost as fluid, past which thinking dipped more"
+    },
+    "action": "Fill a glass or bottle of water and keep it within reach for your next focus session.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Dehydration Impairs Cognitive Performance: A Meta-analysis",
+      "authors": "Wittbrodt & Millard-Stafford",
+      "year": 2018,
+      "institution": "Georgia Institute of Technology",
+      "venue": "Medicine & Science in Sports & Exercise",
+      "doi": "10.1249/MSS.0000000000001682",
+      "url": "https://doi.org/10.1249/MSS.0000000000001682"
+    },
+    "evidence": "strong",
+    "caveat": "Only 413 people in total, mostly lab studies that dehydrated people on purpose. The overall effect was small.",
+    "triggers": [
+      "missed_focus"
+    ],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "ב-33 מחקרים, התייבשות פגעה מעט בקשב ובחשיבה, והאפקט היה גדול יותר כשאנשים איבדו נוזלים ביותר מ-2% ממשקל הגוף.",
+      "action": "למלא כוס או בקבוק מים ולהשאיר אותם בהישג יד לקראת סשן הפוקוס הבא.",
+      "statLabel": "איבוד נוזלים ממשקל הגוף, שמעליו החשיבה נפגעה יותר",
+      "caveat": "בסך הכול 413 משתתפים, בעיקר במחקרי מעבדה שבהם גרמו להתייבשות בכוונה. האפקט הכולל קטן."
+    }
+  },
+  {
+    "id": "extra-fruit-and-veg-vitality",
+    "category": "sleep_energy",
+    "goals": [
+      "health"
+    ],
+    "finding": "In a trial with 171 young adults, those handed 2 extra servings of fruit and vegetables a day for 2 weeks reported more energy, motivation and flourishing. Text reminders alone didn't help.",
+    "action": "Add one piece of fruit or a handful of vegetables to your next meal or snack.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Let them eat fruit! The effect of fruit and vegetable consumption on psychological well-being in young adults: A randomized controlled trial",
+      "authors": "Conner, Brookie, Carr, Mainvil & Vissers",
+      "year": 2017,
+      "institution": "University of Otago",
+      "venue": "PLOS ONE",
+      "doi": "10.1371/journal.pone.0171206",
+      "url": "https://doi.org/10.1371/journal.pone.0171206"
+    },
+    "evidence": "moderate",
+    "caveat": "One short, pre-registered trial (14 days) in young adults who ate little fruit and veg. There was no change in depression, anxiety or mood.",
+    "triggers": [],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "בניסוי עם 171 צעירים, מי שקיבלו 2 מנות נוספות של פירות וירקות ביום במשך שבועיים דיווחו על יותר אנרגיה, מוטיבציה ושגשוג. תזכורות בהודעות לבדן לא עזרו.",
+      "action": "להוסיף פרי אחד או חופן ירקות לארוחה או לנשנוש הבא.",
+      "caveat": "ניסוי אחד רשום מראש, קצר (14 יום), בצעירים שאכלו מעט פירות וירקות. לא נמצא שינוי בדיכאון, בחרדה או במצב הרוח."
+    }
+  },
+  {
+    "id": "one-minute-vigorous-bursts",
+    "category": "sleep_energy",
+    "goals": [
+      "health"
+    ],
+    "finding": "In about 25,000 adults who didn't exercise, three 1–2 minute bursts a day of vigorous everyday activity, like stair climbing, were linked to a 38–40% lower risk of early death.",
+    "stat": {
+      "value": "3",
+      "label": "short vigorous bursts a day linked to lower death risk"
+    },
+    "action": "At your next break, take the stairs briskly or walk fast for 1–2 minutes.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Association of wearable device-measured vigorous intermittent lifestyle physical activity with mortality",
+      "authors": "Stamatakis, Ahmadi, Gill, Thøgersen-Ntoumani, Gibala, Doherty & Hamer",
+      "year": 2022,
+      "institution": "University of Sydney",
+      "venue": "Nature Medicine",
+      "doi": "10.1038/s41591-022-02100-x",
+      "url": "https://doi.org/10.1038/s41591-022-02100-x"
+    },
+    "evidence": "moderate",
+    "caveat": "Observational study (UK Biobank, average age 62), so it shows a link, not cause and effect.",
+    "triggers": [],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "בקרב כ-25,000 מבוגרים שלא התאמנו, שלושה פרצים של 1–2 דקות ביום של פעילות יומיומית נמרצת, כמו עלייה במדרגות, נקשרו לסיכון נמוך ב-38–40% למוות מוקדם.",
+      "action": "בהפסקה הבאה, לעלות במדרגות בקצב מהיר או ללכת מהר במשך 1–2 דקות.",
+      "statLabel": "פרצי פעילות נמרצת קצרים ביום שנקשרו לסיכון נמוך יותר",
+      "caveat": "מחקר תצפיתי (UK Biobank, גיל ממוצע 62), כך שהוא מראה קשר ולא סיבה ותוצאה."
+    }
+  },
+  {
+    "id": "self-kindness-eases-brooding",
+    "category": "mood",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "Across 27 trials, programs that taught people to treat themselves kindly lowered brooding and self-criticism, on average, compared with control groups.",
+    "action": "Think of what you'd say to a friend who slipped up, then write that same sentence to yourself.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Self-Compassion Interventions and Psychosocial Outcomes: a Meta-Analysis of RCTs",
+      "authors": "Ferrari, Hunt, Harrysunker, Abbott, Beath & Einstein",
+      "year": 2019,
+      "venue": "Mindfulness",
+      "doi": "10.1007/s12671-019-01134-6",
+      "url": "https://doi.org/10.1007/s12671-019-01134-6"
+    },
+    "evidence": "strong",
+    "caveat": "Most programs were multi-week courses, not one quick exercise, and the authors note possible publication bias. Not a substitute for professional help.",
+    "triggers": [
+      "streak_broken",
+      "low_mood"
+    ],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "ב-27 ניסויים, תוכניות שלימדו אנשים להתייחס לעצמם בחמלה הפחיתו בממוצע העלאת מחשבות חוזרת וביקורת עצמית, בהשוואה לקבוצות ביקורת.",
+      "action": "לחשוב מה היינו אומרים לחבר או לחברה שמעדו, ואז לכתוב את אותו משפט בדיוק לעצמנו.",
+      "caveat": "רוב התוכניות היו קורסים של כמה שבועות, לא תרגיל קצר, והחוקרים מציינים הטיית פרסום אפשרית. לא תחליף לעזרה מקצועית."
+    }
+  },
+  {
+    "id": "social-media-break-small-lift",
+    "category": "mood",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "In a large US experiment, people who deactivated Facebook for 4 weeks felt a little happier and more satisfied with life, and spent more time offline, including with friends and family.",
+    "stat": {
+      "value": "60",
+      "label": "minutes a day freed up, on average, by a Facebook break"
+    },
+    "action": "Log out of one social app for the rest of today and notice what you do with the time instead.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "The Welfare Effects of Social Media",
+      "authors": "Allcott, Braghieri, Eichmeyer & Gentzkow",
+      "year": 2020,
+      "institution": "Stanford University and New York University",
+      "venue": "American Economic Review",
+      "doi": "10.1257/aer.20190658",
+      "url": "https://doi.org/10.1257/aer.20190658"
+    },
+    "evidence": "moderate",
+    "caveat": "A small wellbeing gain (0.09 standard deviations) in one Facebook study before the 2018 election; results may differ for other apps.",
+    "triggers": [],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "בניסוי גדול בארה\"ב, אנשים שהשביתו את פייסבוק ל-4 שבועות היו קצת יותר מאושרים ומרוצים מחייהם, ובילו יותר זמן מחוץ לרשת, גם עם חברים ומשפחה.",
+      "action": "להתנתק מאפליקציה חברתית אחת עד סוף היום ולשים לב מה עושים עם הזמן במקום.",
+      "statLabel": "דקות ביום שהתפנו בממוצע בזכות הפסקה מפייסבוק",
+      "caveat": "שיפור קטן ברווחה (0.09 סטיות תקן) בניסוי אחד על פייסבוק לפני בחירות 2018; ייתכן שהתוצאות שונות באפליקציות אחרות."
+    }
+  },
+  {
+    "id": "end-of-day-good-things",
+    "category": "mood",
+    "goals": [],
+    "finding": "In a 3-week study of employees, briefly writing at the end of the workday about good things that happened, and why, was linked to lower stress and better health that evening.",
+    "action": "Before your evening winds down, write one thing that went well today and why it happened.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Building Positive Resources: Effects of Positive Events and Positive Reflection on Work Stress and Health",
+      "authors": "Bono, Glomb, Shen, Kim & Koch",
+      "year": 2013,
+      "venue": "Academy of Management Journal",
+      "doi": "10.5465/amj.2011.0272",
+      "url": "https://doi.org/10.5465/amj.2011.0272"
+    },
+    "evidence": "moderate",
+    "caveat": "One field study of employees, and results varied between types of analysis. Not a substitute for professional help.",
+    "triggers": [
+      "low_mood",
+      "perfect_week"
+    ],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "במחקר של 3 שבועות על עובדים, כתיבה קצרה בסוף יום העבודה על דברים טובים שקרו, ולמה, נקשרה ללחץ נמוך יותר ולבריאות טובה יותר באותו ערב.",
+      "action": "לפני שהערב נרגע, לכתוב דבר אחד שהלך טוב היום ולמה הוא קרה.",
+      "caveat": "מחקר שדה אחד בעובדים, והתוצאות השתנו בין סוגי הניתוחים. לא תחליף לעזרה מקצועית."
+    }
+  },
+  {
+    "id": "note-it-to-rediscover-later",
+    "category": "mood",
+    "goals": [],
+    "finding": "People underestimated how interesting it would feel to later rediscover ordinary, everyday moments they had written down, compared with how it actually felt.",
+    "action": "Write 2–3 lines about an ordinary moment from this week, and set a reminder to reread it in 3 months.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "A \"present\" for the future: the unexpected value of rediscovery",
+      "authors": "Zhang, Kim, Brooks, Gino & Norton",
+      "year": 2014,
+      "institution": "Harvard Business School",
+      "venue": "Psychological Science",
+      "doi": "10.1177/0956797614542274",
+      "url": "https://doi.org/10.1177/0956797614542274"
+    },
+    "evidence": "moderate",
+    "caveat": "Four studies in one paper, mostly with students; not yet widely replicated.",
+    "triggers": [
+      "perfect_week"
+    ],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "אנשים העריכו בחסר כמה יהיה מעניין לגלות מחדש, זמן מה אחר כך, רגעים רגילים ויומיומיים שכתבו, בהשוואה למה שהרגישו בפועל.",
+      "action": "לכתוב 2–3 שורות על רגע רגיל מהשבוע, ולקבוע תזכורת לקרוא אותן שוב בעוד 3 חודשים.",
+      "caveat": "ארבעה מחקרים במאמר אחד, בעיקר עם סטודנטים; עדיין לא שוחזר באופן רחב."
+    }
+  },
+  {
+    "id": "people-say-yes-to-help",
+    "category": "social",
+    "goals": [],
+    "finding": "People expect others to turn down a direct request for help much more often than they really do.",
+    "stat": {
+      "value": "up to 50%",
+      "label": "how much people underestimated others' yes to helping"
+    },
+    "action": "Ask one person to check in on your habit this week, for example by texting you tomorrow evening.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "If you need help, just ask: Underestimating compliance with direct requests for help",
+      "authors": "Flynn & Lake",
+      "year": 2008,
+      "venue": "Journal of Personality and Social Psychology",
+      "doi": "10.1037/0022-3514.95.1.128",
+      "url": "https://doi.org/10.1037/0022-3514.95.1.128"
+    },
+    "evidence": "moderate",
+    "caveat": "Six studies in one paper with small, everyday requests. The gap was up to 50%, not always that large.",
+    "triggers": [
+      "streak_broken",
+      "low_mood"
+    ],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "אנשים מצפים שאחרים יסרבו לבקשה ישירה לעזרה הרבה יותר ממה שהם מסרבים בפועל.",
+      "action": "לבקש מאדם אחד לבדוק מה שלומנו עם ההרגל השבוע, למשל בהודעה מחר בערב.",
+      "statLabel": "עד כמה אנשים העריכו בחסר את הנכונות של אחרים לעזור",
+      "caveat": "שישה מחקרים במאמר אחד עם בקשות קטנות ויומיומיות. הפער הגיע עד 50%, ולא תמיד היה גדול כל כך."
+    }
+  },
+  {
+    "id": "phones-away-at-meals",
+    "category": "social",
+    "goals": [],
+    "finding": "In a restaurant experiment with over 300 people, keeping phones on the table during a meal with friends or family made people more distracted, and they enjoyed the time less.",
+    "action": "Put your phone out of sight at your next meal or conversation with someone.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Smartphone use undermines enjoyment of face-to-face social interactions",
+      "authors": "Dwyer, Kushlev & Dunn",
+      "year": 2018,
+      "venue": "Journal of Experimental Social Psychology",
+      "doi": "10.1016/j.jesp.2017.10.007",
+      "url": "https://doi.org/10.1016/j.jesp.2017.10.007"
+    },
+    "evidence": "moderate",
+    "caveat": "One field experiment plus one diary study; not yet widely replicated.",
+    "triggers": [],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "בניסוי במסעדה עם יותר מ-300 אנשים, השארת הטלפונים על השולחן בארוחה עם חברים או משפחה הגבירה את הסחת הדעת, ונהנו פחות מהזמן יחד.",
+      "action": "להניח את הטלפון מחוץ לטווח הראייה בארוחה או בשיחה הבאה עם מישהו.",
+      "caveat": "ניסוי שדה אחד ועוד מחקר יומנים; עדיין לא שוחזר באופן רחב."
+    }
+  },
+  {
+    "id": "friendship-takes-hours",
+    "category": "social",
+    "goals": [],
+    "finding": "More hours spent together, especially doing fun things, was linked to new acquaintances becoming closer friends over time.",
+    "action": "Invite someone you'd like to know better to do something fun together this week, like a walk or a game.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "How many hours does it take to make a friend?",
+      "authors": "Hall",
+      "year": 2019,
+      "venue": "Journal of Social and Personal Relationships",
+      "doi": "10.1177/0265407518761225",
+      "url": "https://doi.org/10.1177/0265407518761225"
+    },
+    "evidence": "moderate",
+    "caveat": "Correlational and based on people's own estimates of hours, in two samples (355 and 112 people).",
+    "triggers": [],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "יותר שעות יחד, במיוחד בפעילויות מהנות, נקשרו להפיכה של מכרים חדשים לחברים קרובים יותר עם הזמן.",
+      "action": "להזמין מישהו שרוצים להכיר טוב יותר לעשות יחד משהו מהנה השבוע, כמו הליכה או משחק.",
+      "caveat": "מתאמי, מבוסס על הערכות עצמיות של שעות, בשני מדגמים (355 ו-112 אנשים)."
+    }
+  },
+  {
+    "id": "teach-it-to-learn-it",
+    "category": "social",
+    "goals": [
+      "focus"
+    ],
+    "finding": "Across 28 studies, preparing to teach something, and even more so actually teaching it, helped people learn it better than studying it for themselves.",
+    "action": "Explain one thing you learned today to a friend or family member in 2 minutes.",
+    "source": {
+      "type": "meta_analysis",
+      "title": "Learning by Preparing-to-Teach and Teaching: A Meta-Analysis",
+      "authors": "Kobayashi",
+      "year": 2019,
+      "venue": "Japanese Psychological Research",
+      "doi": "10.1111/jpr.12221",
+      "url": "https://doi.org/10.1111/jpr.12221"
+    },
+    "evidence": "strong",
+    "caveat": "Studies mostly involved students learning course-type material. The boost was bigger when the teaching was interactive.",
+    "triggers": [],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "ב-28 מחקרים, הכנה ללמד משהו, ועוד יותר ללמד אותו בפועל, עזרו לאנשים ללמוד אותו טוב יותר מאשר ללמוד רק לעצמם.",
+      "action": "להסביר לחבר, לחברה או לבן משפחה דבר אחד שנלמד היום, בתוך 2 דקות.",
+      "caveat": "רוב המחקרים עסקו בסטודנטים ותלמידים שלמדו חומר לימודי. ההשפעה הייתה גדולה יותר כשההוראה כללה שיחה הדדית."
+    }
+  },
+  {
+    "id": "learn-from-a-slip",
+    "category": "motivation",
+    "goals": [
+      "mindset"
+    ],
+    "finding": "In 5 studies with 1,674 people, people learned less from their own failures than from successes, because failing feels threatening and they tune out. They learned fine from others' failures.",
+    "action": "Write one calm sentence on why yesterday slipped, as if describing a friend's day, plus one small fix.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Not Learning From Failure—the Greatest Failure of All",
+      "authors": "Eskreis-Winkler & Fishbach",
+      "year": 2019,
+      "institution": "University of Chicago Booth School of Business",
+      "venue": "Psychological Science",
+      "doi": "10.1177/0956797619881133",
+      "url": "https://doi.org/10.1177/0956797619881133"
+    },
+    "evidence": "moderate",
+    "caveat": "Tested with two-choice quiz tasks in the lab, not with habits. The suggested step is based on the finding but wasn't tested directly.",
+    "triggers": [
+      "streak_broken",
+      "missed_focus"
+    ],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "ב-5 מחקרים עם 1,674 אנשים, אנשים למדו פחות מהכישלונות שלהם מאשר מההצלחות, כי כישלון מרגיש מאיים והם מתנתקים. מכישלונות של אחרים הם למדו היטב.",
+      "action": "לכתוב משפט רגוע אחד על למה אתמול לא הצליח, כאילו מתארים יום של חבר, ועוד תיקון קטן אחד.",
+      "caveat": "נבדק במשימות מעבדה עם שאלות של שתי תשובות, לא בהרגלים. הצעד מבוסס על הממצא, אבל לא נבדק ישירות."
+    }
+  },
+  {
+    "id": "range-goals-keep-you-going",
+    "category": "motivation",
+    "goals": [],
+    "finding": "People were more likely to take a goal up again when they set a range, like 3–5 times a week, instead of one number, because a range felt both reachable and challenging.",
+    "action": "Set next week's target as a range, like 3–5 sessions: an easy low end and a stretch high end.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "The Effect of Goal Specificity on Consumer Goal Reengagement",
+      "authors": "Scott & Nowlis",
+      "year": 2013,
+      "venue": "Journal of Consumer Research",
+      "doi": "10.1086/670766",
+      "url": "https://doi.org/10.1086/670766"
+    },
+    "evidence": "moderate",
+    "caveat": "Studies from one consumer-research paper; not yet widely replicated.",
+    "triggers": [
+      "streak_broken",
+      "perfect_week"
+    ],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "אנשים נטו יותר לחזור למטרה כשקבעו טווח, כמו 3–5 פעמים בשבוע, במקום מספר אחד, כי טווח הרגיש גם בר השגה וגם מאתגר.",
+      "action": "לקבוע את היעד לשבוע הבא כטווח, למשל 3–5 פעמים: רף תחתון קל ורף עליון מאתגר.",
+      "caveat": "מחקרים ממאמר אחד בתחום חקר הצרכנות; עדיין לא שוחזר באופן רחב."
+    }
+  },
+  {
+    "id": "progress-is-not-a-pass",
+    "category": "motivation",
+    "goals": [],
+    "finding": "Feeling that you've made good progress on a goal can make people more likely to pick things that work against it next, as if the progress earned them a break.",
+    "action": "After a strong week, write down your next step now so the progress feels like momentum, not a reason to coast.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Goals as Excuses or Guides: The Liberating Effect of Perceived Goal Progress on Choice",
+      "authors": "Fishbach & Dhar",
+      "year": 2005,
+      "venue": "Journal of Consumer Research",
+      "doi": "10.1086/497548",
+      "url": "https://doi.org/10.1086/497548"
+    },
+    "evidence": "emerging",
+    "caveat": "Four studies. Similar 'licensing' effects shrank a lot after correcting for publication bias (Kuper & Bott, 2019).",
+    "triggers": [
+      "perfect_week"
+    ],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "התחושה שהתקדמנו יפה במטרה יכולה לגרום לאנשים לבחור אחר כך דברים שפועלים נגדה, כאילו ההתקדמות הרוויחה להם הפסקה.",
+      "action": "אחרי שבוע חזק, לכתוב כבר עכשיו את הצעד הבא, כדי שההתקדמות תרגיש כמו תנופה ולא כמו סיבה להרפות.",
+      "caveat": "ארבעה מחקרים. אפקטים דומים של \"היתר עצמי\" הצטמקו מאוד אחרי תיקון להטיית פרסום (Kuper ו-Bott, 2019)."
+    }
+  },
+  {
+    "id": "pride-fuels-persistence",
+    "category": "motivation",
+    "goals": [],
+    "finding": "In lab experiments, people who felt proud of how they did kept working longer on a hard, boring follow-up task linked to that skill.",
+    "action": "Name one thing you're proud of from this week and write down the effort it took.",
+    "source": {
+      "type": "peer_reviewed",
+      "title": "Pride and perseverance: The motivational role of pride",
+      "authors": "Williams & DeSteno",
+      "year": 2008,
+      "institution": "Northeastern University",
+      "venue": "Journal of Personality and Social Psychology",
+      "doi": "10.1037/0022-3514.94.6.1007",
+      "url": "https://doi.org/10.1037/0022-3514.94.6.1007"
+    },
+    "evidence": "emerging",
+    "caveat": "Two lab studies; not yet broadly replicated.",
+    "triggers": [
+      "perfect_week"
+    ],
+    "verifiedOn": "2026-09-30",
+    "he": {
+      "finding": "בניסויי מעבדה, אנשים שהרגישו גאווה בביצוע שלהם התמידו יותר זמן במשימת המשך קשה ומשעממת שקשורה לאותה מיומנות.",
+      "action": "לבחור דבר אחד מהשבוע שיש בו גאווה, ולכתוב כמה מאמץ הוא דרש.",
+      "caveat": "שני מחקרי מעבדה; עדיין לא שוחזר באופן רחב."
+    }
   }
 ]
