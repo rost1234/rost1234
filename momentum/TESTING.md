@@ -181,3 +181,14 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Onboarding: picking a goal pre-selects exactly one habit
 - [ ] Weekly summary shows "Insight of the week" (not the same card as that week's first daily card)
 - [ ] Settings list with a daily limit of 1 reads "Up to 1 reminder a day"; Home freeze pill with one freeze reads "One freeze"
+
+## Day-off Home & notification Done (build 26)
+- [ ] "Done ✓" on a habit notification with the app fully closed → the notification disappears right away; open the app → the
+      habit is marked; a later rescue / "Did you already?" for only that habit is gone from Settings → Notifications → "Coming up"
+- [ ] Same with the app in the background and in the foreground
+- [ ] On a Friday or Saturday (Hebrew) → Home header is light blue–purple with "🏖 סופ״ש"; habits first; "3 של היום" is one
+      dashed line with the open count; tapping it opens the tasks
+- [ ] Settings → Days off: turn it off → Home looks like a regular day; pick other weekend days → Home follows; the list row
+      shows the chosen days
+- [ ] Start an app-wide vacation pause today → pill "✈ חופשה"; a sick pause or a single-habit pause → regular Home
+- [ ] A regular weekday → Home unchanged (no pill, tasks open as before)

@@ -13,6 +13,7 @@ import { orderByTimeOfDay } from '@/domain/rhythm';
 import { orderByStacking } from '@/domain/stacking';
 import { InsightCard } from '@/features/insights/InsightCard';
 import { shouldShowWeeklySummary } from '@/features/weekly/weeklyPrompt';
+import { useDayOff } from '@/hooks/useDayOff';
 import { useLocalDate } from '@/hooks/useLocalDate';
 import { useNow } from '@/hooks/useNow';
 import { useHabitStore } from '@/state/habitStore';
@@ -23,6 +24,7 @@ import { Celebration } from './Celebration';
 import { CoachMarks } from './CoachMarks';
 import { DashboardHeader } from './DashboardHeader';
 import { DecideCard } from './DecideCard';
+import { FoldedSection } from './FoldedSection';
 import { EmptyHabits } from './EmptyHabits';
 import { HardDayBar } from './HardDayBar';
 import { FocusFab, HomeTopBar } from './HomeChrome';
@@ -75,6 +77,8 @@ export function DashboardScreen() {
   const freezes = useSettingsStore((s) => s.settings?.streakFreezesAvailable ?? 0);
   const reflection = useReflectionStore((s) => s.byDate[today]);
   const { dueToday, percent, doneCount, restCount } = useDashboardData(today, hour);
+  const dayOff = useDayOff(today);
+  const openTasks = useTaskStore((s) => s.tasks.filter((task) => !task.isCompleted).length + s.overdue.length);
   const habits = useHabitStore((s) => s.habits);
 
   const reload = useCallback(() => {
@@ -123,6 +127,7 @@ export function DashboardScreen() {
           doneCount={doneCount}
           totalCount={dueToday.length}
           freezes={freezes}
+          dayOffLabel={dayOff?.label ?? null}
         />
 
         <HardDayBar today={today} />
@@ -157,10 +162,22 @@ export function DashboardScreen() {
           dueToday.map((habit) => <HabitCard key={habit.id} habit={habit} />)
         )}
 
-        <DecideCard />
-
-        <SectionTitle>{t('today.todays3')}</SectionTitle>
-        <TaskList />
+        {dayOff ? (
+          <FoldedSection
+            icon="📋"
+            title={t('today.todays3')}
+            summary={openTasks === 0 ? t('dayoff.noTasks') : t.plural('dayoff.openTasks', openTasks)}
+          >
+            <DecideCard />
+            <TaskList />
+          </FoldedSection>
+        ) : (
+          <>
+            <DecideCard />
+            <SectionTitle>{t('today.todays3')}</SectionTitle>
+            <TaskList />
+          </>
+        )}
 
         {isEvening ? (
           <>

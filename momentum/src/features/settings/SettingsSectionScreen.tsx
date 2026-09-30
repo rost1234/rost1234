@@ -8,15 +8,17 @@ import { useBottomSpace } from '@/components/useBottomSpace';
 import { type TranslationKey, useT } from '@/i18n';
 import { AppearanceSetting } from './AppearanceSetting';
 import { BackupSetting } from './BackupSetting';
+import { DayOffSetting } from './DayOffSetting';
 import { DataTransparency } from './DataTransparency';
 import { NotificationSetting } from './NotificationSetting';
 import { AutoBackupSetting, ReflectionLockSetting } from './PrivacySetting';
 import { ReminderSetting } from './ReminderSetting';
 
-export type SettingsSection = 'appearance' | 'notifications' | 'backup' | 'privacy';
+export type SettingsSection = 'appearance' | 'dayoff' | 'notifications' | 'backup' | 'privacy';
 
 const SECTIONS: Record<SettingsSection, { title: TranslationKey; content: () => ReactNode }> = {
   appearance: { title: 'set.sec.appearance', content: () => <AppearanceSetting /> },
+  dayoff: { title: 'set.sec.dayoff', content: () => <DayOffSetting /> },
   notifications: {
     title: 'set.sec.notifications',
     content: () => (

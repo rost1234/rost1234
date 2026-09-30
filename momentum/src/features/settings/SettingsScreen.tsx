@@ -7,7 +7,8 @@ import { SheetHeader } from '@/components/SheetHeader';
 import { SectionTitle } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { useBottomSpace } from '@/components/useBottomSpace';
-import { formatFriendlyDate } from '@/core/localDate';
+import { formatFriendlyDate, weekdayLabel } from '@/core/localDate';
+import { defaultWeekendDays } from '@/domain/dayOff';
 import { activePause } from '@/domain/pauses';
 import { formatMinutesOfDay } from '@/domain/usage';
 import { useLocalDate } from '@/hooks/useLocalDate';
@@ -82,6 +83,8 @@ export function SettingsScreen() {
   const lastBackup = useDevicePrefsStore((s) => s.lastAutoBackup);
   const backupFailed = useDevicePrefsStore((s) => s.autoBackupFailed);
   const locked = useDevicePrefsStore((s) => s.lockReflections);
+  const dayOffMode = usePrefsStore((s) => s.dayOffMode);
+  const weekendDays = usePrefsStore((s) => s.weekendDays) ?? defaultWeekendDays(t.language);
 
   const streakStatus = [t.plural('today.freezes', freezes), pause ? t('protect.pausedUntil', { date: formatFriendlyDate(pause.endDate, t.locale) }) : null]
     .filter(Boolean)
@@ -114,6 +117,17 @@ export function SettingsScreen() {
             title={t('set.sec.notifications')}
             status={t.plural('set.st.notifications', dailyLimit, { from: formatMinutesOfDay(quietStart), to: formatMinutesOfDay(quietEnd) })}
             href="/settings/notifications"
+          />
+          <Row
+            icon="sunny-outline"
+            tint={[colors.primarySoft, colors.primary]}
+            title={t('set.sec.dayoff')}
+            status={
+              dayOffMode
+                ? t('set.st.dayoffOn', { days: weekendDays.map((day) => weekdayLabel(day, t.locale)).join(', ') || '—' })
+                : t('set.st.dayoffOff')
+            }
+            href="/settings/dayoff"
             last
           />
         </View>
