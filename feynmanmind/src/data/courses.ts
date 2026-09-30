@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { generateCourse, generateLesson } from '@/api/functions';
 import { BUILT_IN_COURSES, builtInCourse } from '@/content/catalog';
-import { findStation, stationsOf, type Course } from '@/content/types';
+import { findStation, stationsOf, type Course, type LevelKey } from '@/content/types';
 import {
   courseProgress,
   deleteCustomCourse,
@@ -29,6 +29,47 @@ export function useCourses() {
   return useQuery({
     queryKey: ['courses'],
     queryFn: () => read(() => allCourses().map((course) => ({ course, progress: courseProgress(getDB(), course) }))),
+  });
+}
+
+export interface ContinueLearning {
+  course: Course;
+  station: { key: string; title: string; unit?: string };
+  levelKey: LevelKey;
+  done: number;
+  total: number;
+}
+
+/**
+ * The course the learner was working on most recently (latest station started,
+ * or latest placement test), with its next station. Null before any course is begun.
+ */
+export function useContinueLearning() {
+  return useQuery({
+    queryKey: ['courses', 'continue'],
+    queryFn: () =>
+      read((): ContinueLearning | null => {
+        const db = getDB();
+        let best: { at: string; value: ContinueLearning } | null = null;
+        for (const course of allCourses()) {
+          const progress = courseProgress(db, course);
+          if (!progress.nextKey) continue;
+          const subject = Object.values(db.subjects).find((s) => s.course_id === course.id);
+          const started = subject ? Object.values(db.concepts).filter((c) => c.subject_id === subject.id).map((c) => c.created_at) : [];
+          const at = [...started, progress.placement?.taken_at ?? ''].sort().at(-1) ?? '';
+          if (!at) continue;
+          const ref = findStation(course, progress.nextKey)!;
+          const value = {
+            course,
+            station: { key: ref.station.key, title: ref.station.title, unit: ref.station.unit },
+            levelKey: ref.level.key,
+            done: progress.done,
+            total: progress.total,
+          };
+          if (!best || at > best.at) best = { at, value };
+        }
+        return best?.value ?? null;
+      }),
   });
 }
 

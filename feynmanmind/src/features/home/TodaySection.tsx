@@ -1,21 +1,19 @@
+import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { BarChart } from '@/components/BarChart';
 import { ScoreRing } from '@/components/ScoreRing';
 import { Button, Card, Chevron, ErrorState, LoadingState, SectionHeader, StatTile } from '@/components/ui';
 import { useWeakConcepts } from '@/data/concepts';
 import { useStudyStats } from '@/data/study';
 import { useT } from '@/i18n';
 import { errorMessage } from '@/lib/errors';
-import { formatWeekday } from '@/lib/format';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
-/** Due cards, streak and today's numbers. Hidden until the library has content. */
-export function TodaySection() {
+/** Due cards and today's numbers (anything passed as children goes right below the due-cards card). Hidden until the library has content. */
+export function TodaySection({ children }: { children?: ReactNode }) {
   const t = useT();
   const styles = useStyles();
-  const { colors, typography } = useTheme();
+  const { typography } = useTheme();
   const stats = useStudyStats();
   const weak = useWeakConcepts();
 
@@ -38,15 +36,11 @@ export function TodaySection() {
                 : t('today.caughtUpBody')}
             </Text>
           </View>
-          {s.streak_days > 0 ? (
-            <View style={styles.streak} accessible accessibilityLabel={t.plural('today.streak', s.streak_days)}>
-              <Ionicons name="flame" size={18} color={colors.accent} />
-              <Text style={[typography.subheading, { color: colors.accent }]}>{s.streak_days}</Text>
-            </View>
-          ) : null}
         </View>
         {s.due_now > 0 ? <Button label={t('today.startReview')} icon="play" variant="secondary" onPress={() => router.push('/study')} /> : null}
       </View>
+
+      {children}
 
       <View style={styles.tiles}>
         <StatTile icon="checkmark-done-outline" label={t('today.reviewedToday')} value={s.reviewed_today} />
@@ -84,32 +78,6 @@ export function TodaySection() {
           ))}
         </>
       ) : null}
-    </>
-  );
-}
-
-/** 7-day forecast and history charts. */
-export function ProgressSection() {
-  const t = useT();
-  const stats = useStudyStats();
-  if (!stats.data || stats.data.total_cards === 0) return null;
-  const s = stats.data;
-  return (
-    <>
-      <SectionHeader title={t('today.forecast')} />
-      <Card>
-        <BarChart
-          accessibilityLabel={t('today.forecast')}
-          bars={s.forecast.map((d, i) => ({ key: d.date, label: formatWeekday(d.date, t), value: d.count, highlight: i === 0 }))}
-        />
-      </Card>
-      <SectionHeader title={t('today.history')} />
-      <Card>
-        <BarChart
-          accessibilityLabel={t('today.history')}
-          bars={s.history.map((d, i, all) => ({ key: d.date, label: formatWeekday(d.date, t), value: d.count, highlight: i === all.length - 1 }))}
-        />
-      </Card>
     </>
   );
 }

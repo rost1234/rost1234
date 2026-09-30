@@ -1,13 +1,18 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { generateFlashcards } from '@/api/functions';
-import { addCards, cardsOf, computeStats, dueCards, reviewCard } from '@/local/logic';
+import { addCards, calendarMonth, cardsOf, computeStats, dueCards, reviewCard } from '@/local/logic';
 import { commit, getDB, newId, useDBStore } from '@/local/store';
 import { NotFoundError } from '@/local/types';
 import type { QualityScore } from '@/srs/sm2';
 import { keys } from './keys';
 import { read } from './local';
 
-export type { StudyStats } from '@/local/logic';
+export type { CalendarDay, StudyStats } from '@/local/logic';
+
+/** One month of review history and upcoming due cards (month is 0-based). */
+export function useCalendarMonth(year: number, month: number) {
+  return useQuery({ queryKey: ['calendar', year, month], queryFn: () => read(() => calendarMonth(getDB(), year, month, new Date())) });
+}
 
 export function useStudyStats() {
   return useQuery({ queryKey: keys.stats, queryFn: () => read(() => computeStats(getDB(), new Date())) });

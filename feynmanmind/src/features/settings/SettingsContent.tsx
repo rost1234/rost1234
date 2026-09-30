@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Pressable, Switch, Text, View } from 'react-native';
+import { Switch, Text, View } from 'react-native';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { Button, Card, InlineError, SectionHeader, Segmented, Stepper } from '@/components/ui';
 import { useT } from '@/i18n';
 import { confirmAsync } from '@/lib/dialogs';
@@ -16,8 +15,8 @@ import { useDraftsStore } from '@/state/draftsStore';
 import { usePrefsStore, type LanguagePref, type ThemePref } from '@/state/prefsStore';
 import { spacing, useTheme } from '@/theme';
 
-/** Settings, collapsed into one row at the bottom of the home screen until opened. */
-export function SettingsSection() {
+/** Everything in Settings (opened from the gear button on the home screen). */
+export function SettingsContent() {
   const t = useT();
   const { colors, typography } = useTheme();
   const prefs = usePrefsStore();
@@ -25,7 +24,6 @@ export function SettingsSection() {
   const [reminderDenied, setReminderDenied] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
 
   const toggleReminders = async (enabled: boolean) => {
     setReminderDenied(false);
@@ -82,34 +80,9 @@ export function SettingsSection() {
       return t('settings.deleted');
     });
 
-  const header = (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ expanded: open }}
-      onPress={() => setOpen((o) => !o)}
-      style={({ pressed }) => ({
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: spacing.md,
-        padding: spacing.lg,
-        borderRadius: 18,
-        borderWidth: 1,
-        borderColor: colors.border,
-        backgroundColor: colors.surface,
-        opacity: pressed ? 0.85 : 1,
-      })}
-    >
-      <Ionicons name="settings-outline" size={22} color={colors.primary} />
-      <Text style={[typography.subheading, { flex: 1 }]}>{t('tabs.settings')}</Text>
-      <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={20} color={colors.textMuted} />
-    </Pressable>
-  );
-
-  if (!open) return header;
 
   return (
     <>
-      {header}
       <SectionHeader title={t('settings.language')} />
       <Segmented<LanguagePref>
         value={prefs.language}

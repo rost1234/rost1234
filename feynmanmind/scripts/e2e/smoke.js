@@ -124,6 +124,24 @@ const coursePlan = {
       await page.waitForTimeout(1500);
       await expectText('תחנה 4.1', 'AI course map');
       await shot('07-ai-course');
+
+      // Home: learn/review modes, the calendar, and settings behind the gear button.
+      await page.goto(APP);
+      await page.waitForTimeout(1000);
+      await expectText('המשך מאיפה שעצרת', 'continue card');
+      await shot('08-home-learn');
+      await page.getByRole('tab', { name: /חזרות/ }).click();
+      await page.waitForTimeout(700);
+      await expectText('ימים שחזרתם', 'calendar legend');
+      await expectText('מחכות לחזרה', 'calendar today detail');
+      await shot('09-home-review');
+      await page.evaluate(() => { const d = [...document.querySelectorAll('div')].filter((d) => d.scrollHeight > d.clientHeight + 5 && getComputedStyle(d).overflowY !== 'visible').sort((a, b) => b.scrollHeight - a.scrollHeight)[0]; if (d) d.scrollTop = 330; });
+      await page.waitForTimeout(400);
+      await shot('09b-calendar');
+      await page.getByRole('button', { name: 'הגדרות' }).click();
+      await page.waitForTimeout(800);
+      await expectText('חיבור ל-AI', 'settings screen');
+      await shot('10-settings');
     }
     await ctx.close();
   }

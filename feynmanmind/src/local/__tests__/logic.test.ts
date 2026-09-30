@@ -299,3 +299,28 @@ describe('questions about a lesson', () => {
     expect(fromBackup(JSON.stringify(old)).questions).toEqual({});
   });
 });
+
+describe('calendarMonth', () => {
+  const L = jest.requireActual('../logic');
+
+  it('shows past reviews, today with overdue cards, and cards coming due', () => {
+    const { db: seeded, conceptId } = seed();
+    let db = addCards(seeded, conceptId, [{ question: 'a?', answer: 'a' }, { question: 'b?', answer: 'b' }, { question: 'c?', answer: 'c' }], newId, NOW)[0];
+    const [c1, c2, c3] = Object.keys(db.cards);
+    const at = (d: number) => new Date(2026, 8, d, 9).toISOString();
+    const setDue = (id: string, iso: string) => ({ ...db.cards, [id]: { ...db.cards[id]!, review: { ...db.cards[id]!.review, next_review_date: iso } } });
+    db = { ...db, cards: setDue(c1!, at(20)) }; // overdue → today
+    db = { ...db, cards: setDue(c2!, at(24)) }; // today
+    db = { ...db, cards: setDue(c3!, at(28)) }; // later this month
+    db = { ...db, reviewDays: { '2026-09-22': { reviewed: 7, correct: 5 }, '2026-09-24': { reviewed: 2, correct: 2 } } };
+
+    const days = L.calendarMonth(db, 2026, 8, NOW); // NOW = 24 Sep 2026
+    expect(days).toHaveLength(30);
+    const day = (n: number) => days[n - 1];
+    expect(day(22)).toMatchObject({ reviewed: 7, correct: 5, due: 0, isPast: true });
+    expect(day(20)).toMatchObject({ due: 0, isPast: true });
+    expect(day(24)).toMatchObject({ isToday: true, reviewed: 2, due: 2 });
+    expect(day(28)).toMatchObject({ due: 1, reviewed: 0, isPast: false });
+    expect(L.calendarMonth(db, 2026, 1, NOW)).toHaveLength(28);
+  });
+});

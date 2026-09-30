@@ -12,11 +12,12 @@ The only thing that goes over the network is the text of an AI request.
 
 ## Features
 
-The whole app is **one scrolling home screen**, top to bottom: today's review and streak, stats,
-concepts to explain next, the library (subjects open in place to show their concepts), 7-day
-charts and settings. Concept pages, the Feynman editor, card generation and the review session
-open on top of it. Every scrolling screen ends with extra space below the last item (plus the
-device's bottom safe-area inset), so nothing is ever stuck under the home indicator.
+The home screen has two clear modes, switched at the top: **Learn** (continue where you left off,
+learning paths, library) and **Review** (cards due now, a month calendar of the days you reviewed and
+the cards coming due, today's numbers, concepts to explain again). **Settings** open from the gear
+button at the top. Lessons, the Feynman editor, card generation and the review session open on top.
+Every scrolling screen ends with extra space below the last item (plus the device's bottom safe-area
+inset), so nothing is ever stuck under the home indicator.
 
 | Area | What it does |
 |---|---|
@@ -27,7 +28,7 @@ device's bottom safe-area inset), so nothing is ever stuck under the home indica
 | Feynman tutor | Write an explanation (drafts are kept per concept). Get a score, verdict, one Socratic question, jargon to unpack and misconceptions, without being told the answer. Revise and resubmit. Past attempts are saved. |
 | Flashcards | Generate from pasted text or a PDF (≤ 10 MB), or add and edit by hand. Duplicates are skipped. |
 | Review | SM-2 queue with all six grades (0–5) and the next interval shown on each button. |
-| Today | Cards due, streak, today's recall rate, totals, a 7-day forecast and history, and the weakest concepts to explain next. |
+| Review | Cards due, streak, today's recall rate, totals, a month calendar (days reviewed, cards coming due, tap a day for details) and the weakest concepts to explain next. |
 | Settings | Language, theme, daily reminder, cards per generation, **export / restore backup**, delete all data. |
 
 Offline, everything works except the two AI actions (explain feedback and card generation).
@@ -52,9 +53,11 @@ Offline, everything works except the two AI actions (explain feedback and card g
 - The AI functions receive all the context they need (concept title, the lesson text, recent Socratic questions, your cards) in the request, and store nothing.
 
 ```
-src/app/            screens: onboarding, (app)/index (the single home screen),
+src/app/            screens: onboarding, (app)/index (home: learn / review), settings,
                     concept/[id]/{index,explain,generate}, card/[id], session/[id], study
-src/features/home/  home sections: Today, Learning paths, Library, Progress, Settings
+src/features/home/  home: continue card, learning paths, library, review summary, calendar
+src/features/lesson/ lesson card (copy, key points) and questions to the AI
+src/features/settings/ settings screen content
 src/content/        built-in courses (Hebrew): foundations lessons + four-level maps and placement quizzes
 src/local/          LocalDB types, pure logic, persisted store
 src/data/           React Query hooks over the local store + AI calls

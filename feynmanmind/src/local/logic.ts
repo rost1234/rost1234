@@ -261,6 +261,50 @@ export function computeStats(db: LocalDB, now: Date): StudyStats {
   };
 }
 
+export interface CalendarDay {
+  /** Local date, YYYY-MM-DD. */
+  date: string;
+  /** Cards reviewed that day (past and today). */
+  reviewed: number;
+  /** Of those, recalled (grade ≥ 3). */
+  correct: number;
+  /** Cards scheduled for that day (today includes everything overdue; 0 for past days). */
+  due: number;
+  isToday: boolean;
+  isPast: boolean;
+}
+
+/**
+ * One calendar month (month is 0-based): what was reviewed on each past day
+ * and how many cards come due on each coming day.
+ */
+export function calendarMonth(db: LocalDB, year: number, month: number, now: Date): CalendarDay[] {
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayKey = dayKey(today);
+  const dueByDay = new Map<string, number>();
+  for (const card of Object.values(db.cards)) {
+    const due = new Date(card.review.next_review_date);
+    // Overdue cards count for today.
+    const key = due < today ? todayKey : dayKey(due);
+    dueByDay.set(key, (dueByDay.get(key) ?? 0) + 1);
+  }
+  const days = new Date(year, month + 1, 0).getDate();
+  return Array.from({ length: days }, (_, i) => {
+    const date = new Date(year, month, i + 1);
+    const key = dayKey(date);
+    const isPast = date < today;
+    const log = db.reviewDays[key];
+    return {
+      date: key,
+      reviewed: isPast || key === todayKey ? (log?.reviewed ?? 0) : 0,
+      correct: isPast || key === todayKey ? (log?.correct ?? 0) : 0,
+      due: isPast ? 0 : (dueByDay.get(key) ?? 0),
+      isToday: key === todayKey,
+      isPast,
+    };
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Backup
 // ---------------------------------------------------------------------------
