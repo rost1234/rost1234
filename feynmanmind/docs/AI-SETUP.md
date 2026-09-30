@@ -47,6 +47,7 @@ npx supabase functions deploy feynman-evaluate --no-verify-jwt
 npx supabase functions deploy generate-flashcards --no-verify-jwt
 npx supabase functions deploy generate-course --no-verify-jwt
 npx supabase functions deploy generate-lesson --no-verify-jwt
+npx supabase functions deploy ask-lesson --no-verify-jwt
 ```
 
 - ברירת המחדל היא המודל `gemini-3.8-flash`. אפשר להחליף מודל עם `npx supabase secrets set LLM_MODEL=<שם_מודל>`.

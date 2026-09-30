@@ -1,5 +1,5 @@
 /**
- * Client for the two stateless AI Edge Functions. The app keeps all data on
+ * Client for the stateless AI Edge Functions. The app keeps all data on
  * the device and sends only the context each request needs.
  */
 import type { FeynmanEvaluation } from '../../supabase/functions/_shared/feynman-tutor.ts';
@@ -123,6 +123,19 @@ export function generateLesson(request: LessonRequest) {
   return call<{ prompt_version: string; lesson: { explanation: string; cards: { question: string; answer: string }[] } }>('generate-lesson', {
     ...request,
   });
+}
+
+export interface AskLessonRequest {
+  concept_title: string;
+  question: string;
+  lesson?: string;
+  level: LevelKey | 'standalone';
+  history?: { question: string; answer: string }[];
+  language: 'he' | 'en';
+}
+
+export function askLesson(request: AskLessonRequest) {
+  return call<{ prompt_version: string; answer: string; follow_ups: string[] }>('ask-lesson', { ...request });
 }
 
 export function generateCourse(topic: string, language: 'he' | 'en') {

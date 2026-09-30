@@ -5,7 +5,7 @@
 import { calculateNextReview, initialReviewData, type QualityScore } from '@/srs/sm2';
 import type { FeynmanEvaluation } from '@/api/functions';
 import { findStation, stationsOf, type Course, type CourseConcept, type LevelKey } from '@/content/types';
-import { DuplicateError, LessonMissingError, NotFoundError, type Concept, type Flashcard, type Lesson, type LocalDB, type Placement } from './types';
+import { DuplicateError, LessonMissingError, NotFoundError, type Concept, type Flashcard, type Lesson, type LocalDB, type Placement, type QaTurn } from './types';
 
 type NewId = () => string;
 
@@ -23,8 +23,8 @@ function assertUniqueTitle(titles: Iterable<{ id: string; title: string }>, titl
   for (const t of titles) if (t.id !== exceptId && titleKey(t.title) === key) throw new DuplicateError();
 }
 
-function omit<T>(record: Record<string, T>, drop: (value: T) => boolean): Record<string, T> {
-  return Object.fromEntries(Object.entries(record).filter(([, v]) => !drop(v)));
+function omit<T>(record: Record<string, T>, drop: (value: T, key: string) => boolean): Record<string, T> {
+  return Object.fromEntries(Object.entries(record).filter(([k, v]) => !drop(v, k)));
 }
 
 // ---------------------------------------------------------------------------
@@ -51,6 +51,7 @@ export function deleteSubject(db: LocalDB, id: string): LocalDB {
     concepts: omit(db.concepts, (c) => conceptIds.has(c.id)),
     cards: omit(db.cards, (c) => conceptIds.has(c.concept_id)),
     sessions: omit(db.sessions, (s) => conceptIds.has(s.concept_id)),
+    questions: omit(db.questions, (_thread, key) => [...conceptIds].some((cid) => key === conceptThreadKey(cid))),
   };
 }
 
@@ -79,8 +80,12 @@ export function deleteConcept(db: LocalDB, id: string): LocalDB {
     concepts: omit(db.concepts, (c) => c.id === id),
     cards: omit(db.cards, (c) => c.concept_id === id),
     sessions: omit(db.sessions, (s) => s.concept_id === id),
+    questions: omit(db.questions, (_thread, key) => key === conceptThreadKey(id)),
   };
 }
+
+/** Q&A thread of a standalone concept's lesson (course stations use their lesson key). */
+export const conceptThreadKey = (conceptId: string) => `concept/${conceptId}`;
 
 // ---------------------------------------------------------------------------
 // Flashcards
@@ -283,7 +288,26 @@ export function fromBackup(text: string): LocalDB {
     courses: isRecord(d.courses) ? d.courses! : {},
     lessons: isRecord(d.lessons) ? d.lessons! : {},
     placements: isRecord(d.placements) ? d.placements! : {},
+    questions: isRecord(d.questions) ? d.questions! : {},
   };
+}
+
+// ---------------------------------------------------------------------------
+// Questions about a lesson
+// ---------------------------------------------------------------------------
+
+/** How many Q&A turns are kept per lesson (oldest dropped first). */
+export const MAX_QA_TURNS = 30;
+
+export function addQuestion(db: LocalDB, threadKey: string, turn: QaTurn): LocalDB {
+  const thread = [...(db.questions[threadKey] ?? []), turn].slice(-MAX_QA_TURNS);
+  return { ...db, questions: { ...db.questions, [threadKey]: thread } };
+}
+
+export function clearQuestions(db: LocalDB, threadKey: string): LocalDB {
+  if (!db.questions[threadKey]) return db;
+  const { [threadKey]: _removed, ...rest } = db.questions;
+  return { ...db, questions: rest };
 }
 
 // ---------------------------------------------------------------------------
@@ -327,7 +351,7 @@ export interface CourseProgress {
 }
 
 const courseSubject = (db: LocalDB, courseId: string) => Object.values(db.subjects).find((s) => s.course_id === courseId);
-const lessonKey = (courseId: string, stationKey: string) => `${courseId}/${stationKey}`;
+export const lessonKey = (courseId: string, stationKey: string) => `${courseId}/${stationKey}`;
 
 /** The station's lesson: built in, or previously written by the AI and saved. */
 export function lessonFor(db: LocalDB, course: Course, station: CourseConcept): Lesson | null {

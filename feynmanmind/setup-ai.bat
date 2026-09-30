@@ -39,7 +39,7 @@ call npx --yes supabase@latest secrets set --project-ref %REF% LLM_PROVIDER=gemi
 
 echo.
 echo [3/4] Deploying the AI functions...
-for %%F in (feynman-evaluate generate-flashcards generate-course generate-lesson) do (
+for %%F in (feynman-evaluate generate-flashcards generate-course generate-lesson ask-lesson) do (
   echo   - %%F
   call npx --yes supabase@latest functions deploy %%F --project-ref %REF% --use-api --no-verify-jwt || goto :fail
 )

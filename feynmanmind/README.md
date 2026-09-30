@@ -40,6 +40,7 @@ Offline, everything works except the two AI actions (explain feedback and card g
 │   ↕ React Query hooks  (src/data)       │  HTTPS │ generate-flashcards (stateless) │
 │                                         │        │ generate-course     (stateless) │
 │                                         │        │ generate-lesson     (stateless) │
+│                                         │        │ ask-lesson          (stateless) │
 │   ↕ pure logic         (src/local)      │ ─────▶ │   → OpenAI / Gemini             │
 │   ↕ zustand store → SQLite kv / web LS  │        │ no DB, no auth, per-IP limit    │
 └─────────────────────────────────────────┘        └─────────────────────────────────┘
@@ -86,6 +87,7 @@ npx supabase functions deploy feynman-evaluate --no-verify-jwt
 npx supabase functions deploy generate-flashcards --no-verify-jwt
 npx supabase functions deploy generate-course --no-verify-jwt
 npx supabase functions deploy generate-lesson --no-verify-jwt
+npx supabase functions deploy ask-lesson --no-verify-jwt
 ```
 
 Then in the app: **Settings → AI connection**, paste the project URL and publishable key and press
@@ -93,7 +95,7 @@ Then in the app: **Settings → AI connection**, paste the project URL and publi
 rebuilding. (Alternatively bake them in at build time via `.env.local`.) No database is needed.
 
 > **Cost and abuse:** with no accounts, the AI functions are public. They only have a best-effort
-> in-memory limit per IP (30 explanations, 15 card generations, 10 course maps and 40 lessons per hour). Set a
+> in-memory limit per IP (30 explanations, 15 card generations, 10 course maps, 40 lessons and 60 lesson questions per hour). Set a
 > spending cap with your AI provider before sharing the app.
 
 Reminders use `expo-notifications`, so test them in a development build

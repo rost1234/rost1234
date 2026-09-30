@@ -260,3 +260,42 @@ describe('standalone concepts', () => {
     expect(Object.values(db.cards)).toHaveLength(1);
   });
 });
+
+describe('questions about a lesson', () => {
+  const L = jest.requireActual('../logic');
+  const turn = (n: number) => ({ id: `q${n}`, question: `Q${n}?`, answer: `A${n}.`, follow_ups: [], asked_at: NOW.toISOString() });
+
+  it('appends turns per thread and keeps only the most recent ones', () => {
+    let db = emptyDB();
+    for (let i = 0; i < L.MAX_QA_TURNS + 5; i++) db = L.addQuestion(db, 'physics/velocity', turn(i));
+    db = L.addQuestion(db, 'physics/inertia', turn(99));
+    const thread = db.questions['physics/velocity']!;
+    expect(thread).toHaveLength(L.MAX_QA_TURNS);
+    expect(thread[0]!.id).toBe('q5');
+    expect(thread[thread.length - 1]!.id).toBe(`q${L.MAX_QA_TURNS + 4}`);
+    expect(db.questions['physics/inertia']).toHaveLength(1);
+  });
+
+  it('clears one thread without touching others', () => {
+    let db = L.addQuestion(L.addQuestion(emptyDB(), 'a/1', turn(1)), 'a/2', turn(2));
+    db = L.clearQuestions(db, 'a/1');
+    expect(db.questions['a/1']).toBeUndefined();
+    expect(db.questions['a/2']).toHaveLength(1);
+    expect(L.clearQuestions(db, 'missing')).toBe(db);
+  });
+
+  it('deleting a concept or its subject deletes its lesson questions', () => {
+    const { db: seeded, subjectId, conceptId } = seed();
+    const db = L.addQuestion(L.addQuestion(seeded, L.conceptThreadKey(conceptId), turn(1)), 'physics/velocity', turn(2));
+    expect(L.deleteConcept(db, conceptId).questions).toEqual({ 'physics/velocity': [turn(2)] });
+    expect(deleteSubject(db, subjectId).questions).toEqual({ 'physics/velocity': [turn(2)] });
+  });
+
+  it('survive a backup round trip, and old backups get an empty map', () => {
+    const db = L.addQuestion(emptyDB(), 'physics/velocity', turn(1));
+    expect(fromBackup(toBackup(db, NOW)).questions).toEqual(db.questions);
+    const old = JSON.parse(toBackup(emptyDB(), NOW));
+    delete old.data.questions;
+    expect(fromBackup(JSON.stringify(old)).questions).toEqual({});
+  });
+});

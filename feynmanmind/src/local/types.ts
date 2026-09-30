@@ -16,6 +16,17 @@ export interface LocalDB {
   lessons: Record<string, Lesson>;
   /** Placement test results per course. */
   placements: Record<string, Placement>;
+  /** Questions asked about a lesson and the AI's answers, keyed like lessons (`${courseId}/${stationKey}`) or `concept/${conceptId}`. */
+  questions: Record<string, QaTurn[]>;
+}
+
+export interface QaTurn {
+  id: string;
+  question: string;
+  answer: string;
+  /** Suggested next questions from the AI. */
+  follow_ups: string[];
+  asked_at: string;
 }
 
 export interface Lesson {
@@ -84,6 +95,7 @@ export const emptyDB = (): LocalDB => ({
   courses: {},
   lessons: {},
   placements: {},
+  questions: {},
 });
 
 export class DuplicateError extends Error {

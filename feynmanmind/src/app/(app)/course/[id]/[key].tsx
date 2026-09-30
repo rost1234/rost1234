@@ -5,9 +5,12 @@ import { ScoreRing } from '@/components/ScoreRing';
 import { Button, Card, Chip, ErrorState, InlineError, LoadingState, Screen, SectionHeader } from '@/components/ui';
 import { useStartStation, useStation, useWriteStationLesson } from '@/data/courses';
 import { useT } from '@/i18n';
+import { LessonCard } from '@/features/lesson/LessonCard';
+import { LessonQA } from '@/features/lesson/LessonQA';
 import { useAiConfigured } from '@/lib/env';
 import { errorMessage } from '@/lib/errors';
 import { haptics } from '@/lib/haptics';
+import { lessonKey } from '@/local/logic';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
 /**
@@ -44,13 +47,7 @@ export default function StationScreen() {
         </View>
 
         {lesson ? (
-          <Card>
-            {lesson.explanation.split(/\n\s*\n/).map((paragraph, i) => (
-              <Text key={i} style={[typography.body, styles.paragraph]} selectable>
-                {paragraph.trim()}
-              </Text>
-            ))}
-          </Card>
+          <LessonCard title={station.title} explanation={lesson.explanation} keyPoints={lesson.cards} />
         ) : (
           <View style={styles.cta}>
             <View style={styles.row}>
@@ -110,6 +107,18 @@ export default function StationScreen() {
           </>
         ) : null}
 
+        {lesson ? (
+          <LessonQA
+            context={{
+              threadKey: lessonKey(course.id, station.key),
+              conceptTitle: station.title,
+              lesson: lesson.explanation,
+              level: level.key,
+              language: 'he',
+            }}
+          />
+        ) : null}
+
         {next ? (
           <Card onPress={() => router.replace(`/course/${course.id}/${next.key}`)} accessibilityLabel={next.title}>
             <View style={styles.row}>
@@ -129,7 +138,6 @@ export default function StationScreen() {
 }
 
 const useStyles = makeStyles(({ colors }) => ({
-  paragraph: { lineHeight: 26 },
   cta: { backgroundColor: colors.primarySoft, borderRadius: radius.lg, padding: spacing.lg, gap: spacing.md },
   status: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },

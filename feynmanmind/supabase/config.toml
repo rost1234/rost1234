@@ -13,3 +13,6 @@ verify_jwt = false
 
 [functions.generate-lesson]
 verify_jwt = false
+
+[functions.ask-lesson]
+verify_jwt = false

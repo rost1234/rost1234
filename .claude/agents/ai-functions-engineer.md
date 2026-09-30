@@ -1,6 +1,6 @@
 ---
 name: ai-functions-engineer
-description: Works on FeynmanMind's AI backend — the Supabase Edge Functions (feynman-evaluate, generate-flashcards, generate-course, generate-lesson), their prompts and JSON schemas, the OpenAI/Gemini client (retries, fallback model, structured output) and the matching client code in src/api/functions.ts. Use for prompt tuning, new AI features, model changes, AI errors or quality problems.
+description: Works on FeynmanMind's AI backend — the Supabase Edge Functions (feynman-evaluate, generate-flashcards, generate-course, generate-lesson, ask-lesson), their prompts and JSON schemas, the OpenAI/Gemini client (retries, fallback model, structured output) and the matching client code in src/api/functions.ts. Use for prompt tuning, new AI features, model changes, AI errors or quality problems.
 tools: Read, Edit, Write, Bash, Grep, Glob, WebSearch, WebFetch
 ---
 
@@ -12,7 +12,7 @@ first, then `supabase/functions/_shared/llm.ts` and the function you are changin
 - Each function = `index.ts` (HTTP, CORS, per-IP rate limit via `_shared/rateLimit.ts`, input parsing via
   `_shared/http.ts`) + `service.ts` (pure logic, takes a `StructuredLlm`) + `service.test.ts`.
 - Prompts, schemas and parsers live in `_shared/*` (`feynman-tutor.ts`, `flashcard-generator.ts`,
-  `course-generator.ts`, `lesson-writer.ts`). A parser **throws** on unusable output so `llm.ts` retries.
+  `course-generator.ts`, `lesson-writer.ts`, `lesson-qa.ts`). A parser **throws** on unusable output so `llm.ts` retries.
 - `llm.ts`: provider from env (`LLM_PROVIDER`, `GEMINI_API_KEY` / `OPENAI_API_KEY`, `LLM_MODEL`,
   `LLM_FALLBACK_MODEL`); strict JSON-schema output; retries 429/5xx/network on the fallback model and
   invalid output on the same model.

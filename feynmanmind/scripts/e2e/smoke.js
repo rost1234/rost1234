@@ -45,6 +45,8 @@ const coursePlan = {
       const json = (b) => route.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(b) });
       if (p.endsWith('/generate-lesson')) return json({ prompt_version: 'mock', lesson: lesson(body.concept_title) });
       if (p.endsWith('/generate-course')) return json({ prompt_version: 'mock', course: coursePlan });
+      if (p.endsWith('/ask-lesson'))
+        return json({ prompt_version: 'mock', answer: `תשובה לשאלה "${body.question}": כך זה עובד.\n\nפסקה שנייה עם דוגמה.`, follow_ups: ['ומה קורה בחלל?'] });
       if (p.endsWith('/feynman-evaluate'))
         return json({ prompt_version: 'mock', evaluation: { comprehension_score: 60, mastery_verdict: 'needs_work', jargon_detected: [], misconceptions: [], primary_gap: 'פער', socratic_question: 'ומה היה קורה אילו?', encouragement: 'יפה!' } });
       return route.fulfill({ status: 404, headers: cors, body: '{}' });
@@ -95,9 +97,24 @@ const coursePlan = {
       await page.waitForTimeout(1200);
       const req = requests['/functions/v1/generate-lesson']?.at(-1);
       if (req?.level !== 'advanced' || !req?.unit || req?.course_title !== 'פיזיקה') failures.push(`lesson request: ${JSON.stringify(req)?.slice(0, 200)}`);
+      await expectText('מה חשוב לזכור', 'lesson key points');
+      await expectText('העתקה', 'copy button');
+
+      // Ask about the lesson: typed question, then a suggested follow-up.
+      await page.getByLabel('שאלות על השיעור').fill('למה זה ככה?');
+      await page.getByRole('button', { name: 'לשאול' }).click();
+      await page.waitForTimeout(900);
+      await expectText('תשובה לשאלה "למה זה ככה?"', 'AI answer shown');
+      const ask = requests['/functions/v1/ask-lesson']?.at(-1);
+      if (ask?.level !== 'advanced' || !ask?.lesson || ask?.question !== 'למה זה ככה?') failures.push(`ask request: ${JSON.stringify(ask)?.slice(0, 200)}`);
+      await page.getByRole('button', { name: 'ומה קורה בחלל?' }).click();
+      await page.waitForTimeout(900);
+      if (requests['/functions/v1/ask-lesson']?.at(-1)?.history?.length !== 1) failures.push('follow-up did not send history');
+      await shot('05-lesson-questions');
+
       await page.getByRole('button', { name: 'להתחיל את התחנה' }).click();
       await page.waitForTimeout(700);
-      await shot('05-station-started');
+      await shot('06-station-started');
 
       // AI-built course.
       await page.goto(APP);
@@ -106,7 +123,7 @@ const coursePlan = {
       await page.getByRole('button', { name: 'לבנות מפת לימוד' }).click();
       await page.waitForTimeout(1500);
       await expectText('תחנה 4.1', 'AI course map');
-      await shot('06-ai-course');
+      await shot('07-ai-course');
     }
     await ctx.close();
   }

@@ -10,8 +10,8 @@ Expo SDK 57 / React Native 0.86 / expo-router. Hebrew-first UI (RTL), English al
   zustand (`src/local/store.ts`, key `feynmanmind.db`; prefs in `feynmanmind.prefs`).
 - **Every data change is a pure function** `LocalDB → LocalDB` in `src/local/logic.ts` (fully unit-tested).
   Screens use React Query hooks in `src/data/*` that call those functions.
-- **AI = 4 stateless Supabase Edge Functions** (`supabase/functions/`): `feynman-evaluate`,
-  `generate-flashcards`, `generate-course`, `generate-lesson`. Shared code in `_shared/`
+- **AI = 5 stateless Supabase Edge Functions** (`supabase/functions/`): `feynman-evaluate`,
+  `generate-flashcards`, `generate-course`, `generate-lesson`, `ask-lesson` (questions about a lesson). Shared code in `_shared/`
   (`llm.ts` = OpenAI/Gemini client with structured JSON output, retries and a fallback model).
   They store nothing; the client sends all context. Client wrapper: `src/api/functions.ts`.
 - **Content** (`src/content/`):

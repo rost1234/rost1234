@@ -10,9 +10,12 @@ import { useDeleteFlashcard, useFlashcards, type CardRow } from '@/data/flashcar
 import { useSessions } from '@/data/sessions';
 import { useT } from '@/i18n';
 import { confirmAsync } from '@/lib/dialogs';
+import { LessonCard } from '@/features/lesson/LessonCard';
+import { LessonQA } from '@/features/lesson/LessonQA';
 import { useAiConfigured } from '@/lib/env';
 import { errorMessage } from '@/lib/errors';
 import { formatDate, formatDateTime } from '@/lib/format';
+import { conceptThreadKey } from '@/local/logic';
 import { makeStyles, radius, scoreColor, spacing, useTheme } from '@/theme';
 
 export default function ConceptScreen() {
@@ -53,14 +56,18 @@ export default function ConceptScreen() {
         </Card>
 
         {!station.data && concept.data.lesson ? (
-          <Card>
-            <Text style={typography.label}>{t('lesson.title').toLocaleUpperCase()}</Text>
-            {concept.data.lesson.split(/\n\s*\n/).map((paragraph, i) => (
-              <Text key={i} style={[typography.body, { lineHeight: 26 }]} selectable>
-                {paragraph.trim()}
-              </Text>
-            ))}
-          </Card>
+          <>
+            <LessonCard title={concept.data.title} explanation={concept.data.lesson} />
+            <LessonQA
+              context={{
+                threadKey: conceptThreadKey(id),
+                conceptTitle: concept.data.title,
+                lesson: concept.data.lesson,
+                level: 'standalone',
+                language: 'he',
+              }}
+            />
+          </>
         ) : null}
         {!station.data && !concept.data.lesson ? (
           <Card style={{ borderStyle: 'dashed', borderColor: colors.primary }}>

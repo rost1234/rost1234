@@ -26,8 +26,9 @@ export const useDBStore = create<DBState>()(
     }),
     {
       name: 'feynmanmind.db',
-      version: 3,
-      // v2 added AI courses; v3 added levels, lessons and placements. Fill
+      version: 4,
+      // v2 added AI courses; v3 added levels, lessons and placements; v4 added
+      // questions about lessons. Fill
       // in anything missing and convert flat AI courses to levels.
       migrate: (persisted) => {
         const state = persisted as { db?: Partial<LocalDB> } | undefined;

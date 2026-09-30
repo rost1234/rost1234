@@ -18,7 +18,7 @@ $SB login
 echo "[2/4] Saving the Gemini key on your server..."
 $SB secrets set --project-ref "$REF" LLM_PROVIDER=gemini "GEMINI_API_KEY=$GEMINI"
 echo "[3/4] Deploying the AI functions..."
-for f in feynman-evaluate generate-flashcards generate-course generate-lesson; do
+for f in feynman-evaluate generate-flashcards generate-course generate-lesson ask-lesson; do
   echo "  - $f"
   $SB functions deploy "$f" --project-ref "$REF" --use-api --no-verify-jwt
 done
