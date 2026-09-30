@@ -5,7 +5,7 @@ export type HolidayKey = 'roshHashana' | 'yomKippur' | 'sukkot' | 'simchatTorah'
 /**
  * Israeli days off, 2026–2035. Generated once from the Hebrew calendar in Node's
  * Intl (the phone's JS engine may not have it) and checked against it by
- * `__tests__/holidays.test.ts`. Yom Ha'atzmaut includes the official shift when
+ * `__tests__/dayOff.test.ts`. Yom Ha'atzmaut includes the official shift when
  * 5 Iyar falls on a Friday, Saturday or Monday.
  */
 export const ISRAELI_HOLIDAYS: Readonly<Record<LocalDateString, HolidayKey>> = {

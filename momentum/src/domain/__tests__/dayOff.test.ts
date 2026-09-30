@@ -80,7 +80,7 @@ describe('ISRAELI_HOLIDAYS', () => {
     for (let d = new Date(Date.UTC(2026, 0, 1)); d.getTime() < Date.UTC(2036, 0, 1); d = new Date(d.getTime() + 864e5)) {
       const parts = Object.fromEntries(fmt.formatToParts(d).map((p) => [p.type, p.value]));
       const day = Number(parts.day);
-      const key = fixed[parts.month]?.[day];
+      const key = parts.month ? fixed[parts.month]?.[day] : undefined;
       if (key) expected[iso(d)] = key;
       if (parts.month === 'Iyar' && day === 5) {
         const weekday = d.getUTCDay();
