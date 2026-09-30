@@ -84,7 +84,7 @@ export function SettingsScreen() {
   const backupFailed = useDevicePrefsStore((s) => s.autoBackupFailed);
   const locked = useDevicePrefsStore((s) => s.lockReflections);
   const dayOffMode = usePrefsStore((s) => s.dayOffMode);
-  const holidays = usePrefsStore((s) => s.holidays);
+  const holidays = usePrefsStore((s) => s.holidays) ?? t.language === 'he';
   const weekendDays = usePrefsStore((s) => s.weekendDays) ?? defaultWeekendDays(t.language);
 
   const streakStatus = [t.plural('today.freezes', freezes), pause ? t('protect.pausedUntil', { date: formatFriendlyDate(pause.endDate, t.locale) }) : null]

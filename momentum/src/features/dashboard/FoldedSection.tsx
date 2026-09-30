@@ -27,6 +27,7 @@ export function FoldedSection({ icon, title, summary, children }: { icon: string
       accessibilityRole="button"
       accessibilityLabel={`${title}, ${summary}`}
       accessibilityHint={t('dayoff.openHint')}
+      accessibilityState={{ expanded: false }}
       onPress={() => setOpen(true)}
       style={({ pressed }) => [styles.row, pressed && { opacity: 0.8 }]}
     >

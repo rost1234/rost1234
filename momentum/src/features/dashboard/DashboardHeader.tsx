@@ -17,6 +17,8 @@ interface DashboardHeaderProps {
   freezes: number;
   /** Set on a weekend, holiday or vacation: a lighter hero with a mode pill. */
   dayOffLabel: string | null;
+  /** The label without its emoji, for screen readers. */
+  dayOffName: string | null;
 }
 
 const DAY_OFF_GRADIENT = ['#0EA5E9', '#8B5CF6'] as const;
@@ -28,7 +30,7 @@ function greetingKey(hour: number): TranslationKey {
   return 'today.greeting.evening';
 }
 
-export function DashboardHeader({ today, hour, percent, doneCount, totalCount, freezes, dayOffLabel }: DashboardHeaderProps) {
+export function DashboardHeader({ today, hour, percent, doneCount, totalCount, freezes, dayOffLabel, dayOffName }: DashboardHeaderProps) {
   const t = useT();
   const styles = useStyles();
   const message =
@@ -42,7 +44,7 @@ export function DashboardHeader({ today, hour, percent, doneCount, totalCount, f
     <LinearGradient colors={dayOffLabel ? DAY_OFF_GRADIENT : heroGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
       <View style={{ flex: 1, gap: spacing.xs }}>
         {dayOffLabel ? (
-          <View style={styles.modePill}>
+          <View style={styles.modePill} accessible accessibilityLabel={dayOffName ?? dayOffLabel}>
             <Text style={styles.freezeText}>{dayOffLabel}</Text>
           </View>
         ) : null}

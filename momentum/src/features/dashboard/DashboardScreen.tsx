@@ -128,6 +128,7 @@ export function DashboardScreen() {
           totalCount={dueToday.length}
           freezes={freezes}
           dayOffLabel={dayOff?.label ?? null}
+          dayOffName={dayOff?.name ?? null}
         />
 
         <HardDayBar today={today} />

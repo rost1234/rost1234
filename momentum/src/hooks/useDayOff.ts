@@ -17,19 +17,19 @@ const HOLIDAY_ICON: Record<HolidayKey, string> = {
 };
 
 /** Today's day off (weekend, Israeli holiday or vacation pause), if any, with its label. */
-export function useDayOff(today: LocalDateString): { dayOff: DayOff; label: string } | null {
+export function useDayOff(today: LocalDateString): { dayOff: DayOff; label: string; name: string } | null {
   const t = useT();
   const enabled = usePrefsStore((s) => s.dayOffMode);
   const weekendDays = usePrefsStore((s) => s.weekendDays);
   const holidays = usePrefsStore((s) => s.holidays);
   const pauses = usePlanningStore((s) => s.pauses);
-  const dayOff = dayOffKind(today, { enabled, holidays, weekendDays: weekendDays ?? defaultWeekendDays(t.language) }, pauses);
+  const dayOff = dayOffKind(today, { enabled, holidays: holidays ?? t.language === 'he', weekendDays: weekendDays ?? defaultWeekendDays(t.language) }, pauses);
   if (!dayOff) return null;
-  const label =
-    dayOff.kind === 'holiday'
-      ? `${HOLIDAY_ICON[dayOff.holiday]} ${t(`holiday.${dayOff.holiday}` as TranslationKey)}`
-      : dayOff.kind === 'vacation'
-        ? t('dayoff.vacation')
-        : t('dayoff.weekend');
-  return { dayOff, label };
+  if (dayOff.kind === 'holiday') {
+    const name = t(`holiday.${dayOff.holiday}` as TranslationKey);
+    return { dayOff, label: `${HOLIDAY_ICON[dayOff.holiday]} ${name}`, name };
+  }
+  const label = dayOff.kind === 'vacation' ? t('dayoff.vacation') : t('dayoff.weekend');
+  // Screen readers read the name without the emoji.
+  return { dayOff, label, name: label.replace(/^\S+\s/, '') };
 }

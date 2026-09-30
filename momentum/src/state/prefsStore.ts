@@ -13,7 +13,8 @@ export interface DayOffSettings {
   dayOffMode: boolean;
   /** `null` = the default for the language (Fri–Sat in Hebrew, Sat–Sun otherwise). */
   weekendDays: Weekday[] | null;
-  holidays: boolean;
+  /** Null until chosen: on in Hebrew, off in English. */
+  holidays: boolean | null;
 }
 
 interface PrefsState extends DayOffSettings {
@@ -42,7 +43,7 @@ export const usePrefsStore = create<PrefsState>((set, get) => {
     language: 'auto',
     dayOffMode: true,
     weekendDays: null,
-    holidays: true,
+    holidays: null,
     isHydrated: false,
 
     hydrate: async () => {
@@ -56,7 +57,7 @@ export const usePrefsStore = create<PrefsState>((set, get) => {
             language: isLanguage(language) ? language : 'auto',
             dayOffMode: typeof dayOffMode === 'boolean' ? dayOffMode : true,
             weekendDays: isWeekdays(weekendDays) ? weekendDays : null,
-            holidays: typeof holidays === 'boolean' ? holidays : true,
+            holidays: typeof holidays === 'boolean' ? holidays : null,
           });
         }
       } catch {

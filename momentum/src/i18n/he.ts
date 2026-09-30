@@ -577,7 +577,7 @@ export const he: Record<TranslationKey, string> = {
   'dayoff.settingLead': 'בסופ״ש, בחגים ובחופשה המשימות מתקפלות לשורה אחת, וההרגלים נשארים במרכז.',
   'dayoff.weekendDays': 'ימי סופ״ש',
   'dayoff.holidays': 'חגי ישראל',
-  'dayoff.holidaysLead': 'ראש השנה, יום כיפור, סוכות, שמחת תורה, פסח, שבועות ויום העצמאות',
+  'dayoff.holidaysLead': 'ראש השנה, יום כיפור, סוכות, שמחת תורה, פסח ושביעי של פסח, שבועות ויום העצמאות',
   'dayoff.vacationNote': 'גם בהפסקה מסוג „חופשה” על כל ההרגלים (ב„הגנה על רצפים”), מסך הבית עובר למצב ימי חופש.',
   'holiday.roshHashana': 'ראש השנה',
   'holiday.yomKippur': 'יום כיפור',
@@ -588,7 +588,7 @@ export const he: Record<TranslationKey, string> = {
   'holiday.shavuot': 'שבועות',
   'holiday.independence': 'יום העצמאות',
   'set.sec.dayoff': 'ימי חופש',
-  'set.st.dayoffOn': 'סופ״ש: {days}',
+  'set.st.dayoffOn': 'סופ״ש: {days} · וחגים',
   'set.st.dayoffOff': 'כבוי · מסך הבית זהה בכל יום',
   'set.st.dayoffOnNoHolidays': 'סופ״ש: {days}',
 };

@@ -575,7 +575,7 @@ export const en = {
   'dayoff.settingLead': 'On weekends, holidays and vacation, tasks fold into one line so habits stay in focus.',
   'dayoff.weekendDays': 'Weekend days',
   'dayoff.holidays': 'Israeli holidays',
-  'dayoff.holidaysLead': 'Rosh Hashanah, Yom Kippur, Sukkot, Simchat Torah, Passover, Shavuot and Independence Day',
+  'dayoff.holidaysLead': 'Rosh Hashanah, Yom Kippur, Sukkot, Simchat Torah, Passover (first and last days), Shavuot and Independence Day',
   'dayoff.vacationNote': 'A “Vacation” pause on all habits (in Streak protection) switches Home to day-off mode too.',
   'holiday.roshHashana': 'Rosh Hashanah',
   'holiday.yomKippur': 'Yom Kippur',
@@ -586,7 +586,7 @@ export const en = {
   'holiday.shavuot': 'Shavuot',
   'holiday.independence': 'Independence Day',
   'set.sec.dayoff': 'Days off',
-  'set.st.dayoffOn': 'Weekend: {days}',
+  'set.st.dayoffOn': 'Weekend: {days} · and holidays',
   'set.st.dayoffOff': 'Off · Home looks the same every day',
   'set.st.dayoffOnNoHolidays': 'Weekend: {days}',
 } as const;

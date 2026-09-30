@@ -14,7 +14,7 @@ export function DayOffSetting() {
   const { typography } = useTheme();
   const enabled = usePrefsStore((s) => s.dayOffMode);
   const stored = usePrefsStore((s) => s.weekendDays);
-  const holidays = usePrefsStore((s) => s.holidays);
+  const holidays = usePrefsStore((s) => s.holidays) ?? t.language === 'he';
   const setDayOff = usePrefsStore((s) => s.setDayOff);
   const weekend = stored ?? defaultWeekendDays(t.language);
 
