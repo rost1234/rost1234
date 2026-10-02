@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Switch, Text, View } from 'react-native';
 import { Button, Card } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { runDetached } from '@/core/errors';
-import { addDays, getWeekday, weekdayLabel, type LocalDateString } from '@/core/localDate';
+import { addDays, formatFriendlyDate, getWeekday, localDateFromIso, weekdayLabel, type LocalDateString } from '@/core/localDate';
 import { DAILY_LIMIT_RANGE, type PlannedNotification } from '@/domain/notificationPlan';
 import { formatMinutesOfDay } from '@/domain/usage';
+import { LAST_HABIT_ACTION_KEY, type LastHabitAction } from '@/services/habitActions';
 import { hasPermission, requestNotificationPermission } from '@/services/notifications';
 import { describePlanned, requestNotificationSync, upcomingPlan } from '@/services/notificationPlanner';
 import { useHabitStore } from '@/state/habitStore';
@@ -16,6 +18,34 @@ import { useT } from '@/i18n';
 import { NumberStepper, TimeStepper } from './TimeStepper';
 
 const PREVIEW_COUNT = 4;
+
+/** When "Done ✓" on a notification was last handled, so a tap that did nothing is easy to spot. */
+function LastAction() {
+  const t = useT();
+  const { typography } = useTheme();
+  const [last, setLast] = useState<LastHabitAction | null>(null);
+  useEffect(() => {
+    runDetached(
+      AsyncStorage.getItem(LAST_HABIT_ACTION_KEY).then((raw) => {
+        try {
+          const parsed: unknown = raw ? JSON.parse(raw) : null;
+          if (parsed && typeof parsed === 'object' && typeof (parsed as LastHabitAction).at === 'string') setLast(parsed as LastHabitAction);
+        } catch {
+          setLast(null);
+        }
+      }),
+    );
+  }, []);
+  if (!last) return null;
+  const when = new Date(last.at);
+  if (Number.isNaN(when.getTime())) return null;
+  const time = `${formatFriendlyDate(localDateFromIso(last.at), t.locale)} ${String(when.getHours()).padStart(2, '0')}:${String(when.getMinutes()).padStart(2, '0')}`;
+  return (
+    <Text style={typography.caption}>
+      {t(last.via === 'background' ? 'sn.lastActionBackground' : 'sn.lastActionApp', { time })} {last.ok ? '✓' : '⚠'}
+    </Text>
+  );
+}
 
 function ToggleRow({ title, lead, value, onChange }: { title: string; lead: string; value: boolean; onChange: (on: boolean) => void }) {
   const { typography } = useTheme();
@@ -152,6 +182,7 @@ export function NotificationSetting() {
 
       <Text style={typography.caption}>{t('sn.perHabit')}</Text>
       <ComingUp />
+      <LastAction />
     </Card>
   );
 }

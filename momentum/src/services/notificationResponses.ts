@@ -1,8 +1,9 @@
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { runDetached } from '@/core/errors';
 import { useHabitStore } from '@/state/habitStore';
-import { handleHabitAction } from './habitActions';
+import { getLocalDeviceDate } from '@/core/localDate';
+import { clearDoneHabitNotifications, handleHabitAction } from './habitActions';
 
 async function handle(response: Notifications.NotificationResponse): Promise<void> {
   if (!(await handleHabitAction(response))) return;
@@ -23,5 +24,14 @@ export function startNotificationResponses(): () => void {
       return undefined;
     }),
   );
-  return () => subscription.remove();
+  // A done habit shouldn't leave a notification behind, even if the tap wasn't handled in the background.
+  const sweep = () => runDetached(clearDoneHabitNotifications(getLocalDeviceDate()));
+  sweep();
+  const appState = AppState.addEventListener('change', (state) => {
+    if (state === 'active') sweep();
+  });
+  return () => {
+    subscription.remove();
+    appState.remove();
+  };
 }

@@ -1,4 +1,4 @@
-import { habitActionTarget, notificationsToCancel } from '../notificationDone';
+import { habitActionTarget, notificationData, notificationsToCancel } from '../notificationDone';
 
 describe('after "Done ✓" on a notification', () => {
   const today = '2026-09-30';
@@ -20,5 +20,15 @@ describe('after "Done ✓" on a notification', () => {
     expect(habitActionTarget({ habitIds: ['a', 'b', 3], date: today, kind: 'checkin' })).toEqual({ habitIds: ['a', 'b'], date: today, kind: 'checkin' });
     expect(habitActionTarget({ habitId: 'a' }).habitIds).toEqual(['a']);
     expect(habitActionTarget(undefined).habitIds).toEqual([]);
+  });
+
+  it('reads data the Android background task gets as a JSON string', () => {
+    const data = { kind: 'habit', habitIds: ['water'], date: today };
+    expect(notificationData({ dataString: JSON.stringify(data) })).toEqual(data);
+    expect(notificationData({ data, dataString: '{"habitIds":["other"]}' })).toEqual(data);
+    expect(notificationData({ dataString: 'not json' })).toBeUndefined();
+    expect(notificationData({ dataString: '[1,2]' })).toBeUndefined();
+    expect(notificationData(undefined)).toBeUndefined();
+    expect(habitActionTarget(notificationData({ dataString: JSON.stringify(data) })).habitIds).toEqual(['water']);
   });
 });

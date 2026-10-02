@@ -589,6 +589,8 @@ export const en = {
   'set.st.dayoffOn': 'Weekend: {days} · and holidays',
   'set.st.dayoffOff': 'Off · Home looks the same every day',
   'set.st.dayoffOnNoHolidays': 'Weekend: {days}',
+  'sn.lastActionBackground': 'Last “Done ✓” from a notification (background): {time}',
+  'sn.lastActionApp': 'Last “Done ✓” from a notification (in app): {time}',
 } as const;
 
 export type TranslationKey = keyof typeof en;

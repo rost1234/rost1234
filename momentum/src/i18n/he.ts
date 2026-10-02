@@ -591,4 +591,6 @@ export const he: Record<TranslationKey, string> = {
   'set.st.dayoffOn': 'סופ״ש: {days} · וחגים',
   'set.st.dayoffOff': 'כבוי · מסך הבית זהה בכל יום',
   'set.st.dayoffOnNoHolidays': 'סופ״ש: {days}',
+  'sn.lastActionBackground': '״בוצע ✓״ אחרון מהתראה (ברקע): {time}',
+  'sn.lastActionApp': '״בוצע ✓״ אחרון מהתראה (באפליקציה): {time}',
 };

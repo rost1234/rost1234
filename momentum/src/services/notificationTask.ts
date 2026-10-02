@@ -12,12 +12,14 @@ import { handleHabitAction } from './habitActions';
 export const HABIT_ACTION_TASK = 'momentum-habit-action';
 
 TaskManager.defineTask<Notifications.NotificationTaskPayload>(HABIT_ACTION_TASK, async ({ data }) => {
-  if (data && 'actionIdentifier' in data) await handleHabitAction(data).catch(() => undefined);
+  if (data && 'actionIdentifier' in data) await handleHabitAction(data, 'background').catch(() => undefined);
   return Notifications.BackgroundNotificationTaskResult.NoData;
 });
 
-/** Call once from the entry point (module scope), before any screen mounts. */
+/** Call once from the entry point (module scope), before any screen mounts. Safe to repeat. */
 export function registerHabitActionTask(): void {
   if (Platform.OS !== 'android') return;
-  Notifications.registerTaskAsync(HABIT_ACTION_TASK).catch(() => undefined);
+  TaskManager.isTaskRegisteredAsync(HABIT_ACTION_TASK)
+    .then((registered) => (registered ? undefined : Notifications.registerTaskAsync(HABIT_ACTION_TASK)))
+    .catch(() => Notifications.registerTaskAsync(HABIT_ACTION_TASK).catch(() => undefined));
 }
