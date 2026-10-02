@@ -187,7 +187,7 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
       habit is marked; a later rescue / "Did you already?" for only that habit is gone from Settings → Notifications → "Coming up"
 - [ ] Same with the app in the background and in the foreground
 - [ ] After "Done ✓" (app closed), Settings → Notifications shows "Last “Done ✓” from a notification (background): <time> ✓";
-      if the notification stayed, note whether this line appeared at all
+      if the notification stayed, note whether this line appeared at all, and whether it says background or in app
 - [ ] Mark a habit done in the app while its reminder is still showing → open the app again: the reminder is gone
 - [ ] On a Friday or Saturday (Hebrew) → Home header is light blue–purple with "🏖 סופ״ש"; habits first; "3 של היום" is one
       dashed line with the open count; tapping it opens the tasks

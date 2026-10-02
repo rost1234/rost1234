@@ -12,6 +12,8 @@ export interface LastHabitAction {
   at: string;
   via: 'background' | 'app';
   ok: boolean;
+  /** The notification tapped, so a replay in the app doesn't hide a background run. */
+  notificationId?: string;
 }
 
 export const isHabitAction = (response: Pick<Notifications.NotificationResponse, 'actionIdentifier'>) =>
@@ -88,7 +90,12 @@ export async function handleHabitAction(response: HabitActionInput, via: LastHab
   await quietly(() => clearDoneHabitNotifications(date));
   refreshTodayWidget(0);
 
-  const record: LastHabitAction = { at: new Date().toISOString(), via, ok };
-  await quietly(() => AsyncStorage.setItem(LAST_HABIT_ACTION_KEY, JSON.stringify(record)));
+  // The same tap is often handled twice (background task, then the app replaying it); keep the background record.
+  const previous = await quietly(async () => JSON.parse((await AsyncStorage.getItem(LAST_HABIT_ACTION_KEY)) ?? 'null') as LastHabitAction | null);
+  const replay = via === 'app' && previous?.via === 'background' && previous.notificationId === identifier;
+  if (!replay) {
+    const record: LastHabitAction = { at: new Date().toISOString(), via, ok, notificationId: identifier };
+    await quietly(() => AsyncStorage.setItem(LAST_HABIT_ACTION_KEY, JSON.stringify(record)));
+  }
   return true;
 }
