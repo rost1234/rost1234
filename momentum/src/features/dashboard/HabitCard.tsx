@@ -9,17 +9,20 @@ import { haptics } from '@/core/haptics';
 import { formatShortDate } from '@/core/localDate';
 import { completionRatio, progressOf } from '@/domain/habitProgress';
 import type { Habit } from '@/domain/models';
+import { consistency, showConsistency } from '@/domain/motivation';
+import { isPaused } from '@/domain/pauses';
 import { hasCompletionBefore } from '@/domain/streaks';
 import { useHabitStore } from '@/state/habitStore';
 import { usePlanningStore } from '@/state/planningStore';
-import { t, useT } from '@/i18n';
+import { currentLanguage, t, tPlural, useT } from '@/i18n';
 
 interface HabitCardProps {
   habit: Habit;
 }
 
 function openHabitMenu(habit: Habit, isSkipped: boolean) {
-  const { skipHabit, archiveHabit, undoHabitStep } = useHabitStore.getState();
+  const { skipHabit, archiveHabit, undoHabitStep, completedBefore, today, logs } = useHabitStore.getState();
+  const choices = (completedBefore[habit.id] ?? 0) + (today && logs[habit.id]?.[today]?.status === 'completed' ? 1 : 0);
   const actions: SheetAction[] = [
     isSkipped
       ? { label: t('habit.unskipToday'), icon: 'arrow-undo-outline', run: () => skipHabit(habit.id) }
@@ -29,7 +32,8 @@ function openHabitMenu(habit: Habit, isSkipped: boolean) {
     { label: t('habit.pause'), icon: 'pause-circle-outline', run: () => router.push({ pathname: '/streaks', params: { habitId: habit.id } }) },
     { label: t('habit.archive'), icon: 'archive-outline', destructive: true, run: () => void archiveHabit(habit.id) },
   ];
-  showActionSheet({ title: habit.title, message: habit.why ? t('habit.why', { why: habit.why }) : undefined, actions });
+  const message = [habit.why ? t('habit.why', { why: habit.why }) : null, choices > 0 ? tPlural(currentLanguage(), 'path.sofar', choices) : null].filter(Boolean).join('\n');
+  showActionSheet({ title: habit.title, message: message || undefined, actions });
 }
 
 /** Springs the check circle whenever the habit becomes done. */
@@ -59,6 +63,15 @@ function HabitCardComponent({ habit }: HabitCardProps) {
     const byDate = s.logs[habit.id];
     if (!s.today || !byDate || (s.streaks[habit.id] ?? 0) > 0) return false;
     return hasCompletionBefore(new Map(Object.entries(byDate).map(([d, l]) => [d, l.status])), s.today);
+  });
+  // After a break, the whole month ("26 of 30") beside the young streak, so one miss doesn't erase the rest.
+  const pauses = usePlanningStore((s) => s.pauses);
+  const consistencyText = useHabitStore((s) => {
+    const byDate = s.logs[habit.id];
+    if (!s.today || !byDate) return null;
+    const statuses = new Map(Object.entries(byDate).map(([d, l]) => [d, l.status]));
+    const result = consistency(habit, statuses, s.today, (date) => isPaused(pauses, date, habit.id));
+    return showConsistency(s.streaks[habit.id] ?? 0, result) ? `${result.done}/${result.due}` : null;
   });
   // A pause for just this habit (app-wide pauses have their own banner).
   const pausedUntil = usePlanningStore((s) => {
@@ -131,6 +144,14 @@ function HabitCardComponent({ habit }: HabitCardProps) {
                 <Ionicons name="leaf" size={12} color={colors.success} />
                 <Text style={[styles.streakText, { color: colors.success }]}>{t('habit.freshStart')}</Text>
               </View>
+            ) : null}
+            {consistencyText && !pausedUntil ? (
+              <Text
+                style={[styles.streakText, { color: colors.success }]}
+                accessibilityLabel={t('habit.consistencyA11y', { value: consistencyText })}
+              >
+                {t('habit.consistency', { value: consistencyText })}
+              </Text>
             ) : null}
           </View>
           <Text style={typography.caption} numberOfLines={1}>

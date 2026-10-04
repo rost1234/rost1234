@@ -21,9 +21,12 @@ import { useReflectionStore } from '@/state/reflectionStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { useTaskStore } from '@/state/taskStore';
 import { Celebration } from './Celebration';
+import { AutomaticCard } from './AutomaticCard';
 import { CoachMarks } from './CoachMarks';
 import { DashboardHeader } from './DashboardHeader';
 import { DecideCard } from './DecideCard';
+import { WelcomeBackCard, useWelcomeBack } from './WelcomeBackCard';
+import { FirstWinCard } from './FirstWinCard';
 import { FoldedSection } from './FoldedSection';
 import { EmptyHabits } from './EmptyHabits';
 import { HardDayBar } from './HardDayBar';
@@ -78,6 +81,7 @@ export function DashboardScreen() {
   const reflection = useReflectionStore((s) => s.byDate[today]);
   const { dueToday, percent, doneCount, restCount } = useDashboardData(today, hour);
   const dayOff = useDayOff(today);
+  const welcomeBack = useWelcomeBack(today);
   const openTasks = useTaskStore((s) => s.tasks.filter((task) => !task.isCompleted).length + s.overdue.length);
   const habits = useHabitStore((s) => s.habits);
 
@@ -131,10 +135,13 @@ export function DashboardScreen() {
           dayOffName={dayOff?.name ?? null}
         />
 
+        {welcomeBack.show ? <WelcomeBackCard onClose={welcomeBack.close} /> : null}
         <HardDayBar today={today} />
         <CoachMarks />
+        <FirstWinCard today={today} hour={hour} />
         <LevelCard today={today} />
         <InsightCard today={today} />
+        <AutomaticCard today={today} />
         {error ? <Banner message={error} onDismiss={clearError} /> : null}
         {taskError ? <Banner message={taskError} onDismiss={clearTaskError} /> : null}
         {freezeAwarded ? <Banner tone="info" message={t('today.perfectWeek')} /> : null}
@@ -169,12 +176,12 @@ export function DashboardScreen() {
             title={t('today.todays3')}
             summary={openTasks === 0 ? t('dayoff.noTasks') : t.plural('dayoff.openTasks', openTasks)}
           >
-            <DecideCard />
+            {welcomeBack.show ? null : <DecideCard />}
             <TaskList />
           </FoldedSection>
         ) : (
           <>
-            <DecideCard />
+            {welcomeBack.show ? null : <DecideCard />}
             <SectionTitle>{t('today.todays3')}</SectionTitle>
             <TaskList />
           </>

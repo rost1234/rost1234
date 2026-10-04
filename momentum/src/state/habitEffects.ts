@@ -1,14 +1,24 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { runDetached } from '@/core/errors';
+import { addDays } from '@/core/localDate';
+import { repositories } from '@/data/repositories';
+import { habitStartDate } from '@/domain/habitSchedule';
+import type { Habit } from '@/domain/models';
 import { crossedMilestone } from '@/domain/rhythm';
 import { useHabitStore } from './habitStore';
 
 const MILESTONES_KEY = 'momentum.milestones.v1';
 
 export interface Celebration {
+  /** A streak milestone, or the very first completion after setup. */
+  kind?: 'milestone' | 'firstWin';
   habitTitle: string;
   days: number;
+  /** Every day it was done, all history: the small choices behind the streak. */
+  choices: number;
+  /** From the reflection nearest the habit's first day (30+ day milestones): "look where it started". */
+  dayOneNote?: { date: string; text: string };
   at: number;
 }
 
@@ -32,12 +42,24 @@ async function loadCelebrated(): Promise<Record<string, number[]>> {
   return celebrated;
 }
 
-async function celebrateOnce(habitId: string, habitTitle: string, days: number): Promise<void> {
+/** Gratitude first (it ages best), then the lesson, from a reflection within 3 days of the start. */
+async function findDayOneNote(habit: Pick<Habit, 'createdAt'>): Promise<Celebration['dayOneNote']> {
+  const start = habitStartDate(habit);
+  const reflections = await repositories.reflections.getInRange(start, addDays(start, 3)).catch(() => []);
+  for (const r of reflections) {
+    const text = r.gratitudeText.trim() || r.lessonText.trim();
+    if (text) return { date: r.logDate, text };
+  }
+  return undefined;
+}
+
+async function celebrateOnce(habit: Habit, days: number, choices: number): Promise<void> {
   const seen = await loadCelebrated();
-  if (seen[habitId]?.includes(days)) return;
-  seen[habitId] = [...(seen[habitId] ?? []), days];
+  if (seen[habit.id]?.includes(days)) return;
+  seen[habit.id] = [...(seen[habit.id] ?? []), days];
   runDetached(AsyncStorage.setItem(MILESTONES_KEY, JSON.stringify(seen)));
-  useCelebrationStore.setState({ celebration: { habitTitle, days, at: Date.now() } });
+  const dayOneNote = days >= 30 ? await findDayOneNote(habit) : undefined;
+  useCelebrationStore.setState({ celebration: { kind: 'milestone', habitTitle: habit.title, days, choices, dayOneNote, at: Date.now() } });
 }
 
 let started = false;
@@ -59,7 +81,7 @@ export function startHabitEffects(): void {
         const before = prev.streaks[habit.id] ?? 0;
         const after = state.streaks[habit.id] ?? 0;
         const milestone = crossedMilestone(before, after);
-        if (milestone) runDetached(celebrateOnce(habit.id, habit.title, milestone));
+        if (milestone) runDetached(celebrateOnce(habit, milestone, (state.completedBefore[habit.id] ?? 0) + 1));
       }
     }
   });

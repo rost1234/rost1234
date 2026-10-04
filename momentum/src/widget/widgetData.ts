@@ -3,6 +3,7 @@ import { currentLocale, t } from '@/i18n';
 import { repositories } from '@/data/repositories';
 import { applyPrimaryAction, progressOf } from '@/domain/habitProgress';
 import { isHabitDueOn } from '@/domain/habitSchedule';
+import { clearDoneHabitNotifications } from '@/services/habitActions';
 import { buildTodayWidgetModel, type TodayWidgetModel } from './widgetModel';
 
 /** Reads today's state straight from SQLite (works without the app UI running). */
@@ -33,4 +34,6 @@ export async function tapHabitFromWidget(habitId: string): Promise<void> {
       ? { currentCount: Math.max(1, progress.currentCount), status: 'completed' as const }
       : applyPrimaryAction(habit, progress);
   await repositories.habitLogs.upsert({ habitId, logDate: today, currentCount: next.currentCount, status: next.status });
+  // Done from the widget: its reminders for today shouldn't still ask.
+  if (next.status === 'completed') await clearDoneHabitNotifications(today).catch(() => undefined);
 }

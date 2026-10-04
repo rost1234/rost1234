@@ -12,6 +12,7 @@ import { hasCompletionBefore } from '@/domain/streaks';
 import { useT } from '@/i18n';
 import { useHabitStore } from '@/state/habitStore';
 import { useSettingsStore } from '@/state/settingsStore';
+import { FreshStartCard, useFreshStart } from './FreshStartCard';
 
 /** Validated by src/content/__tests__/insights.test.ts. */
 export const INSIGHTS = rawInsights as unknown as Insight[];
@@ -55,6 +56,8 @@ export function InsightCard({ today }: { today: LocalDateString }) {
   // day is in: the recent context, and the habit store reloaded for it (after midnight it lags).
   const [loaded, setLoaded] = useState<{ date: LocalDateString; shown: Record<string, LocalDateString>; context: InsightTriggerId[] } | null>(null);
   const habitsReady = useHabitStore((s) => s.today === today && s.status === 'ready');
+  // On a fresh-start day with a habit to invite back, that card takes this slot.
+  const freshStart = useFreshStart(today);
 
   useEffect(() => {
     let current = true;
@@ -68,7 +71,7 @@ export function InsightCard({ today }: { today: LocalDateString }) {
     };
   }, [today]);
 
-  const ready = habitsReady && loaded?.date === today;
+  const ready = habitsReady && loaded?.date === today && !freshStart;
   const insight = ready && loaded ? pickInsight(INSIGHTS, today, goal, [...habitTriggers, ...loaded.context], loaded.shown) : null;
   const shown = ready && loaded ? loaded.shown : null;
 
@@ -78,6 +81,7 @@ export function InsightCard({ today }: { today: LocalDateString }) {
     }
   }, [insight, shown, today]);
 
+  if (freshStart && habitsReady) return <FreshStartCard {...freshStart} />;
   if (!insight) return null;
   return <InsightView insight={insight} title={t('insight.title')} />;
 }

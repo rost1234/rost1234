@@ -17,6 +17,17 @@ export class SqliteHabitLogRepository implements HabitLogRepository {
     });
   }
 
+  countCompletedBefore(date: LocalDateString): Promise<Record<string, number>> {
+    return guardDb('habitLogs.countCompletedBefore', async () => {
+      const db = await this.db();
+      const rows = await db.getAllAsync<{ habit_id: string; total: number }>(
+        "SELECT habit_id, COUNT(*) AS total FROM habit_logs WHERE status = 'completed' AND log_date < ? GROUP BY habit_id",
+        [date],
+      );
+      return Object.fromEntries(rows.map((row) => [row.habit_id, Number(row.total)]));
+    });
+  }
+
   getInRange(start: LocalDateString, end: LocalDateString): Promise<HabitLog[]> {
     return guardDb('habitLogs.getInRange', async () => {
       const db = await this.db();

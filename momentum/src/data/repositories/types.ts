@@ -60,6 +60,8 @@ export interface HabitLogUpsert {
 export interface HabitLogRepository {
   getForDate(date: LocalDateString): Promise<HabitLog[]>;
   getInRange(start: LocalDateString, end: LocalDateString): Promise<HabitLog[]>;
+  /** habitId → how many days it was completed before `date` (all history). */
+  countCompletedBefore(date: LocalDateString): Promise<Record<string, number>>;
   upsert(entry: HabitLogUpsert): Promise<HabitLog>;
   /** Writes `forgiven` logs; existing completed logs are never overwritten. */
   forgive(entries: readonly { habitId: string; logDate: LocalDateString }[]): Promise<void>;

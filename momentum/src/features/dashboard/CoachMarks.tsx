@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
 import { Ionicons } from '@expo/vector-icons';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { runDetached } from '@/core/errors';
@@ -8,6 +9,9 @@ import type { TranslationKey } from '@/i18n';
 import { useT } from '@/i18n';
 
 const KEY = 'momentum.coach.v1';
+
+/** Whether the first-use tips are behind us (null until known), so other first-day cards wait for them. */
+export const useCoachMarksDone = create<{ done: boolean | null }>(() => ({ done: null }));
 
 const TIPS = [
   { icon: 'hand-left-outline', text: 'coach.tap' },
@@ -24,8 +28,14 @@ export function CoachMarks() {
 
   useEffect(() => {
     AsyncStorage.getItem(KEY)
-      .then((done) => setStep(done ? null : 0))
-      .catch(() => setStep(null));
+      .then((done) => {
+        setStep(done ? null : 0);
+        useCoachMarksDone.setState({ done: Boolean(done) });
+      })
+      .catch(() => {
+        setStep(null);
+        useCoachMarksDone.setState({ done: true });
+      });
   }, []);
 
   if (step === null) return null;
@@ -34,6 +44,7 @@ export function CoachMarks() {
 
   const finish = () => {
     setStep(null);
+    useCoachMarksDone.setState({ done: true });
     runDetached(AsyncStorage.setItem(KEY, '1'));
   };
   const next = () => (step + 1 < TIPS.length ? setStep(step + 1) : finish());

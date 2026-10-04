@@ -17,19 +17,23 @@ import { useBottomSpace } from '@/components/useBottomSpace';
 interface WeeklyData {
   summary: WeeklySummary;
   shown: Record<string, LocalDateString>;
+  /** Every habit completion up to the end of the week, all history. */
+  pathTotal: number;
 }
 
 async function loadSummary(): Promise<WeeklyData> {
   const week = previousWeek(getLocalDeviceDate());
   const startIso = new Date(parseLocalDate(week.start).setHours(0, 0, 0, 0)).toISOString();
   const endIso = new Date(parseLocalDate(addDays(week.end, 1)).setHours(0, 0, 0, 0)).toISOString();
-  const [habits, logs, sessions, shown] = await Promise.all([
+  const [habits, logs, sessions, shown, totals] = await Promise.all([
     repositories.habits.getAll(),
     repositories.habitLogs.getInRange(week.start, week.end),
     repositories.focusSessions.getInRange(startIso, endIso),
     repositories.shownInsights.getAll().catch(() => ({})),
+    repositories.habitLogs.countCompletedBefore(addDays(week.end, 1)).catch((): Record<string, number> => ({})),
   ]);
-  return { summary: buildWeeklySummary(habits, logs, sessions, week), shown };
+  const pathTotal = Object.values(totals).reduce((sum, n) => sum + n, 0);
+  return { summary: buildWeeklySummary(habits, logs, sessions, week), shown, pathTotal };
 }
 
 /** A 30-second look back at last week: what worked, one thing to adjust. */
@@ -100,6 +104,20 @@ export function WeeklyScreen() {
           </View>
         ))}
       </Card>
+
+      {data.pathTotal > 0 ? (
+        <Card style={styles.section}>
+          <Text style={typography.overline}>{t('path.title')}</Text>
+          <View style={styles.row}>
+            <Ionicons name="trail-sign-outline" size={18} color={colors.success} />
+            <Text style={[typography.body, { flex: 1 }]}>
+              {t.plural('path.total', data.pathTotal)}
+              {summary.totalCompleted > 0 ? ` ${t('path.pace', { week: summary.totalCompleted, year: summary.totalCompleted * 52 })}` : ''}
+            </Text>
+          </View>
+          <Text style={typography.caption}>{t('path.lead')}</Text>
+        </Card>
+      ) : null}
 
       {summary.toImprove ? (
         <Card style={styles.section}>

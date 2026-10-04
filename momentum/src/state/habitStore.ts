@@ -22,6 +22,8 @@ interface HabitState {
   habits: Habit[];
   logs: LogIndex;
   streaks: Record<string, number>;
+  /** habitId → days completed before today (all history); today's log adds the rest. */
+  completedBefore: Record<string, number>;
   status: LoadStatus;
   /** Transient, user-facing error (e.g. a failed write that was rolled back). */
   error: string | null;
@@ -53,9 +55,10 @@ export interface LastChange {
   at: number;
 }
 
-function describeChange(before: LogProgress, after: LogProgress, unit: string): string {
+function describeChange(before: LogProgress, after: LogProgress, unit: string, nth: number): string {
   if (after.status === 'skipped') return t('undo.skipped');
-  if (after.status === 'completed' && before.status !== 'completed') return t('undo.done');
+  // The path so far: every completion is one more small choice.
+  if (after.status === 'completed' && before.status !== 'completed') return nth > 1 ? t('undo.doneNth', { count: nth }) : t('undo.done');
   if (after.currentCount > before.currentCount) return t('undo.plusOne', { unit }).trim();
   if (after.currentCount < before.currentCount || before.status === 'completed') return t('undo.undone');
   return t('undo.updated');
@@ -92,7 +95,8 @@ export const useHabitStore = create<HabitState>((set, get) => {
     const previous = logs[habitId]?.[today];
     if (options.recordUndo) {
       const before = progressOf(previous);
-      set({ lastChange: { habitId, previous: before, label: t('undo.label', { title: habit.title, change: describeChange(before, next, habit.unit) }), at: Date.now() } });
+      const nth = (get().completedBefore[habitId] ?? 0) + 1;
+      set({ lastChange: { habitId, previous: before, label: t('undo.label', { title: habit.title, change: describeChange(before, next, habit.unit, nth) }), at: Date.now() } });
     }
     const optimistic: HabitLog = {
       id: previous?.id ?? `pending-${habitId}-${today}`,
@@ -143,6 +147,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
     habits: [],
     logs: {},
     streaks: {},
+    completedBefore: {},
     status: 'idle',
     error: null,
     lastForgivenDays: 0,
@@ -157,12 +162,16 @@ export const useHabitStore = create<HabitState>((set, get) => {
         await usePlanningStore.getState().load(today);
         const reconcile = await reconcileStreakFreezes(habits, today);
         useSettingsStore.getState().setFreezesAvailable(reconcile.freezesRemaining);
-        const logs = indexLogs(await repositories.habitLogs.getInRange(historyStart(today), today));
+        const [logs, completedBefore] = await Promise.all([
+          repositories.habitLogs.getInRange(historyStart(today), today).then(indexLogs),
+          repositories.habitLogs.countCompletedBefore(today).catch(() => ({})),
+        ]);
         if (get().today !== today) return; // a newer load superseded this one
         set({
           habits,
           logs,
           streaks: allStreaks(habits, logs, today),
+          completedBefore,
           status: 'ready',
           error: null,
           lastForgivenDays: reconcile.forgivenDays,
