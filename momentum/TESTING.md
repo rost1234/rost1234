@@ -195,3 +195,15 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
       shows the chosen days
 - [ ] Start an app-wide vacation pause today → pill "✈ חופשה"; a sick pause or a single-habit pause → regular Home
 - [ ] A regular weekday → Home unchanged (no pill, tasks open as before)
+
+## Motivation (build 29)
+- [ ] Tap a habit → toast "Done ✓ · time #N"; long-press → "So far: N small choices"
+- [ ] Weekly summary → "Your path" card with the total, last week and the yearly pace
+- [ ] Break a streak, then do the habit 1–6 days → "26/30 past month" beside the streak; gone at 7
+- [ ] Don't open the app or use the widget for 5+ days → "Good to have you back" card; no missed-day count; old tasks move to Later
+- [ ] 30-day milestone with a reflection from the habit's first days → "📝 A note from day one" opens on tap (after unlocking if locked)
+- [ ] A habit 66+ days old with a streak → one question a day at most; 4–5 offers to turn off the reminder
+- [ ] Fresh install → after the tips, "First win" card once; "Did it ✓" marks the habit and shows 🌱
+- [ ] Update from build 28 → no First win card
+- [ ] On the 1st of the month with a broken habit → fresh-start card in the insight slot; "Archive it" asks first
+- [ ] Complete a habit from the widget → its notifications for today disappear

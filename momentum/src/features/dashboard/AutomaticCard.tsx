@@ -14,6 +14,8 @@ const KEY = 'momentum.automatic.v1';
 type Answers = Record<string, number | LocalDateString>;
 
 const SCORES = [1, 2, 3, 4, 5] as const;
+/** Stored beside the answers: the day a question was last asked. */
+const LAST_ASKED = '__lastAsked';
 
 /**
  * Around day 66 of a habit (the median time to automaticity, Lally et al. 2010):
@@ -69,7 +71,8 @@ export function AutomaticCard({ today }: { today: LocalDateString }) {
     );
   }
 
-  // One habit at a time: past day 66, still going (a streak), not asked yet or put off before today.
+  // One habit at a time, and at most one question a day: past day 66, still going, not asked yet.
+  if (answers[LAST_ASKED] === today) return null;
   const habit = habits.find((h) => {
     const answer = answers[h.id];
     const asked = typeof answer === 'number' || (typeof answer === 'string' && answer > today);
@@ -89,7 +92,7 @@ export function AutomaticCard({ today }: { today: LocalDateString }) {
             selected={false}
             accessibilityLabel={t('auto.scoreA11y', { score, low: t('auto.low'), high: t('auto.high') })}
             onPress={() => {
-              save({ ...answers, [habit.id]: score });
+              save({ ...answers, [habit.id]: score, [LAST_ASKED]: today });
               setAnswered({ habitId: habit.id, score });
             }}
           />
@@ -99,7 +102,7 @@ export function AutomaticCard({ today }: { today: LocalDateString }) {
         <Text style={typography.caption}>{t('auto.low')}</Text>
         <Text style={typography.caption}>{t('auto.high')}</Text>
       </View>
-      <Button label={t('auto.later')} variant="ghost" onPress={() => save({ ...answers, [habit.id]: addDays(today, 7) })} />
+      <Button label={t('auto.later')} variant="ghost" onPress={() => save({ ...answers, [habit.id]: addDays(today, 7), [LAST_ASKED]: today })} />
     </View>
   );
 }

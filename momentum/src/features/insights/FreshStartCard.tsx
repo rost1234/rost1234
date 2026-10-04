@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { showConfirm } from '@/components/Overlay';
 import { Button } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { runDetached } from '@/core/errors';
 import { addDays, type LocalDateString } from '@/core/localDate';
 import { freshStartOccasion, habitToWelcomeBack, type FreshStartOccasion } from '@/domain/motivation';
 import type { Habit } from '@/domain/models';
+import { useWelcomeBackDay } from '@/features/dashboard/WelcomeBackCard';
 import { useHabitStore } from '@/state/habitStore';
 import { useT, type TranslationKey } from '@/i18n';
 
@@ -42,7 +44,8 @@ export function useFreshStart(today: LocalDateString): { occasion: FreshStartOcc
       .catch(() => setClosedOn(today));
   }, [occasion, today]);
 
-  if (!occasion || !habit || closedOn === undefined || closedOn === today) return null;
+  const welcomeBackToday = useWelcomeBackDay((s) => s.day === today);
+  if (!occasion || !habit || welcomeBackToday || closedOn === undefined || closedOn === today) return null;
   const close = () => {
     setClosedOn(today);
     runDetached(AsyncStorage.setItem(KEY, today));
@@ -69,10 +72,18 @@ export function FreshStartCard({ occasion, habit, idle, close }: NonNullable<Ret
           <Button
             label={t('fresh.letGo')}
             variant="ghost"
-            onPress={() => {
-              runDetached(archiveHabit(habit.id));
-              close();
-            }}
+            onPress={() =>
+              showConfirm({
+                title: t('fresh.archiveTitle', { title: habit.title }),
+                message: t('fresh.archiveBody'),
+                confirmLabel: t('fresh.letGo'),
+                destructive: true,
+                onConfirm: () => {
+                  runDetached(archiveHabit(habit.id));
+                  close();
+                },
+              })
+            }
             style={{ flex: 1 }}
           />
         ) : null}

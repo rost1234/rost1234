@@ -635,4 +635,6 @@ export const he: Record<TranslationKey, string> = {
   'fresh.restart': "יאללה, היום",
   'auto.scoreA11y': "{score} מתוך 5. {low}, {high}",
   'fresh.letGo': "להעביר לארכיון",
+  'fresh.archiveTitle': 'להעביר את {title} לארכיון?',
+  'fresh.archiveBody': 'ההרגל יוסתר ממסך הבית. ההיסטוריה שלו נשמרת.',
 };

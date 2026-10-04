@@ -633,6 +633,8 @@ export const en = {
   'fresh.restart': "Let's go, today",
   'auto.scoreA11y': "{score} of 5. {low}, {high}",
   'fresh.letGo': "Archive it",
+  'fresh.archiveTitle': 'Archive {title}?',
+  'fresh.archiveBody': 'It disappears from Today. Its history is kept.',
 } as const;
 
 export type TranslationKey = keyof typeof en;

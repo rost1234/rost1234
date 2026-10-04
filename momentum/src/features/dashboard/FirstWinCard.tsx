@@ -9,7 +9,9 @@ import { addDays, localDateFromIso, type LocalDateString } from '@/core/localDat
 import { habitsDueOn } from '@/domain/habitSchedule';
 import { timeOfDayNow } from '@/domain/rhythm';
 import { useCelebrationStore } from '@/state/habitEffects';
+import { isPaused } from '@/domain/pauses';
 import { useHabitStore } from '@/state/habitStore';
+import { usePlanningStore } from '@/state/planningStore';
 import { useT } from '@/i18n';
 import { useCoachMarksDone } from './CoachMarks';
 
@@ -27,6 +29,7 @@ export function FirstWinCard({ today, hour }: { today: LocalDateString; hour: nu
   const coachDone = useCoachMarksDone((s) => s.done);
   const [seen, setSeen] = useState<boolean | null>(null);
   const tapHabit = useHabitStore((s) => s.tapHabit);
+  const pauses = usePlanningStore((s) => s.pauses);
   const candidate = useHabitStore((s) => {
     if (s.today !== today || s.status !== 'ready' || s.habits.length === 0) return null;
     // Only for a brand-new start: nothing done yet, ever, and every habit just created.
@@ -34,7 +37,9 @@ export function FirstWinCard({ today, hour }: { today: LocalDateString; hour: nu
     if (s.habits.some((h) => localDateFromIso(h.createdAt) < addDays(today, -1))) return null;
     if (s.habits.some((h) => s.logs[h.id]?.[today]?.status === 'completed')) return null;
     const now = timeOfDayNow(hour);
-    const due = habitsDueOn(s.habits, today).filter((h) => h.timeOfDay === 'any' || h.timeOfDay === now);
+    const due = habitsDueOn(s.habits, today).filter(
+      (h) => (h.timeOfDay === 'any' || h.timeOfDay === now) && !isPaused(pauses, today, h.id) && s.logs[h.id]?.[today]?.status !== 'skipped',
+    );
     return due.find((h) => !h.isQuantitative && h.microStep) ?? due.find((h) => !h.isQuantitative) ?? null;
   });
 

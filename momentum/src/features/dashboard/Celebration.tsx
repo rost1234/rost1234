@@ -45,9 +45,9 @@ export function Celebration() {
   const openNote = () =>
     runDetached(
       (async () => {
-        if (locked && !(await unlock())) return;
-        // Open notes stay until closed.
+        // Stop the fade first, so a slow unlock doesn't lose the note. Open notes stay until closed.
         if (timeout.current) clearTimeout(timeout.current);
+        if (locked && !(await unlock())) return;
         if (celebration) setNoteOpenFor(celebration.at);
       })(),
     );

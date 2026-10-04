@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
 import { Button } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { runDetached } from '@/core/errors';
@@ -14,6 +15,9 @@ import { useT } from '@/i18n';
 
 const KEY = 'momentum.welcomeBack.v1';
 
+/** The day the welcome-back card is showing, so the fresh-start card doesn't invite the same habit too. */
+export const useWelcomeBackDay = create<{ day: LocalDateString | null }>(() => ({ day: null }));
+
 /**
  * After 5+ days away: a warm hello and one small way back, instead of broken
  * streaks and a pile of old tasks. No counting of missed days. Returns true
@@ -26,12 +30,17 @@ export function useWelcomeBack(today: LocalDateString): { show: boolean; close: 
     runDetached(
       (async () => {
         if ((await AsyncStorage.getItem(KEY).catch(() => null)) === today) return;
-        const usage = await repositories.usage.getInRange(addDays(today, -120), today).catch(() => []);
-        const away = daysAway(
-          usage.filter((u) => u.seconds > 0).map((u) => u.logDate),
-          today,
-        );
-        if (current && away !== null && away >= WELCOME_BACK_DAYS) setShow(true);
+        const [usage, logs] = await Promise.all([
+          repositories.usage.getInRange(addDays(today, -400), today).catch(() => []),
+          // Habits done from the widget or a notification count as being here too.
+          repositories.habitLogs.getInRange(addDays(today, -400), addDays(today, -1)).catch(() => []),
+        ]);
+        const active = [...usage.filter((u) => u.seconds > 0).map((u) => u.logDate), ...logs.map((l) => l.logDate)];
+        const away = daysAway(active, today);
+        if (current && away !== null && away >= WELCOME_BACK_DAYS) {
+          setShow(true);
+          useWelcomeBackDay.setState({ day: today });
+        }
       })(),
     );
     return () => {
