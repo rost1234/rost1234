@@ -4,7 +4,7 @@ from dice import roll, fmt
 from player import POTION
 
 PLAYER_DAMAGE = 3
-SPELL = "1d6+2"
+SPELL = "2d6+1"
 
 
 def fight(player, enemies, can_flee=False):
@@ -58,7 +58,7 @@ def _duel(player, enemy, can_flee):
                 # הטלת לחש לוקחת תור - האויב מנסה לפגוע בך בזמן שאתה מרוכז בלחש
                 p_total, _ = roll("2d6")
                 e_total, _ = roll("2d6")
-                if e_total + skill > p_total + player.strength + player.attack_bonus():
+                if e_total + skill > p_total + player.fighting + player.attack_bonus():
                     _hit_player(player, e_dmg, name)
                     if not player.alive:
                         return _died(name)
@@ -68,9 +68,9 @@ def _duel(player, enemy, can_flee):
 
         p_total, p_rolls = roll("2d6")
         e_total, e_rolls = roll("2d6")
-        p_score = p_total + player.strength + player.attack_bonus()
+        p_score = p_total + player.fighting + player.attack_bonus()
         e_score = e_total + skill
-        d.say(f"אתה: 2d6 [{'+'.join(map(str, p_rolls))}] + {player.strength} + {player.attack_bonus()} = {p_score}"
+        d.say(f"אתה: 2d6 [{'+'.join(map(str, p_rolls))}] + {player.fighting} + {player.attack_bonus()} = {p_score}"
               f"   |   {name}: 2d6 [{'+'.join(map(str, e_rolls))}] + {skill} = {e_score}", d.GRAY)
         if p_score > e_score:
             e_hp -= PLAYER_DAMAGE

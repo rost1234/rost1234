@@ -18,7 +18,7 @@ CLASSES = {
     },
     "thief": {
         "name": "גנב",
-        "desc": "זריז וחמקמק. יודע לפרוץ מנעולים.",
+        "desc": "זריז וחמקמק. יודע לפרוץ מנעולים ונלחם בזריזות במקום בכוח.",
         "bonus": {"strength": 1, "agility": 3, "hp": 2},
         "mana": 0,
         "items": ["פגיון", "ערכת פריצה"],
@@ -27,7 +27,7 @@ CLASSES = {
         "name": "קוסם",
         "desc": "חלש בגוף אך יודע להטיל לחשים (חץ קסם בקרב).",
         "bonus": {"strength": 0, "agility": 1, "hp": 0},
-        "mana": 4,
+        "mana": 5,
         "items": ["מטה קסמים", "ספר לחשים"],
     },
 }
@@ -84,6 +84,13 @@ class Player:
     @property
     def alive(self):
         return self.hp > 0
+
+    @property
+    def fighting(self):
+        """תכונת הקרב: גנב נלחם בזריזות (להב מהיר) אם היא גבוהה מהכוח שלו."""
+        if self.cls == "thief":
+            return max(self.strength, self.agility)
+        return self.strength
 
     def attack_bonus(self):
         return max([WEAPONS[i] for i in self.inventory if i in WEAPONS] or [0])
