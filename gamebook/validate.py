@@ -65,5 +65,9 @@ def validate(path):
 
 
 if __name__ == "__main__":
+    try:  # ב-Windows הפלט עלול להיות cp1252, שלא יודע להדפיס עברית
+        sys.stdout.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
     default = os.path.join(os.path.dirname(os.path.abspath(__file__)), "story", "adventure.json")
     sys.exit(0 if validate(sys.argv[1] if len(sys.argv) > 1 else default) else 1)
