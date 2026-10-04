@@ -66,7 +66,9 @@ export function WelcomeBackCard({ onClose }: { onClose: () => void }) {
 
   return (
     <View style={styles.card} accessibilityRole="summary">
-      <Text style={styles.emoji}>🌱</Text>
+      <Text style={styles.emoji} accessible={false} importantForAccessibility="no">
+        🌱
+      </Text>
       <Text style={typography.heading}>{t('welcome.title')}</Text>
       <Text style={typography.body}>{habit ? t('welcome.bodyHabit', { title: habit.title }) : t('welcome.body')}</Text>
       <View style={styles.buttons}>

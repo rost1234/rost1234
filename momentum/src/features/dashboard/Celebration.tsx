@@ -71,7 +71,7 @@ export function Celebration() {
               {formatFriendlyDate(celebration.dayOneNote.date, t.locale)}: “{celebration.dayOneNote.text}”
             </Text>
           ) : (
-            <Pressable accessibilityRole="button" onPress={openNote} hitSlop={8} style={styles.noteButton}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('milestone.dayOneNote')} onPress={openNote} hitSlop={8} style={styles.noteButton}>
               <Text style={styles.noteButtonText}>📝 {t('milestone.dayOneNote')} {t.isRTL ? '◂' : '▸'}</Text>
             </Pressable>
           )

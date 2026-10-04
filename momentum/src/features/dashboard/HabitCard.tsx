@@ -148,7 +148,7 @@ function HabitCardComponent({ habit }: HabitCardProps) {
             {consistencyText && !pausedUntil ? (
               <Text
                 style={[styles.streakText, { color: colors.success }]}
-                accessibilityLabel={t('habit.consistencyA11y', { value: consistencyText })}
+                accessibilityLabel={t('habit.consistencyA11y', { done: consistencyText.split('/')[0] ?? '', due: consistencyText.split('/')[1] ?? '' })}
               >
                 {t('habit.consistency', { value: consistencyText })}
               </Text>

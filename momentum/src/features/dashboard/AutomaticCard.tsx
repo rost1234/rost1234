@@ -87,6 +87,7 @@ export function AutomaticCard({ today }: { today: LocalDateString }) {
             key={score}
             label={String(score)}
             selected={false}
+            accessibilityLabel={t('auto.scoreA11y', { score, low: t('auto.low'), high: t('auto.high') })}
             onPress={() => {
               save({ ...answers, [habit.id]: score });
               setAnswered({ habitId: habit.id, score });
