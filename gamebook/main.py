@@ -6,6 +6,7 @@ import display as d
 from engine import Game, SAVE_FILE, load_story
 from player import CLASSES, Player
 
+MAX_REROLLS = 2
 STORY_FILE = os.path.join(d.RESOURCE_DIR, "story", "adventure.json")
 
 
@@ -26,6 +27,7 @@ def create_player():
             break
 
     player = Player(name, cls)
+    rerolls = MAX_REROLLS
     while True:
         print()
         d.say("מטיל קוביות לתכונות...", d.GRAY)
@@ -33,9 +35,13 @@ def create_player():
             d.say(line)
         player.show_status()
         player.show_inventory()
-        d.say("1. יוצאים לדרך!   2. הטל מחדש")
+        if not rerolls:
+            d.pause()
+            return player
+        d.say(f"1. יוצאים לדרך!   2. הטל מחדש (נשארו {rerolls})")
         if d.ask("> ") != "2":
             return player
+        rerolls -= 1
 
 
 def main():

@@ -3,7 +3,7 @@
 הרצה:  python balance.py [מספר_משחקים]
 
 מדפיס:
-- אחוז ניצחון / מוות / סוף רע לכל מקצוע (בוט שבוחר באקראי, תוקף בקרב ושותה שיקוי כשהחיים נמוכים)
+- אחוז ניצחון / מוות / סוף רע לכל מקצוע (בוט שבוחר באקראי אבל לא נכנס ישר לסוף רע, תוקף בקרב ושותה שיקוי כשהחיים נמוכים)
 - הדפים שבהם הכי הרבה שחקנים מתים
 - לולאות בגרף הדפים שנותנות משאב (זהב, ריפוי, פריט, תכונה) בלי מחיר = רמאות אפשרית
 - דפים שהבוט אף פעם לא הגיע אליהם
@@ -40,7 +40,7 @@ class Bot:
         p = self.p
         if p.hp <= p.max_hp // 3 and p.has(POTION):
             return "p" if self.in_page else "2"
-        return random.choice(["1", "1", "2", "3", "4"])
+        return random.choice(["1", "1", "2", "2", "3", "4", "5", "6", "7", "8", "9"])
 
 
 def play_one(story, cls):
@@ -62,6 +62,14 @@ def play_one(story, cls):
 
     def choose(page):
         bot.in_page = True
+        if p.hp <= p.max_hp // 3 and p.has(POTION):
+            p.drink_potion()
+        # שחקן סביר: לא בוחר בחירה שמובילה ישר לסוף רע (פיתוי ברור / יציאה מהמשימה)
+        options = [c for c in page.get("choices", []) if g.available(c)]
+        safe = [c for c in options
+                if g.pages.get(c.get("goto"), {}).get("ending") not in ("bad", "alt")]
+        if safe:
+            return g.resolve(random.choice(safe))
         return orig_choose(page)
 
     orig_play = g.play_page

@@ -12,7 +12,9 @@ SAVE_FILE = os.path.join(d.BASE_DIR, "saves", "save.json")
 HELP = "i מלאי | s מצב | p שיקוי | save שמירה | q תפריט"
 
 ENDINGS = {
+    "true": ("*** הסוף האמיתי! ***", d.BOLD + d.YELLOW),
     "win": ("*** ניצחון! ***", d.GREEN),
+    "alt": ("*** סוף אחר ***", d.YELLOW),
     "bad": ("*** הסוף... ***", d.MAGENTA),
     "death": ("*** מתת. ההרפתקה הסתיימה ***", d.RED),
 }

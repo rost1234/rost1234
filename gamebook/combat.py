@@ -54,6 +54,16 @@ def _duel(player, enemy, can_flee):
             total, rolls = roll(SPELL)
             e_hp -= total
             d.say(f"חץ קסם כחול זורם מכפות ידיך! {fmt(SPELL, total, rolls)} נזק ל{name}.", d.MAGENTA)
+            if e_hp > 0:
+                # הטלת לחש לוקחת תור - האויב מנסה לפגוע בך בזמן שאתה מרוכז בלחש
+                p_total, _ = roll("2d6")
+                e_total, _ = roll("2d6")
+                if e_total + skill > p_total + player.strength + player.attack_bonus():
+                    _hit_player(player, e_dmg, name)
+                    if not player.alive:
+                        return _died(name)
+                else:
+                    d.say(f"{name} מסתער, אבל אתה חומק.", d.GRAY)
             continue
 
         p_total, p_rolls = roll("2d6")

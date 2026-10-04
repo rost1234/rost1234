@@ -54,7 +54,7 @@ def validate(path):
         if pid not in seen:
             errors.append(f"דף {pid}: אי אפשר להגיע אליו")
     endings = {pages[p]["ending"] for p in seen if pages[p].get("ending")}
-    if "win" not in endings:
+    if not endings & {"win", "true"}:
         errors.append("אין סוף ניצחון שאפשר להגיע אליו")
 
     print(f"{len(pages)} דפים, {len(seen)} נגישים, סופים: {sorted(endings)}")

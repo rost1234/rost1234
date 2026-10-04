@@ -1,6 +1,7 @@
 """הדמות של השחקן: תכונות, חיים, מלאי, זהב ודגלים (זיכרון אירועים)."""
 import json
 import os
+import random
 
 import display as d
 from dice import roll, fmt
@@ -133,12 +134,16 @@ class Player:
     def save(self, path):
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
-            json.dump(self.__dict__, f, ensure_ascii=False, indent=2)
+            data = dict(self.__dict__, _rng=random.getstate())
+            json.dump(data, f, ensure_ascii=False, indent=2)
 
     @classmethod
     def load(cls, path):
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
+        rng = data.pop("_rng", None)
+        if rng:  # טוענים גם את מצב הקוביות - טעינה מחדש לא "מגלגלת מחדש" בדיקה שנכשלה
+            random.setstate((rng[0], tuple(rng[1]), rng[2]))
         p = cls()
         p.__dict__.update(data)
         return p
