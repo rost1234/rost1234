@@ -1,3 +1,6 @@
 saves/
 settings.json
 __pycache__/
+build/
+dist/
+*.spec

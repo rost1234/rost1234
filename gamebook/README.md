@@ -3,7 +3,15 @@
 משחק "בחר את ההרפתקה שלך" בסגנון ספרי Fighting Fantasy, בעולם פנטזיה קלאסי.
 כל דף מספר קטע סיפור ומציע בחירות; יש קוביות, קרבות, ציוד, חנות, ושמירת משחק.
 
-## הרצה
+## הורדה ל-Windows (בלי Python)
+1. בגיטהאב, בעמוד **Releases** של הריפו, פותחים את הגרסה האחרונה בשם "Shadow Crown gamebook for Windows".
+2. מורידים את `ShadowCrown.exe` ומריצים בלחיצה כפולה.
+3. אם Windows מזהיר שהקובץ לא מוכר (כי הוא לא חתום): לוחצים "More info" ואז "Run anyway".
+
+השמירות וההגדרות נשמרות בתיקייה שבה נמצא ה-EXE, אז כדאי לשים אותו בתיקייה משלו.
+ה-EXE נבנה אוטומטית ב-GitHub Actions (`.github/workflows/gamebook-windows-exe.yml`) בכל שינוי במשחק.
+
+## הרצה מהקוד
 ```
 cd gamebook
 python main.py

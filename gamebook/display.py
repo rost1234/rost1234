@@ -16,7 +16,11 @@ try:  # אם מותקן python-bidi נשתמש בו, אחרת במימוש הפ�
 except ImportError:
     _bidi_get_display = None
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if getattr(sys, "frozen", False):  # רץ כקובץ EXE (PyInstaller)
+    RESOURCE_DIR = getattr(sys, "_MEIPASS", os.path.dirname(sys.executable))  # קבצי המשחק (קריאה בלבד)
+    BASE_DIR = os.path.dirname(sys.executable)  # הגדרות ושמירות - ליד ה-EXE
+else:
+    RESOURCE_DIR = BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SETTINGS_FILE = os.path.join(BASE_DIR, "settings.json")
 
 settings = {"rtl": None, "color": True}

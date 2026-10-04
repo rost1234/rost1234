@@ -6,7 +6,7 @@ import display as d
 from engine import Game, SAVE_FILE, load_story
 from player import CLASSES, Player
 
-STORY_FILE = os.path.join(d.BASE_DIR, "story", "adventure.json")
+STORY_FILE = os.path.join(d.RESOURCE_DIR, "story", "adventure.json")
 
 
 def create_player():
@@ -74,7 +74,13 @@ def main():
 
 
 if __name__ == "__main__":
+    frozen = getattr(sys, "frozen", False)
     try:
         main()
     except KeyboardInterrupt:
         print()
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        if frozen:  # בלחיצה כפולה החלון נסגר מיד - נותנים זמן לקרוא את השגיאה
+            input("Error - press Enter to close / שגיאה - לחץ Enter לסגירה")
