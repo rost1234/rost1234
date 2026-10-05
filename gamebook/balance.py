@@ -1,6 +1,6 @@
 """בדיקת איזון ורמאויות: מריץ אלפי משחקים אוטומטיים ומחפש לולאות שאפשר לנצל.
 
-הרצה:  python balance.py [מספר_משחקים]
+הרצה:  python balance.py [מספר_משחקים] [story/קובץ.json]
 
 מדפיס:
 - אחוז ניצחון / מוות / סוף רע לכל מקצוע (בוט שבוחר באקראי אבל לא נכנס ישר לסוף רע, תוקף בקרב ושותה שיקוי כשהחיים נמוכים)
@@ -147,7 +147,7 @@ def main():
     except (AttributeError, ValueError):
         pass
     d.settings.update(rtl=False, color=False)
-    story = engine.load_story(STORY)
+    story = engine.load_story(sys.argv[2] if len(sys.argv) > 2 else STORY)
     seen = set()
     deaths = collections.Counter()
     print(f"=== {n} משחקים לכל מקצוע ===")
