@@ -1,0 +1,57 @@
+{
+  "id": "academy",
+  "acts": [
+    {"name": "מערכה 1: הגשר והשער", "file": "10_act1.json", "range": [1, 99], "pages": [42, 50], "entries": ["1"], "exits": ["100", "150"]},
+    {"name": "מערכה 2: מראות, מבוך וספרים אסורים", "file": "20_act2.json", "range": [100, 199], "pages": [42, 50], "entries": ["100", "150"], "exits": ["200", "250"]},
+    {"name": "מערכה 3: הרוח, האבן והשם", "file": "30_act3.json", "range": [200, 299], "pages": [42, 50], "entries": ["200", "250"], "exits": ["300", "340"]},
+    {"name": "מערכה 4: המבחן השביעי", "file": "40_act4.json", "range": [300, 399], "pages": [42, 50], "entries": ["300", "340"], "exits": []}
+  ],
+  "flags": {
+    "zik_bonded": "set: act1 beat 4 (accept the light-moth at the feast) or act2 entry 150 / beat 2 (second chance). used: act2 maze help, act3 Zik reveal + true name, act4 true ending + vein path guide",
+    "zik_hurt": "set: act2 maze (used Zik as bait) or act3 stairs (let Zik shield you). used: act4 Zik cannot guide in veins (extra fight) and true ending needs no_flag zik_hurt OR חלום>=6",
+    "neriya_ally": "set: act1 alchemy (help Neriya) / act2 maze (rescue her) / warrior always at act1 page 2. used: act3 duel seeding + Shaked blade for warrior, act4 boss help + true ending ally",
+    "neriya_slighted": "set: act1/act2 (humiliate, abandon in maze, mock her family). used: act3 she sabotages your duel (enemy +1 skill), act4 she sides with Aderet at first",
+    "rom_covered": "set: act1 investigation (keep Rom's secret about stealing answers). used: act3 Rom yields the duel / gives tip, act4 Rom carries the lower city evacuation (enables win 391)",
+    "rom_exposed": "set: act1 investigation (tell Aderet Rom was in the hall). used: act2 Rom on probation and hostile at duel club, act3 Rom duel at skill 9, act4 Rom absent",
+    "stole_answers": "set: act1 alchemy (steal Tuval's answer sheet). used: act2 Gomer/Aderet notice (חשד +1 at entry), act3 Rom blackmails you unless rom_covered",
+    "gave_journal": "set: act1 end (hand Tuval's journal to Aderet). used: act2 library decode impossible, act3 Aderet tries the Stone Word on you (stat check), act4 Aderet knows you",
+    "gomer_friend": "set: act1 (help Gomer with the gargoyle feed / return lost-and-found) or act2 entry 150 (don't report him). used: act3 detention escape + rest, act3 exit to 340, act4 Gomer recognizes Timna",
+    "library_secret": "set: act2 forbidden library (read the Founders' Chronicle). used: act3 Edna talks, accusation scene, act4 talk-down of Aderet",
+    "edna_met": "set: act2 forbidden library (answered Edna's riddle). used: act3 Edna trades the true name for the maze rose",
+    "spared_double": "set: act2 hall of mirrors (spare your mirror-double). used: act4 the double takes one blow for you in the heart (skip a fight / heal)",
+    "duel_champion": "set: act2 duel club tournament (win the final). used: act3 arena crowd favors you (+1 ניקוד on duel win), act4 Rom respects you",
+    "tuval_restored": "set: act3 (pour שיקוי ריכוך on Tuval). used: act3 Tuval names Aderet; act4 Tuval binds Aderet (boss hp 10) and is an ally for true ending",
+    "aderet_exposed": "set: act3 feast accusation (needs יומן טובל or tuval_restored, + library_secret or check). used: act3 exit -> 340; act4 Aderet flees into the heart, no escort guards",
+    "knows_true_name": "set: act3 (Edna for ורד המבוך, or Zik if zik_bonded and חלום>=3, or the stairs' carved verse). used: act4 true ending, bypass boss",
+    "heart_shard": "set: act3 (Zik leads you to a living vein, you take a שבב לב item and set this flag on the same page). used: act4 calms the antibodies on the vein path",
+    "toasted_seventh": "easter egg. set: act1 feast (toast the empty seventh chair). used: act4 Edna appears in the heart once: heal 4",
+    "gargoyle_petted": "easter egg. set: act1 bridge (scratch the old gargoyle Gravel under the chin). used: act4 Gravel catches you on a fall (one death page becomes survival)",
+    "gnome_freed": "easter egg. set: act2 maze (free the cursed garden gnome Pipkin). used: act3 Pipkin pays you 3 gold + one hint at the stairs"
+  },
+  "items": {
+    "הזמנה חתומה": "start_effects for every class. act1 thief reveal (your name is on it); act4 the heart door opens only for an invitation (on the 340 path the alternative is Zik)",
+    "גלימת האקדמיה": "armor 1. given free to every contestant at act1 enrollment (beat 3)",
+    "יומן טובל": "act1 Tuval's study. act2 decoded in the library, act3 proof for accusation (lost if gave_journal)",
+    "מפתח הספרייה": "act1 Gomer's gift (gomer_friend) or thief steals it. act2 opens the forbidden library without a check",
+    "שיקוי ריכוך": "act1 alchemy trial (correct recipe) or act3 Gomer's shop (12 gold). act3 restore Tuval OR act4 free Timna's hand / cure yourself",
+    "רסיס מראה": "act2 hall of mirrors (taken from your double's frame). act4 boss: see through Aderet's veil (skill -2)",
+    "ורד המבוך": "act2 maze center. act3 give to Edna for the true name (or give to Neriya: neriya_ally)",
+    "שרביט דו-קרב": "weapon +2. act2 duel club prize or bazaar (8 gold). act3 duel",
+    "להב בית שקד": "weapon +3. act3 Neriya gives it to the warrior (or any class if neriya_ally and duel won). act4 boss",
+    "שבב לב": "act3 living vein. act4 vein path: calms antibodies; heart: alternative to the invitation",
+    "גרב בודדה": "easter egg. act1 Gomer's lost-and-found. act4 put it on Timna's bare stone foot: +1 luck",
+    "שיקוי ריפוי": "standard. start item; shops in act1/2/3",
+    "חרב": "warrior start item (class moments)",
+    "מגן": "warrior start item",
+    "פגיון": "thief start item",
+    "ערכת פריצה": "thief start item (lockpicking class moments in every act)",
+    "מטה קסמים": "mage start item",
+    "ספר לחשים": "mage start item (reading runes, class moments)",
+    "לפיד": "start item. act2 maze night segment, act4 veins"
+  },
+  "counters": {
+    "ניקוד": "trial score. each of trials 1-6 gives 0/1/2 (act1: trials 1-2, act2: 3-4, act3: 5-6). checked: act2 entry board, act3 exit (>=5 -> 300 official path), act4 who the tower 'chooses'",
+    "חשד": "faculty suspicion. +1 for curfew, theft, caught lies. act1 end: >=4 -> bad ending 90. act2 end: >=3 -> exit 250 (detention). act3: >=5 Aderet uses the Stone Word on you (check). act3 entry 250 sets it back to 1",
+    "חלום": "bond with the living tower (listen to walls, kindness to Zik and tower creatures, sparing). +1 each. act3: >=3 Zik tells the true name. act4: >=5 needed for true ending; >=7 heart calms without a fight"
+  }
+}

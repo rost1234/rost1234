@@ -1,0 +1,51 @@
+{
+  "id": "thieves",
+  "acts": [
+    {"name": "מערכה 1: הלילה הראשון", "file": "10_act1.json", "range": [1, 99], "pages": [40, 50], "entries": ["1"], "exits": ["100", "150"]},
+    {"name": "מערכה 2: עשן, קוביות ודם", "file": "20_act2.json", "range": [100, 199], "pages": [40, 50], "entries": ["100", "150"], "exits": ["200", "250"]},
+    {"name": "מערכה 3: נשף המסכות", "file": "30_act3.json", "range": [200, 299], "pages": [40, 50], "entries": ["200", "250"], "exits": ["300", "340"]},
+    {"name": "מערכה 4: כספת אלף המנעולים", "file": "40_act4.json", "range": [300, 399], "pages": [40, 50], "entries": ["300", "340"], "exits": []}
+  ],
+  "flags": {
+    "komets_friend": "set: act1 (spared/fed Komets after the chase) or act2 (freed him from Sarna's cage). used: act2 sewer guide + confession; act4 steals Tadrik's master-pick (boss aid); true ending requirement",
+    "komets_betrayed": "set: act1 (handed Komets to the watch or beat him). used: act2 Komets leads Sarna's cutthroats to you (ambush); act4 Komets absent, no boss aid",
+    "irna_trust": "set: act1 (surrendered and told the truth) or act2 route 150 (kept the deal). used: act3 Irna (the Iron Mask) shields you at the ball; act4 with item 'תג המשמר' the watch arrives (boss bypass)",
+    "lied_to_irna": "set: act1 interrogation lie. used: act3 Irna exposes you at the ball (חשד +2); act4 watch bypass unavailable",
+    "sarna_deal": "set: act1 (passed the guild test) or act2 (joined at the rooftop court). used: act2 fence prices/den access; act4 Sarna's crew opens the outer gate on route 340, then Sarna betrays you at the Key unless you hold 'פנקס החובות'",
+    "olbena_ally": "set: act2 (solved the bottle test honestly or protected the lab from inspectors). used: act3 her antidote saves you from the poisoned wine; act4 mage-only formula unmakes the clockwork guardian",
+    "stole_from_olbena": "set: act2 (stole from her shelves). used: act3 Olbena recognizes you at the ball and points you out (חשד +2)",
+    "grom_champion": "set: act2 (won the pit tournament final). used: act3 Grom brings you in as a bodyguard (entry 250 option); act4 pit fighters hold the stair on route 340 (skip sentries combat)",
+    "knows_homunculus": "set: act2 (the corpse is clay: Olbena's lab or the watch morgue). used: act3 argument to Irna / council (ראיות); act4 reveal dialogue + true ending requirement",
+    "fed_cat": "set: act1 (fed/petted the three-legged cat 'בריח' in the Locksmith Hall). used: act3 the cat leads you to the Silent Doors shortcut; act4 cameo in endings",
+    "carved_bell": "set: act1 (carved your mark on the bell of the Rooftop Tower). used: act4 the bell rings at the right moment and distracts the vault sentries (skip a check)",
+    "silent_doors_seen": "set: act3 (found the Silent Doors corridor in the palace). used: act4 option to open the Silent Doors with the Key; true ending requirement",
+    "council_marked": "set: act3 (drew the White Mask's attention). used: act4 route 300 adds an extra sentry combat"
+  },
+  "items": {
+    "תיבה נעולה": "start_effects. act1: opens by itself in the Locksmith Hall and is replaced by 'מפתח-פגיון'",
+    "מפתח-פגיון": "act1 (from the casket; story weapon +2). act2: tested at Olbena's lab or the morgue: pig's blood (ראיות +1). act3: if discarded, Zimri 'finds' it and returns it (רמזים +1). act4: fits the maker's keyhole of the outer vault gate",
+    "רסיס חומר": "act1 (examined the body; mage gets it automatically). act2: identified at Olbena's lab -> knows_homunculus, ראיות +1",
+    "משרוקית פח": "act1 (Zimri gives it at the gate). act3: whistle with the orchestra (easter egg, רמזים +1). act4: the guild tune halts the clockwork guardian (combat bypass)",
+    "פנקס החובות": "act2 (stolen or won at Dolisa's den / Sarna's office). ראיות +1 when read (payments signed 'ז.'). act4: blackmail Sarna to prevent her betrayal",
+    "מסכת נשף": "act2 (bought, won or stolen). act3: required for the guests' gate (entry 200)",
+    "הזמנה מוזהבת": "act2 (won at the den or from Irna on route 150). act3: audience with the White Mask; with מסכת נשף goes to entry 200",
+    "אבקת חלודה": "act2 (Olbena's shop or gift). act4: rusts the sewer grate on route 340 and weakens Tadrik's lock-mail (boss aid)",
+    "שמן שקט": "act2 (Olbena's shop / fence). act4: passes the Hall of Listening Locks without a check",
+    "תג המשמר": "act1 (Irna gives it on the surrender route) or act2 route 150. act3: pass a palace guard checkpoint. act4: with irna_trust summons the watch (boss bypass)",
+    "תרשים הכספת": "act2 (Locksmith Archive) or act3 (from Zimri, רמזים +1). act4: choose the right corridor without a check",
+    "טביעת שעווה": "act3 (wax impression of the Key at the display). act4 beat 1: forged into 'מפתח מזויף'",
+    "מפתח מזויף": "act4 (forged from 'טביעת שעווה'). act4: swap with the real Key; boss bypass",
+    "חרב הבור": "act2 (pit tournament prize; story weapon +3). combat only",
+    "גלימת גגות": "act1 (Sarna's guild gift) or act2 (fence). story armor +1",
+    "שריון משמר": "act2 route 150 (Irna's armory). story armor +1",
+    "חבל": "act1/act2 shops. act3 climb down from the dome; act4 the shaft on route 340",
+    "שיקוי ריפוי": "base item; act2 shops"
+  },
+  "counters": {
+    "חשד": "how much the city believes you are the murderer, 0-10. start 0 (start_effects); act1 set to 3 when framed; +1/+2 for visible actions, -1/-2 for alibis and evidence shown. act2/act3 hub redirects: >=8 arrest scene; act3 >=10 -> bad ending 293",
+    "לילות": "nights passed. start 1 (start_effects). +1 at each act2 entry, +1 at each act3 entry; act2 optional 'spend another night' +1. act4 entries: <=3 before the Sealing (quiet), >=4 during the Sealing (council in the vault, extra combat)",
+    "ראיות": "evidence of your innocence, 0-6. act2: Komets' confession, clay shard, pig's blood, ledger; act3: overheard White Mask; act4: the Key's memory (+1 automatic at the Key). endings: win needs >=3, true needs >=5",
+    "רמזים": "clues that the beggar Zimri is Tadrik, 0-5. act1: riddle / burned hands / thief reads maker-mark on the casket; act2: guild tune at the archive; act3: returns the dagger / seen without blindfold / orchestra. act4: >=3 lets you recognize him first (boss aid, true path); >=2 unlocks the 'name him' option",
+    "בעלי ברית": "allies won, 0-5: +1 when setting komets_friend, irna_trust, sarna_deal, olbena_ally, grom_champion. act4 route 340: >=3 unlocks the allies' assault"
+  }
+}
