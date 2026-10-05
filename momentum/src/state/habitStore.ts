@@ -15,6 +15,9 @@ import { t } from '@/i18n';
 
 type LoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 
+/** "habitId:date" keys being completed after the fact (see `completeOnDate`). */
+const completingPast = new Set<string>();
+
 /** habitId → date → log. Plain records keep zustand updates cheap and immutable. */
 export type LogIndex = Record<string, Record<LocalDateString, HabitLog>>;
 
@@ -223,17 +226,24 @@ export const useHabitStore = create<HabitState>((set, get) => {
     },
 
     completeOnDate: async (habitId, date) => {
-      const { today, logs, habits } = get();
+      const { today, habits } = get();
       const habit = habits.find((h) => h.id === habitId);
-      if (!today || !habit || date >= today) return;
-      const previous = logs[habitId]?.[date];
-      if (previous?.status === 'completed') return;
-      await repositories.habitLogs.upsert({ habitId, logDate: date, currentCount: habit.targetCount, status: 'completed' });
-      if (previous?.status === 'forgiven') {
-        const balance = await repositories.settings.refundStreakFreezes(1, MAX_STREAK_FREEZES);
-        useSettingsStore.getState().setFreezesAvailable(balance);
+      const key = `${habitId}:${date}`;
+      // One write per habit/day at a time, so a double tap can't refund twice.
+      if (!today || !habit || date >= today || completingPast.has(key)) return;
+      completingPast.add(key);
+      try {
+        const previous = (await repositories.habitLogs.getForDate(date)).find((l) => l.habitId === habitId);
+        if (previous?.status === 'completed') return;
+        await repositories.habitLogs.upsert({ habitId, logDate: date, currentCount: habit.targetCount, status: 'completed' });
+        if (previous?.status === 'forgiven') {
+          const balance = await repositories.settings.refundStreakFreezes(1, MAX_STREAK_FREEZES);
+          useSettingsStore.getState().setFreezesAvailable(balance);
+        }
+        await get().load(today);
+      } finally {
+        completingPast.delete(key);
       }
-      await get().load(today);
     },
 
     addHabit: async (input) => {

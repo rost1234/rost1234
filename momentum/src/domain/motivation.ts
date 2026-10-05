@@ -82,12 +82,13 @@ export function habitAgeDays(habit: Pick<Habit, 'createdAt'>, today: LocalDateSt
 }
 
 /** The habit that's had a break and was completed before — the one to invite back. */
-export function habitToWelcomeBack<T extends Pick<Habit, 'id' | 'isArchived'>>(
+export function habitToWelcomeBack<T extends Pick<Habit, 'id' | 'isArchived'> & Partial<Pick<Habit, 'isQuit'>>>(
   habits: readonly T[],
   streaks: Readonly<Record<string, number>>,
   completedBefore: Readonly<Record<string, number>>,
 ): T | null {
-  const candidates = habits.filter((h) => !h.isArchived && (streaks[h.id] ?? 0) === 0 && (completedBefore[h.id] ?? 0) > 0);
+  // A habit to quit isn't something to "start again with a small step".
+  const candidates = habits.filter((h) => !h.isArchived && !h.isQuit && (streaks[h.id] ?? 0) === 0 && (completedBefore[h.id] ?? 0) > 0);
   return [...candidates].sort((a, b) => (completedBefore[b.id] ?? 0) - (completedBefore[a.id] ?? 0))[0] ?? null;
 }
 

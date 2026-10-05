@@ -4,6 +4,7 @@ import { SqliteBackupRepository } from '../repositories/sqliteBackupRepository';
 import { SqliteHabitLogRepository } from '../repositories/sqliteHabitLogRepository';
 import { SqliteHabitRepository } from '../repositories/sqliteHabitRepository';
 import { SqliteFocusSessionRepository } from '../repositories/sqliteFocusSessionRepository';
+import { SqliteFutureLetterRepository } from '../repositories/sqliteFutureLetterRepository';
 import { SqliteDayModeRepository, SqlitePauseRepository, SqliteShownInsightRepository } from '../repositories/sqlitePlanningRepositories';
 import { SqliteReflectionRepository } from '../repositories/sqliteReflectionRepository';
 import { SqliteSettingsRepository } from '../repositories/sqliteSettingsRepository';
@@ -230,6 +231,48 @@ describe('v9 single-habit pauses', () => {
     expect(await pauses.getAll()).toEqual([
       { id: 'old', startDate: '2026-09-01', endDate: '2026-09-03', reason: 'vacation', createdAt: 'x', habitId: null },
     ]);
+  });
+});
+
+describe('v10: quit habits, sleep and letters', () => {
+  it('upgrades v9 data: existing habits are not quit habits, old reflections have no sleep', async () => {
+    const { db, executor } = createTestDatabase({ upToVersion: 9 });
+    db.exec(
+      "INSERT INTO habits (id, title, micro_step, is_quantitative, target_count, unit, target_frequency, target_days, created_at, is_archived) VALUES ('h', 'Run', '', 0, 1, '', 'daily', '', '2026-09-01T08:00:00', 0)",
+    );
+    db.exec("INSERT INTO daily_reflections (id, log_date, mood_score, gratitude_text, lesson_text, created_at) VALUES ('r', '2026-09-30', 4, 'a', 'b', 'x')");
+    applyRemainingMigrations(db, 9);
+    const r = repos(executor);
+    expect((await r.habits.getById('h'))?.isQuit).toBe(false);
+    expect((await r.reflections.getByDate('2026-09-30'))?.sleepMinutes).toBeNull();
+    expect(await new SqliteFutureLetterRepository(() => Promise.resolve(executor)).getAll()).toEqual([]);
+  });
+
+  it('stores quit habits, sleep and letters', async () => {
+    const { executor } = createTestDatabase();
+    const r = repos(executor);
+    const quit = await r.habits.create({ ...newHabit, isQuantitative: false, isQuit: true });
+    expect((await r.habits.getById(quit.id))?.isQuit).toBe(true);
+    await r.reflections.upsert({ logDate: '2026-10-01', moodScore: 3, gratitudeText: '', lessonText: '', sleepMinutes: 420 });
+    expect((await r.reflections.getByDate('2026-10-01'))?.sleepMinutes).toBe(420);
+    await r.reflections.upsert({ logDate: '2026-10-01', moodScore: 4, gratitudeText: '', lessonText: '' });
+    expect((await r.reflections.getByDate('2026-10-01'))?.sleepMinutes).toBeNull();
+
+    const letters = new SqliteFutureLetterRepository(() => Promise.resolve(executor));
+    const letter = await letters.create(' Hi future me ', '2026-10-01', '2026-11-01');
+    expect(letter.body).toBe('Hi future me');
+    await letters.markOpened(letter.id);
+    const [opened] = await letters.getAll();
+    expect(opened?.openedAt).not.toBeNull();
+    await letters.delete(letter.id);
+    expect(await letters.getAll()).toEqual([]);
+  });
+
+  it('refunds freezes up to the cap', async () => {
+    const r = repos(createTestDatabase().executor);
+    await r.settings.consumeStreakFreezes(5);
+    expect(await r.settings.refundStreakFreezes(1, 3)).toBe(1);
+    expect(await r.settings.refundStreakFreezes(9, 3)).toBe(3);
   });
 });
 

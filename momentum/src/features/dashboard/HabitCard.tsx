@@ -199,15 +199,17 @@ function HabitCardComponent({ habit }: HabitCardProps) {
             <Ionicons name="remove" size={18} color={colors.textMuted} />
           </Pressable>
         ) : null}
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('habit.startFocus', { title: habit.title })}
-          hitSlop={8}
-          onPress={() => router.push({ pathname: '/focus', params: { habitId: habit.id } })}
-          style={[styles.iconButton, styles.focusButton]}
-        >
-          <Ionicons name="play" size={16} color={colors.primary} />
-        </Pressable>
+        {habit.isQuit ? null : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('habit.startFocus', { title: habit.title })}
+            hitSlop={8}
+            onPress={() => router.push({ pathname: '/focus', params: { habitId: habit.id } })}
+            style={[styles.iconButton, styles.focusButton]}
+          >
+            <Ionicons name="play" size={16} color={colors.primary} />
+          </Pressable>
+        )}
       </View>
     </View>
   );

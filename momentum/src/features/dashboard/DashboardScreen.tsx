@@ -28,6 +28,7 @@ import { DashboardHeader } from './DashboardHeader';
 import { DecideCard } from './DecideCard';
 import { WelcomeBackCard, useWelcomeBack } from './WelcomeBackCard';
 import { FirstWinCard } from './FirstWinCard';
+import { useHomePromptSlot } from './homePrompts';
 import { YesterdayCard } from './YesterdayCard';
 import { FoldedSection } from './FoldedSection';
 import { EmptyHabits } from './EmptyHabits';
@@ -84,6 +85,7 @@ export function DashboardScreen() {
   const { dueToday, percent, doneCount, restCount } = useDashboardData(today, hour);
   const dayOff = useDayOff(today);
   const welcomeBack = useWelcomeBack(today);
+  const showWelcomeBack = useHomePromptSlot('welcomeBack', welcomeBack.show);
   const openTasks = useTaskStore((s) => s.tasks.filter((task) => !task.isCompleted).length + s.overdue.length);
   const habits = useHabitStore((s) => s.habits);
 
@@ -137,7 +139,7 @@ export function DashboardScreen() {
           dayOffName={dayOff?.name ?? null}
         />
 
-        {welcomeBack.show ? <WelcomeBackCard onClose={welcomeBack.close} /> : null}
+        {showWelcomeBack ? <WelcomeBackCard onClose={welcomeBack.close} /> : null}
         <HardDayBar today={today} />
         <CoachMarks />
         <FirstWinCard today={today} hour={hour} />

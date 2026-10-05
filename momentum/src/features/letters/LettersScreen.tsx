@@ -42,7 +42,12 @@ function LetterView({ letter, today }: { letter: FutureLetter; today: LocalDateS
           {t('letter.written', { date: formatFriendlyDate(letter.writtenOn, t.locale) })}
           {sealed ? ` · ${t('letter.opensOn', { date: formatFriendlyDate(letter.openOn, t.locale) })}` : ''}
         </Text>
-        <Pressable accessibilityRole="button" accessibilityLabel={t('letter.delete')} onPress={askRemove} hitSlop={8}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('letter.deleteA11y', { date: formatFriendlyDate(letter.writtenOn, t.locale) })}
+          onPress={askRemove}
+          hitSlop={8}
+        >
           <Ionicons name="trash-outline" size={16} color={colors.textMuted} />
         </Pressable>
       </View>

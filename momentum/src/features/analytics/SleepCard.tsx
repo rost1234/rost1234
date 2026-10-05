@@ -3,11 +3,12 @@ import { Text, View } from 'react-native';
 import { Card } from '@/components/ui';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { runDetached } from '@/core/errors';
-import { addDays, lastNDays, type LocalDateString } from '@/core/localDate';
+import { addDays, formatShortDate, lastNDays, type LocalDateString } from '@/core/localDate';
 import { repositories } from '@/data/repositories';
 import type { DailyReflection } from '@/domain/models';
 import { SHORT_SLEEP_HOURS, sleepSummary } from '@/domain/motivation';
 import { useT } from '@/i18n';
+import { useReflectionStore } from '@/state/reflectionStore';
 
 const NIGHTS = 14;
 const MAX_BAR_HOURS = 10;
@@ -20,6 +21,8 @@ export function SleepCard({ today }: { today: LocalDateString }) {
   const { colors, typography } = useTheme();
   const styles = useStyles();
   const [reflections, setReflections] = useState<DailyReflection[] | null>(null);
+  // Reload when a reflection is saved while Insights is open.
+  const savedReflections = useReflectionStore((s) => s.byDate);
 
   useEffect(() => {
     runDetached(
@@ -28,23 +31,35 @@ export function SleepCard({ today }: { today: LocalDateString }) {
         .catch(() => [])
         .then(setReflections),
     );
-  }, [today]);
+  }, [today, savedReflections]);
 
   if (!reflections) return null;
+  // The comparison uses the last 60 days; the average matches the 14 nights shown.
   const summary = sleepSummary(reflections);
+  const days = lastNDays(today, NIGHTS);
+  const shown = sleepSummary(reflections.filter((r) => r.logDate >= (days[0] ?? today)));
   if (summary.nights === 0) return null;
   const byDate = new Map(reflections.map((r) => [r.logDate, r.sleepMinutes]));
-  const days = lastNDays(today, NIGHTS);
 
   return (
     <Card style={styles.card}>
       <View style={styles.row}>
         <Text style={typography.label}>{t('sleep.title')}</Text>
-        {summary.averageMinutes !== null ? (
-          <Text style={styles.value}>{t('sleep.avg', { hours: hours(summary.averageMinutes) })}</Text>
+        {shown.averageMinutes !== null ? (
+          <Text style={styles.value}>{t('sleep.avg', { hours: hours(shown.averageMinutes) })}</Text>
         ) : null}
       </View>
-      <View style={styles.bars} accessible accessibilityLabel={t('sleep.barsA11y', { nights: NIGHTS })}>
+      <View
+        style={styles.bars}
+        accessible
+        accessibilityLabel={[
+          t('sleep.barsA11y', { nights: NIGHTS }),
+          ...days.flatMap((date) => {
+            const minutes = byDate.get(date);
+            return minutes ? [t('sleep.nightA11y', { date: formatShortDate(date), hours: hours(minutes) })] : [];
+          }),
+        ].join('. ')}
+      >
         {days.map((date) => {
           const minutes = byDate.get(date) ?? null;
           const short = minutes !== null && minutes < SHORT_SLEEP_HOURS * 60;

@@ -12,6 +12,7 @@ import { isPaused } from '@/domain/pauses';
 import { useHabitStore } from '@/state/habitStore';
 import { usePlanningStore } from '@/state/planningStore';
 import { useT } from '@/i18n';
+import { useHomePromptSlot } from './homePrompts';
 
 const KEY = 'momentum.yesterday.v1';
 /** Only in the morning: by the afternoon, yesterday is history. */
@@ -49,9 +50,10 @@ export function YesterdayCard({ today, hour }: { today: LocalDateString; hour: n
       .catch(() => setClosedOn(today));
   }, [today]);
 
-  if (!ready || hour >= UNTIL_HOUR || closedOn === undefined || closedOn === today) return null;
   const open = openYesterday(habits, logs, yesterday, pauses);
-  if (open.length === 0) return null;
+  const wants = ready && hour < UNTIL_HOUR && closedOn !== undefined && closedOn !== today && open.length > 0;
+  const isMine = useHomePromptSlot('yesterday', wants);
+  if (!isMine) return null;
 
   const close = () => {
     setClosedOn(today);
@@ -72,14 +74,14 @@ export function YesterdayCard({ today, hour }: { today: LocalDateString; hour: n
           <Pressable
             key={habit.id}
             accessibilityRole="button"
-            accessibilityLabel={t('yday.markA11y', { title: habit.title })}
+            accessibilityLabel={habit.isQuit ? t('yday.markQuitA11y', { title: habit.title }) : t('yday.markA11y', { title: habit.title })}
             onPress={() => {
               haptics.success();
               runDetached(completeOnDate(habit.id, yesterday));
             }}
             style={({ pressed }) => [styles.chip, pressed && { opacity: 0.7 }]}
           >
-            <Ionicons name="checkmark" size={14} color={colors.primary} />
+            <Ionicons name={habit.isQuit ? 'shield-checkmark' : 'checkmark'} size={14} color={colors.primary} />
             <Text style={styles.chipText} numberOfLines={1}>
               {habit.title}
             </Text>

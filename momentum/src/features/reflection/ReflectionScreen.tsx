@@ -115,10 +115,16 @@ function ReflectionForm({ logDate, initial }: { logDate: LocalDateString; initia
               {SLEEP_HOURS.map((hours) => (
                 <Chip
                   key={hours}
-                  label={hours === SLEEP_HOURS[SLEEP_HOURS.length - 1] ? `${hours}+` : String(hours)}
+                  label={hours === SLEEP_HOURS[SLEEP_HOURS.length - 1] ? `${hours}+` : hours === SLEEP_HOURS[0] ? `≤${hours}` : String(hours)}
                   selected={sleepHours === hours}
                   onPress={() => setSleepHours((current) => (current === hours ? null : hours))}
-                  accessibilityLabel={t('refl.sleepA11y', { hours })}
+                  accessibilityLabel={
+                    hours === SLEEP_HOURS[SLEEP_HOURS.length - 1]
+                      ? t('refl.sleepA11yPlus', { hours })
+                      : hours === SLEEP_HOURS[0]
+                        ? t('refl.sleepA11yMax', { hours })
+                        : t('refl.sleepA11y', { hours })
+                  }
                 />
               ))}
             </View>

@@ -8,6 +8,7 @@ import { addDays, type LocalDateString } from '@/core/localDate';
 import { AUTOMATIC_DAY, habitAgeDays } from '@/domain/motivation';
 import { useHabitStore } from '@/state/habitStore';
 import { useT } from '@/i18n';
+import { useHomePromptSlot } from './homePrompts';
 
 const KEY = 'momentum.automatic.v1';
 /** habitId → the 1–5 answer, or the day to ask again after "not now" (a week later). */
@@ -41,7 +42,18 @@ export function AutomaticCard({ today }: { today: LocalDateString }) {
       .catch(() => setAnswers({}));
   }, []);
 
-  if (!answers) return null;
+  // One habit at a time, and at most one question a day: past day 66, still going, not asked yet.
+  const pending =
+    answers && answers[LAST_ASKED] !== today
+      ? habits.find((h) => {
+          const answer = answers[h.id];
+          const asked = typeof answer === 'number' || (typeof answer === 'string' && answer > today);
+          return !h.isArchived && !h.isQuit && !asked && (streaks[h.id] ?? 0) > 0 && habitAgeDays(h, today) >= AUTOMATIC_DAY;
+        })
+      : undefined;
+  const isMine = useHomePromptSlot('automatic', answered !== null || pending !== undefined);
+
+  if (!answers || !isMine) return null;
   const save = (next: Answers) => {
     setAnswers(next);
     runDetached(AsyncStorage.setItem(KEY, JSON.stringify(next)));
@@ -71,13 +83,7 @@ export function AutomaticCard({ today }: { today: LocalDateString }) {
     );
   }
 
-  // One habit at a time, and at most one question a day: past day 66, still going, not asked yet.
-  if (answers[LAST_ASKED] === today) return null;
-  const habit = habits.find((h) => {
-    const answer = answers[h.id];
-    const asked = typeof answer === 'number' || (typeof answer === 'string' && answer > today);
-    return !h.isArchived && !asked && (streaks[h.id] ?? 0) > 0 && habitAgeDays(h, today) >= AUTOMATIC_DAY;
-  });
+  const habit = pending;
   if (!habit) return null;
 
   return (

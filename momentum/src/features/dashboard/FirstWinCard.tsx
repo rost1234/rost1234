@@ -14,6 +14,7 @@ import { useHabitStore } from '@/state/habitStore';
 import { usePlanningStore } from '@/state/planningStore';
 import { useT } from '@/i18n';
 import { useCoachMarksDone } from './CoachMarks';
+import { useHomePromptSlot } from './homePrompts';
 
 const KEY = 'momentum.firstWin.v1';
 
@@ -38,7 +39,11 @@ export function FirstWinCard({ today, hour }: { today: LocalDateString; hour: nu
     if (s.habits.some((h) => s.logs[h.id]?.[today]?.status === 'completed')) return null;
     const now = timeOfDayNow(hour);
     const due = habitsDueOn(s.habits, today).filter(
-      (h) => (h.timeOfDay === 'any' || h.timeOfDay === now) && !isPaused(pauses, today, h.id) && s.logs[h.id]?.[today]?.status !== 'skipped',
+      (h) =>
+        !h.isQuit &&
+        (h.timeOfDay === 'any' || h.timeOfDay === now) &&
+        !isPaused(pauses, today, h.id) &&
+        s.logs[h.id]?.[today]?.status !== 'skipped',
     );
     return due.find((h) => !h.isQuantitative && h.microStep) ?? due.find((h) => !h.isQuantitative) ?? null;
   });
@@ -49,7 +54,8 @@ export function FirstWinCard({ today, hour }: { today: LocalDateString; hour: nu
       .catch(() => setSeen(true));
   }, []);
 
-  if (seen !== false || coachDone !== true || !candidate) return null;
+  const isMine = useHomePromptSlot('firstWin', seen === false && coachDone === true && candidate !== null);
+  if (!isMine || !candidate) return null;
 
   const close = () => {
     setSeen(true);

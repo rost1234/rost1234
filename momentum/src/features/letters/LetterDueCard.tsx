@@ -5,6 +5,7 @@ import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { runDetached } from '@/core/errors';
 import { formatFriendlyDate, type LocalDateString } from '@/core/localDate';
 import { useT } from '@/i18n';
+import { useHomePromptSlot } from '@/features/dashboard/homePrompts';
 import { dueLetters, useLettersStore } from './lettersStore';
 
 /** On the day a letter to your future self opens: one envelope on Home until it's read. */
@@ -20,7 +21,8 @@ export function LetterDueCard({ today }: { today: LocalDateString }) {
   }, [load, today]);
 
   const due = letters ? dueLetters(letters, today)[0] : undefined;
-  if (!due) return null;
+  const isMine = useHomePromptSlot('letter', due !== undefined);
+  if (!due || !isMine) return null;
   return (
     <Pressable
       accessibilityRole="button"

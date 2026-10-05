@@ -79,6 +79,7 @@ export function MoreSection({ unscheduledCount, reflection, showReflection }: Mo
           {showReflection ? <ReflectionPrompt reflection={reflection} /> : null}
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel={t('letter.title')}
             onPress={() => router.push('/letters')}
             style={({ pressed }) => [styles.laterRow, pressed && { opacity: 0.85 }]}
           >
