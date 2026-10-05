@@ -1,0 +1,135 @@
+{
+  "id": "siege",
+  "acts": [
+    {
+      "name": "מערכה 1: השער נסגר",
+      "file": "10_act1.json",
+      "range": [
+        1,
+        99
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "1"
+      ],
+      "exits": [
+        "100",
+        "150"
+      ]
+    },
+    {
+      "name": "מערכה 2: שלושה ימים של רכיבה",
+      "file": "20_act2.json",
+      "range": [
+        100,
+        199
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "100",
+        "150"
+      ],
+      "exits": [
+        "200"
+      ]
+    },
+    {
+      "name": "מערכה 3: הלילות הארוכים",
+      "file": "30_act3.json",
+      "range": [
+        200,
+        299
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "200"
+      ],
+      "exits": [
+        "300",
+        "340"
+      ]
+    },
+    {
+      "name": "מערכה 4: ליל הדממה",
+      "file": "40_act4.json",
+      "range": [
+        300,
+        399
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "300",
+        "340"
+      ],
+      "exits": []
+    }
+  ],
+  "flags": {
+    "saved_talya": "set: act1 beat 1 (מצילים את העגלה של טליה); used: act3 beat 6 (היא אומרת 'אוריין', פגישה), act4 380 true ending",
+    "fed_refugees": "set: act1 beat 3 (מחנה הפליטים); used: act3 beat 2 (המהומה נרגעת)",
+    "fed_cat": "set: act1 beat 3 (המטבח, מאכילים את פתילה); used: act3 beat 4 (קיצור דרך במנהרות), act4 epilogue cameo",
+    "noticed_rings": "set: act1 beat 3 (מחסן הגזבר); used: act3 beat 3 (ראיה נגד סליב)",
+    "found_tunnel": "set: act1 beat 3 (מרתף הפונדק); used: act1 beat 6 (יציאה ל-150), act2 return, act3 beat 3 (בריחה ל-290)",
+    "ward_noticed": "set: act1 beat 3 (אולם המשמר); used: act1 beat 6, act2 B/C, act3 beat 1",
+    "read_motto": "set: act1 beat 3 (אולם המשמר, הכיתוב בגב הסיכה); used: act2 A (יסמרה), act4 beat 3 (עקיפת הדו-קרב)",
+    "saw_star": "set: act1 beat 5c (מגדל המשקפת); used: act3 beat 6 (זיהוי, פגישה)",
+    "trusted_reiza": "set: act1 beat 3 (השער) / act3 beat 3 (שומרים את סודה); used: act3 beat 5, act4 (דו-קרב ורועה: hp -5)",
+    "accused_reiza": "set: act3 beat 3; used: act3 beat 3-5 (סליב חופשי), act4 T2",
+    "marshal_trust": "set: act1 beat 6 / act3 beat 1 / act3 beat 3; used: act2 D (עסקה עם מרגה), act3 beat 6, act4 T1 (פתיחת השער)",
+    "spared_dead": "set: act1 beat 5d / act2 road event 4; used: act3 beat 6 (פגישה)",
+    "ally_horse": "set: act2 A; used: act2 return, act3 beats 1,5, act4 beat 2, T3",
+    "ally_trees": "set: act2 B; cleared: act3 beat 2 אם שורפים יער אחרי הבטחה; used: act3 beat 1, act4 beat 2",
+    "ally_hermit": "set: act2 C; used: act3 beat 1, act4 ward ritual, T3, ending 394",
+    "ally_smugglers": "set: act2 D; used: act2 return, act3 beats 1,4, act4 beat 2",
+    "promised_forest": "set: act2 B; used: act3 beat 2",
+    "burned_forest": "set: act3 beat 2; used: act4 beat 2, ending text",
+    "hermit_lore": "set: act2 C; used: act3 beats 1,6, act4 ward ritual",
+    "stole_from_marga": "set: act2 D (גניבה/אשליה/איום); used: act2 return, act3 beat 4",
+    "saw_hush": "set: act2 road events 3/6; used: act2 A, act3 beat 6, act4 text",
+    "traitor_unmasked": "set: act3 beat 3; used: act3 beat 5 (הפשפש נעול), act4",
+    "seliv_spared": "set: act3 beat 3; used: act3 beat 5, act4 T1/T2 (מת על המנוף)",
+    "knows_truth": "set: act3 beat 6 (פגישה) / act4 beat 3 (מוטו); used: act4 T1, 380",
+    "orian_rests": "set: act4 T3; used: 380",
+    "orian_slain": "set: act4 beat 3; used: act4 epilogue text",
+    "ward_lit": "set: act4 ward ritual; used: T3 (רועה skill 8), 380",
+    "gates_opened": "set: act4 T1; used: T2, T3, 380, ending 395",
+    "heard_bark": "set: act2 tree-folk (מחכים שסבא קליפה יסיים משפט); used: act4 beat 2 (הוא מסיים, מזל +1)",
+    "bet_marshal": "set: act1 beat 3 (התערבות עם המרשל במטבח); used: act4 beat 1 (עין הזכוכית, מזל +1)"
+  },
+  "items": {
+    "סיכת הכוכב השבור": "start_effects; used: act1 beat 3 (קריאת הכיתוב), act3 beat 6 (טליה מזהה), act4 duel (אוריין מהסס)",
+    "חץ עם סרט": "given: act1 beat 6 (חץ עם מכתב שנורה מעל החומה); used: act2 hermit (פענוח), act3 beat 6 (ראיה לפגישה)",
+    "פנקס הגזבר": "given: act2 smugglers (קבלה עם חותם הגזבר); used: act3 beat 3 (הוכחה נגד סליב)",
+    "קרן השבטים": "given: act2 horse clans; used: act4 (תוקעים כדי לזמן את מתקפת הפרשים)",
+    "זרע השורשים": "given: act2 tree-folk; used: act4 (שותלים בפרצה, השורשים סוגרים אותה)",
+    "מגילת המשמר": "given: act2 hermit; used: act3 beat 1, act4 ward lighting (מורידה dc ב-2 בעזרת דף חלופי)",
+    "אבקת כוכבים": "shop act1/act2/act3, act2 C x2; used: לפני קרבות גדולים, קוסם: remove_item + mana +3",
+    "פלפל-אש": "given: act2 horse clans (מתנה מהטבחית); used: act3 beat 2 (מחזירים לטבח בורק, מורל +1 וריפוי 4)",
+    "מפתח הפשפש": "given: act3 beat 3 (מסליב או משעוות הדפוס); used: act3 beat 5, act4 (יציאה סודית לפגישה/לבריחה)",
+    "מכתב אהבה ישן": "given: act3 beat 4 (משלד במנהרה); used: act3 beat 6 (האלמנה במחנה), act4 cameo",
+    "גרזן הבריח": "given: act1 beat 3 (ריזה, לוחם בלבד); weapon +3",
+    "קשת הערבות": "given: act2 horse clans; weapon +3",
+    "להב הכוכב": "given: act3 parley (אוריין נותן את חרבו) או act4 war route אחרי הדו-קרב; weapon +4",
+    "שריון שרשראות": "shop act1 (10 זהב); armor 2",
+    "מעיל קליפה": "given: act2 tree-folk; armor 1",
+    "שיקוי ריפוי": "start; shop act1, act2 (מרגה), act3 (המרפאה); gift act4 beat 1"
+  },
+  "counters": {
+    "מורל": "רוח המגינים, 0-10, מתחיל ב-5 (start_effects). עולה: הצלות, נאומים, ניצחונות, בני ברית. יורד: הפסדים, רעב, האשמת שווא. נבדק: act3 beat 2 (<=2 עריקה), act4 truth route (>=6 שכנוע), ending hub 380",
+    "חיילים": "מאות מגינים כשירים, מתחיל ב-8 (start_effects). יורד בקרבות שהולכים רע ובפשפש הפתוח, עולה בבני ברית. נבדק: act3 beat 5 (<=2 = סוף 250), act4 ending hub 380 (<=0 = סוף 391)",
+    "אבני משמר": "אבני המשמר שהוחזרו לגומות, 0-4, מתחיל ב-0. +1 act1 (אבן-המעצור בפונדק), +1/+2 act2 (מרגה), +1 act3 (הכספת של סליב). נבדק: act3 beat 1 (תיאור), act4 ward lighting (>=3 = ward_lit, 4 = תנאי לסוף האמיתי)",
+    "ימים": "ימי הרכיבה שנשארו במערכה 2. נקבע ל-3 בדפים 100 ו-150, יורד ב-1 בכל ביקור. נבדק: act2 (0 = חוזרים; ביקור נוסף = סוף 185)"
+  }
+}
