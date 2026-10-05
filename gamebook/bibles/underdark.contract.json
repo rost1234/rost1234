@@ -1,16 +1,88 @@
 {
   "id": "underdark",
   "acts": [
-    {"name": "מערכה 1: חצרות-הד", "file": "10_act1.json", "range": [1, 99], "pages": [40, 50], "entries": ["1"], "exits": ["100", "150"]},
-    {"name": "מערכה 2: יער-הזוהר", "file": "20_act2.json", "range": [100, 199], "pages": [40, 50], "entries": ["100", "150"], "exits": ["200", "250"]},
-    {"name": "מערכה 3: שְׁחוֹרָה, עיר הקורים", "file": "30_act3.json", "range": [200, 299], "pages": [40, 50], "entries": ["200", "250"], "exits": ["300", "340"]},
-    {"name": "מערכה 4: קבר המלך הקבור", "file": "40_act4.json", "range": [300, 399], "pages": [40, 50], "entries": ["300", "340"], "exits": []}
+    {
+      "name": "מערכה 1: חצרות-הד",
+      "file": "10_act1.json",
+      "range": [
+        1,
+        99
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "1"
+      ],
+      "exits": [
+        "100",
+        "150"
+      ]
+    },
+    {
+      "name": "מערכה 2: יער-הזוהר",
+      "file": "20_act2.json",
+      "range": [
+        100,
+        199
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "100",
+        "150"
+      ],
+      "exits": [
+        "200",
+        "250"
+      ]
+    },
+    {
+      "name": "מערכה 3: שְׁחוֹרָה, עיר הקורים",
+      "file": "30_act3.json",
+      "range": [
+        200,
+        299
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "200",
+        "250"
+      ],
+      "exits": [
+        "300",
+        "340"
+      ]
+    },
+    {
+      "name": "מערכה 4: קבר המלך הקבור",
+      "file": "40_act4.json",
+      "range": [
+        300,
+        399
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "300",
+        "340"
+      ],
+      "exits": []
+    }
   ],
   "flags": {
     "zerach_no_echo": "set: act1 beat 4 (אולם ההדים, שמת לב שלזרח אין הד); used: act2 beat 5 (מורקה), act3 beat 7 (עימות מוקדם עם זרח)",
     "echo_name_spoken": "set: act1 beat 4 (צעקת את שמך באולם ההדים, ביצת פסחא); used: act4 beat 4 (החלום מוחק שמות, ההד מחזיר לך את שמך ועוקף בדיקה)",
     "knows_king_name": "set: act1 beat 7 (קוסם קורא את רונת החותם / יומן רוגם), act2 beat 6 (צפייה בזיכרון המלך); used: act4 beat 6 (שער השם)",
-    "rogem_freed": "set: act1 beat 6 (שחררת את רוגם מכבלי ההד); used: act2 beat 3 (מורקה מחזיקה את זיכרונותיו), act4 beat 5 (קולו של רוגם בחלום עונה על החידה)",
+    "rogem_freed": "set: act1 beat 6 (שחררת את רוגם מכבלי ההד); used: act2 beat 3 (מורקה נותנת נבג-שינה במתנה), act4 beat 5 (קולו של רוגם בחלום עונה על החידה)",
     "rogem_robbed": "set: act1 beat 8 (גנבת את אבן-הלב מקבר אבותיו של רוגם); used: act4 beat 5 (הדי הגמדים מקללים אותך, נזק)",
     "separated": "set: act1 beat 9 (נפלת בקריסה, יציאה 150); used: act2 beat 1 (זרח מופיע בלי שריטה, אמון/חשד)",
     "saw_mask_memory": "set: act2 beat 6 (קנית/קראת את זיכרון ליל המגפה); used: act3 beat 7, act4 beat 2 (אפשר לחשוף את זרח)",
@@ -20,7 +92,7 @@
     "bought_childhood": "set: act2 beat 4 (קנית את צעצוע הילדות, ביצת פסחא); used: act4 beat 7 (תאנה מזהה אותך מיד)",
     "joke_mushroom": "set: act2 beat 5 (שמעת את שלוש הבדיחות, ביצת פסחא); used: act4 beat 9 (סוף alt 395)",
     "mask_unmasked": "set: act3 beat 7 (המלכה חושפת את זרח) או act4 beat 2 (אתה חושף אותו עם saw_mask_memory/zerach_no_echo); used: act4 beat 8-9 (תנאי לסוף האמיתי)",
-    "dror_spared": "set: act3 beat 4 (חסת על דרור בזירה או שחררת אותו מהתא); used: act4 beat 3 (דרור עוצר אביר-חלום בשבילך), act4 ending text",
+    "dror_spared": "set: act3 beat 4 (חסת על דרור בזירה או שחררת אותו מהתא); used: act4 beat 3 (דרור עוצר אביר-חלום), act4 beat 9 (עזר בקרב המלך, טקסט הסוף)",
     "arena_champion": "set: act3 beat 4 (ניצחת בזירה); used: act4 beat 3 (אבירי החלום קדים לאלוף ומדלגים על קרב)",
     "queen_ally": "set: act3 beat 8 (ברית עם המלכה ארגמה); used: act4 beat 1 (כניסה 300 עם ליווי), act4 beat 9 (סוף win 390)",
     "queen_betrayed": "set: act3 beat 8 (גנבת את הכישור או הסגרת את המלכה); used: act4 beat 1 (מתנקשת סתרית רודפת, קרב)",
@@ -34,7 +106,7 @@
     "שעון-חול גמדי": "given: act1 beat 6 (רוגם, אם שוחרר); used: act4 beat 1 (שנים שחלפו למעלה -10, פעם אחת)",
     "פטיש הד": "given: act1 beat 7 (לוחם, מעשה גבורה בנפחייה, או כל אחד בבדיקת כוח 18); weapon +3",
     "אבן-רונה": "given: act1 beat 7 (קוסם, או כל מי שפותר את מנעול הרונות); used: act3 beat 6 (קריאת קורי הארכיון), act4 beat 9 (חתימה מחדש בלי כישור)",
-    "אבן-לב גמדית": "given: act1 beat 8 (גנב גונב מהקבר); used: act3 beat 3 (מכירה בשוק השחור ב-12 זהב, או מתנה למלכה: חסד החצר +2)",
+    "אבן-לב גמדית": "given: act1 beat 8 (גניבה מקבר האבות, rogem_robbed); used: act2 beat 3 (מכירה לפטריונים ב-10 זהב) או act3 beat 2/3 (מתנה למלכה: חסד החצר +2, או מכירה בשוק השחור ב-12 זהב)",
     "מטבע הד": "given: act1 beat 5 (ביצת פסחא, מזרקת המשאלות); used: act4 beat 4 (תשלום למעבורתן החלום, דילוג על קרב)",
     "זיכרון המלך": "given: act2 beat 6 (קנייה ממורקה: 8 זהב או זיכרון אחד); used: act4 beat 8 (מחליש את אשכר / תנאי לסוף האמיתי)",
     "זיכרון ליל המגפה": "given: act2 beat 6 (חלופה לקוסם: קורא בלי לקנות); used: act3 beat 7 / act4 beat 2 (הוכחה מול זרח)",
