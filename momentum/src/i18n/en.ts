@@ -642,6 +642,16 @@ export const en = {
   'habit.quitDone': "A day without ✓",
   'habit.quitTap': "Check ✓ after a day without it",
   'habit.instead': 'Instead: {step}',
+  'refl.sleep': "How many hours of sleep last night? (optional)",
+  'refl.sleepA11y': "{hours} hours of sleep",
+  'sleep.title': "Sleep",
+  'sleep.avg': "avg {hours} h",
+  'sleep.barsA11y': "Hours of sleep over the last {nights} nights",
+  'sleep.mood': "Average mood after under {hours} hours: {short}. After {hours} or more: {enough}. Yours, from your reflections.",
+  'sleep.more': "A few more nights with sleep in the reflection, and you'll see whether sleep moves your mood.",
+  'yday.title': "Anything else from yesterday?",
+  'yday.lead': "Did a habit yesterday without checking it off? A tap adds it to yesterday, streak included.",
+  'yday.markA11y': "Mark {title} as done yesterday",
 } as const;
 
 export type TranslationKey = keyof typeof en;

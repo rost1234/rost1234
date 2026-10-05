@@ -27,6 +27,7 @@ import { DashboardHeader } from './DashboardHeader';
 import { DecideCard } from './DecideCard';
 import { WelcomeBackCard, useWelcomeBack } from './WelcomeBackCard';
 import { FirstWinCard } from './FirstWinCard';
+import { YesterdayCard } from './YesterdayCard';
 import { FoldedSection } from './FoldedSection';
 import { EmptyHabits } from './EmptyHabits';
 import { HardDayBar } from './HardDayBar';
@@ -139,6 +140,7 @@ export function DashboardScreen() {
         <HardDayBar today={today} />
         <CoachMarks />
         <FirstWinCard today={today} hour={hour} />
+        <YesterdayCard today={today} hour={hour} />
         <LevelCard today={today} />
         <InsightCard today={today} />
         <AutomaticCard today={today} />

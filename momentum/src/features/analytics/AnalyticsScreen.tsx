@@ -13,6 +13,7 @@ import { useAnalyticsStore, type AnalyticsRange } from '@/state/analyticsStore';
 import { Heatmap } from './Heatmap';
 import { TrendCharts } from './TrendCharts';
 import { SoundExperimentCard } from './SoundExperimentCard';
+import { SleepCard } from './SleepCard';
 import { UsageCard } from './UsageCard';
 import { useT } from '@/i18n';
 import { useBottomSpace } from '@/components/useBottomSpace';
@@ -101,6 +102,7 @@ export function AnalyticsScreen() {
             <UsageCard usage={data.usage} rangeLabel={range === 'week' ? t('ins.range7') : t('ins.range30')} />
 
             <SectionTitle>{t('exp.title')}</SectionTitle>
+            <SleepCard today={today} />
             <SoundExperimentCard experiment={data.soundExperiment} />
           </>
         ) : null}

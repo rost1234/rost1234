@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { runDetached, toErrorMessage } from '@/core/errors';
 import { getLocalDeviceDate, type LocalDateString } from '@/core/localDate';
 import { SkeletonBlock } from '@/components/Skeleton';
-import { Banner, Button } from '@/components/ui';
+import { Banner, Button, Chip } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import type { DailyReflection, MoodScore } from '@/domain/models';
 import { useReflectionStore } from '@/state/reflectionStore';
@@ -13,6 +13,9 @@ import { type TranslationKey, useT } from '@/i18n';
 import { useBottomSpace } from '@/components/useBottomSpace';
 
 type Step = 1 | 2 | 3;
+
+/** Whole hours of sleep to pick from (the last one means "or more"). */
+const SLEEP_HOURS = [4, 5, 6, 7, 8, 9, 10] as const;
 
 const PROMPTS: Record<Exclude<Step, 1>, { title: TranslationKey; placeholder: TranslationKey }> = {
   2: { title: 'refl.gratitude', placeholder: 'refl.gratitudePh' },
@@ -78,6 +81,8 @@ function ReflectionForm({ logDate, initial }: { logDate: LocalDateString; initia
   const [mood, setMood] = useState<MoodScore | null>(initial?.moodScore ?? null);
   const [gratitude, setGratitude] = useState(initial?.gratitudeText ?? '');
   const [lesson, setLesson] = useState(initial?.lessonText ?? '');
+  // Optional: last night's sleep, in whole hours.
+  const [sleepHours, setSleepHours] = useState<number | null>(initial?.sleepMinutes ? Math.round(initial.sleepMinutes / 60) : null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,7 +90,7 @@ function ReflectionForm({ logDate, initial }: { logDate: LocalDateString; initia
     if (mood === null) return;
     setIsSaving(true);
     try {
-      await save({ logDate, moodScore: mood, gratitudeText: gratitude, lessonText: lesson });
+      await save({ logDate, moodScore: mood, gratitudeText: gratitude, lessonText: lesson, sleepMinutes: sleepHours ? sleepHours * 60 : null });
       router.back();
     } catch (e) {
       setError(t('refl.saveError', { error: toErrorMessage(e) }));
@@ -105,6 +110,18 @@ function ReflectionForm({ logDate, initial }: { logDate: LocalDateString; initia
           <>
             <Text style={typography.title}>{t('refl.howWasToday')}</Text>
             <MoodPicker value={mood} onChange={setMood} />
+            <Text style={typography.label}>{t('refl.sleep')}</Text>
+            <View style={styles.sleepRow}>
+              {SLEEP_HOURS.map((hours) => (
+                <Chip
+                  key={hours}
+                  label={hours === SLEEP_HOURS[SLEEP_HOURS.length - 1] ? `${hours}+` : String(hours)}
+                  selected={sleepHours === hours}
+                  onPress={() => setSleepHours((current) => (current === hours ? null : hours))}
+                  accessibilityLabel={t('refl.sleepA11y', { hours })}
+                />
+              ))}
+            </View>
           </>
         ) : (
           <>
@@ -142,6 +159,7 @@ const useStyles = makeStyles(({ colors, typography }) => ({
   flex: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.xl, gap: spacing.lg },
   moodRow: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.xs },
+  sleepRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   mood: {
     flex: 1,
     alignItems: 'center',

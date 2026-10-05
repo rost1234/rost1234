@@ -8,6 +8,7 @@ import {
   habitAgeDays,
   habitToWelcomeBack,
   showConsistency,
+  sleepSummary,
 } from '../motivation';
 
 const TODAY = '2026-10-04';
@@ -82,5 +83,34 @@ describe('habit age', () => {
   it('counts the creation day as day 1', () => {
     expect(habitAgeDays(makeHabit({ createdAt: `${TODAY}T08:00:00` }), TODAY)).toBe(1);
     expect(habitAgeDays(makeHabit({ createdAt: `${addDays(TODAY, -65)}T08:00:00` }), TODAY)).toBe(66);
+  });
+});
+
+describe('sleep summary', () => {
+  it('averages sleep and compares mood after short and enough sleep', () => {
+    const nights = [
+      { sleepMinutes: 300, moodScore: 2 },
+      { sleepMinutes: 360, moodScore: 3 },
+      { sleepMinutes: 330, moodScore: 2 },
+      { sleepMinutes: 480, moodScore: 4 },
+      { sleepMinutes: 450, moodScore: 5 },
+      { sleepMinutes: 420, moodScore: 3 },
+      { sleepMinutes: null, moodScore: 1 },
+    ];
+    const summary = sleepSummary(nights);
+    expect(summary.nights).toBe(6);
+    expect(summary.averageMinutes).toBe(390);
+    expect(summary.moodAfterShort).toBeCloseTo(7 / 3);
+    expect(summary.moodAfterEnough).toBe(4);
+  });
+
+  it('waits for 3 nights on each side before comparing', () => {
+    const summary = sleepSummary([
+      { sleepMinutes: 300, moodScore: 2 },
+      { sleepMinutes: 480, moodScore: 4 },
+    ]);
+    expect(summary.moodAfterShort).toBeNull();
+    expect(summary.moodAfterEnough).toBeNull();
+    expect(sleepSummary([]).averageMinutes).toBeNull();
   });
 });

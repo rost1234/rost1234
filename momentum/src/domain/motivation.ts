@@ -90,3 +90,28 @@ export function habitToWelcomeBack<T extends Pick<Habit, 'id' | 'isArchived'>>(
   const candidates = habits.filter((h) => !h.isArchived && (streaks[h.id] ?? 0) === 0 && (completedBefore[h.id] ?? 0) > 0);
   return [...candidates].sort((a, b) => (completedBefore[b.id] ?? 0) - (completedBefore[a.id] ?? 0))[0] ?? null;
 }
+
+/** Below this many hours a night counts as short (adults need 7+; Watson et al. 2015). */
+export const SHORT_SLEEP_HOURS = 7;
+
+export interface SleepSummary {
+  nights: number;
+  averageMinutes: number | null;
+  /** Average mood (1–5) after short vs. enough sleep; null until each has 3+ nights. */
+  moodAfterShort: number | null;
+  moodAfterEnough: number | null;
+}
+
+/** Sleep from the evening reflections, and how mood looked on short vs. enough sleep. */
+export function sleepSummary(reflections: readonly { sleepMinutes: number | null; moodScore: number }[]): SleepSummary {
+  const withSleep = reflections.filter((r): r is { sleepMinutes: number; moodScore: number } => typeof r.sleepMinutes === 'number' && r.sleepMinutes > 0);
+  const average = (values: number[]) => (values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : null);
+  const short = withSleep.filter((r) => r.sleepMinutes < SHORT_SLEEP_HOURS * 60).map((r) => r.moodScore);
+  const enough = withSleep.filter((r) => r.sleepMinutes >= SHORT_SLEEP_HOURS * 60).map((r) => r.moodScore);
+  return {
+    nights: withSleep.length,
+    averageMinutes: average(withSleep.map((r) => r.sleepMinutes)),
+    moodAfterShort: short.length >= 3 ? average(short) : null,
+    moodAfterEnough: enough.length >= 3 ? average(enough) : null,
+  };
+}

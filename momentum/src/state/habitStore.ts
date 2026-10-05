@@ -6,6 +6,7 @@ import { applyPrimaryAction, decrementProgress, progressOf, reevaluateProgress, 
 import type { Habit, HabitLog, NewHabit } from '@/domain/models';
 import { applyPauses } from '@/domain/pauses';
 import { computeStreak } from '@/domain/streaks';
+import { MAX_STREAK_FREEZES } from '@/domain/freezeRewards';
 import { historyStart, reconcileStreakFreezes, statusesByHabit } from '@/services/streakService';
 import { refreshTodayWidget } from '@/widget/refreshWidget';
 import { usePlanningStore } from './planningStore';
@@ -36,6 +37,8 @@ interface HabitState {
   tapHabit: (habitId: string) => void;
   undoHabitStep: (habitId: string) => void;
   skipHabit: (habitId: string) => void;
+  /** Marks a past day done ("done yesterday too"); a freeze spent on that day comes back. */
+  completeOnDate: (habitId: string, date: LocalDateString) => Promise<void>;
   addHabit: (input: NewHabit) => Promise<void>;
   /** Saves edits; today's log is re-evaluated against a changed target. Streak history is kept. */
   updateHabit: (habitId: string, changes: Partial<NewHabit>) => Promise<void>;
@@ -217,6 +220,20 @@ export const useHabitStore = create<HabitState>((set, get) => {
           : { currentCount: progress.currentCount, status: 'skipped' },
         { recordUndo: true },
       );
+    },
+
+    completeOnDate: async (habitId, date) => {
+      const { today, logs, habits } = get();
+      const habit = habits.find((h) => h.id === habitId);
+      if (!today || !habit || date >= today) return;
+      const previous = logs[habitId]?.[date];
+      if (previous?.status === 'completed') return;
+      await repositories.habitLogs.upsert({ habitId, logDate: date, currentCount: habit.targetCount, status: 'completed' });
+      if (previous?.status === 'forgiven') {
+        const balance = await repositories.settings.refundStreakFreezes(1, MAX_STREAK_FREEZES);
+        useSettingsStore.getState().setFreezesAvailable(balance);
+      }
+      await get().load(today);
     },
 
     addHabit: async (input) => {
