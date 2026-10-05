@@ -12,8 +12,9 @@ describe('grade options', () => {
     const preview = previewIntervals(review);
     expect(preview[0]).toBe(1);
     expect(preview[2]).toBe(1);
-    expect(preview[3]).toBe(25);
-    expect(preview[5]).toBe(25);
+    expect(preview[3]).toBe(12);
+    expect(preview[4]).toBe(25);
+    expect(preview[5]).toBe(33);
   });
 });
 

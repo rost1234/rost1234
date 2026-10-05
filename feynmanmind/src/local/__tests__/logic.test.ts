@@ -86,7 +86,7 @@ describe('flashcards', () => {
     expect(dueCards(db, NOW)).toHaveLength(2);
     db = reviewCard(db, added[0]!.id, 4, NOW);
     expect(dueCards(db, NOW).map((c) => c.question)).toEqual(['Q2?']);
-    expect(db.cards[added[0]!.id]!.review.interval_days).toBe(1);
+    expect(db.cards[added[0]!.id]!.review.interval_days).toBe(3); // "good" on the first review
   });
 });
 
@@ -103,14 +103,14 @@ describe('computeStats', () => {
     let { db, conceptId } = seed();
     let added;
     [db, added] = addCards(db, conceptId, [1, 2, 3].map((i) => ({ question: `Q${i}?`, answer: 'A' })), newId, NOW);
-    db = reviewCard(db, added[0]!.id, 5, NOW); // due tomorrow
+    db = reviewCard(db, added[0]!.id, 5, NOW); // easy on first review: due in 4 days
     db = reviewCard(db, added[1]!.id, 1, NOW); // lapse: due tomorrow
     // Reviews on the two previous days extend the streak.
     db = { ...db, reviewDays: { ...db.reviewDays, [dayKey(new Date(2026, 8, 23))]: { reviewed: 3, correct: 3 }, [dayKey(new Date(2026, 8, 22))]: { reviewed: 1, correct: 0 } } };
 
     const s = computeStats(db, NOW);
     expect(s).toMatchObject({ due_now: 1, due_today: 1, reviewed_today: 2, correct_today: 1, streak_days: 3, total_cards: 3, total_concepts: 1 });
-    expect(s.forecast.map((d) => d.count)).toEqual([1, 2, 0, 0, 0, 0, 0]);
+    expect(s.forecast.map((d) => d.count)).toEqual([1, 1, 0, 0, 1, 0, 0]);
     expect(s.history.at(-1)).toEqual({ date: dayKey(NOW), count: 2 });
   });
 
