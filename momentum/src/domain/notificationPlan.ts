@@ -249,7 +249,9 @@ function applyDailyLimit(items: PlannedNotification[], limit: number): PlannedNo
  * still open: done habits aren't reminded, close reminders are bundled, ignored
  * ones back off, quiet hours and the daily limit are respected.
  */
-export function planNotifications(input: PlanInput): PlannedNotification[] {
+export function planNotifications(planInput: PlanInput): PlannedNotification[] {
+  // Habits to quit never get a nudge: "did you smoke?" isn't a reminder anyone needs.
+  const input: PlanInput = { ...planInput, habits: planInput.habits.filter((h) => !h.isQuit) };
   const rescue = streakRescue(input);
   const rescued = new Set(rescue.flatMap((n) => n.habitIds));
   const all = [...habitReminders(input), ...rescue, ...checkIns(input, rescued), ...morningPlans(input), ...reflections(input)].filter(

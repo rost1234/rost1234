@@ -16,8 +16,7 @@ import type {
   NewHabit,
   NewTask,
   ReflectionInput,
-  Task,
-} from '@/domain/models';
+  Task, FutureLetter } from '@/domain/models';
 import type { BackupTables } from '../backup/backupFormat';
 import type { TableName } from '../db/schema';
 
@@ -33,6 +32,8 @@ export interface SettingsRepository {
   consumeStreakFreezes(count: number): Promise<number>;
   /** +1 freeze (capped at `max`) and records the award date; returns the new balance. */
   awardStreakFreeze(on: LocalDateString, max: number): Promise<number>;
+  /** Gives back freezes (capped at `max`), e.g. when a forgiven day turns out to be done; returns the new balance. */
+  refundStreakFreezes(count: number, max: number): Promise<number>;
   /** Minutes after midnight (0–1439), or null to turn the reminder off. */
   setReflectionReminder(minutes: number | null): Promise<void>;
   setGoal(goal: string | null): Promise<void>;
@@ -98,6 +99,13 @@ export interface ReflectionRepository {
   getInRange(start: LocalDateString, end: LocalDateString): Promise<DailyReflection[]>;
   /** Insert or update the single reflection for `input.logDate`. */
   upsert(input: ReflectionInput): Promise<DailyReflection>;
+  delete(id: string): Promise<void>;
+}
+
+export interface FutureLetterRepository {
+  getAll(): Promise<FutureLetter[]>;
+  create(body: string, writtenOn: LocalDateString, openOn: LocalDateString): Promise<FutureLetter>;
+  markOpened(id: string): Promise<void>;
   delete(id: string): Promise<void>;
 }
 

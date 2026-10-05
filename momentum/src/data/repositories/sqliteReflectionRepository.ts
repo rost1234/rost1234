@@ -32,13 +32,22 @@ export class SqliteReflectionRepository implements ReflectionRepository {
     return guardDb('reflections.upsert', async () => {
       const db = await this.db();
       await db.runAsync(
-        `INSERT INTO daily_reflections (id, log_date, mood_score, gratitude_text, lesson_text, created_at)
-         VALUES (?, ?, ?, ?, ?, ?)
+        `INSERT INTO daily_reflections (id, log_date, mood_score, gratitude_text, lesson_text, created_at, sleep_minutes)
+         VALUES (?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT (log_date) DO UPDATE SET
            mood_score = excluded.mood_score,
            gratitude_text = excluded.gratitude_text,
-           lesson_text = excluded.lesson_text`,
-        [createId(), input.logDate, input.moodScore, input.gratitudeText.trim(), input.lessonText.trim(), nowIso()],
+           lesson_text = excluded.lesson_text,
+           sleep_minutes = excluded.sleep_minutes`,
+        [
+          createId(),
+          input.logDate,
+          input.moodScore,
+          input.gratitudeText.trim(),
+          input.lessonText.trim(),
+          nowIso(),
+          input.sleepMinutes && input.sleepMinutes > 0 ? Math.round(input.sleepMinutes) : null,
+        ],
       );
       const row = await db.getFirstAsync<DailyReflectionRow>('SELECT * FROM daily_reflections WHERE log_date = ?', [input.logDate]);
       if (!row) throw new Error('Upserted reflection could not be read back');

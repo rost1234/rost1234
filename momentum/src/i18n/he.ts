@@ -637,4 +637,11 @@ export const he: Record<TranslationKey, string> = {
   'fresh.letGo': "להעביר לארכיון",
   'fresh.archiveTitle': 'להעביר את {title} לארכיון?',
   'fresh.archiveBody': 'ההרגל יוסתר ממסך הבית. ההיסטוריה שלו נשמרת.',
+  'form.quit': "הרגל לעזוב",
+  'form.quitHint': "משהו שרוצים לעשות פחות (עישון, משחקים, גלילה). סימון ✓ אומר: היום בלי. בלי תזכורות ובלי שיפוט.",
+  'form.instead': "מה עושים במקום?",
+  'form.insteadPh': "למשל: כוס מים וחמש נשימות",
+  'habit.quitDone': "היום בלי ✓",
+  'habit.quitTap': "לסמן ✓ בסוף יום בלי",
+  'habit.instead': 'במקום: {step}',
 };

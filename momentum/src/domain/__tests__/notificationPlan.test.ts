@@ -89,6 +89,14 @@ describe('isReminderIgnored', () => {
 });
 
 describe('planNotifications', () => {
+  it('never plans anything for a habit to quit', () => {
+    const quit = makeHabit({ id: 'smoking', isQuit: true, reminder: 'smart' });
+    const plan = planNotifications(
+      input({ habits: [quit], streaks: { smoking: 10 }, prefs: { ...DEFAULT_NOTIFICATION_PREFS, checkIn: true, streakRescue: true } }),
+    );
+    expect(plan.filter((n) => n.habitIds.includes('smoking'))).toEqual([]);
+  });
+
   const water = makeHabit({ id: 'water', title: 'Water', reminder: 'smart', timeOfDay: 'morning', createdAt: '2026-09-20T08:00:00' });
   const stretch = makeHabit({ id: 'stretch', title: 'Stretch', reminder: 'smart', timeOfDay: 'morning', createdAt: '2026-09-20T08:00:00' });
   const read = makeHabit({ id: 'read', title: 'Read', reminder: 'smart', timeOfDay: 'evening', createdAt: '2026-09-20T08:00:00' });

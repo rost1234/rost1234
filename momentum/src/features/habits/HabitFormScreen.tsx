@@ -59,6 +59,8 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
   const [frequency, setFrequency] = useState<TargetFrequency>(habit?.targetFrequency ?? 'daily');
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(habit?.timeOfDay ?? 'any');
   const [reminder, setReminder] = useState<HabitReminder>(habit?.reminder ?? 'off');
+  // A habit to quit: a check means a clean day. No counting, growing or reminders.
+  const [isQuit, setIsQuit] = useState(habit?.isQuit ?? false);
   const [days, setDays] = useState<Weekday[]>(
     habit?.targetFrequency === 'specific_days' ? habit.targetDays : [1, 2, 3, 4, 5],
   );
@@ -89,20 +91,21 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
     const input: NewHabit = {
       title: title.trim(),
       microStep: microStep.trim(),
-      isQuantitative,
-      targetCount: isQuantitative ? targetCount : 1,
-      unit: isQuantitative ? unit.trim() : '',
+      isQuantitative: isQuantitative && !isQuit,
+      targetCount: isQuantitative && !isQuit ? targetCount : 1,
+      unit: isQuantitative && !isQuit ? unit.trim() : '',
       targetFrequency: frequency,
       targetDays: frequency === 'specific_days' ? days : [],
       why: why.trim(),
-      growthMode: atomic.growthMode,
+      growthMode: isQuit ? 'maintain' : atomic.growthMode,
       goalCount: atomic.growthMode === 'grow' && Number.parseInt(atomic.goalText, 10) > 0 ? Number.parseInt(atomic.goalText, 10) : null,
       levelStep: atomic.growthMode === 'grow' && Number.parseInt(atomic.stepText, 10) > 0 ? Number.parseInt(atomic.stepText, 10) : null,
       cue: atomic.cue.trim(),
       pairing: atomic.pairing.trim(),
       afterHabitId: atomic.afterHabitId,
       timeOfDay,
-      reminder,
+      reminder: isQuit ? 'off' : reminder,
+      isQuit,
     };
     setIsSaving(true);
     try {
@@ -130,11 +133,18 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
             autoFocus={!habit}
           />
         </Field>
-        <Field label={t('form.tinyStep')}>
+        <View style={styles.switchRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={typography.label}>{t('form.quit')}</Text>
+            <Text style={typography.caption}>{t('form.quitHint')}</Text>
+          </View>
+          <Switch value={isQuit} onValueChange={setIsQuit} accessibilityLabel={t('form.quit')} />
+        </View>
+        <Field label={isQuit ? t('form.instead') : t('form.tinyStep')}>
           <TextInput
             value={microStep}
             onChangeText={setMicroStep}
-            placeholder={t('form.tinyStepPh')}
+            placeholder={isQuit ? t('form.insteadPh') : t('form.tinyStepPh')}
             style={styles.input}
             maxLength={100}
           />
@@ -149,15 +159,17 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
           />
         </Field>
 
-        <View style={styles.switchRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={typography.label}>{t('form.trackCount')}</Text>
-            <Text style={typography.caption}>{t('form.trackCountHint')}</Text>
+        {isQuit ? null : (
+          <View style={styles.switchRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={typography.label}>{t('form.trackCount')}</Text>
+              <Text style={typography.caption}>{t('form.trackCountHint')}</Text>
+            </View>
+            <Switch value={isQuantitative} onValueChange={setIsQuantitative} />
           </View>
-          <Switch value={isQuantitative} onValueChange={setIsQuantitative} />
-        </View>
+        )}
 
-        {isQuantitative ? (
+        {isQuantitative && !isQuit ? (
           <View style={styles.inline}>
             <Field label={t('form.target')}>
               <TextInput value={targetText} onChangeText={setTargetText} keyboardType="number-pad" style={styles.input} maxLength={3} />
@@ -168,14 +180,16 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
           </View>
         ) : null}
 
-        <AtomicFields
-          values={atomic}
-          onChange={patchAtomic}
-          anchors={anchors}
-          onGrowBinary={growBinary}
-          isQuantitative={isQuantitative}
-          unit={unit}
-        />
+        {isQuit ? null : (
+          <AtomicFields
+            values={atomic}
+            onChange={patchAtomic}
+            anchors={anchors}
+            onGrowBinary={growBinary}
+            isQuantitative={isQuantitative}
+            unit={unit}
+          />
+        )}
 
         <Field label={t('form.schedule')}>
           <View style={styles.chips}>
@@ -191,7 +205,7 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
           ) : null}
         </Field>
 
-        <RhythmFields timeOfDay={timeOfDay} reminder={reminder} onTimeOfDay={setTimeOfDay} onReminder={setReminder} />
+        <RhythmFields timeOfDay={timeOfDay} reminder={reminder} onTimeOfDay={setTimeOfDay} onReminder={setReminder} hideReminder={isQuit} />
 
         {habit ? (
           <Text style={typography.caption}>{t('form.keptOnEdit')}</Text>

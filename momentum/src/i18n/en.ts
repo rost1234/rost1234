@@ -635,6 +635,13 @@ export const en = {
   'fresh.letGo': "Archive it",
   'fresh.archiveTitle': 'Archive {title}?',
   'fresh.archiveBody': 'It disappears from Today. Its history is kept.',
+  'form.quit': "A habit to quit",
+  'form.quitHint': "Something to do less of (smoking, games, scrolling). A ✓ means: a day without it. No reminders, no judgment.",
+  'form.instead': "What to do instead?",
+  'form.insteadPh': "e.g. a glass of water and five breaths",
+  'habit.quitDone': "A day without ✓",
+  'habit.quitTap': "Check ✓ after a day without it",
+  'habit.instead': 'Instead: {step}',
 } as const;
 
 export type TranslationKey = keyof typeof en;

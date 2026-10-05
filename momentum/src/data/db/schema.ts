@@ -162,6 +162,19 @@ const MIGRATION_9 = `
 ALTER TABLE pauses ADD COLUMN habit_id TEXT NULL REFERENCES habits(id) ON DELETE CASCADE;
 `;
 
+/** v10: habits to quit, sleep in the evening reflection, letters to your future self. */
+const MIGRATION_10 = `
+ALTER TABLE habits ADD COLUMN is_quit INTEGER NULL;
+ALTER TABLE daily_reflections ADD COLUMN sleep_minutes INTEGER NULL;
+CREATE TABLE IF NOT EXISTS future_letters (
+  id TEXT PRIMARY KEY NOT NULL,
+  body TEXT NOT NULL,
+  written_on TEXT NOT NULL,
+  open_on TEXT NOT NULL,
+  opened_at TEXT NULL
+);
+`;
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, statements: MIGRATION_1 },
   { version: 2, statements: MIGRATION_2 },
@@ -172,6 +185,7 @@ export const MIGRATIONS: readonly Migration[] = [
   { version: 7, statements: MIGRATION_7 },
   { version: 8, statements: MIGRATION_8 },
   { version: 9, statements: MIGRATION_9 },
+  { version: 10, statements: MIGRATION_10 },
 ];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS.reduce((max, m) => Math.max(max, m.version), 0);
@@ -188,6 +202,7 @@ export const TABLES = [
   'day_modes',
   'pauses',
   'shown_insights',
+  'future_letters',
 ] as const;
 
 export type TableName = (typeof TABLES)[number];
@@ -229,6 +244,7 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     after_habit_id: 'nullable_text',
     time_of_day: 'nullable_text',
     reminder: 'nullable_text',
+    is_quit: 'nullable_integer',
   },
   habit_logs: {
     id: 'text',
@@ -266,6 +282,7 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     gratitude_text: 'text',
     lesson_text: 'text',
     created_at: 'text',
+    sleep_minutes: 'nullable_integer',
   },
   app_usage: {
     log_date: 'text',
@@ -286,5 +303,12 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
   shown_insights: {
     insight_id: 'text',
     shown_on: 'text',
+  },
+  future_letters: {
+    id: 'text',
+    body: 'text',
+    written_on: 'text',
+    open_on: 'text',
+    opened_at: 'nullable_text',
   },
 };

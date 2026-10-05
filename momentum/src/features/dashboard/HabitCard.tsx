@@ -90,8 +90,12 @@ function HabitCardComponent({ habit }: HabitCardProps) {
   const countLabel = habit.isQuantitative
     ? `${progress.currentCount}/${habit.targetCount}${habit.unit ? ` ${habit.unit}` : ''}`
     : isDone
-      ? t('habit.done')
-      : t('habit.tapToComplete');
+      ? habit.isQuit
+        ? t('habit.quitDone')
+        : t('habit.done')
+      : habit.isQuit
+        ? t('habit.quitTap')
+        : t('habit.tapToComplete');
 
   const onTap = () => {
     const willComplete = habit.isQuantitative ? progress.currentCount + 1 >= habit.targetCount && !isDone : !isDone;
@@ -119,7 +123,7 @@ function HabitCardComponent({ habit }: HabitCardProps) {
       >
         <Animated.View style={[styles.checkCircle, isDone && styles.checkCircleDone, { transform: [{ scale: pop }] }]}>
           {isDone ? (
-            <Ionicons name="checkmark" size={22} color={colors.onPrimary} />
+            <Ionicons name={habit.isQuit ? 'shield-checkmark' : 'checkmark'} size={22} color={colors.onPrimary} />
           ) : habit.isQuantitative ? (
             <Ionicons name="add" size={22} color={colors.primary} />
           ) : null}
@@ -157,6 +161,10 @@ function HabitCardComponent({ habit }: HabitCardProps) {
           <Text style={typography.caption} numberOfLines={1}>
             {isSkipped
               ? t('habit.skipped')
+              : habit.isQuit
+                ? habit.microStep
+                  ? t('habit.instead', { step: habit.microStep })
+                  : countLabel
               : anchorTitle
                 ? `${t('habit.after', { anchor: anchorTitle })}${habit.microStep ? ` · ${habit.microStep}` : ''}`
                 : habit.cue

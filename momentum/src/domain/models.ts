@@ -50,6 +50,8 @@ export interface Habit {
   timeOfDay: TimeOfDay;
   /** "smart" = a reminder at the time the habit is usually done. */
   reminder: HabitReminder;
+  /** A habit to do less of ("no smoking"): a check means a clean day. */
+  isQuit: boolean;
 }
 
 export type TimeOfDay = 'any' | 'morning' | 'afternoon' | 'evening';
@@ -68,7 +70,8 @@ type OptionalHabitFields =
   | 'pairing'
   | 'afterHabitId'
   | 'timeOfDay'
-  | 'reminder';
+  | 'reminder'
+  | 'isQuit';
 
 export type NewHabit = Omit<Habit, 'id' | 'createdAt' | 'isArchived' | OptionalHabitFields> &
   Partial<Pick<Habit, OptionalHabitFields>>;
@@ -140,9 +143,21 @@ export interface DailyReflection {
   gratitudeText: string;
   lessonText: string;
   createdAt: string;
+  /** Last night's sleep, in minutes (optional). */
+  sleepMinutes: number | null;
 }
 
-export type ReflectionInput = Pick<DailyReflection, 'logDate' | 'moodScore' | 'gratitudeText' | 'lessonText'>;
+export type ReflectionInput = Pick<DailyReflection, 'logDate' | 'moodScore' | 'gratitudeText' | 'lessonText'> &
+  Partial<Pick<DailyReflection, 'sleepMinutes'>>;
+
+/** A letter to your future self, opened on `openOn`. */
+export interface FutureLetter {
+  id: string;
+  body: string;
+  writtenOn: LocalDateString;
+  openOn: LocalDateString;
+  openedAt: string | null;
+}
 
 export const ALL_WEEKDAYS: readonly Weekday[] = [0, 1, 2, 3, 4, 5, 6];
 

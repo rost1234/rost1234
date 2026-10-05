@@ -23,7 +23,9 @@ import type {
   SqlExecutor,
   TaskRepository,
   UsageRepository,
+  FutureLetterRepository,
 } from './types';
+import { SqliteFutureLetterRepository } from './sqliteFutureLetterRepository';
 
 export interface Repositories {
   settings: SettingsRepository;
@@ -37,6 +39,7 @@ export interface Repositories {
   dayModes: DayModeRepository;
   pauses: PauseRepository;
   shownInsights: ShownInsightRepository;
+  letters: FutureLetterRepository;
 }
 
 export function createRepositories(provider: ExecutorProvider): Repositories {
@@ -52,6 +55,7 @@ export function createRepositories(provider: ExecutorProvider): Repositories {
     dayModes: new SqliteDayModeRepository(provider),
     pauses: new SqlitePauseRepository(provider),
     shownInsights: new SqliteShownInsightRepository(provider),
+    letters: new SqliteFutureLetterRepository(provider),
   };
 }
 

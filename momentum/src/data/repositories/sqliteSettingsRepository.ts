@@ -69,6 +69,17 @@ export class SqliteSettingsRepository implements SettingsRepository {
     return row?.streak_freezes_available ?? 0;
   }
 
+  refundStreakFreezes(count: number, max: number): Promise<number> {
+    return guardDb('settings.refundStreakFreezes', async () => {
+      const db = await this.db();
+      await db.runAsync(
+        'UPDATE app_settings SET streak_freezes_available = MIN(?, streak_freezes_available + ?) WHERE id = ?',
+        [Math.max(0, Math.trunc(max)), Math.max(0, Math.trunc(count)), SETTINGS_ID],
+      );
+      return this.freezeBalance();
+    });
+  }
+
   consumeStreakFreezes(count: number): Promise<number> {
     return guardDb('settings.consumeStreakFreezes', async () => {
       const db = await this.db();

@@ -4,6 +4,7 @@ import {
   type AppSettings,
   type DailyReflection,
   type FocusSession,
+  type FutureLetter,
   type Habit,
   type HabitLog,
   type HabitLogStatus,
@@ -16,6 +17,7 @@ import type {
   AppSettingsRow,
   DailyReflectionRow,
   FocusSessionRow,
+  FutureLetterRow,
   HabitLogRow,
   HabitRow,
   PauseRow,
@@ -87,6 +89,7 @@ export const mapHabit = (row: HabitRow): Habit => ({
   afterHabitId: row.after_habit_id ?? null,
   timeOfDay: row.time_of_day === 'morning' || row.time_of_day === 'afternoon' || row.time_of_day === 'evening' ? row.time_of_day : 'any',
   reminder: row.reminder === 'smart' ? 'smart' : 'off',
+  isQuit: row.is_quit === null || row.is_quit === undefined ? false : fromSqlBoolean(row.is_quit),
 });
 
 export const mapPause = (row: PauseRow): Pause => ({
@@ -137,4 +140,13 @@ export const mapReflection = (row: DailyReflectionRow): DailyReflection => ({
   gratitudeText: row.gratitude_text,
   lessonText: row.lesson_text,
   createdAt: row.created_at,
+  sleepMinutes: typeof row.sleep_minutes === 'number' && row.sleep_minutes > 0 ? row.sleep_minutes : null,
+});
+
+export const mapFutureLetter = (row: FutureLetterRow): FutureLetter => ({
+  id: row.id,
+  body: row.body,
+  writtenOn: row.written_on,
+  openOn: row.open_on,
+  openedAt: row.opened_at ?? null,
 });

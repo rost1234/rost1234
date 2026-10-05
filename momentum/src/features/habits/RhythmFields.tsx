@@ -18,10 +18,12 @@ interface RhythmFieldsProps {
   reminder: HabitReminder;
   onTimeOfDay: (value: TimeOfDay) => void;
   onReminder: (value: HabitReminder) => void;
+  /** Habits to quit never get reminders. */
+  hideReminder?: boolean;
 }
 
 /** When in the day the habit belongs, and an optional reminder at the usual time. */
-export function RhythmFields({ timeOfDay, reminder, onTimeOfDay, onReminder }: RhythmFieldsProps) {
+export function RhythmFields({ timeOfDay, reminder, onTimeOfDay, onReminder, hideReminder }: RhythmFieldsProps) {
   const t = useT();
   const { typography } = useTheme();
   const styles = useStyles();
@@ -33,21 +35,23 @@ export function RhythmFields({ timeOfDay, reminder, onTimeOfDay, onReminder }: R
           <Chip key={p.id} label={t(p.key)} selected={timeOfDay === p.id} onPress={() => onTimeOfDay(p.id)} />
         ))}
       </View>
-      <View style={styles.switchRow}>
-        <View style={{ flex: 1 }}>
-          <Text style={typography.label}>{t('rhythm.reminder')}</Text>
-          <Text style={typography.caption}>{t('rhythm.reminderHint')}</Text>
+      {hideReminder ? null : (
+        <View style={styles.switchRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={typography.label}>{t('rhythm.reminder')}</Text>
+            <Text style={typography.caption}>{t('rhythm.reminderHint')}</Text>
+          </View>
+          <Switch
+            value={reminder === 'smart'}
+            onValueChange={(on) => {
+              onReminder(on ? 'smart' : 'off');
+              // Ask once, right when it's needed.
+              if (on) runDetached(requestNotificationPermission());
+            }}
+            accessibilityLabel={t('rhythm.reminder')}
+          />
         </View>
-        <Switch
-          value={reminder === 'smart'}
-          onValueChange={(on) => {
-            onReminder(on ? 'smart' : 'off');
-            // Ask once, right when it's needed.
-            if (on) runDetached(requestNotificationPermission());
-          }}
-          accessibilityLabel={t('rhythm.reminder')}
-        />
-      </View>
+      )}
     </View>
   );
 }
