@@ -1,46 +1,116 @@
 {
   "id": "fairnight",
   "acts": [
-    {"name": "מערכה 1: האחו והמסלול החיצוני", "file": "10_act1.json", "range": [1, 99], "pages": [40, 50], "entries": ["1"], "exits": ["100", "150"]},
-    {"name": "מערכה 2: לב היריד", "file": "20_act2.json", "range": [100, 199], "pages": [40, 50], "entries": ["100", "150"], "exits": ["200"]},
-    {"name": "מערכה 3: חצר הלילה", "file": "30_act3.json", "range": [200, 299], "pages": [40, 50], "entries": ["200"], "exits": ["300", "340"]},
-    {"name": "מערכה 4: הזירה הגדולה", "file": "40_act4.json", "range": [300, 399], "pages": [40, 50], "entries": ["300", "340"], "exits": []}
+    {
+      "name": "מערכה 1: האחו והמסלול החיצוני",
+      "file": "10_act1.json",
+      "range": [
+        1,
+        99
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "1"
+      ],
+      "exits": [
+        "100",
+        "150"
+      ]
+    },
+    {
+      "name": "מערכה 2: לב היריד",
+      "file": "20_act2.json",
+      "range": [
+        100,
+        199
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "100",
+        "150"
+      ],
+      "exits": [
+        "200"
+      ]
+    },
+    {
+      "name": "מערכה 3: חצר הלילה",
+      "file": "30_act3.json",
+      "range": [
+        200,
+        299
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "200"
+      ],
+      "exits": [
+        "300",
+        "340"
+      ]
+    },
+    {
+      "name": "מערכה 4: הזירה הגדולה",
+      "file": "40_act4.json",
+      "range": [
+        300,
+        399
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "300",
+        "340"
+      ],
+      "exits": []
+    }
   ],
   "flags": {
     "gave_name": "set: act1 beat 4 (gave your real name to the gate knocker); used: act3 beat 2 (Queen commands you to dance), act4 beat 1 (Ringmaster calls you by name: damage 2, backstage surprise lost)",
     "amumi_friend": "set: act1 beat 3 (shared the honey roll / promised not to leave him / named him); used: act2 beat 9 (shadow reveal: he rejoins you)",
     "named_him_shadow": "set: act1 beat 3 (easter egg: named the fox 'צל'); used: act2 beat 9 (he says you knew all along, auto amumi_returned), act4 epilogue line",
-    "amumi_returned": "set: act2 beat 9 or act3 beat 6 (wagon rescue); used: act4 boss weakener + true ending condition",
-    "amumi_lost": "set: act2 beat 9 (shadow runs off to the Ringmaster); used: act3 beat 6 (chained at the wagon, can be won back)",
+    "amumi_returned": "set: act2 beat 9 or act3 beat 5 (wagon rescue); used: act4 boss weakener + true ending condition",
+    "amumi_lost": "set: act2 beat 9 (shadow runs off to the Ringmaster); used: act3 beat 5 (chained at the wagon, can be won back)",
     "teller_believed": "set: act1 beat 7 (followed Madame Shlishit's Tuesday lie to the animal pens); used: act2 beat 7 (on Wednesday she apologizes and gives clue_name_first for free)",
-    "met_gdalyahu": "set: act1 beat 6 (spoke to the bear in the strongman tent); used: act2 beat 4 / beat M3 (the bear trusts you: freeing him is easier)",
-    "bear_freed": "set: act2 beat M3 or beat 4 (freed Gdalyahu the bear); used: act4 boss weakener, epilogues of win/true endings",
-    "strongman_won": "set: act1 beat 6 (rang the bell or beat Bombalo); used: act1 beat 9 (clowns flee), act3 beat 1 (+1 חן החצר), act3 beat 5 (Prihon salutes)",
+    "met_gdalyahu": "set: act1 beat 6 (spoke to the bear in the strongman tent); used: act2 beat 4 / beat ח3 (the bear trusts you: freeing him is easier)",
+    "bear_freed": "set: act2 beat ח3 or beat 4 (freed Gdalyahu the bear); used: act4 boss weakener, epilogues of win/true endings",
+    "strongman_won": "set: act1 beat 6 (rang the bell or beat Bombalo); used: act1 beat 9 (clowns flee), act3 beat 1 (+1 חן החצר), act3 beat 4 (Prihon salutes)",
     "gavrush_deal": "set: act1 beat 8 (thief caught his cheat and split the take quietly); used: act2 beat 6 (sells the backstage key), act3 exit to 340",
-    "gavrush_enemy": "set: act1 beat 8 (humiliated Gavrush in public); used: act2 beat 6 (goons attack), act3 beat 6 (ambush at the wagon)",
-    "ate_fae_food": "set: act1 beat 5 or act3 beat 3 (ate fae food); used: act1 beat 5 (second bite = ending 96), act3 beat 3 (second meal = ending 290; or +1 חן as 'half-fae'), act4 final escape (no salt = ending 388); cleared by using שקית מלח",
+    "gavrush_enemy": "set: act1 beat 8 (humiliated Gavrush in public); used: act2 beat 6 (goons attack), act3 beat 5 (ambush at the wagon)",
+    "ate_fae_food": "set: act1 beat 5 or act3 beat 2 (ate fae food); used: act1 beat 5 (second bite = ending 96), act3 beat 2 (second meal = ending 290; or +1 חן as 'half-fae'), act4 final escape (no salt = ending 388); cleared by using שקית מלח",
     "sold_memory": "set: act1 beat 10 (paid the price-booth with a memory); used: act4 epilogues (you do not remember Grandma's lullaby unless true ending)",
     "sold_eye_colour": "set: act1 beat 10 (paid with the colour of your eyes); used: act2 beat 3 (mirrors cannot find you: safe passage), act4 epilogue",
-    "sold_voice": "set: act1 beat 10 (paid with your voice until dawn); used: act3 beat 4 (riddles must be written), act4 naming the Ringmaster requires voice_restored",
-    "voice_restored": "set: act3 beat 7 (Queen's boon) or act3 beat 4 (Nitza returns it after you win her laughter); used: act4 naming",
+    "sold_voice": "set: act1 beat 10 (paid with your voice until dawn); used: act3 beat 3 (riddles must be written), act4 naming the Ringmaster requires voice_restored",
+    "voice_restored": "set: act3 beat 6 (Queen's boon) or act3 beat 3 (Nitza returns it after you win her laughter); used: act4 naming",
     "animal_goose": "set: act1 beat 11 (pen roll); used: act2 entry 150 route",
     "animal_mouse": "set: act1 beat 11 (pen roll); used: act2 entry 150 route",
     "animal_goat": "set: act1 beat 11 (pen roll); used: act2 entry 150 route",
     "was_animal": "set: act1 beat 11 (any animal); used: act3 beat 2 (the Queen's peacocks call you cousin: +1 חן), act4 epilogue",
-    "mirror_child_seen": "set: act2 beat 3 (saw yourself as a child holding the golden ring); used: act3 beat 4 (twist lands faster, +1 luck), act4 ending 395 condition",
+    "mirror_child_seen": "set: act2 beat 3 (saw yourself as a child holding the golden ring); used: act3 beat 3 (twist lands faster, +1 luck), act4 ending 395 condition",
     "puppet_changed": "set: act2 beat 5 (cut or retied a string of your puppet); used: act4 boss weakener (the script is broken)",
-    "clue_name_first": "set: act2 beat 5 (mage reads the playbill) or beat 7 (Madame Shlishit on Wednesday); used: act3 beat 6 (with the ledger gives know_true_name)",
+    "clue_name_first": "set: act2 beat 5 (mage reads the playbill) or beat 7 (Madame Shlishit on Wednesday); used: act3 beat 5 (with the ledger gives know_true_name)",
     "madame_freed": "set: act2 beat 7 (asked her who cursed her); used: act4 beat 2 easter egg (she sits in the audience and shouts the truth)",
-    "know_true_name": "set: act3 beat 6 (ledger + clue_name_first, or mage reads the ledger backwards); used: act4 naming option, true ending",
-    "nitza_with_you": "set: act3 beat 4 (won Nitza from the Queen's table or paid for her); used: act4 (if missing, she is caged as the next act)",
-    "prihon_honored": "set: act3 beat 5 (beat or out-tricked Sir Prihon and spared him); used: act4 boss weakener, act4 protects Nitza",
-    "prihon_dead": "set: act3 beat 5 (shattered his rose); used: act3 (-2 חן), act4 the court boos you (no Queen's verdict)"
+    "know_true_name": "set: act3 beat 5 (ledger + clue_name_first, or mage reads the ledger backwards); used: act4 naming option, true ending",
+    "nitza_with_you": "set: act3 beat 3 (won Nitza from the Queen's table or paid for her); used: act4 (if missing, she is caged as the next act)",
+    "prihon_honored": "set: act3 beat 4 (beat or out-tricked Sir Prihon and spared him); used: act4 boss weakener, act4 protects Nitza",
+    "prihon_dead": "set: act3 beat 4 (shattered his rose); used: act3 (-2 חן), act4 the court boos you (no Queen's verdict)"
   },
   "items": {
     "שקית מלח": "start_effects; used: act1 beat 5 / act2 animal revert / act3 banquet / act4 escape. Using it to cure removes it",
-    "כרטיס זהב קרוע": "start_effects; used: act1 beat 4 (gate: 'returning winner'), act3 beat 6 (matches the ledger half), act4 true ending (joined and torn)",
+    "כרטיס זהב קרוע": "start_effects; used: act1 beat 4 (gate: 'returning winner'), act3 beat 5 (matches the ledger half), act4 true ending (joined and torn)",
     "לחמניית דבש": "act1 beat 2 (bakery); used: act1 Amumi, or act2 freeing the bear, or eat (heal 4). One roll, one choice",
-    "נעל של ניצה": "act1 beat 2 (meadow); used: act3 beat 4 (Nitza trusts you at once), act4 epilogue",
+    "נעל של ניצה": "act1 beat 2 (meadow); used: act3 beat 3 (Nitza trusts you at once), act4 epilogue",
     "בלון אדום": "act1 beat 5 (1 gold); used: act4 backstage trapeze (saves from death 399) or released in the Big Top (+1 חן)",
     "חגורת האלוף": "act1 beat 6 (strongman prize, story armor 1); used: combat, act3 Prihon recognizes a champion",
     "קובייה משוקרת": "act1 beat 8 (thief from Gavrush) or act2 shop; used: act2 dice game better table, act4 Wheel game",
@@ -52,15 +122,15 @@
     "הזמנה לנשף": "act2 beat 6 (shop) or beat 8 (dice game prize); used: act3 beat 1 (enter as guest, +1 חן)",
     "מפתח מאחורי הקלעים": "act2 beat 6 (Gavrush, needs gavrush_deal); used: act3 exit to 340",
     "אפוד רקום כוכבים": "act1 or act2 shop (story armor 1); used: combat",
-    "צחוק בצנצנת": "act3 beat 4 (win the Queen's riddles); used: act4 true ending (open it for Nitza)",
-    "חרב זכוכית": "act3 beat 5 (gift from the spared Prihon; story weapon 3); used: act4 combat",
-    "שעון הלב": "act3 beat 6 (the Ringmaster's heart-watch from the wagon); used: act4 boss weakener",
-    "דף מהפנקס": "act3 beat 6 (your contract page from the Ledger of Prizes); used: act4 (tear: חובות -2), true ending condition",
-    "טבעת המלכה": "act3 beat 7 (Queen's boon); used: act4 Queen's verdict (ending 393)"
+    "צחוק בצנצנת": "act3 beat 3 (win the Queen's riddles); used: act4 true ending (open it for Nitza)",
+    "חרב זכוכית": "act3 beat 4 (gift from the spared Prihon; story weapon 3); used: act4 combat",
+    "שעון הלב": "act3 beat 5 (the Ringmaster's heart-watch from the wagon); used: act4 boss weakener",
+    "דף מהפנקס": "act3 beat 5 (your contract page from the Ledger of Prizes); used: act4 (tear: חובות -2), true ending condition",
+    "טבעת המלכה": "act3 beat 6 (Queen's boon); used: act4 Queen's verdict (ending 393)"
   },
   "counters": {
-    "שעות עד הזריחה": "time left; start_effects set 10. -1 for each act's main path and -1 per detour. +2 hourglass, +1 Queen's boon, +1 carousel seahorse egg, +1 Madame (for a debt). Act4 entry: <=0 -> ending 396",
-    "חובות": "debts owed to the fair: +1 per 'thank you' to a fae, per strange price, per bet paid on credit. Act3 exit: >=4 -> ending 293. Act4: >=4 -> ending 397 unless דף מהפנקס; true ending needs <=2 (tearing the page gives -2)",
+    "שעות עד הזריחה": "time left; start_effects set 10. Main path of every act is free; -1 per detour (stall, attraction, side location), applied on the choice that enters it. +2 שעון חול הפוך, +1 Queen's boon, +1 carousel seahorse egg, +1 Madame (for a debt). Act4 entry (300 and 340): <=0 -> ending 396",
+    "חובות": "debts owed to the fair: +1 per 'thank you' to a fae, per strange price, per bet on credit, per lost Wheel spin. Act3 exit: >=4 -> ending 293. Act4 entry: >=4 -> ending 397 unless דף מהפנקס (tear it: -2). True ending needs <=2",
     "חן החצר": "favour of the Night Court: + invitation, strongman_won, was_animal, half-fae, riddles, sparing Prihon, dancing; -2 killing Prihon. Act3 >=2 Queen's boon; act4 >=3 Queen's verdict (ending 393)"
   }
 }
