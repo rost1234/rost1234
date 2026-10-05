@@ -1,15 +1,87 @@
 {
   "id": "thieves",
   "acts": [
-    {"name": "מערכה 1: הלילה הראשון", "file": "10_act1.json", "range": [1, 99], "pages": [40, 50], "entries": ["1"], "exits": ["100", "150"]},
-    {"name": "מערכה 2: עשן, קוביות ודם", "file": "20_act2.json", "range": [100, 199], "pages": [40, 50], "entries": ["100", "150"], "exits": ["200", "250"]},
-    {"name": "מערכה 3: נשף המסכות", "file": "30_act3.json", "range": [200, 299], "pages": [40, 50], "entries": ["200", "250"], "exits": ["300", "340"]},
-    {"name": "מערכה 4: כספת אלף המנעולים", "file": "40_act4.json", "range": [300, 399], "pages": [40, 50], "entries": ["300", "340"], "exits": []}
+    {
+      "name": "מערכה 1: הלילה הראשון",
+      "file": "10_act1.json",
+      "range": [
+        1,
+        99
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "1"
+      ],
+      "exits": [
+        "100",
+        "150"
+      ]
+    },
+    {
+      "name": "מערכה 2: עשן, קוביות ודם",
+      "file": "20_act2.json",
+      "range": [
+        100,
+        199
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "100",
+        "150"
+      ],
+      "exits": [
+        "200",
+        "250"
+      ]
+    },
+    {
+      "name": "מערכה 3: נשף המסכות",
+      "file": "30_act3.json",
+      "range": [
+        200,
+        299
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "200",
+        "250"
+      ],
+      "exits": [
+        "300",
+        "340"
+      ]
+    },
+    {
+      "name": "מערכה 4: כספת אלף המנעולים",
+      "file": "40_act4.json",
+      "range": [
+        300,
+        399
+      ],
+      "pages": [
+        40,
+        50
+      ],
+      "entries": [
+        "300",
+        "340"
+      ],
+      "exits": []
+    }
   ],
   "flags": {
-    "komets_friend": "set: act1 (spared/fed Komets after the chase) or act2 (freed him from Sarna's cage). used: act2 sewer guide + confession; act4 steals Tadrik's master-pick (boss aid); true ending requirement",
+    "komets_friend": "set: act1 (spared/fed Komets after the chase) or act2 sewer (forgave him after the ambush; clears komets_betrayed). used: act2 square confession (ראיות) + sewer route to the archive; act4 steals Tadrik's master-pick (boss aid); true ending requirement",
     "komets_betrayed": "set: act1 (handed Komets to the watch or beat him). used: act2 Komets leads Sarna's cutthroats to you (ambush); act4 Komets absent, no boss aid",
-    "irna_trust": "set: act1 (surrendered and told the truth) or act2 route 150 (kept the deal). used: act3 Irna (the Iron Mask) shields you at the ball; act4 with item 'תג המשמר' the watch arrives (boss bypass)",
+    "irna_trust": "set: act1 (surrendered and told the truth), act2 route 150 (reported back), or act3 (convinced her with ראיות >= 3). used: act3 Irna (the Iron Mask) shields you and leads to exit 300; act4 stops the White Mask; with item 'תג המשמר' the watch arrives (boss bypass); win ending 381",
     "lied_to_irna": "set: act1 interrogation lie. used: act3 Irna exposes you at the ball (חשד +2); act4 watch bypass unavailable",
     "sarna_deal": "set: act1 (passed the guild test) or act2 (joined at the rooftop court). used: act2 fence prices/den access; act4 Sarna's crew opens the outer gate on route 340, then Sarna betrays you at the Key unless you hold 'פנקס החובות'",
     "olbena_ally": "set: act2 (solved the bottle test honestly or protected the lab from inspectors). used: act3 her antidote saves you from the poisoned wine; act4 mage-only formula unmakes the clockwork guardian",
@@ -30,22 +102,22 @@
     "מסכת נשף": "act2 (bought, won or stolen). act3: required for the guests' gate (entry 200)",
     "הזמנה מוזהבת": "act2 (won at the den or from Irna on route 150). act3: audience with the White Mask; with מסכת נשף goes to entry 200",
     "אבקת חלודה": "act2 (Olbena's shop or gift). act4: rusts the sewer grate on route 340 and weakens Tadrik's lock-mail (boss aid)",
-    "שמן שקט": "act2 (Olbena's shop / fence). act4: passes the Hall of Listening Locks without a check",
+    "שמן שקט": "act2 (Olbena's shop, or stolen from her shelves). act4: passes the Hall of Listening Locks without a check",
     "תג המשמר": "act1 (Irna gives it on the surrender route) or act2 route 150. act3: pass a palace guard checkpoint. act4: with irna_trust summons the watch (boss bypass)",
     "תרשים הכספת": "act2 (Locksmith Archive) or act3 (from Zimri, רמזים +1). act4: choose the right corridor without a check",
     "טביעת שעווה": "act3 (wax impression of the Key at the display). act4 beat 1: forged into 'מפתח מזויף'",
     "מפתח מזויף": "act4 (forged from 'טביעת שעווה'). act4: swap with the real Key; boss bypass",
     "חרב הבור": "act2 (pit tournament prize; story weapon +3). combat only",
-    "גלימת גגות": "act1 (Sarna's guild gift) or act2 (fence). story armor +1",
+    "גלימת גגות": "act1 (Sarna's guild gift on passing the test). story armor +1",
     "שריון משמר": "act2 route 150 (Irna's armory). story armor +1",
-    "חבל": "act1/act2 shops. act3 climb down from the dome; act4 the shaft on route 340",
+    "חבל": "act1 (Sarna's fence) / act2 (pit armory). act1 Widow's Gap and the wall; act3 climb down from the dome; act4 the shaft on route 340",
     "שיקוי ריפוי": "base item; act2 shops"
   },
   "counters": {
     "חשד": "how much the city believes you are the murderer, 0-10. start 0 (start_effects); act1 set to 3 when framed; +1/+2 for visible actions, -1/-2 for alibis and evidence shown. act2/act3 hub redirects: >=8 arrest scene; act3 >=10 -> bad ending 293",
     "לילות": "nights passed. start 1 (start_effects). +1 at each act2 entry, +1 at each act3 entry; act2 optional 'spend another night' +1. act4 entries: <=3 before the Sealing (quiet), >=4 during the Sealing (council in the vault, extra combat)",
-    "ראיות": "evidence of your innocence, 0-6. act2: Komets' confession, clay shard, pig's blood, ledger; act3: overheard White Mask; act4: the Key's memory (+1 automatic at the Key). endings: win needs >=3, true needs >=5",
-    "רמזים": "clues that the beggar Zimri is Tadrik, 0-5. act1: riddle / burned hands / thief reads maker-mark on the casket; act2: guild tune at the archive; act3: returns the dagger / seen without blindfold / orchestra. act4: >=3 lets you recognize him first (boss aid, true path); >=2 unlocks the 'name him' option",
+    "ראיות": "evidence of your innocence, 0-7. act2: Komets' confession, clay shard, pig's blood, ledger, Grom's testimony, the archive door-log; act3: overheard White Mask; act4: the Key's memory (+1 automatic, +1 more for mage). act3 >=3 convinces Irna; win endings need >=3, true needs >=5",
+    "רמזים": "clues that the beggar Zimri is Tadrik, 0-6. act1: generosity to Zimri / thief reads maker-mark on the casket; act2: guild whistle in the archive, the ledger; act3: servant without blindfold, the returned dagger or the map note, the orchestra; act4: the gate, the guardian, 'name him'. act4: >=2 unlocks 'name him', >=3 is a boss aid",
     "בעלי ברית": "allies won, 0-5: +1 when setting komets_friend, irna_trust, sarna_deal, olbena_ally, grom_champion. act4 route 340: >=3 unlocks the allies' assault"
   }
 }
