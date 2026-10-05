@@ -1,4 +1,5 @@
 """מנוע הספר: טוען את הדפים מ-JSON, מציג אותם, מבצע אפקטים, קרבות ובחירות."""
+import glob
 import json
 import os
 
@@ -7,7 +8,10 @@ from combat import fight
 from dice import roll, fmt
 from player import Player, STAT_NAMES
 
-SAVE_FILE = os.path.join(d.BASE_DIR, "saves", "save.json")
+SAVES_DIR = os.path.join(d.BASE_DIR, "saves")
+STORIES_DIR = os.path.join(d.RESOURCE_DIR, "story")
+ENDINGS_FILE = os.path.join(SAVES_DIR, "endings.json")
+MAIN_STORY = "adventure"
 
 HELP = "i מלאי | s מצב | p שיקוי | save שמירה | q תפריט"
 
@@ -26,7 +30,51 @@ class QuitToMenu(Exception):
 
 def load_story(path):
     with open(path, encoding="utf-8") as f:
-        return json.load(f)
+        story = json.load(f)
+    story.setdefault("id", os.path.splitext(os.path.basename(path))[0])
+    return story
+
+
+def list_stories():
+    """כל הסיפורים בתיקיית story/ - הסיפור הראשי קודם."""
+    stories = [load_story(p) for p in glob.glob(os.path.join(STORIES_DIR, "*.json"))]
+    return sorted(stories, key=lambda s: (s["id"] != MAIN_STORY, s["title"]))
+
+
+def save_path(story_id):
+    path = os.path.join(SAVES_DIR, f"{story_id}.json")
+    old = os.path.join(SAVES_DIR, "save.json")  # שמירה מגרסה ישנה, לפני שהיו כמה סיפורים
+    if story_id == MAIN_STORY and not os.path.exists(path) and os.path.exists(old):
+        return old
+    return path
+
+
+def load_found_endings():
+    try:
+        with open(ENDINGS_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
+def record_ending(story_id, page_id):
+    found = load_found_endings()
+    pages = found.setdefault(story_id, [])
+    if page_id in pages:
+        return False
+    pages.append(page_id)
+    try:
+        os.makedirs(SAVES_DIR, exist_ok=True)
+        with open(ENDINGS_FILE, "w", encoding="utf-8") as f:
+            json.dump(found, f, ensure_ascii=False, indent=2)
+    except OSError:
+        pass
+    return True
+
+
+def story_endings(story):
+    """רשימת (מספר_דף, סוג) של כל דפי הסוף בסיפור."""
+    return [(pid, pg["ending"]) for pid, pg in story["pages"].items() if pg.get("ending")]
 
 
 class Game:
@@ -34,6 +82,7 @@ class Game:
         self.story = story
         self.pages = story["pages"]
         self.player = player
+        self.save_file = os.path.join(SAVES_DIR, f"{story.get('id', MAIN_STORY)}.json")
 
     # ---------- לולאה ראשית ----------
     def run(self, fresh=True):
@@ -161,14 +210,14 @@ class Game:
         elif ans == "p":
             p.drink_potion()
         elif ans == "save":
-            p.save(SAVE_FILE)
+            p.save(self.save_file)
             d.say("המשחק נשמר.", d.GREEN)
         elif ans in ("h", "?"):
             d.say(HELP)
         elif ans == "q":
             d.say("לשמור לפני היציאה? (y/n)")
             if d.ask("> ").lower().startswith("y"):
-                p.save(SAVE_FILE)
+                p.save(self.save_file)
                 d.say("נשמר.", d.GREEN)
             raise QuitToMenu
         else:
@@ -229,7 +278,13 @@ class Game:
         print()
         d.title(label, color)
         self.player.show_status()
-        if os.path.exists(SAVE_FILE) and kind == "death":
+        pid = self.player.page
+        if self.pages.get(pid, {}).get("ending"):
+            if record_ending(self.story.get("id", MAIN_STORY), pid):
+                found = len(load_found_endings().get(self.story.get("id", MAIN_STORY), []))
+                d.say(f"סוף חדש נוסף לספר הסופים! ({found} מתוך {len(story_endings(self.story))})",
+                      d.BOLD + d.CYAN)
+        if os.path.exists(self.save_file) and kind == "death":
             d.say("(אפשר לטעון את השמירה האחרונה מהתפריט הראשי)", d.GRAY)
         d.pause()
         return None

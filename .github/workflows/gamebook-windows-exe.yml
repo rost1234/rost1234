@@ -40,11 +40,11 @@ jobs:
         run: pyinstaller --onefile --console --name ShadowCrown --add-data "story;story" main.py
 
       - name: Smoke test
-        # Opens the main menu and picks "4" (exit). Fails if the EXE can't start or find the story.
+        # Opens the main menu and picks "5" (exit). Fails if the EXE can't start or find the story.
         run: |
-          printf '4\n' | ./dist/ShadowCrown.exe --no-rtl > out.txt
+          printf '5\n' | ./dist/ShadowCrown.exe --no-rtl > out.txt
           cat out.txt
-          grep -q "4\." out.txt
+          grep -q "5\." out.txt
 
       - uses: actions/upload-artifact@v4
         with:
