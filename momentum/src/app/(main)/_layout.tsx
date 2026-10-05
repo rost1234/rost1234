@@ -26,6 +26,7 @@ export default function MainLayout() {
       <Stack.Screen name="settings/[section]" options={sheet} />
       <Stack.Screen name="calendar" options={sheet} />
       <Stack.Screen name="streaks" options={sheet} />
+      <Stack.Screen name="letters" options={sheet} />
     </Stack>
   );
 }

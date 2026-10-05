@@ -207,3 +207,13 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Update from build 28 → no First win card
 - [ ] On the 1st of the month with a broken habit → fresh-start card in the insight slot; "Archive it" asks first
 - [ ] Complete a habit from the widget → its notifications for today disappear
+
+## From the LOCKIN sheet (build 30)
+- [ ] New habit → turn on "A habit to quit" → no count/grow/reminder fields; "What to do instead?" shows on the card; ✓ reads "A day without ✓"
+- [ ] A quit habit never appears in Settings → Notifications → "Coming up"
+- [ ] Evening reflection → pick sleep hours (tap again to clear) → Insights shows the Sleep card; after 3+ nights each side, the mood comparison
+- [ ] Morning, with a habit not logged yesterday → "Anything else from yesterday?" → tap → yesterday counts, streak updates; after 13:00 the card is gone
+- [ ] If a freeze covered yesterday, marking it done gives the freeze back (Home pill)
+- [ ] Home → More → "A letter to my future self" → write, pick "in a month", seal → shows as sealed; with the reflection lock on, the screen asks to unlock
+- [ ] Set the phone date past the opening day → 📬 card on Home → opens the letter; the card is gone after reading
+- [ ] Backup → restore: quit habits, sleep hours and letters come back

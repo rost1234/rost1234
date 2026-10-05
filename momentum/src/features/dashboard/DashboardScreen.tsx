@@ -12,6 +12,7 @@ import { habitsDueOn } from '@/domain/habitSchedule';
 import { orderByTimeOfDay } from '@/domain/rhythm';
 import { orderByStacking } from '@/domain/stacking';
 import { InsightCard } from '@/features/insights/InsightCard';
+import { LetterDueCard } from '@/features/letters/LetterDueCard';
 import { shouldShowWeeklySummary } from '@/features/weekly/weeklyPrompt';
 import { useDayOff } from '@/hooks/useDayOff';
 import { useLocalDate } from '@/hooks/useLocalDate';
@@ -141,6 +142,7 @@ export function DashboardScreen() {
         <CoachMarks />
         <FirstWinCard today={today} hour={hour} />
         <YesterdayCard today={today} hour={hour} />
+        <LetterDueCard today={today} />
         <LevelCard today={today} />
         <InsightCard today={today} />
         <AutomaticCard today={today} />

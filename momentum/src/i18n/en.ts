@@ -652,6 +652,23 @@ export const en = {
   'yday.title': "Anything else from yesterday?",
   'yday.lead': "Did a habit yesterday without checking it off? A tap adds it to yesterday, streak included.",
   'yday.markA11y': "Mark {title} as done yesterday",
+  'letter.title': "A letter to my future self",
+  'letter.writeTitle': "New letter",
+  'letter.writeLead': "What would you want to tell yourself in a month, three months or a year? What matters to you now, and where is this path heading?",
+  'letter.placeholder': "Hello, future me…",
+  'letter.when': "When should it open?",
+  'letter.inMonth': "In a month",
+  'letter.in3Months': "In 3 months",
+  'letter.inYear': "In a year",
+  'letter.seal': "Seal and save",
+  'letter.written': "Written {date}",
+  'letter.opensOn': "opens {date}",
+  'letter.sealed': "Sealed until its day.",
+  'letter.delete': "Delete",
+  'letter.deleteTitle': "Delete this letter?",
+  'letter.dueTitle': "A letter from you is waiting",
+  'letter.dueBody': "Written {date}. Today is the day to open it.",
+  'letter.dueA11y': "A letter from you, written {date}, is waiting. Tap to open.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { router } from 'expo-router';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import type { DailyReflection } from '@/domain/models';
 import { useTaskStore } from '@/state/taskStore';
@@ -38,7 +39,9 @@ export function MoreSection({ unscheduledCount, reflection, showReflection }: Mo
         style={styles.header}
         hitSlop={8}
       >
-        <Text style={typography.label}>{open ? '▾' : '▸'} More</Text>
+        <Text style={typography.label}>
+          {open ? '▾' : t.isRTL ? '◂' : '▸'} {t('more.title')}
+        </Text>
         {summary ? <Text style={typography.caption}>{summary}</Text> : null}
       </Pressable>
 
@@ -74,6 +77,14 @@ export function MoreSection({ unscheduledCount, reflection, showReflection }: Mo
             ))
           )}
           {showReflection ? <ReflectionPrompt reflection={reflection} /> : null}
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/letters')}
+            style={({ pressed }) => [styles.laterRow, pressed && { opacity: 0.85 }]}
+          >
+            <Text style={[typography.body, { flex: 1 }]}>✉️ {t('letter.title')}</Text>
+            <Text style={typography.caption}>{t.isRTL ? '‹' : '›'}</Text>
+          </Pressable>
         </View>
       ) : null}
     </View>
