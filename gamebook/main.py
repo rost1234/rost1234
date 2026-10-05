@@ -82,8 +82,9 @@ def endings_book(stories):
         for pid, kind in sorted(endings, key=lambda e: (ENDING_ORDER.index(e[1]) if e[1] in ENDING_ORDER else 9, e[0])):
             label = ENDING_NAMES.get(kind, kind)
             if pid in got:
-                first = st["pages"][pid]["text"].split(".")[0][:60]
-                d.say(f"  [v] {label}: {first}...", d.GREEN)
+                page = st["pages"][pid]
+                name = page.get("ending_title") or page["text"].split(".")[0][:60] + "..."
+                d.say(f"  [v] {label}: {name}", d.GREEN)
             else:
                 d.say(f"  [ ] {label}: ???", d.GRAY)
         print()
@@ -123,7 +124,9 @@ def main():
                 d.title(story["title"])
                 if story.get("intro"):
                     d.say(story["intro"], center=True)
-                Game(story, create_player()).run()
+                game = Game(story, create_player())
+                game.start()
+                game.run()
         elif ans == "2":
             story = pick_story(stories, only_saved=True)
             if story:

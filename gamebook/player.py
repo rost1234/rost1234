@@ -53,7 +53,11 @@ class Player:
         self.gold = 0
         self.inventory = []
         self.flags = []
+        self.counters = {}  # מונים בשם, למשל {"מורל": 3} - כל סיפור מגדיר את שלו
         self.page = None
+        # נשקים ושריונות שסיפור מסוים מוסיף (נקבעים מחדש בכל תחילת משחק)
+        self.extra_weapons = {}
+        self.extra_armor = {}
 
     # ---------- יצירת דמות ----------
     def roll_stats(self):
@@ -93,10 +97,12 @@ class Player:
         return self.strength
 
     def attack_bonus(self):
-        return max([WEAPONS[i] for i in self.inventory if i in WEAPONS] or [0])
+        table = {**WEAPONS, **self.extra_weapons}
+        return max([table[i] for i in self.inventory if i in table] or [0])
 
     def armor(self):
-        return min(2, sum(ARMOR[i] for i in set(self.inventory) if i in ARMOR))
+        table = {**ARMOR, **self.extra_armor}
+        return min(2, sum(table[i] for i in set(self.inventory) if i in table))
 
     def has(self, item):
         return item in self.inventory
@@ -122,6 +128,8 @@ class Player:
         d.say(f"חיים: {self.hp}/{self.max_hp}   כוח: {self.strength}   זריזות: {self.agility}   מזל: {self.luck}")
         extra = f"   מאנה: {self.mana}/{self.max_mana}" if self.max_mana else ""
         d.say(f"זהב: {self.gold}   בונוס נשק: +{self.attack_bonus()}   שריון: {self.armor()}{extra}")
+        if self.counters:
+            d.say("   ".join(f"{name}: {value}" for name, value in self.counters.items()), d.CYAN)
         d.rule("-")
 
     def show_inventory(self):

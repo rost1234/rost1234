@@ -53,20 +53,43 @@ python main.py
   ]
 }
 ```
-- **effects**: `add_item`, `remove_item`, `gold`, `heal`, `damage` (מספר או "1d6+1"), `stat`, `mana`, `set_flag`, `message`
-- **requires**: `item`, `no_item`, `flag`, `no_flag`, `class` (warrior/thief/mage), `gold`, `mana`
+- **effects** (אפקטים כשנכנסים לדף או בוחרים בחירה):
+  `add_item` / `remove_item` (item), `gold` / `heal` / `mana` (amount), `damage` (מספר או "1d6+1"),
+  `stat` (stat, amount), `set_flag` / `clear_flag` (flag), `message` (text),
+  `counter`: מונה בשם, למשל `{"type": "counter", "name": "מורל", "amount": -1}` או `"set": 5` לקבוע ערך.
+  מונים מתחילים ב-0 ומוצגים במסך המצב.
+- **requires** (כל התנאים חייבים להתקיים): `item`, `no_item`, `items` [כולם], `no_items` [אף אחד],
+  `flag`, `no_flag`, `flags` [כולם], `any_flags` [לפחות אחד], `no_flags` [אף אחד],
+  `class` (warrior/thief/mage), `gold`, `mana`, `counter_min` / `counter_max` (`{"מורל": 3}`)
+- **בחירה** מסתיימת באחד מאלה: `goto`, `check` (`{"stat", "dc", "success", "fail"}`), `luck` (`{"success", "fail"}`),
+  או `roll`: טבלת קוביות, `{"dice": "1d6", "table": [{"max": 2, "goto": "10"}, {"max": 6, "goto": "11"}]}`
+  (השורה הראשונה שה-max שלה גדול או שווה לתוצאה)
 - **combat**: `{"name", "skill", "hp", "damage"?, "win", "flee"?}` או `{"enemies": [...], "win": ...}`
 - **shop**: `[{"item": "שיקוי ריפוי", "price": 5}]`
-- **ending**: `"win"`, `"true"` (הסוף האמיתי), `"alt"` (סוף אחר), `"bad"` או `"death"`
+- **redirect**: ניתוב אוטומטי לפי תנאים, `[{"requires": {...}, "goto": "40"}, {"goto": "41"}]`.
+  השורה האחרונה בלי תנאי. דף ניתוב בלי `text` עובר בשקט, בלי שהשחקן רואה אותו.
+- **ending**: `"win"`, `"true"` (הסוף האמיתי), `"alt"` (סוף אחר), `"bad"` או `"death"`,
+  ו-`"ending_title"`: שם הסוף שמופיע על המסך ובספר הסופים
+- **ראש הסיפור**: `title`, `intro`, `start`, ואופציונלית `weapons` / `armor` (נשקים ושריונות מיוחדים לסיפור,
+  למשל `{"קשת אלפית": 3}`) ו-`start_effects` (אפקטים בתחילת משחק חדש)
 
 אחרי עריכה הריצו `python validate.py story/<קובץ>.json` כדי לבדוק שאין קישורים שבורים או דפים שאי אפשר להגיע אליהם,
 ו-`python balance.py 1000 story/<קובץ>.json` כדי לראות אחוזי ניצחון ומוות לכל מקצוע ולחפש לולאות שאפשר לנצל.
 
 ## סוכנים לכתיבת הסיפור
-בתיקייה `.claude/agents/` יש שלושה סוכנים של Claude Code:
-- **story-writer**: כותב דפים, מסלולים וסופים חדשים
+בתיקייה `.claude/agents/` יש ארבעה סוכנים של Claude Code:
+- **story-architect**: מתכנן סיפור ארוך (150-200 דפים) לפני הכתיבה: "תנ"ך" של הסיפור ב-`bibles/<שם>.md`
+  וחוזה מערכות ב-`bibles/<שם>.contract.json`
+- **story-writer**: כותב דפים, מסלולים וסופים חדשים, או מערכה שלמה לפי החוזה
 - **story-improver**: עורך את הטקסט, שומר על רצף, ומתקן ממצאים של הבודק
-- **story-auditor**: מחפש רמאויות ובעיות מכניקה וכותב דוח ל-`AUDIT.md`
+- **story-auditor**: מחפש רמאויות ובעיות מכניקה וכותב דוח ל-`audits/<שם>.md` (לסיפור הראשי: `AUDIT.md`)
 
-כמה סוכנים יכולים לכתוב במקביל: כל אחד כותב קובץ חלק ל-`story/parts/` (דפים חדשים + hooks לדפים קיימים),
-ו-`python merge_parts.py` ממזג אותם לסיפור.
+**סיפור חדש וארוך, כמה כותבים במקביל:**
+1. האדריכל כותב את התנ"ך, את החוזה ואת `story/parts/<שם>/00_meta.json`.
+2. כל כותב כותב מערכה אחת ל-`story/parts/<שם>/10_act1.json`, `20_act2.json`... בטווח מספרי הדפים שלה,
+   ובודק אותה עם `python check_part.py <שם> 20_act2.json`.
+3. `python merge_parts.py <שם>` מחבר את כל המערכות ל-`story/<שם>.json`.
+4. `python validate.py story/<שם>.json` ו-`python balance.py 1000 story/<שם>.json`, ואחר כך הבודק והעורך.
+
+**הוספה לסיפור קיים במקביל:** כל כותב כותב קובץ חלק ל-`story/parts/` (דפים חדשים + hooks לדפים קיימים),
+ו-`python merge_parts.py` ממזג אותם לסיפור הראשי.

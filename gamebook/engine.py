@@ -83,6 +83,13 @@ class Game:
         self.pages = story["pages"]
         self.player = player
         self.save_file = os.path.join(SAVES_DIR, f"{story.get('id', MAIN_STORY)}.json")
+        player.extra_weapons = dict(story.get("weapons", {}))
+        player.extra_armor = dict(story.get("armor", {}))
+
+    def start(self):
+        """אפקטים של תחילת סיפור (ציוד או מונים מיוחדים לסיפור הזה)."""
+        if self.story.get("start_effects"):
+            self.apply_effects(self.story["start_effects"])
 
     # ---------- לולאה ראשית ----------
     def run(self, fresh=True):
@@ -99,10 +106,11 @@ class Game:
         p = self.player
         page = self.pages[pid]
         p.page = pid
-        print()
-        d.title(f"- דף {pid} -", d.YELLOW)
-        d.say(page["text"])
-        print()
+        if page.get("text"):  # דף בלי טקסט הוא ממסר שקט (redirect)
+            print()
+            d.title(f"- דף {pid} -", d.YELLOW)
+            d.say(page["text"])
+            print()
 
         if fresh:
             self.apply_effects(page.get("effects", []))
@@ -120,6 +128,19 @@ class Game:
 
         if page.get("ending"):
             return self.ending(page["ending"])
+
+        if "redirect" in page:
+            # ניתוב אוטומטי: היעד הראשון שהתנאים שלו מתקיימים
+            self.hops = getattr(self, "hops", 0) + 1
+            if self.hops > 500:
+                d.say("שגיאה בסיפור: לולאת ניתוב אינסופית. חוזרים לתפריט.", d.RED)
+                raise QuitToMenu
+            if page.get("text"):
+                d.pause()
+            for r in page["redirect"]:
+                if self.available(r):
+                    return r["goto"]
+            return page["redirect"][-1]["goto"]
 
         return self.choose(page)
 
@@ -161,6 +182,18 @@ class Game:
             elif t == "set_flag":
                 if e["flag"] not in p.flags:
                     p.flags.append(e["flag"])
+            elif t == "clear_flag":
+                if e["flag"] in p.flags:
+                    p.flags.remove(e["flag"])
+            elif t == "counter":
+                name = e["name"]
+                old = p.counters.get(name, 0)
+                p.counters[name] = e["set"] if "set" in e else old + e.get("amount", 0)
+                if not e.get("silent"):
+                    diff = p.counters[name] - old
+                    sign = "+" if diff > 0 else ""
+                    d.say(f"{name}: {sign}{diff} (עכשיו {p.counters[name]})" if diff else
+                          f"{name}: {p.counters[name]}", d.CYAN)
             elif t == "message":
                 d.say(e["text"], d.CYAN)
 
@@ -181,10 +214,25 @@ class Game:
             return False
         if "mana" in req and p.mana < req["mana"]:
             return False
+        if any(not p.has(i) for i in req.get("items", [])):
+            return False
+        if any(p.has(i) for i in req.get("no_items", [])):
+            return False
+        if any(f not in p.flags for f in req.get("flags", [])):
+            return False
+        if "any_flags" in req and not any(f in p.flags for f in req["any_flags"]):
+            return False
+        if any(f in p.flags for f in req.get("no_flags", [])):
+            return False
+        if any(p.counters.get(n, 0) < v for n, v in req.get("counter_min", {}).items()):
+            return False
+        if any(p.counters.get(n, 0) > v for n, v in req.get("counter_max", {}).items()):
+            return False
         return True
 
     # ---------- בחירות ----------
     def choose(self, page):
+        self.hops = 0
         choices = [c for c in page.get("choices", []) if self.available(c)]
         shop = page.get("shop")
         while True:
@@ -249,6 +297,15 @@ class Game:
             d.say(f"(המזל שלך יורד ל-{p.luck})", d.GRAY)
             d.pause()
             return c["success"] if ok else c["fail"]
+        if "roll" in choice:
+            c = choice["roll"]
+            total, rolls = roll(c["dice"])
+            d.say(f"הטלת קוביות: {fmt(c['dice'], total, rolls)}", d.CYAN)
+            d.pause()
+            for row in c["table"]:
+                if total <= row["max"]:
+                    return row["goto"]
+            return c["table"][-1]["goto"]
         return choice["goto"]
 
     def shop(self, items):
@@ -275,10 +332,13 @@ class Game:
     # ---------- סוף ----------
     def ending(self, kind):
         label, color = ENDINGS.get(kind, ENDINGS["bad"])
+        pid = self.player.page
         print()
         d.title(label, color)
+        name = self.pages.get(pid, {}).get("ending_title")
+        if name:
+            d.say(name, d.BOLD + color, center=True)
         self.player.show_status()
-        pid = self.player.page
         if self.pages.get(pid, {}).get("ending"):
             if record_ending(self.story.get("id", MAIN_STORY), pid):
                 found = len(load_found_endings().get(self.story.get("id", MAIN_STORY), []))

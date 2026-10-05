@@ -23,7 +23,7 @@ from validate import targets  # noqa: E402
 
 STORY = os.path.join(d.RESOURCE_DIR, "story", "adventure.json")
 GAIN_EFFECTS = {"gold", "heal", "add_item", "stat", "mana"}
-MAX_STEPS = 400
+MAX_STEPS = 3000
 
 
 class Bot:
