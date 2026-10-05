@@ -47,6 +47,8 @@ def play_one(story, cls):
     p = Player("bot", cls)
     p.roll_stats()
     g = engine.Game(story, p)
+    with contextlib.redirect_stdout(io.StringIO()):
+        g.start()  # אפקטי פתיחה של הסיפור (מונים וציוד התחלתיים)
     bot = Bot(p)
     bot.in_page = True
     d.ask = bot
@@ -64,10 +66,10 @@ def play_one(story, cls):
         bot.in_page = True
         if p.hp <= p.max_hp // 3 and p.has(POTION):
             p.drink_potion()
-        # שחקן סביר: לא בוחר בחירה שמובילה ישר לסוף רע (פיתוי ברור / יציאה מהמשימה)
+        # שחקן סביר: לא בוחר בחירה שמובילה ישר לסוף רע או למוות שהטקסט מזהיר ממנו
         options = [c for c in page.get("choices", []) if g.available(c)]
         safe = [c for c in options
-                if g.pages.get(c.get("goto"), {}).get("ending") not in ("bad", "alt")]
+                if g.pages.get(c.get("goto"), {}).get("ending") not in ("bad", "alt", "death")]
         if safe:
             return g.resolve(random.choice(safe))
         return orig_choose(page)
