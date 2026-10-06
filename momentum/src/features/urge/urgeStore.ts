@@ -17,6 +17,8 @@ export interface UrgeSession {
   /** Wall-clock end, ms since epoch. */
   endsAt: number;
   notificationId: string | null;
+  /** Whether the end notification was scheduled; undefined while scheduling. */
+  willNotify?: boolean;
   /** Home already opened the "did it pass?" question once. */
   prompted: boolean;
 }
@@ -69,7 +71,7 @@ export const useUrgeStore = create<UrgeState>((set, get) => ({
     const notificationId = await scheduleFocusNotification(new Date(endsAt), t('urge.notifTitle', { minutes }), t('urge.notifBody')).catch(() => null);
     // Only keep the id if this is still the same session.
     if (get().session?.startedAt === session.startedAt) {
-      const withId = { ...session, notificationId };
+      const withId = { ...session, notificationId, willNotify: notificationId !== null };
       set({ session: withId });
       persist(withId);
     } else {

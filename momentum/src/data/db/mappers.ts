@@ -15,6 +15,7 @@ import {
   type UrgeLog,
   type UrgeTrigger,
 } from '@/domain/models';
+import { URGE_TRIGGERS } from '@/domain/urges';
 import type {
   AppSettingsRow,
   DailyReflectionRow,
@@ -155,8 +156,6 @@ export const mapFutureLetter = (row: FutureLetterRow): FutureLetter => ({
   openOn: row.open_on,
   openedAt: row.opened_at ?? null,
 });
-
-const URGE_TRIGGERS: readonly UrgeTrigger[] = ['tired', 'stress', 'bored', 'meal', 'people', 'other'];
 
 export const toUrgeTrigger = (value: string | null | undefined): UrgeTrigger | null =>
   URGE_TRIGGERS.find((tag) => tag === value) ?? null;

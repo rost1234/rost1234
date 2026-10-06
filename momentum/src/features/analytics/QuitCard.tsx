@@ -30,11 +30,11 @@ const TRIGGER_KEYS: Record<UrgeTrigger, TranslationKey> = {
   other: 'urge.tr.other',
 };
 
-function Stat({ value, label, tone }: { value: string; label: string; tone: 'success' | 'primary' }) {
+function Stat({ value, label, tone, a11y }: { value: string; label: string; tone: 'success' | 'primary'; a11y?: string }) {
   const { colors } = useTheme();
   const styles = useStyles();
   return (
-    <View style={[styles.stat, { backgroundColor: tone === 'success' ? colors.successSoft : colors.primarySoft }]} accessible accessibilityLabel={`${value} ${label}`}>
+    <View style={[styles.stat, { backgroundColor: tone === 'success' ? colors.successSoft : colors.primarySoft }]} accessible accessibilityLabel={a11y ?? `${value} ${label}`}>
       <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
     </View>
@@ -69,7 +69,7 @@ function QuitHabitCard({ habit, urges, reflections }: { habit: Habit; urges: Urg
             tone="success"
           />
         ) : null}
-        {mine.length > 0 ? <Stat value={`${map.passed}/${map.total}`} label={t('quitIns.passed')} tone="primary" /> : null}
+        {mine.length > 0 ? <Stat value={`${map.passed}/${map.total}`} label={t('quitIns.passed')} tone="primary" a11y={t('quitIns.passedA11y', { passed: map.passed, total: map.total })} /> : null}
       </View>
 
       {mine.length === 0 ? null : map.total < TRIGGER_MAP_MIN ? (
@@ -160,11 +160,11 @@ const useStyles = makeStyles(({ colors }) => ({
   divider: { height: 1, backgroundColor: colors.border, marginVertical: spacing.xs },
   bars: { gap: spacing.xs + 2 },
   barRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  barLabel: { width: 56, fontSize: 13, color: colors.textMuted },
+  barLabel: { width: 84, fontSize: 13, color: colors.textMuted },
   barLabelTop: { color: colors.text, fontWeight: '700' },
   track: { flex: 1, height: 12, borderRadius: 6, backgroundColor: colors.surfaceMuted, overflow: 'hidden' },
   fill: { height: 12, borderRadius: 6 },
-  barCount: { width: 22, fontSize: 13, fontWeight: '700', color: colors.text, textAlign: 'right', fontVariant: ['tabular-nums'] },
+  barCount: { width: 22, fontSize: 13, fontWeight: '700', color: colors.text, textAlign: 'center', fontVariant: ['tabular-nums'] },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs + 2 },
   tag: { paddingHorizontal: spacing.md, paddingVertical: 4, borderRadius: radius.pill, backgroundColor: colors.surfaceMuted },
   tagTop: { backgroundColor: colors.primarySoft },

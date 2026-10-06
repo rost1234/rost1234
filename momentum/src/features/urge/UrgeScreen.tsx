@@ -116,9 +116,10 @@ export function UrgeScreen() {
   const today = useLocalDate();
   const params = useLocalSearchParams<{ habitId?: string }>();
   const session = useUrgeStore((s) => s.session);
-  const habitId = session?.habitId ?? params.habitId;
-  const habit = useHabitStore((s) => s.habits.find((h) => h.id === habitId));
   const [result, setResult] = useState<Result | null>(null);
+  // Answering clears the session, so the result keeps showing the habit it was for.
+  const habitId = result?.log.habitId ?? session?.habitId ?? params.habitId;
+  const habit = useHabitStore((s) => s.habits.find((h) => h.id === habitId));
   const [trigger, setTrigger] = useState<UrgeTrigger | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -240,13 +241,17 @@ export function UrgeScreen() {
                 <Text style={typography.caption}>{remainingSeconds < total / 2 ? t('urge.fading') : t('urge.riding')}</Text>
               </ProgressRing>
             </View>
-            {quitPlanText(habit, t) ? (
+            {habit.microStep ? (
               <Card style={styles.meanwhile}>
                 <Text style={[typography.caption, styles.center]}>{t('urge.meanwhile')}</Text>
-                <Text style={[styles.planText, styles.center]}>{habit.microStep || quitPlanText(habit, t)}</Text>
+                <Text style={[styles.planText, styles.center]}>{habit.microStep}</Text>
               </Card>
             ) : null}
-            <Text style={[typography.caption, styles.center]}>{t('urge.lockHint', { time: endTime })}</Text>
+            {session?.willNotify === undefined ? null : (
+              <Text style={[typography.caption, styles.center]}>
+                {session.willNotify ? t('urge.lockHint', { time: endTime }) : t('urge.backHint', { time: endTime })}
+              </Text>
+            )}
             <Button label={t('urge.passedEarly')} onPress={() => void answer('passed')} loading={saving} />
             <Button label={t('urge.leave')} variant="ghost" onPress={leave} />
           </>
