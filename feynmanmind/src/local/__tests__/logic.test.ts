@@ -367,3 +367,43 @@ describe('reviewQueue and study time', () => {
     expect(L.studyMinutesToday({ ...next, reviewDays: { [dayKey(NOW)]: { reviewed: 30, correct: 20 } } }, NOW)).toBe(10);
   });
 });
+
+describe('week, progress and achievements', () => {
+  const L = jest.requireActual('../logic');
+
+  it('gives the current week from Sunday to Saturday', () => {
+    const { db } = seed();
+    const week = L.calendarWeek(db, NOW); // Thursday 24 Sep 2026
+    expect(week.map((d: { date: string }) => d.date)).toEqual(['2026-09-20', '2026-09-21', '2026-09-22', '2026-09-23', '2026-09-24', '2026-09-25', '2026-09-26']);
+    expect(week[4]).toMatchObject({ isToday: true });
+  });
+
+  it('sums the week, overall accuracy and the best streak', () => {
+    const { db: seeded } = seed();
+    const db = {
+      ...seeded,
+      reviewDays: {
+        '2026-09-01': { reviewed: 30, correct: 20 },
+        '2026-09-02': { reviewed: 30, correct: 30 },
+        '2026-09-03': { reviewed: 30, correct: 25 },
+        '2026-09-23': { reviewed: 9, correct: 9 },
+        '2026-09-24': { reviewed: 1, correct: 1 },
+      },
+    };
+    const p = L.progressSummary(db, NOW);
+    expect(p).toMatchObject({ totalReviews: 100, accuracy: 85, streak: 2, bestStreak: 3, concepts: 1 });
+    // 10 reviews ≈ 3 minutes, plus the concept started in the seed (not from a course).
+    expect(p.weekMinutes).toBeGreaterThanOrEqual(3);
+
+    const earned = L.achievements(db, NOW).filter((a: { earned: boolean }) => a.earned).map((a: { key: string }) => a.key);
+    expect(earned).toEqual(expect.arrayContaining(['firstReview', 'streak3', 'reviews100']));
+    expect(earned).not.toContain('streak7');
+    expect(L.achievements(db, NOW)).toHaveLength(8);
+  });
+
+  it('has no accuracy before the first review', () => {
+    const { db } = seed();
+    expect(L.progressSummary(db, NOW).accuracy).toBeNull();
+    expect(L.achievements(db, NOW).every((a: { key: string; earned: boolean }) => !a.earned || a.key === 'firstStation' || a.key === 'firstExplain')).toBe(true);
+  });
+});

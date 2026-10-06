@@ -21,7 +21,18 @@ export const readingMinutes = (text: string) => Math.max(1, Math.round(text.spli
  * (long-press a paragraph, or copy everything with the button), followed by
  * the key points to remember.
  */
-export function LessonCard({ title, explanation, keyPoints = [] }: { title: string; explanation: string; keyPoints?: { question: string; answer: string }[] }) {
+export function LessonCard({
+  title,
+  explanation,
+  keyPoints = [],
+  part = 'all',
+}: {
+  title: string;
+  explanation: string;
+  keyPoints?: { question: string; answer: string }[];
+  /** Show only the text or only the key points (the lesson steps), or both. */
+  part?: 'all' | 'text' | 'points';
+}) {
   const t = useT();
   const styles = useStyles();
   const { colors, typography } = useTheme();
@@ -38,19 +49,19 @@ export function LessonCard({ title, explanation, keyPoints = [] }: { title: stri
       <View style={styles.header}>
         <Ionicons name="book-outline" size={18} color={colors.primary} />
         <Text style={[typography.label, { color: colors.primary }]}>{t('lesson.title').toLocaleUpperCase()}</Text>
-        <Text style={typography.caption}>· {t('lesson.readingTime', { n: readingMinutes(explanation) })}</Text>
+        {part !== 'points' ? <Text style={typography.caption}>· {t('lesson.readingTime', { n: readingMinutes(explanation) })}</Text> : null}
         <View style={{ flex: 1 }} />
         <CopyButton onCopy={copyAll} label={t('lesson.copy')} />
       </View>
 
-      {paragraphs.map((paragraph, i) => (
+      {part !== 'points' && paragraphs.map((paragraph, i) => (
         <Text key={i} style={[styles.paragraph, i === 0 && styles.lead]} selectable>
           {paragraph}
         </Text>
       ))}
 
-      {keyPoints.length ? (
-        <View style={styles.points}>
+      {part !== 'text' && keyPoints.length ? (
+        <View style={[styles.points, part === 'points' && styles.pointsOnly]}>
           <View style={styles.header}>
             <Ionicons name="bulb-outline" size={18} color={colors.warning} />
             <Text style={[typography.subheading, { flex: 1 }]}>{t('lesson.keyPoints')}</Text>
@@ -127,6 +138,7 @@ const useStyles = makeStyles(({ colors, textScale }) => ({
     borderTopColor: colors.border,
   },
   point: { flexDirection: 'row', gap: spacing.md },
+  pointsOnly: { marginTop: 0, paddingTop: 0, borderTopWidth: 0 },
   bullet: { width: 6, height: 6, borderRadius: 3, marginTop: 9 },
   copy: {
     flexDirection: 'row',

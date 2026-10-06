@@ -334,6 +334,11 @@ export interface CalendarDay {
  * and how many cards come due on each coming day.
  */
 export function calendarMonth(db: LocalDB, year: number, month: number, now: Date): CalendarDay[] {
+  return calendarRange(db, new Date(year, month, 1), new Date(year, month + 1, 0).getDate(), now);
+}
+
+/** `days` consecutive calendar days from `start` (see calendarMonth). */
+export function calendarRange(db: LocalDB, start: Date, days: number, now: Date): CalendarDay[] {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const todayKey = dayKey(today);
   const dueByDay = new Map<string, number>();
@@ -343,9 +348,8 @@ export function calendarMonth(db: LocalDB, year: number, month: number, now: Dat
     const key = due < today ? todayKey : dayKey(due);
     dueByDay.set(key, (dueByDay.get(key) ?? 0) + 1);
   }
-  const days = new Date(year, month + 1, 0).getDate();
   return Array.from({ length: days }, (_, i) => {
-    const date = new Date(year, month, i + 1);
+    const date = addDays(start, i);
     const key = dayKey(date);
     const isPast = date < today;
     const log = db.reviewDays[key];
@@ -358,6 +362,74 @@ export function calendarMonth(db: LocalDB, year: number, month: number, now: Dat
       isPast,
     };
   });
+}
+
+/** The current week, Sunday to Saturday. */
+export const calendarWeek = (db: LocalDB, now: Date): CalendarDay[] =>
+  calendarRange(db, addDays(new Date(now.getFullYear(), now.getMonth(), now.getDate()), -now.getDay()), 7, now);
+
+export interface Progress {
+  /** Estimated study minutes over the last 7 days, today included. */
+  weekMinutes: number;
+  /** Share of all reviews ever that were recalled (0–100), or null before the first review. */
+  accuracy: number | null;
+  totalReviews: number;
+  streak: number;
+  bestStreak: number;
+  concepts: number;
+  /** Concepts explained with a mastery of 80 or more. */
+  mastered: number;
+}
+
+export function progressSummary(db: LocalDB, now: Date): Progress {
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let weekMinutes = 0;
+  for (let i = 0; i < 7; i++) weekMinutes += todayActivity(db, addDays(today, -i)).minutes;
+  const logs = Object.values(db.reviewDays);
+  const totalReviews = logs.reduce((s, d) => s + d.reviewed, 0);
+  const correct = logs.reduce((s, d) => s + d.correct, 0);
+  // Longest run of consecutive days with reviews.
+  let bestStreak = 0;
+  for (const key of Object.keys(db.reviewDays).sort()) {
+    if (!db.reviewDays[key]!.reviewed) continue;
+    let run = 0;
+    let d = new Date(`${key}T12:00:00`);
+    while ((db.reviewDays[dayKey(d)]?.reviewed ?? 0) > 0) {
+      run++;
+      d = addDays(d, 1);
+    }
+    bestStreak = Math.max(bestStreak, run);
+  }
+  const concepts = Object.values(db.concepts);
+  return {
+    weekMinutes,
+    accuracy: totalReviews ? Math.round((correct / totalReviews) * 100) : null,
+    totalReviews,
+    streak: computeStats(db, now).streak_days,
+    bestStreak,
+    concepts: concepts.length,
+    mastered: concepts.filter((c) => c.mastery_level >= 80).length,
+  };
+}
+
+export const ACHIEVEMENTS = [
+  { key: 'firstReview', icon: 'albums', earned: (p: Progress) => p.totalReviews >= 1 },
+  { key: 'firstStation', icon: 'flag', earned: (_p: Progress, db: LocalDB) => Object.values(db.concepts).some((c) => c.course_key) },
+  { key: 'firstExplain', icon: 'chatbubbles', earned: (_p: Progress, db: LocalDB) => Object.keys(db.sessions).length > 0 },
+  { key: 'streak3', icon: 'flame', earned: (p: Progress) => p.bestStreak >= 3 },
+  { key: 'streak7', icon: 'bonfire', earned: (p: Progress) => p.bestStreak >= 7 },
+  { key: 'reviews100', icon: 'medal', earned: (p: Progress) => p.totalReviews >= 100 },
+  { key: 'mastered5', icon: 'school', earned: (p: Progress) => p.mastered >= 5 },
+  { key: 'reviews1000', icon: 'trophy', earned: (p: Progress) => p.totalReviews >= 1000 },
+] as const;
+
+export type AchievementKey = (typeof ACHIEVEMENTS)[number]['key'];
+
+/** Every achievement and whether it's earned, earned ones first. */
+export function achievements(db: LocalDB, now: Date): { key: AchievementKey; icon: string; earned: boolean }[] {
+  const p = progressSummary(db, now);
+  const all = ACHIEVEMENTS.map((a) => ({ key: a.key, icon: a.icon, earned: a.earned(p, db) }));
+  return [...all.filter((a) => a.earned), ...all.filter((a) => !a.earned)];
 }
 
 // ---------------------------------------------------------------------------

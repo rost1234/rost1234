@@ -25,7 +25,11 @@ Expo SDK 57 / React Native 0.86 / expo-router. Hebrew-first UI (RTL), English al
 ## Navigation
 
 `src/app/(app)/(tabs)/` holds the four swipeable tabs (`expo-router/js-top-tabs` with the bar at the
-bottom — Expo Router 57 refuses `@react-navigation/*` packages, use its wrappers). Everything else
+bottom — Expo Router 57 refuses `@react-navigation/*` packages, use its wrappers): Today (next step +
+checklist, `src/features/today`), Learn (search, my courses, catalog, library — `src/features/learn`),
+Review (count, filters, week, forecast — `src/features/review`), Me (stats, achievements, grouped settings).
+A station (`course/[id]/[key].tsx`) runs in four steps (read → key points → explain → practice); moving
+past the key points starts it. Lesson questions open in a bottom sheet (`features/lesson/AskSheet.tsx`). Everything else
 (course maps, stations, concept pages, the review session) is a stack screen in `src/app/(app)/`.
 Review limits and accessibility live in `src/state/prefsStore.ts`; the theme reads text size and
 contrast from it (`useTheme().textScale`), `useReduceMotion()` covers animations.

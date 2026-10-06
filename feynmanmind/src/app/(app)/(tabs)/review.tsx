@@ -2,13 +2,12 @@ import { router } from 'expo-router';
 import { Button, EmptyState, Screen } from '@/components/ui';
 import { TabHeader } from '@/components/TabHeader';
 import { useStudyStats } from '@/data/study';
-import { ReviewCalendar } from '@/features/home/ReviewCalendar';
-import { TodaySection } from '@/features/home/TodaySection';
-import { FocusedReview } from '@/features/review/FocusedReview';
+import { Forecast, ReviewFilters, ReviewHero, WeekStrip } from '@/features/review/ReviewOverview';
 import { ReviewSettings } from '@/features/review/ReviewSettings';
+import { WeakConcepts } from '@/features/review/WeakConcepts';
 import { useT } from '@/i18n';
 
-/** Review: today's queue, focused reviews, the calendar and the review settings. */
+/** Review: how many cards wait and a start button, quick filters, this week, the coming days, and the settings. */
 export default function ReviewTab() {
   const t = useT();
   const stats = useStudyStats();
@@ -23,10 +22,13 @@ export default function ReviewTab() {
           action={<Button label={t('home.goLearn')} icon="book-outline" onPress={() => router.navigate('/learn')} />}
         />
       ) : (
-        <TodaySection>
-          <FocusedReview />
-          <ReviewCalendar />
-        </TodaySection>
+        <>
+          <ReviewHero />
+          <ReviewFilters />
+          <WeekStrip />
+          <Forecast />
+          <WeakConcepts />
+        </>
       )}
       <ReviewSettings />
     </Screen>

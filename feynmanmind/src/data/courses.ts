@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { generateCourse, generateLesson } from '@/api/functions';
 import { BUILT_IN_COURSES, builtInCourse } from '@/content/catalog';
+import { searchAll } from '@/content/search';
 import { findStation, stationsOf, type Course, type LevelKey } from '@/content/types';
 import {
   courseProgress,
@@ -184,4 +186,9 @@ export function useStation(courseId: string, key: string) {
         };
       }),
   });
+}
+
+export function useSearch(query: string) {
+  const db = useDBStore((s) => s.db);
+  return useMemo(() => searchAll(db, allCourses(), query), [db, query]);
 }

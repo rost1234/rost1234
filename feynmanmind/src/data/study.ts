@@ -1,6 +1,7 @@
+import { useMemo } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { generateFlashcards } from '@/api/functions';
-import { addCards, calendarMonth, cardsOf, computeStats, reviewCard, reviewQueue, type QueueOptions } from '@/local/logic';
+import { achievements, addCards, calendarMonth, calendarWeek, cardsOf, computeStats, progressSummary, reviewCard, reviewQueue, type QueueOptions } from '@/local/logic';
 import { commit, getDB, newId, useDBStore } from '@/local/store';
 import { NotFoundError } from '@/local/types';
 import type { QualityScore } from '@/srs/sm2';
@@ -79,4 +80,19 @@ export function useGenerateFlashcards(conceptId: string) {
       return { cards: added, source_truncated: response.source_truncated };
     },
   });
+}
+
+/** This week's days, Sunday to Saturday (follows the store). */
+export function useWeek() {
+  const db = useDBStore((s) => s.db);
+  return useMemo(() => calendarWeek(db, new Date()), [db]);
+}
+
+/** Totals for the Me tab: week minutes, accuracy, streaks, achievements. */
+export function useProgress() {
+  const db = useDBStore((s) => s.db);
+  return useMemo(() => {
+    const now = new Date();
+    return { summary: progressSummary(db, now), achievements: achievements(db, now) };
+  }, [db]);
 }

@@ -3,12 +3,12 @@ import Svg, { Circle } from 'react-native-svg';
 import { scoreColor, useTheme } from '@/theme';
 
 /** Circular 0–100 gauge used for comprehension and mastery scores. */
-export function ScoreRing({ score, size = 96, stroke = 9, caption }: { score: number; size?: number; stroke?: number; caption?: string }) {
+export function ScoreRing({ score, size = 96, stroke = 9, caption, color: fixed }: { score: number; size?: number; stroke?: number; caption?: string; color?: string }) {
   const { colors, typography } = useTheme();
   const clamped = Math.max(0, Math.min(100, Math.round(score)));
   const r = (size - stroke) / 2;
   const circumference = 2 * Math.PI * r;
-  const color = scoreColor(clamped, colors);
+  const color = fixed ?? scoreColor(clamped, colors);
   return (
     <View
       style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}

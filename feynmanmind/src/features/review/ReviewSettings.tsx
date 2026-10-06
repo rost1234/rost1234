@@ -1,18 +1,22 @@
 import { Text, View } from 'react-native';
-import { Card, SectionHeader, Segmented, Stepper } from '@/components/ui';
+import { Collapsible } from '@/components/Collapsible';
+import { Segmented, Stepper } from '@/components/ui';
 import { useT } from '@/i18n';
 import { usePrefsStore, type ReviewOrder } from '@/state/prefsStore';
 import { spacing, useTheme } from '@/theme';
 
-/** Daily limits and order for the review queue, right where you review. */
-export function ReviewSettings() {
+/** Daily limits and order for the review queue, folded into one row (on the Review tab and in Me). */
+export function ReviewSettings({ grouped }: { grouped?: boolean }) {
   const t = useT();
   const { typography } = useTheme();
   const prefs = usePrefsStore();
   return (
-    <>
-      <SectionHeader title={t('review.settingsTitle')} />
-      <Card style={{ gap: spacing.md }}>
+    <Collapsible
+      grouped={grouped}
+      icon="options-outline"
+      title={t('review.settingsTitle')}
+      summary={t('review.settingsSummary', { newPerDay: prefs.newCardsPerDay, max: prefs.maxReviewsPerDay })}
+    >
         <Row label={t('review.newPerDay')} hint={t('review.newPerDayHint')}>
           <Stepper value={prefs.newCardsPerDay} min={0} max={100} step={5} onChange={(v) => prefs.set({ newCardsPerDay: v })} />
         </Row>
@@ -28,8 +32,7 @@ export function ReviewSettings() {
             { value: 'hardest', label: t('review.orderHardest') },
           ]}
         />
-      </Card>
-    </>
+    </Collapsible>
   );
 }
 
