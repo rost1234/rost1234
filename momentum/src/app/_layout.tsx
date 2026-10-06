@@ -8,7 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { runDetached } from '@/core/errors';
 import { OverlayHost } from '@/components/Overlay';
 import { DashboardSkeleton } from '@/components/Skeleton';
-import { FONT_FILES } from '@/components/fonts';
+import { FONT_FILES, setFontsAvailable } from '@/components/fonts';
 import { Button } from '@/components/ui';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { configureNotifications } from '@/services/notifications';
@@ -50,6 +50,7 @@ function Bootstrap() {
   const error = useSettingsStore((s) => s.error);
   // Assistant (Hebrew + Latin). If it fails to load, the system font is used instead.
   const [fontsLoaded, fontError] = useFonts(FONT_FILES);
+  if (fontError) setFontsAvailable(false);
 
   useEffect(() => {
     runDetached(

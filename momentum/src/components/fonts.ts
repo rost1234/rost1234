@@ -41,3 +41,11 @@ export function fontFamilyFor(weight: string | number | undefined): FontFamily {
       return 'Assistant_400Regular';
   }
 }
+
+let available = true;
+
+/** Set to false if the font files fail to load, so text falls back to the system font with its own weights. */
+export const setFontsAvailable = (value: boolean) => {
+  available = value;
+};
+export const fontsAvailable = () => available;

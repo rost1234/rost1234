@@ -1,6 +1,6 @@
 import { createContext, useContext, type ComponentProps } from 'react';
 import { StyleSheet, Text as RNText, TextInput as RNTextInput, type StyleProp, type TextStyle } from 'react-native';
-import { fontFamilyFor } from './fonts';
+import { fontFamilyFor, fontsAvailable } from './fonts';
 
 /** True inside another Text, where unstyled text keeps the parent's weight. */
 const InsideText = createContext(false);
@@ -11,6 +11,7 @@ const InsideText = createContext(false);
  * inherits unless it sets a weight itself.
  */
 function withFont(style: StyleProp<TextStyle>, inherit: boolean): StyleProp<TextStyle> {
+  if (!fontsAvailable()) return style;
   const flat = StyleSheet.flatten(style) ?? {};
   if (flat.fontFamily) return style;
   if (inherit && flat.fontWeight === undefined) return style;
