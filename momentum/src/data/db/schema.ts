@@ -175,6 +175,22 @@ CREATE TABLE IF NOT EXISTS future_letters (
 );
 `;
 
+/** v11: what a quit habit cost a day, and the "urge now" moments. No CHECK on `outcome`, so it can grow. */
+const MIGRATION_11 = `
+ALTER TABLE habits ADD COLUMN quit_cost INTEGER NULL;
+ALTER TABLE habits ADD COLUMN quit_minutes INTEGER NULL;
+CREATE TABLE IF NOT EXISTS urge_logs (
+  id TEXT PRIMARY KEY NOT NULL,
+  habit_id TEXT NULL REFERENCES habits(id) ON DELETE CASCADE,
+  started_at TEXT NOT NULL,
+  log_date TEXT NOT NULL,
+  outcome TEXT NOT NULL,
+  trigger_tag TEXT NULL,
+  mode TEXT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_urge_logs_date ON urge_logs(log_date);
+`;
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, statements: MIGRATION_1 },
   { version: 2, statements: MIGRATION_2 },
@@ -186,6 +202,7 @@ export const MIGRATIONS: readonly Migration[] = [
   { version: 8, statements: MIGRATION_8 },
   { version: 9, statements: MIGRATION_9 },
   { version: 10, statements: MIGRATION_10 },
+  { version: 11, statements: MIGRATION_11 },
 ];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS.reduce((max, m) => Math.max(max, m.version), 0);
@@ -203,6 +220,7 @@ export const TABLES = [
   'pauses',
   'shown_insights',
   'future_letters',
+  'urge_logs',
 ] as const;
 
 export type TableName = (typeof TABLES)[number];
@@ -245,6 +263,8 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     time_of_day: 'nullable_text',
     reminder: 'nullable_text',
     is_quit: 'nullable_integer',
+    quit_cost: 'nullable_integer',
+    quit_minutes: 'nullable_integer',
   },
   habit_logs: {
     id: 'text',
@@ -310,5 +330,14 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     written_on: 'text',
     open_on: 'text',
     opened_at: 'nullable_text',
+  },
+  urge_logs: {
+    id: 'text',
+    habit_id: 'nullable_text',
+    started_at: 'text',
+    log_date: 'text',
+    outcome: 'text',
+    trigger_tag: 'nullable_text',
+    mode: 'nullable_text',
   },
 };

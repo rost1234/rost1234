@@ -12,6 +12,9 @@ import type { Habit } from '@/domain/models';
 import { consistency, showConsistency } from '@/domain/motivation';
 import { isPaused } from '@/domain/pauses';
 import { hasCompletionBefore } from '@/domain/streaks';
+import { quitSavings } from '@/domain/urges';
+import { quitPlanText, savingsText } from '@/features/urge/quitText';
+import { useUrgeStore } from '@/features/urge/urgeStore';
 import { useHabitStore } from '@/state/habitStore';
 import { usePlanningStore } from '@/state/planningStore';
 import { currentLanguage, t, tPlural, useT } from '@/i18n';
@@ -34,6 +37,13 @@ function openHabitMenu(habit: Habit, isSkipped: boolean) {
   ];
   const message = [habit.why ? t('habit.why', { why: habit.why }) : null, choices > 0 ? tPlural(currentLanguage(), 'path.sofar', choices) : null].filter(Boolean).join('\n');
   showActionSheet({ title: habit.title, message: message || undefined, actions });
+}
+
+/** Opens "urge now"; an old ended timer for another habit is dropped first. */
+function openUrge(habitId: string) {
+  const { session, clear } = useUrgeStore.getState();
+  if (session && session.habitId !== habitId && Date.now() >= session.endsAt) clear();
+  router.push({ pathname: '/urge', params: { habitId } });
 }
 
 /** Springs the check circle whenever the habit becomes done. */
@@ -87,6 +97,9 @@ function HabitCardComponent({ habit }: HabitCardProps) {
   const isDone = progress.status === 'completed';
   const isSkipped = progress.status === 'skipped';
   const pop = useDonePop(isDone);
+  // Quit habits: what the clean days saved, by the user's own per-day estimate.
+  const cleanDays = useHabitStore((s) => (habit.isQuit ? (s.completedBefore[habit.id] ?? 0) : 0)) + (habit.isQuit && isDone ? 1 : 0);
+  const savings = habit.isQuit ? quitSavings(cleanDays, habit.quitCost, habit.quitMinutes) : null;
   const countLabel = habit.isQuantitative
     ? `${progress.currentCount}/${habit.targetCount}${habit.unit ? ` ${habit.unit}` : ''}`
     : isDone
@@ -106,6 +119,7 @@ function HabitCardComponent({ habit }: HabitCardProps) {
 
   return (
     <View style={[styles.card, isDone && styles.cardDone, isSkipped && styles.cardSkipped]}>
+      <View style={styles.row}>
       <Pressable
         onPress={onTap}
         onLongPress={() => {
@@ -162,9 +176,11 @@ function HabitCardComponent({ habit }: HabitCardProps) {
             {isSkipped
               ? t('habit.skipped')
               : habit.isQuit
-                ? habit.microStep
-                  ? t('habit.instead', { step: habit.microStep })
-                  : countLabel
+                ? habit.cue && habit.microStep
+                  ? quitPlanText(habit, t)
+                  : habit.microStep
+                    ? t('habit.instead', { step: habit.microStep })
+                    : countLabel
               : anchorTitle
                 ? `${t('habit.after', { anchor: anchorTitle })}${habit.microStep ? ` · ${habit.microStep}` : ''}`
                 : habit.cue
@@ -173,6 +189,14 @@ function HabitCardComponent({ habit }: HabitCardProps) {
                     ? habit.microStep
                     : countLabel}
           </Text>
+          {savings ? (
+            <View style={styles.savingsRow} accessible accessibilityLabel={t('quit.saved', { amount: savingsText(savings, t) })}>
+              <Ionicons name="leaf-outline" size={13} color={colors.success} />
+              <Text style={styles.savings} numberOfLines={1}>
+                {t('quit.saved', { amount: savingsText(savings, t) })}
+              </Text>
+            </View>
+          ) : null}
           {habit.isQuantitative ? (
             <View style={styles.progressRow}>
               <View style={{ flex: 1 }}>
@@ -211,6 +235,21 @@ function HabitCardComponent({ habit }: HabitCardProps) {
           </Pressable>
         )}
       </View>
+      </View>
+      {habit.isQuit && !isSkipped ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('urge.openA11y', { title: habit.title })}
+          onPress={() => {
+            haptics.tap();
+            openUrge(habit.id);
+          }}
+          style={({ pressed }) => [styles.urgeButton, pressed && { opacity: 0.8 }]}
+        >
+          <Ionicons name="water-outline" size={18} color={colors.primary} />
+          <Text style={styles.urgeLabel}>{t('urge.open')}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -219,8 +258,7 @@ export const HabitCard = memo(HabitCardComponent);
 
 const useStyles = makeStyles(({ colors, typography, shadow }) => ({
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    gap: spacing.sm + 2,
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     paddingVertical: spacing.md + 2,
@@ -228,6 +266,19 @@ const useStyles = makeStyles(({ colors, typography, shadow }) => ({
     marginBottom: spacing.sm + 2,
     ...shadow,
   },
+  row: { flexDirection: 'row', alignItems: 'center' },
+  savingsRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  savings: { fontSize: 13, fontWeight: '600', color: colors.text, flexShrink: 1 },
+  urgeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    minHeight: 44,
+    borderRadius: radius.md,
+    backgroundColor: colors.primarySoft,
+  },
+  urgeLabel: { fontSize: 15, fontWeight: '700', color: colors.primary },
   cardDone: { backgroundColor: '#F2FBF5' },
   cardSkipped: { opacity: 0.55 },
   main: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md },

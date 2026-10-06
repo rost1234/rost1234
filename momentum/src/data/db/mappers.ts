@@ -12,6 +12,8 @@ import {
   type Pause,
   type Task,
   type TargetFrequency,
+  type UrgeLog,
+  type UrgeTrigger,
 } from '@/domain/models';
 import type {
   AppSettingsRow,
@@ -23,6 +25,7 @@ import type {
   PauseRow,
   SqlBoolean,
   TaskRow,
+  UrgeLogRow,
 } from './rows';
 
 export const toSqlBoolean = (value: boolean): SqlBoolean => (value ? 1 : 0);
@@ -90,6 +93,8 @@ export const mapHabit = (row: HabitRow): Habit => ({
   timeOfDay: row.time_of_day === 'morning' || row.time_of_day === 'afternoon' || row.time_of_day === 'evening' ? row.time_of_day : 'any',
   reminder: row.reminder === 'smart' ? 'smart' : 'off',
   isQuit: row.is_quit === null || row.is_quit === undefined ? false : fromSqlBoolean(row.is_quit),
+  quitCost: typeof row.quit_cost === 'number' && row.quit_cost > 0 ? row.quit_cost : null,
+  quitMinutes: typeof row.quit_minutes === 'number' && row.quit_minutes > 0 ? row.quit_minutes : null,
 });
 
 export const mapPause = (row: PauseRow): Pause => ({
@@ -149,4 +154,19 @@ export const mapFutureLetter = (row: FutureLetterRow): FutureLetter => ({
   writtenOn: row.written_on,
   openOn: row.open_on,
   openedAt: row.opened_at ?? null,
+});
+
+const URGE_TRIGGERS: readonly UrgeTrigger[] = ['tired', 'stress', 'bored', 'meal', 'people', 'other'];
+
+export const toUrgeTrigger = (value: string | null | undefined): UrgeTrigger | null =>
+  URGE_TRIGGERS.find((tag) => tag === value) ?? null;
+
+export const mapUrgeLog = (row: UrgeLogRow): UrgeLog => ({
+  id: row.id,
+  habitId: row.habit_id ?? null,
+  startedAt: row.started_at,
+  logDate: row.log_date,
+  outcome: row.outcome === 'slipped' ? 'slipped' : 'passed',
+  trigger: toUrgeTrigger(row.trigger_tag),
+  mode: row.mode === 'walk' ? 'walk' : row.mode === 'sit' ? 'sit' : null,
 });

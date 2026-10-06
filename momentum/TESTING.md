@@ -217,3 +217,15 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Home → More → "A letter to my future self" → write, pick "in a month", seal → shows as sealed; with the reflection lock on, the screen asks to unlock
 - [ ] Set the phone date past the opening day → 📬 card on Home → opens the letter; the card is gone after reading
 - [ ] Backup → restore: quit habits, sleep hours and letters come back
+
+## Quit habits: urge moment (build 31)
+- [ ] Update from build 30 → old habits, quit habits, reflections and letters are all still there
+- [ ] Edit a quit habit → "When…" and "Then… what to do instead?" → the card reads "after a meal ← wash my face"
+- [ ] Fill "What did it cost a day?" (₪ and minutes) → after a ✓ day the card shows "Saved ₪… · …"; leave both empty → no line
+- [ ] Quit habit card → "Urge now" → plan and why show → "Sit with it 10 minutes" → lock the phone → one notification at the end
+- [ ] Tap that notification (app closed) → Home opens "did it pass?" once → "It passed ✓" → "The first urge that passed this month"
+- [ ] "Not this time" → a kind line only (with "x of y days" when there is a month of data); pick a trigger chip, tap again to clear
+- [ ] "It passed already ✓" during the timer stops the end notification; "Leave without logging" saves nothing
+- [ ] Insights → "Habits to quit": saved, time back, urges passed; under 10 entries a "N more" line; at 10+ the urge map, top triggers and (with sleep logged) the sleep line
+- [ ] Backup → restore: urge entries and the cost fields come back
+

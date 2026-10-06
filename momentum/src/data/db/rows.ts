@@ -34,6 +34,8 @@ export interface HabitRow {
   time_of_day: string | null;
   reminder: string | null;
   is_quit: SqlBoolean | null;
+  quit_cost: number | null;
+  quit_minutes: number | null;
 }
 
 export interface HabitLogRow {
@@ -84,6 +86,16 @@ export interface FutureLetterRow {
   written_on: string;
   open_on: string;
   opened_at: string | null;
+}
+
+export interface UrgeLogRow {
+  id: string;
+  habit_id: string | null;
+  started_at: string;
+  log_date: string;
+  outcome: string;
+  trigger_tag: string | null;
+  mode: string | null;
 }
 
 export interface AppUsageRow {

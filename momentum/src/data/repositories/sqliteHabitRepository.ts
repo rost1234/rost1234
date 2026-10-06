@@ -7,6 +7,9 @@ import type { ExecutorProvider, HabitRepository, SqlExecutor } from './types';
 
 type ColumnValue = string | number | null;
 
+const positiveOrNull = (value: number | null): number | null =>
+  value !== null && Number.isFinite(value) && value > 0 ? Math.round(value) : null;
+
 /** Maps domain fields to their column + serialized value. */
 function toColumns(changes: Partial<NewHabit>): [string, ColumnValue][] {
   const columns: [string, ColumnValue][] = [];
@@ -28,6 +31,8 @@ function toColumns(changes: Partial<NewHabit>): [string, ColumnValue][] {
   if (changes.timeOfDay !== undefined) columns.push(['time_of_day', changes.timeOfDay]);
   if (changes.reminder !== undefined) columns.push(['reminder', changes.reminder]);
   if (changes.isQuit !== undefined) columns.push(['is_quit', toSqlBoolean(changes.isQuit)]);
+  if (changes.quitCost !== undefined) columns.push(['quit_cost', positiveOrNull(changes.quitCost)]);
+  if (changes.quitMinutes !== undefined) columns.push(['quit_minutes', positiveOrNull(changes.quitMinutes)]);
   return columns;
 }
 
@@ -44,6 +49,8 @@ async function insertHabit(db: SqlExecutor, input: NewHabit): Promise<Habit> {
     timeOfDay: 'any',
     reminder: 'off',
     isQuit: false,
+    quitCost: null,
+    quitMinutes: null,
     ...input,
     title: input.title.trim(),
     microStep: input.microStep.trim(),
@@ -81,6 +88,8 @@ async function insertHabit(db: SqlExecutor, input: NewHabit): Promise<Habit> {
     timeOfDay: habit.timeOfDay,
     reminder: habit.reminder,
     isQuit: habit.isQuit,
+    quitCost: habit.quitCost,
+    quitMinutes: habit.quitMinutes,
   });
   await db.runAsync(`UPDATE habits SET ${extras.map(([c]) => `${c} = ?`).join(', ')} WHERE id = ?`, [
     ...extras.map(([, v]) => v),

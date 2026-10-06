@@ -9,6 +9,7 @@ import { SqliteDayModeRepository, SqlitePauseRepository, SqliteShownInsightRepos
 import { SqliteReflectionRepository } from '../repositories/sqliteReflectionRepository';
 import { SqliteSettingsRepository } from '../repositories/sqliteSettingsRepository';
 import { SqliteTaskRepository } from '../repositories/sqliteTaskRepository';
+import { SqliteUrgeLogRepository } from '../repositories/sqliteUrgeLogRepository';
 import { SqliteUsageRepository } from '../repositories/sqliteUsageRepository';
 import type { SqlExecutor } from '../repositories/types';
 import { LATEST_SCHEMA_VERSION } from '../db/schema';
@@ -273,6 +274,36 @@ describe('v10: quit habits, sleep and letters', () => {
     await r.settings.consumeStreakFreezes(5);
     expect(await r.settings.refundStreakFreezes(1, 3)).toBe(1);
     expect(await r.settings.refundStreakFreezes(9, 3)).toBe(3);
+  });
+});
+
+describe('v11: quit cost and urge logs', () => {
+  it('upgrades v10 to v11 without touching old habits', async () => {
+    const { db, executor } = createTestDatabase({ upToVersion: 10 });
+    db.exec(
+      "INSERT INTO habits (id, title, micro_step, is_quantitative, target_count, unit, target_frequency, target_days, created_at, is_archived, is_quit) VALUES ('q', 'Smoke', '', 0, 1, '', 'daily', '', '2026-09-01T08:00:00', 0, 1)",
+    );
+    applyRemainingMigrations(db, 10);
+    expect(await repos(executor).habits.getById('q')).toMatchObject({ isQuit: true, quitCost: null, quitMinutes: null });
+  });
+
+  it('stores the cost, logs urges and tags a trigger later', async () => {
+    const { executor } = createTestDatabase();
+    const r = repos(executor);
+    const quit = await r.habits.create({ ...newHabit, isQuantitative: false, isQuit: true, quitCost: 37, quitMinutes: 30 });
+    expect(await r.habits.getById(quit.id)).toMatchObject({ quitCost: 37, quitMinutes: 30 });
+    await r.habits.update(quit.id, { quitCost: null, quitMinutes: 0 });
+    expect(await r.habits.getById(quit.id)).toMatchObject({ quitCost: null, quitMinutes: null });
+
+    const urges = new SqliteUrgeLogRepository(() => Promise.resolve(executor));
+    const log = await urges.create({ habitId: quit.id, startedAt: '2026-10-06T20:00:00', logDate: '2026-10-06', outcome: 'slipped', trigger: null, mode: 'walk' });
+    await urges.setTrigger(log.id, 'tired');
+    expect(await urges.getInRange('2026-10-01', '2026-10-31')).toEqual([{ ...log, trigger: 'tired' }]);
+    expect(await urges.getInRange('2026-11-01', '2026-11-30')).toEqual([]);
+
+    // Deleting the habit removes its urges.
+    await executor.runAsync('DELETE FROM habits WHERE id = ?', [quit.id]);
+    expect(await urges.getInRange('2026-10-01', '2026-10-31')).toEqual([]);
   });
 });
 

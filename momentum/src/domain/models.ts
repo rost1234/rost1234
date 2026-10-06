@@ -52,6 +52,10 @@ export interface Habit {
   reminder: HabitReminder;
   /** A habit to do less of ("no smoking"): a check means a clean day. */
   isQuit: boolean;
+  /** Quit habits: what the habit cost a day, in whole money units (₪); null = not set. */
+  quitCost: number | null;
+  /** Quit habits: minutes a day the habit took; null = not set. */
+  quitMinutes: number | null;
 }
 
 export type TimeOfDay = 'any' | 'morning' | 'afternoon' | 'evening';
@@ -71,7 +75,9 @@ type OptionalHabitFields =
   | 'afterHabitId'
   | 'timeOfDay'
   | 'reminder'
-  | 'isQuit';
+  | 'isQuit'
+  | 'quitCost'
+  | 'quitMinutes';
 
 export type NewHabit = Omit<Habit, 'id' | 'createdAt' | 'isArchived' | OptionalHabitFields> &
   Partial<Pick<Habit, OptionalHabitFields>>;
@@ -169,3 +175,22 @@ export interface DailyUsage {
   logDate: LocalDateString;
   seconds: number;
 }
+
+/** How a "urge now" moment was ridden out. */
+export type UrgeMode = 'sit' | 'walk';
+/** `passed` = the urge passed without acting on it; `slipped` = not this time. */
+export type UrgeOutcome = 'passed' | 'slipped';
+export type UrgeTrigger = 'tired' | 'stress' | 'bored' | 'meal' | 'people' | 'other';
+
+/** One "urge now" moment on a quit habit. */
+export interface UrgeLog {
+  id: string;
+  habitId: string | null;
+  startedAt: string;
+  logDate: LocalDateString;
+  outcome: UrgeOutcome;
+  trigger: UrgeTrigger | null;
+  mode: UrgeMode | null;
+}
+
+export type NewUrgeLog = Omit<UrgeLog, 'id'>;

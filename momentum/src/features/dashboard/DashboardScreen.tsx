@@ -14,6 +14,7 @@ import { orderByStacking } from '@/domain/stacking';
 import { InsightCard } from '@/features/insights/InsightCard';
 import { LetterDueCard } from '@/features/letters/LetterDueCard';
 import { shouldShowWeeklySummary } from '@/features/weekly/weeklyPrompt';
+import { openEndedUrge, useUrgeStore } from '@/features/urge/urgeStore';
 import { useDayOff } from '@/hooks/useDayOff';
 import { useLocalDate } from '@/hooks/useLocalDate';
 import { useNow } from '@/hooks/useNow';
@@ -105,9 +106,20 @@ export function DashboardScreen() {
 
   useEffect(() => {
     reload();
+    // An "urge now" timer that ended while we were away asks "did it pass?" once.
+    const askEndedUrge = () =>
+      runDetached(
+        useUrgeStore
+          .getState()
+          .hydrate()
+          .then(() => openEndedUrge(() => router.push('/urge'))),
+      );
+    askEndedUrge();
     // Habits may have been ticked from the home-screen widget while we were away.
     const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') reload();
+      if (state !== 'active') return;
+      reload();
+      askEndedUrge();
     });
     return () => subscription.remove();
   }, [reload]);

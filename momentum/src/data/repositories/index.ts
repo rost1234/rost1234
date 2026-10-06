@@ -24,8 +24,10 @@ import type {
   TaskRepository,
   UsageRepository,
   FutureLetterRepository,
+  UrgeLogRepository,
 } from './types';
 import { SqliteFutureLetterRepository } from './sqliteFutureLetterRepository';
+import { SqliteUrgeLogRepository } from './sqliteUrgeLogRepository';
 
 export interface Repositories {
   settings: SettingsRepository;
@@ -40,6 +42,7 @@ export interface Repositories {
   pauses: PauseRepository;
   shownInsights: ShownInsightRepository;
   letters: FutureLetterRepository;
+  urges: UrgeLogRepository;
 }
 
 export function createRepositories(provider: ExecutorProvider): Repositories {
@@ -56,6 +59,7 @@ export function createRepositories(provider: ExecutorProvider): Repositories {
     pauses: new SqlitePauseRepository(provider),
     shownInsights: new SqliteShownInsightRepository(provider),
     letters: new SqliteFutureLetterRepository(provider),
+    urges: new SqliteUrgeLogRepository(provider),
   };
 }
 

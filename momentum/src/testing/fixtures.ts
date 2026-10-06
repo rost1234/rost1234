@@ -24,6 +24,8 @@ export function makeHabit(overrides: Partial<Habit> = {}): Habit {
     timeOfDay: 'any',
     reminder: 'off',
     isQuit: false,
+    quitCost: null,
+    quitMinutes: null,
     ...overrides,
   };
 }

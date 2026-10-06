@@ -25,6 +25,11 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
+const positiveInt = (text: string): number | null => {
+  const value = Number.parseInt(text.replace(/[^0-9]/g, ''), 10);
+  return Number.isFinite(value) && value > 0 ? value : null;
+};
+
 /** Create a habit, or edit `habit` in place (its history and streak are kept). */
 export function HabitFormScreen({ habit }: { habit?: Habit }) {
   const t = useT();
@@ -61,6 +66,9 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
   const [reminder, setReminder] = useState<HabitReminder>(habit?.reminder ?? 'off');
   // A habit to quit: a check means a clean day. No counting, growing or reminders.
   const [isQuit, setIsQuit] = useState(habit?.isQuit ?? false);
+  // What the habit cost a day, for the savings line (optional).
+  const [costText, setCostText] = useState(habit?.quitCost ? String(habit.quitCost) : '');
+  const [minutesText, setMinutesText] = useState(habit?.quitMinutes ? String(habit.quitMinutes) : '');
   const [days, setDays] = useState<Weekday[]>(
     habit?.targetFrequency === 'specific_days' ? habit.targetDays : [1, 2, 3, 4, 5],
   );
@@ -106,6 +114,8 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
       timeOfDay,
       reminder: isQuit ? 'off' : reminder,
       isQuit,
+      quitCost: isQuit ? positiveInt(costText) : null,
+      quitMinutes: isQuit ? positiveInt(minutesText) : null,
     };
     setIsSaving(true);
     try {
@@ -140,6 +150,17 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
           </View>
           <Switch value={isQuit} onValueChange={setIsQuit} accessibilityLabel={t('form.quit')} />
         </View>
+        {isQuit ? (
+          <Field label={t('form.quitCue')}>
+            <TextInput
+              value={atomic.cue}
+              onChangeText={(cue) => patchAtomic({ cue })}
+              placeholder={t('form.quitCuePh')}
+              style={styles.input}
+              maxLength={80}
+            />
+          </Field>
+        ) : null}
         <Field label={isQuit ? t('form.instead') : t('form.tinyStep')}>
           <TextInput
             value={microStep}
@@ -158,6 +179,21 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
             maxLength={120}
           />
         </Field>
+
+        {isQuit ? (
+          <View style={styles.costBox}>
+            <Text style={typography.label}>{t('form.quitCost')}</Text>
+            <View style={styles.inline}>
+              <Field label={t('form.quitMoney')}>
+                <TextInput value={costText} onChangeText={setCostText} keyboardType="number-pad" placeholder="0" style={styles.input} maxLength={5} />
+              </Field>
+              <Field label={t('form.quitMinutes')}>
+                <TextInput value={minutesText} onChangeText={setMinutesText} keyboardType="number-pad" placeholder="0" style={styles.input} maxLength={4} />
+              </Field>
+            </View>
+            <Text style={typography.caption}>{t('form.quitCostHint')}</Text>
+          </View>
+        ) : null}
 
         {isQuit ? null : (
           <View style={styles.switchRow}>
@@ -232,4 +268,5 @@ const useStyles = makeStyles(({ colors, typography }) => ({
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   inline: { flexDirection: 'row', gap: spacing.md },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  costBox: { gap: spacing.sm },
 }));

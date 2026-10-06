@@ -18,6 +18,9 @@ import type {
   ReflectionInput,
   Task,
   FutureLetter,
+  NewUrgeLog,
+  UrgeLog,
+  UrgeTrigger,
 } from '@/domain/models';
 import type { BackupTables } from '../backup/backupFormat';
 import type { TableName } from '../db/schema';
@@ -109,6 +112,12 @@ export interface FutureLetterRepository {
   create(body: string, writtenOn: LocalDateString, openOn: LocalDateString): Promise<FutureLetter>;
   markOpened(id: string): Promise<void>;
   delete(id: string): Promise<void>;
+}
+
+export interface UrgeLogRepository {
+  getInRange(start: LocalDateString, end: LocalDateString): Promise<UrgeLog[]>;
+  create(input: NewUrgeLog): Promise<UrgeLog>;
+  setTrigger(id: string, trigger: UrgeTrigger | null): Promise<void>;
 }
 
 export interface UsageRepository {

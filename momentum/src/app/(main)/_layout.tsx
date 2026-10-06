@@ -20,6 +20,7 @@ export default function MainLayout() {
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="focus" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="urge" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
       <Stack.Screen name="analytics" options={sheet} />
       <Stack.Screen name="library" options={sheet} />
       <Stack.Screen name="settings/index" options={sheet} />
