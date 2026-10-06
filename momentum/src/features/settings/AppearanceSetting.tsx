@@ -1,4 +1,5 @@
-import { I18nManager, StyleSheet, Text, View } from 'react-native';
+import { I18nManager, StyleSheet, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { Card, Chip } from '@/components/ui';
 import { spacing, useTheme } from '@/components/theme';
 import { resolveLanguage, useT } from '@/i18n';

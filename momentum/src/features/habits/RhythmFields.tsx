@@ -1,4 +1,5 @@
-import { Switch, Text, View } from 'react-native';
+import { Switch, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { Chip } from '@/components/ui';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
 import type { HabitReminder, TimeOfDay } from '@/domain/models';

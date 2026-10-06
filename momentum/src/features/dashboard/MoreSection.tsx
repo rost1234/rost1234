@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { router } from 'expo-router';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import type { DailyReflection } from '@/domain/models';
@@ -92,7 +93,7 @@ export function MoreSection({ unscheduledCount, reflection, showReflection }: Mo
   );
 }
 
-const useStyles = makeStyles(({ colors, shadow }) => ({
+const useStyles = makeStyles(({ colors, flat }) => ({
   container: { marginTop: spacing.xl },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: spacing.sm },
   body: { gap: spacing.md, paddingTop: spacing.sm },
@@ -103,7 +104,7 @@ const useStyles = makeStyles(({ colors, shadow }) => ({
     padding: spacing.md,
     borderRadius: radius.md,
     backgroundColor: colors.surface,
-    ...shadow,
+    ...flat,
   },
   pill: { paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: radius.pill, backgroundColor: colors.primarySoft },
   pillText: { fontSize: 13, fontWeight: '700', color: colors.primary },

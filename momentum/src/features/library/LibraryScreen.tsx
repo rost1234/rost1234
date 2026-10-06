@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { FlatList, ScrollView, Text, View } from 'react-native';
+import { FlatList, ScrollView, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SheetHeader } from '@/components/SheetHeader';
 import { Chip } from '@/components/ui';

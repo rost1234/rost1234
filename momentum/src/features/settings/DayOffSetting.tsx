@@ -1,4 +1,5 @@
-import { StyleSheet, Switch, Text, View } from 'react-native';
+import { StyleSheet, Switch, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { Card, Chip } from '@/components/ui';
 import { spacing, useTheme } from '@/components/theme';
 import { weekdayLabel, type Weekday } from '@/core/localDate';

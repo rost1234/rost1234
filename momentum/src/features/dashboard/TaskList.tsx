@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text, TextInput } from '@/components/AppText';
 import { showActionSheet, type SheetAction } from '@/components/Overlay';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import type { Task } from '@/domain/models';
@@ -95,13 +96,13 @@ export function TaskList() {
   );
 }
 
-const useStyles = makeStyles(({ colors, typography, shadow }) => ({
+const useStyles = makeStyles(({ colors, typography, flat }) => ({
   container: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.xs,
-    ...shadow,
+    ...flat,
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm },
   box: {

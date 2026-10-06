@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Text, TextInput } from '@/components/AppText';
 import { Chip } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import type { GrowthMode, Habit } from '@/domain/models';

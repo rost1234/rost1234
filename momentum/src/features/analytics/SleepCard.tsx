@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { Card } from '@/components/ui';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { runDetached } from '@/core/errors';

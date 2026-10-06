@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
@@ -54,7 +55,7 @@ export function EmptyHabits({ hasAnyHabits }: { hasAnyHabits: boolean }) {
   );
 }
 
-const useStyles = makeStyles(({ colors, typography, shadow }) => ({
+const useStyles = makeStyles(({ colors, typography, flat }) => ({
   container: { gap: spacing.sm },
   suggestion: {
     flexDirection: 'row',
@@ -63,7 +64,7 @@ const useStyles = makeStyles(({ colors, typography, shadow }) => ({
     padding: spacing.md,
     borderRadius: radius.lg,
     backgroundColor: colors.surface,
-    ...shadow,
+    ...flat,
   },
   browse: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingVertical: spacing.sm },
   browseText: { ...typography.label, color: colors.primary },

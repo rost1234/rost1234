@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, Text, View, type LayoutChangeEvent } from 'react-native';
+import { Pressable, View, type LayoutChangeEvent } from 'react-native';
+import { Text } from '@/components/AppText';
 import Svg, { Circle, Line, Polyline, Rect } from 'react-native-svg';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { formatFriendlyDate } from '@/core/localDate';

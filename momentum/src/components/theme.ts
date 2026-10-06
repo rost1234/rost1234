@@ -26,52 +26,52 @@ type Palette = {
 };
 
 export const lightColors: Palette = {
-  background: '#F5F5FA',
+  background: '#F2F7F6',
   surface: '#FFFFFF',
-  surfaceMuted: '#EEEFF6',
-  border: '#E4E5EE',
-  text: '#16172B',
-  textMuted: '#6B6E85',
-  primary: '#5B5BD6',
-  primaryDeep: '#4338CA',
-  primarySoft: '#E7E7FB',
-  accent: '#8B5CF6',
-  success: '#16A34A',
-  successSoft: '#DCFCE7',
-  warning: '#D97706',
-  warningSoft: '#FEF3C7',
-  danger: '#DC2626',
-  dangerSoft: '#FEE2E2',
-  freeze: '#0EA5E9',
-  freezeSoft: '#E0F2FE',
+  surfaceMuted: '#E6EFEE',
+  border: '#D5E3E1',
+  text: '#12312F',
+  textMuted: '#4F6868',
+  primary: '#2D6A9F',
+  primaryDeep: '#1F5685',
+  primarySoft: '#E1EEF7',
+  accent: '#6554C0',
+  success: '#2A7048',
+  successSoft: '#E6F3EB',
+  warning: '#8F5200',
+  warningSoft: '#FBEFD5',
+  danger: '#B3261E',
+  dangerSoft: '#FBE9E7',
+  freeze: '#0B6A89',
+  freezeSoft: '#E0F1F6',
   onPrimary: '#FFFFFF',
-  doneCard: '#F2FBF5',
-  partial: '#86D6A0',
+  doneCard: '#EAF5EE',
+  partial: '#4E9A74',
 };
 
 /** Dark steps chosen separately (not inverted) for comfortable night use. */
 export const darkColors: Palette = {
-  background: '#0F1020',
-  surface: '#1A1B2E',
-  surfaceMuted: '#25263D',
-  border: '#303252',
-  text: '#ECECF6',
-  textMuted: '#9EA0BC',
-  primary: '#8E8CFF',
-  primaryDeep: '#A5A3FF',
-  primarySoft: '#2B2B55',
-  accent: '#A78BFA',
-  success: '#4ADE80',
-  successSoft: '#153322',
-  warning: '#FBBF24',
-  warningSoft: '#3A2D10',
-  danger: '#F87171',
-  dangerSoft: '#3D1719',
-  freeze: '#38BDF8',
-  freezeSoft: '#0E2E3E',
-  onPrimary: '#0F1020',
-  doneCard: '#16291F',
-  partial: '#2F7A4B',
+  background: '#101A1C',
+  surface: '#172427',
+  surfaceMuted: '#1F3033',
+  border: '#2C4144',
+  text: '#E4EEEE',
+  textMuted: '#9DB2B3',
+  primary: '#7FB8E6',
+  primaryDeep: '#A3CDEF',
+  primarySoft: '#1D3447',
+  accent: '#B3A5F0',
+  success: '#6FCF97',
+  successSoft: '#17302A',
+  warning: '#E7B25C',
+  warningSoft: '#33290F',
+  danger: '#F2998F',
+  dangerSoft: '#3A1D1C',
+  freeze: '#5CC4DD',
+  freezeSoft: '#12303A',
+  onPrimary: '#0D1A22',
+  doneCard: '#15292A',
+  partial: '#3C8A63',
 };
 
 /** Immersive dark palette for the focus screen (same in both themes). */
@@ -90,11 +90,11 @@ export const focusColors = {
 } as const;
 
 /** Hero gradient used for the Today header. */
-export const heroGradient = ['#5B5BD6', '#8B5CF6'] as const;
+export const heroGradient = ['#2D6A9F', '#1F5685'] as const;
 
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
 
-export const radius = { sm: 8, md: 14, lg: 20, xl: 28, pill: 999 } as const;
+export const radius = { sm: 6, md: 10, lg: 12, xl: 16, pill: 999 } as const;
 
 function makeTypography(c: Palette) {
   return {
@@ -118,16 +118,22 @@ function makeShadow(isDark: boolean) {
   };
 }
 
+/** Cards are flat with a thin outline (floating things like the toast and sheets keep `shadow`). */
+function makeFlat(c: Palette) {
+  return { borderWidth: 1.5, borderColor: c.border };
+}
+
 export interface Theme {
   isDark: boolean;
   colors: Palette;
   typography: ReturnType<typeof makeTypography>;
   shadow: ReturnType<typeof makeShadow>;
+  flat: ReturnType<typeof makeFlat>;
 }
 
 const THEMES: Record<'light' | 'dark', Theme> = {
-  light: { isDark: false, colors: lightColors, typography: makeTypography(lightColors), shadow: makeShadow(false) },
-  dark: { isDark: true, colors: darkColors, typography: makeTypography(darkColors), shadow: makeShadow(true) },
+  light: { isDark: false, colors: lightColors, typography: makeTypography(lightColors), shadow: makeShadow(false), flat: makeFlat(lightColors) },
+  dark: { isDark: true, colors: darkColors, typography: makeTypography(darkColors), shadow: makeShadow(true), flat: makeFlat(darkColors) },
 };
 
 function resolve(pref: ThemePref, system: string | null | undefined): 'light' | 'dark' {

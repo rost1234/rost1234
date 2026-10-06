@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text, TextInput } from '@/components/AppText';
 import { router } from 'expo-router';
 import { runDetached, toErrorMessage } from '@/core/errors';
 import { getLocalDeviceDate, type LocalDateString } from '@/core/localDate';

@@ -1,4 +1,4 @@
-import { Text } from 'react-native';
+import { Text } from '@/components/AppText';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/components/theme';
 import { HabitFormScreen } from '@/features/habits/HabitFormScreen';

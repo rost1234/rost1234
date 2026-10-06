@@ -1,4 +1,5 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { makeStyles, radius, spacing } from '@/components/theme';
 import { haptics } from '@/core/haptics';
 import { formatMinutesOfDay, stepMinutesOfDay } from '@/domain/usage';

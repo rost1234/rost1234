@@ -1,4 +1,5 @@
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { makeStyles, radius, spacing, useTheme, type Theme } from '@/components/theme';
 import { formatFriendlyDate, getWeekday, weekdayLabel, type LocalDateString } from '@/core/localDate';
 import type { HeatCellState, HeatRow } from '@/domain/analytics';

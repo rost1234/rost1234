@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Text } from '@/components/AppText';
 import { haptics } from '@/core/haptics';
 import { makeStyles, radius, spacing, useTheme, type Theme } from './theme';
 
@@ -135,7 +136,7 @@ export function Chip({
   );
 }
 
-const useStyles = makeStyles(({ colors, typography, shadow }) => ({
+const useStyles = makeStyles(({ colors, typography, flat }) => ({
   button: {
     minHeight: 50,
     paddingHorizontal: spacing.xl,
@@ -148,7 +149,7 @@ const useStyles = makeStyles(({ colors, typography, shadow }) => ({
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.lg,
-    ...shadow,
+    ...flat,
   },
   track: { width: '100%', backgroundColor: colors.surfaceMuted, overflow: 'hidden' },
   fill: { height: '100%' },

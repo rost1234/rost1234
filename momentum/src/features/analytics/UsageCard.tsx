@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { Card, ProgressBar } from '@/components/ui';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { DAILY_USAGE_GOAL_SECONDS, formatDuration, type UsageSummary } from '@/domain/usage';

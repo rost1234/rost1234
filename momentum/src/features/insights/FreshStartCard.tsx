@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/AppText';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { showConfirm } from '@/components/Overlay';
@@ -92,8 +93,8 @@ export function FreshStartCard({ occasion, habit, idle, close }: NonNullable<Ret
   );
 }
 
-const useStyles = makeStyles(({ colors, shadow }) => ({
-  card: { gap: spacing.sm, padding: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.surface, marginBottom: spacing.md, ...shadow },
+const useStyles = makeStyles(({ colors, flat }) => ({
+  card: { gap: spacing.sm, padding: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.surface, marginBottom: spacing.md, ...flat },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   buttons: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
 }));

@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { Text } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import { focusColors, radius, spacing } from '@/components/theme';
 import { haptics } from '@/core/haptics';

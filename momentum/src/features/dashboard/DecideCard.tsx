@@ -1,4 +1,5 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { router } from 'expo-router';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { useTaskStore } from '@/state/taskStore';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Text } from 'react-native';
+import { Text } from '@/components/AppText';
 import { router } from 'expo-router';
 import { showConfirm } from '@/components/Overlay';
 import { Banner, Button, Card } from '@/components/ui';

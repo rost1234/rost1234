@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Linking, Pressable, Text, View } from 'react-native';
+import { Linking, Pressable, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import rawInsights from '@/content/insights.json';
 import type { Insight } from '@/content/insightSchema';
@@ -148,8 +149,8 @@ export function InsightView({ insight, title, defaultOpen = false }: { insight: 
   );
 }
 
-const useStyles = makeStyles(({ colors, shadow }) => ({
-  card: { gap: spacing.sm, padding: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.surface, marginBottom: spacing.md, ...shadow },
+const useStyles = makeStyles(({ colors, flat }) => ({
+  card: { gap: spacing.sm, padding: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.surface, marginBottom: spacing.md, ...flat },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   statRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   stat: { fontSize: 30, fontWeight: '800', color: colors.accent },

@@ -1,11 +1,14 @@
 import { useEffect } from 'react';
-import { AppState, I18nManager, Text, View } from 'react-native';
+import { AppState, I18nManager, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useFonts } from 'expo-font';
 import { Stack, type ErrorBoundaryProps } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { runDetached } from '@/core/errors';
 import { OverlayHost } from '@/components/Overlay';
 import { DashboardSkeleton } from '@/components/Skeleton';
+import { FONT_FILES } from '@/components/fonts';
 import { Button } from '@/components/ui';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { configureNotifications } from '@/services/notifications';
@@ -45,6 +48,8 @@ function Bootstrap() {
   const status = useSettingsStore((s) => s.status);
   const prefsReady = usePrefsStore((s) => s.isHydrated);
   const error = useSettingsStore((s) => s.error);
+  // Assistant (Hebrew + Latin). If it fails to load, the system font is used instead.
+  const [fontsLoaded, fontError] = useFonts(FONT_FILES);
 
   useEffect(() => {
     runDetached(
@@ -95,7 +100,7 @@ function Bootstrap() {
     );
   }
 
-  if (status !== 'ready' || !prefsReady) {
+  if (status !== 'ready' || !prefsReady || (!fontsLoaded && !fontError)) {
     return (
       <View style={styles.loading}>
         <DashboardSkeleton />

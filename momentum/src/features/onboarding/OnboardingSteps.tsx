@@ -1,4 +1,5 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { goals, presetsForGoal, type GoalId } from '@/domain/presets';
 import type { TranslationKey } from '@/i18n';

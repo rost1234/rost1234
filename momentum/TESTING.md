@@ -229,3 +229,12 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Insights → "Habits to quit": saved, time back, urges passed; under 10 entries a "N more" line; at 10+ the urge map, top triggers and (with sleep logged) the sleep line
 - [ ] Backup → restore: urge entries and the cost fields come back
 
+## Calm look (build 32)
+- [ ] Fresh launch → a brief skeleton, then the app in Assistant (Hebrew letters look the same weight in titles, body and buttons); nothing in the old system font
+- [ ] Home, Insights, Settings, a habit card, a sheet → flat cards with a thin outline, no shadows, blue-teal accents; Home header is a blue gradient
+- [ ] Dark mode (Settings → Appearance) → dark teal background, readable text everywhere, done habit card is dark green not white
+- [ ] Bold and light text: card titles bold, the focus clock thin, quit-habit "Saved …" line bold; text inside a sentence (e.g. a bold word inside a paragraph) keeps its weight
+- [ ] Type in a text field (habit name, letter) → the typed text is Assistant too, Hebrew and English
+- [ ] Largest system font size → nothing clipped on Home and the urge screen
+- [ ] Focus screen and the home-screen widgets keep their own colors (not changed in this build)
+

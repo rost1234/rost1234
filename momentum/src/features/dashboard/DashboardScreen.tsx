@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import { AppState, Pressable, RefreshControl, ScrollView, Text } from 'react-native';
+import { AppState, Pressable, RefreshControl, ScrollView } from 'react-native';
+import { Text } from '@/components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { runDetached } from '@/core/errors';

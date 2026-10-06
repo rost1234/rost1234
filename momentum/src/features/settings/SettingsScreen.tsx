@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, type Href } from 'expo-router';
@@ -169,10 +170,10 @@ export function SettingsScreen() {
   );
 }
 
-const useStyles = makeStyles(({ colors, shadow }) => ({
+const useStyles = makeStyles(({ colors, flat }) => ({
   safe: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg },
-  group: { borderRadius: radius.lg, backgroundColor: colors.surface, overflow: 'hidden', ...shadow },
+  group: { borderRadius: radius.lg, backgroundColor: colors.surface, overflow: 'hidden', ...flat },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, minHeight: 64 },
   divider: { borderBottomWidth: 1, borderBottomColor: colors.border },
   icon: { width: 38, height: 38, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },

@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, View } from 'react-native';
+import { Text, TextInput } from '@/components/AppText';
 import { router } from 'expo-router';
 import { toErrorMessage } from '@/core/errors';
 import { weekdayLabel, type Weekday } from '@/core/localDate';

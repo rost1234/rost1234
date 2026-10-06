@@ -1,4 +1,5 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { router } from 'expo-router';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import type { DailyReflection } from '@/domain/models';
@@ -28,7 +29,7 @@ export function ReflectionPrompt({ reflection }: { reflection: DailyReflection |
   );
 }
 
-const useStyles = makeStyles(({ colors, shadow }) => ({
+const useStyles = makeStyles(({ colors, flat }) => ({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -37,7 +38,7 @@ const useStyles = makeStyles(({ colors, shadow }) => ({
     borderRadius: radius.lg,
     backgroundColor: colors.primarySoft,
   },
-  cardDone: { backgroundColor: colors.surface, ...shadow },
+  cardDone: { backgroundColor: colors.surface, ...flat },
   emoji: { fontSize: 28 },
   chevron: { fontSize: 28, color: colors.textMuted },
 }));

@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, Text, View } from 'react-native';
+import { Animated, Pressable, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { showActionSheet, type SheetAction } from '@/components/Overlay';
@@ -256,7 +257,7 @@ function HabitCardComponent({ habit }: HabitCardProps) {
 
 export const HabitCard = memo(HabitCardComponent);
 
-const useStyles = makeStyles(({ colors, typography, shadow }) => ({
+const useStyles = makeStyles(({ colors, typography, flat }) => ({
   card: {
     gap: spacing.sm + 2,
     backgroundColor: colors.surface,
@@ -264,7 +265,7 @@ const useStyles = makeStyles(({ colors, typography, shadow }) => ({
     paddingVertical: spacing.md + 2,
     paddingHorizontal: spacing.md + 2,
     marginBottom: spacing.sm + 2,
-    ...shadow,
+    ...flat,
   },
   row: { flexDirection: 'row', alignItems: 'center' },
   savingsRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
@@ -279,7 +280,7 @@ const useStyles = makeStyles(({ colors, typography, shadow }) => ({
     backgroundColor: colors.primarySoft,
   },
   urgeLabel: { fontSize: 15, fontWeight: '700', color: colors.primary },
-  cardDone: { backgroundColor: '#F2FBF5' },
+  cardDone: { backgroundColor: colors.doneCard },
   cardSkipped: { opacity: 0.55 },
   main: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   checkCircle: {

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { router } from 'expo-router';
 import { Banner, Button, Card } from '@/components/ui';
 import { makeStyles, spacing, useTheme } from '@/components/theme';

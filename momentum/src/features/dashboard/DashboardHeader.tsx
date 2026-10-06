@@ -1,4 +1,5 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '@/components/AppText';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -21,7 +22,7 @@ interface DashboardHeaderProps {
   dayOffName: string | null;
 }
 
-const DAY_OFF_GRADIENT = ['#0EA5E9', '#8B5CF6'] as const;
+const DAY_OFF_GRADIENT = ['#0B6A89', '#2D6A9F'] as const;
 
 function greetingKey(hour: number): TranslationKey {
   if (hour < 5) return 'today.greeting.night';
@@ -75,7 +76,7 @@ export function DashboardHeader({ today, hour, percent, doneCount, totalCount, f
         onPress={() => router.push('/analytics')}
         hitSlop={8}
       >
-        <ProgressRing value={percent / 100} size={92} stroke={9} track="rgba(255,255,255,0.22)" from="#FFFFFF" to="#C7D2FE">
+        <ProgressRing value={percent / 100} size={92} stroke={9} track="rgba(255,255,255,0.22)" from="#FFFFFF" to="#D6E8F5">
           <Text style={styles.percent} maxFontSizeMultiplier={1.2}>
             {percent}%
           </Text>

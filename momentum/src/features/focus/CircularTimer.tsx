@@ -1,4 +1,5 @@
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { Text } from '@/components/AppText';
 import { ProgressRing } from '@/components/ProgressRing';
 import { focusColors } from '@/components/theme';
 import { formatClock } from '@/domain/focusTimer';

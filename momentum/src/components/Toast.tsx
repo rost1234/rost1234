@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Animated, Pressable, Text } from 'react-native';
+import { Animated, Pressable } from 'react-native';
+import { Text } from '@/components/AppText';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { makeStyles, radius, spacing } from './theme';
 
@@ -57,10 +58,10 @@ const useStyles = makeStyles(({ shadow }) => ({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderRadius: radius.md,
-    backgroundColor: '#23244A',
+    backgroundColor: '#12312F',
     ...shadow,
     shadowOpacity: 0.25,
   },
   message: { flex: 1, color: '#FFFFFF', fontSize: 14, fontWeight: '500' },
-  action: { color: '#A5B4FC', fontSize: 14, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 },
+  action: { color: '#9CCBF0', fontSize: 14, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 },
 }));
