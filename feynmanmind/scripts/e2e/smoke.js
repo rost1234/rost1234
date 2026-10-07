@@ -45,10 +45,18 @@ const coursePlan = {
       const json = (b) => route.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(b) });
       if (p.endsWith('/generate-lesson')) return json({ prompt_version: 'mock', lesson: lesson(body.concept_title) });
       if (p.endsWith('/generate-course')) return json({ prompt_version: 'mock', course: coursePlan });
+      if (p.endsWith('/ask-lesson') && body.tutor_question)
+        return json({ prompt_version: 'mock', answer: `הכוונה בשאלה "${body.tutor_question}" היא לחשוב על הסיבה. רמז: התחילו מהדוגמה.`, follow_ups: [] });
       if (p.endsWith('/ask-lesson'))
         return json({ prompt_version: 'mock', answer: `תשובה לשאלה "${body.question}": כך זה עובד.\n\nפסקה שנייה עם דוגמה.`, follow_ups: ['ומה קורה בחלל?'] });
-      if (p.endsWith('/feynman-evaluate'))
-        return json({ prompt_version: 'mock', evaluation: { comprehension_score: 60, mastery_verdict: 'needs_work', jargon_detected: [], misconceptions: [], primary_gap: 'פער', socratic_question: 'ומה היה קורה אילו?', encouragement: 'יפה!' } });
+      if (p.endsWith('/feynman-evaluate')) {
+        // A conversation: 1st explanation → a question to answer; the answer → a sentence to refine; the revision → done.
+        const turn = body.conversation?.length ?? 0;
+        const step = turn === 0 ? 'answer_question' : turn === 2 ? 'refine_explanation' : 'done';
+        const quote = step === 'refine_explanation' ? body.conversation[0].text.split(' ').slice(0, 3).join(' ') : '';
+        const score = { answer_question: 60, refine_explanation: 48, done: 92 }[step];
+        return json({ prompt_version: 'mock', evaluation: { comprehension_score: score, mastery_verdict: 'needs_work', jargon_detected: [], misconceptions: [], primary_gap: 'פער', socratic_question: 'ומה היה קורה אילו?', encouragement: 'יפה!', feedback: `משוב ${turn}: יפה, חסר הסבר למה.`, next_step: step, refine_quote: quote } });
+      }
       return route.fulfill({ status: 404, headers: cors, body: '{}' });
     });
     const shot = async (name) => {
@@ -125,6 +133,39 @@ const coursePlan = {
       await page.waitForTimeout(900);
       await expectText('הסבירו במילים שלכם', 'explain step');
       await shot('06-station-explain');
+
+      // Explaining is a conversation with the tutor.
+      await page.getByRole('button', { name: 'להסביר במילים שלי' }).click();
+      await page.waitForTimeout(800);
+      await page.getByLabel(/^הסבירו את/).fill('וקטורים הם חצים שיש להם גודל וכיוון, ופירוק כוחות זה לחלק כוח לשני רכיבים.');
+      await shot('13a-explain-write');
+      await page.getByRole('button', { name: 'לקבל משוב' }).click();
+      await page.waitForTimeout(1000);
+      await expectText('משוב 0', 'tutor feedback');
+      await expectText('מחכה לתשובה קצרה', 'tutor expects an answer');
+      await shot('13b-explain-chat');
+      await page.getByRole('radio', { name: /לא הבנתי את השאלה/ }).or(page.getByRole('button', { name: /לא הבנתי את השאלה/ })).first().click();
+      await page.waitForTimeout(900);
+      const clar = requests['/functions/v1/ask-lesson']?.at(-1);
+      if (clar?.tutor_question !== 'ומה היה קורה אילו?') failures.push(`clarify request: ${JSON.stringify(clar)?.slice(0, 160)}`);
+      await expectText('רמז, לא תשובה', 'clarification shown');
+      await page.getByLabel('כתבו תשובה לשאלה…').fill('הכוח היה מתפרק אחרת');
+      await page.getByRole('button', { name: 'שליחה' }).click();
+      await page.waitForTimeout(1000);
+      const answerReq = requests['/functions/v1/feynman-evaluate']?.at(-1);
+      if (answerReq?.conversation?.length !== 2 || answerReq?.language !== 'he') failures.push(`answer request: ${JSON.stringify(answerReq)?.slice(0, 200)}`);
+      await expectText('לחדד את ההסבר', 'tutor asks to refine');
+      await shot('13c-explain-refine');
+      await page.getByRole('button', { name: 'לערוך את ההסבר' }).last().click();
+      await page.waitForTimeout(600);
+      if ((await page.getByLabel(/^הסבירו את/).inputValue()).length < 20) failures.push('revision editor is not prefilled');
+      await shot('13d-explain-edit');
+      await page.getByRole('button', { name: 'שליחה' }).click();
+      await page.waitForTimeout(1000);
+      await expectText('אפשר לסיים כאן', 'tutor done');
+      await shot('13e-explain-done');
+      await page.goBack();
+      await page.waitForTimeout(800);
       await page.getByRole('button', { name: 'הבא: תרגול' }).click();
       await page.waitForTimeout(700);
       await expectText('לחזור על הכרטיסיות', 'practice step');
@@ -165,6 +206,14 @@ const coursePlan = {
       await shot('09b-learn-search');
       await page.getByRole('button', { name: 'ניקוי החיפוש' }).click();
       await page.waitForTimeout(300);
+      // A library subject opens as a map too.
+      await page.getByRole('button', { name: 'לפתוח כמפה' }).first().click();
+      await page.waitForTimeout(800);
+      await expectText('בשליטה', 'subject map');
+      await expectText('להוסיף מושג למסלול', 'subject map add');
+      await shot('09c-subject-map');
+      await page.goBack();
+      await page.waitForTimeout(800);
       await page.getByRole('tab', { name: /^חזרות/ }).click();
       await page.waitForTimeout(700);
       await expectText('השבוע', 'week strip');

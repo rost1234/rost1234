@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Button, InlineError, SectionHeader, TextField } from '@/components/ui';
@@ -19,10 +19,10 @@ const STARTERS = ['lesson.ask.example', 'lesson.ask.why', 'lesson.ask.simpler'] 
  * "Didn't get something? Ask." — questions about the lesson, answered by the
  * AI at the lesson's level. The conversation is saved on the device.
  */
-export function LessonQA({ context }: { context: AskContext }) {
+export function LessonQA({ context, docked }: { context: AskContext; /** In a sheet: the question box stays fixed at the bottom. */ docked?: boolean }) {
   const t = useT();
   const styles = useStyles();
-  const { typography } = useTheme();
+  const { colors, typography } = useTheme();
   const aiReady = useAiConfigured();
   const thread = useQuestionThread(context.threadKey);
   const ask = useAskQuestion();
@@ -56,12 +56,14 @@ export function LessonQA({ context }: { context: AskContext }) {
   const last = thread[thread.length - 1];
   const suggestions = last ? last.follow_ups : STARTERS.map((k) => t(k));
 
-  return (
-    <View style={{ gap: spacing.md }}>
-      <SectionHeader
-        title={t('lesson.ask.title')}
-        action={thread.length ? <Button label={t('lesson.ask.clear')} variant="ghost" onPress={() => void clear()} /> : undefined}
-      />
+  const header = (
+    <SectionHeader
+      title={t('lesson.ask.title')}
+      action={thread.length ? <Button label={t('lesson.ask.clear')} variant="ghost" onPress={() => void clear()} /> : undefined}
+    />
+  );
+  const body = (
+    <>
       {thread.length === 0 ? <Text style={typography.caption}>{t('lesson.ask.intro')}</Text> : null}
 
       {thread.map((turn) => (
@@ -84,7 +86,49 @@ export function LessonQA({ context }: { context: AskContext }) {
           ))}
         </View>
       ) : null}
+    </>
+  );
+  const error = <InlineError message={!aiReady ? t('error.aiNotConfigured') : ask.error ? errorMessage(ask.error, t) : null} />;
 
+  if (docked) {
+    const canSend = aiReady && draft.trim().length >= 2 && !ask.isPending;
+    return (
+      <View style={{ flexShrink: 1, gap: spacing.sm }}>
+        {header}
+        <ScrollView style={{ flexGrow: 0, flexShrink: 1 }} contentContainerStyle={{ gap: spacing.md, paddingBottom: spacing.sm }} keyboardShouldPersistTaps="handled">
+          {body}
+          {error}
+        </ScrollView>
+        <View style={styles.dock}>
+          <TextInput
+            value={draft}
+            onChangeText={setDraft}
+            placeholder={t('lesson.ask.placeholder')}
+            placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t('lesson.ask.title')}
+            multiline
+            maxLength={500}
+            editable={aiReady && !ask.isPending}
+            style={[styles.dockInput, { textAlign: t.isRTL ? 'right' : 'left' }]}
+          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('lesson.ask.send')}
+            disabled={!canSend}
+            onPress={() => send(draft)}
+            style={[styles.dockSend, !canSend && { opacity: 0.4 }]}
+          >
+            <Ionicons name="send" size={18} color={colors.onPrimary} style={t.isRTL ? { transform: [{ scaleX: -1 }] } : undefined} />
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ gap: spacing.md }}>
+      {header}
+      {body}
       <TextField
         value={draft}
         onChangeText={setDraft}
@@ -94,7 +138,7 @@ export function LessonQA({ context }: { context: AskContext }) {
         maxLength={500}
         editable={aiReady && !ask.isPending}
       />
-      <InlineError message={!aiReady ? t('error.aiNotConfigured') : ask.error ? errorMessage(ask.error, t) : null} />
+      {error}
       <Button
         label={t('lesson.ask.send')}
         icon="send"
@@ -171,4 +215,19 @@ const useStyles = makeStyles(({ colors, textScale }) => ({
     paddingVertical: 6,
   },
   chipText: { color: colors.primary, fontWeight: '600', fontSize: 14 },
+  dock: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.sm, paddingTop: spacing.sm, borderTopWidth: 1, borderTopColor: colors.border },
+  dockInput: {
+    flex: 1,
+    minHeight: 46,
+    maxHeight: 120,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 22,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
+    color: colors.text,
+    fontSize: Math.round(16 * textScale),
+    backgroundColor: colors.surface,
+  },
+  dockSend: { width: 46, height: 46, borderRadius: 23, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
 }));

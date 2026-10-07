@@ -231,6 +231,7 @@ function SubjectBlock({ subject, open, onToggle, onMenu, onConceptMenu, onAddCon
             </View>
           ) : null}
         </View>
+        {subject.conceptCount > 0 ? <IconButton icon="map-outline" label={t('subjectMap.open')} onPress={() => router.push(`/subject/${subject.id}`)} color={colors.primary} /> : null}
         <IconButton icon="ellipsis-horizontal" label={t('common.options')} onPress={onMenu} />
       </Pressable>
       {open ? <ConceptList subjectId={subject.id} onMenu={onConceptMenu} onAdd={onAddConcept} /> : null}
@@ -266,6 +267,7 @@ function ConceptList({ subjectId, onMenu, onAdd }: { subjectId: string; onMenu: 
           <Chevron />
         </Pressable>
       ))}
+      {concepts.data?.length ? <Button label={t('subjectMap.open')} icon="map-outline" onPress={() => router.push(`/subject/${subjectId}`)} /> : null}
       <Button label={t('subject.addConcept')} icon="add" variant="secondary" onPress={onAdd} />
     </View>
   );

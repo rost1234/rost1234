@@ -29,7 +29,12 @@ bottom — Expo Router 57 refuses `@react-navigation/*` packages, use its wrappe
 checklist, `src/features/today`), Learn (search, my courses, catalog, library — `src/features/learn`),
 Review (count, filters, week, forecast — `src/features/review`), Me (stats, achievements, grouped settings).
 A station (`course/[id]/[key].tsx`) runs in four steps (read → key points → explain → practice); moving
-past the key points starts it. Lesson questions open in a bottom sheet (`features/lesson/AskSheet.tsx`). Everything else
+past the key points starts it; swiping sideways or the bottom bar moves between steps, and the bar's 💬 opens
+lesson questions in a bottom sheet (`features/lesson/AskSheet.tsx`). Explaining (`concept/[id]/explain.tsx`)
+is a chat with the tutor saved per concept (`LocalDB.tutorChats`): the tutor's `next_step` says whether it
+wants a short answer, a rewrite (`refine_quote`), or is done; "I didn't understand the question" goes to
+`ask-lesson` with `tutor_question` (clarify, never answer). Screens with typing use `KeyboardInsetView`
+(`src/lib/keyboard.tsx`). Library subjects open as a map too (`subject/[id].tsx`). Everything else
 (course maps, stations, concept pages, the review session) is a stack screen in `src/app/(app)/`.
 Review limits and accessibility live in `src/state/prefsStore.ts`; the theme reads text size and
 contrast from it (`useTheme().textScale`), `useReduceMotion()` covers animations.
@@ -47,6 +52,8 @@ contrast from it (`useTheme().textScale`), `useReduceMotion()` covers animations
    The `sb_publishable_…` key is public and may be baked in via `.env.local` (gitignored).
 6. Changing a prompt or schema in `supabase/functions/_shared/*` → bump its `*_PROMPT_VERSION` and
    tell the user which functions to redeploy (see `docs/AI-SETUP.md`).
+7. Every AI reply is in the app's language (`_shared/language.ts`, `LANGUAGE_RULES` in every prompt),
+   whatever language the learner types in. New prompts must include it.
 
 ## Checks (run from `feynmanmind/`)
 

@@ -18,6 +18,34 @@ export interface LocalDB {
   placements: Record<string, Placement>;
   /** Questions asked about a lesson and the AI's answers, keyed like lessons (`${courseId}/${stationKey}`) or `concept/${conceptId}`. */
   questions: Record<string, QaTurn[]>;
+  /** The conversation with the Feynman tutor, per concept id (explanation, feedback, answers, clarifications). */
+  tutorChats: Record<string, TutorTurn[]>;
+}
+
+/** One message in the conversation with the tutor. */
+export interface TutorTurn {
+  id: string;
+  role: 'learner' | 'tutor';
+  /**
+   * learner: `explanation` (first or fresh start), `revision` (rewritten explanation), `answer` (to the
+   * tutor's question), `clarify` ("I didn't understand the question").
+   * tutor: `feedback` (an evaluation) or `clarification` (what the question means, no answer).
+   */
+  kind: 'explanation' | 'revision' | 'answer' | 'clarify' | 'feedback' | 'clarification';
+  text: string;
+  at: string;
+  /** On `feedback` turns. */
+  evaluation?: TutorFeedback;
+}
+
+export interface TutorFeedback {
+  score: number;
+  question: string | null;
+  next_step: 'answer_question' | 'refine_explanation' | 'done';
+  refine_quote: string;
+  primary_gap: string;
+  misconceptions: FeynmanEvaluation['misconceptions'];
+  jargon: FeynmanEvaluation['jargon_detected'];
 }
 
 export interface QaTurn {
@@ -103,6 +131,7 @@ export const emptyDB = (): LocalDB => ({
   lessons: {},
   placements: {},
   questions: {},
+  tutorChats: {},
 });
 
 export class DuplicateError extends Error {

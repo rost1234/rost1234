@@ -46,3 +46,17 @@ Deno.test('answerQuestion surfaces LLM failures', async () => {
   const llm: StructuredLlm = () => Promise.reject(new HttpError(502, 'down', 'llm_error'));
   await assertRejects(() => answerQuestion(llm, parseAskInput({ concept_title: 'x', question: 'why?' })), HttpError);
 });
+
+Deno.test('a question about the tutor\'s question is sent as TUTOR_QUESTION', async () => {
+  let user = '';
+  let system = '';
+  const llm: StructuredLlm = async (req) => {
+    user = req.user;
+    system = req.system;
+    return req.parse({ answer: 'It asks whether the DNA changes; think about copying.', follow_ups: [] });
+  };
+  await answerQuestion(llm, parseAskInput({ concept_title: 'Mitosis', question: 'What do you mean?', tutor_question: ' Is the DNA the same? ' }));
+  assertStringIncludes(user, '<tutor_question>\nIs the DNA the same?\n</tutor_question>');
+  assertStringIncludes(system, 'NEVER answer the');
+  assertStringIncludes(system, 'never switch languages');
+});

@@ -1,4 +1,5 @@
 import { HttpError, requireText, stringList } from '../_shared/http.ts';
+import { parseLanguage } from '../_shared/language.ts';
 import type { StructuredLlm } from '../_shared/llm.ts';
 import {
   buildLessonUserMessage,
@@ -11,7 +12,6 @@ import {
   type WrittenLesson,
 } from '../_shared/lesson-writer.ts';
 
-const LANGUAGES: Record<string, string> = { he: 'Hebrew', en: 'English' };
 
 export interface LessonInput {
   level: LessonLevel;
@@ -26,8 +26,7 @@ export interface LessonInput {
 export function parseLessonInput(body: Record<string, unknown>): LessonInput {
   const level = (typeof body.level === 'string' ? body.level : 'standalone') as LessonLevel;
   if (!LESSON_LEVELS.includes(level)) throw new HttpError(400, 'unknown level', 'invalid_input');
-  const language = LANGUAGES[typeof body.language === 'string' ? body.language : 'he'];
-  if (!language) throw new HttpError(400, 'language must be "he" or "en"', 'invalid_input');
+  const language = parseLanguage(body.language);
   return {
     level,
     language,

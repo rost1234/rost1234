@@ -1,4 +1,5 @@
 import { HttpError, requireText, stringList } from '../_shared/http.ts';
+import { parseLanguage } from '../_shared/language.ts';
 import type { StructuredLlm } from '../_shared/llm.ts';
 import {
   buildFlashcardUserMessage,
@@ -30,6 +31,8 @@ export interface GenerateInput {
   maxCards: number;
   /** Questions the learner already has for this concept (stored on their device). */
   existingQuestions: string[];
+  /** Reply language name (Hebrew/English). */
+  language: string;
 }
 
 export interface GenerateResult {
@@ -57,7 +60,7 @@ export function parseGenerateInput(body: Record<string, unknown>): GenerateInput
   if (hasText === hasPdf) {
     throw new HttpError(400, 'Provide exactly one of text or pdf_base64', 'invalid_input');
   }
-  const base = { subjectTitle, conceptTitle, maxCards, existingQuestions };
+  const base = { subjectTitle, conceptTitle, maxCards, existingQuestions, language: parseLanguage(body.language) };
   if (hasText) return { ...base, source: { kind: 'text', text: body.text as string } };
 
   let bytes: Uint8Array;
@@ -95,6 +98,7 @@ export async function generateFlashcards(
       user: buildFlashcardUserMessage({
         subjectTitle: input.subjectTitle,
         conceptTitle: input.conceptTitle,
+        language: input.language,
         maxCards: perChunk,
         existingQuestions: input.existingQuestions,
         chunk,

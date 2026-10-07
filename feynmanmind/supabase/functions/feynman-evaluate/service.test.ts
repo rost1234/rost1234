@@ -50,11 +50,51 @@ Deno.test('sends full context to the tutor and normalises the result', async () 
   assertStringIncludes(userMessage, 'Q: What is buoyancy?');
   assertStringIncludes(userMessage, 'Buoyancy is the upward push of a fluid.');
   assertStringIncludes(userMessage, '- What pushes up?');
-  assertStringIncludes(userMessage, `<learner_explanation>\n${EXPLANATION}\n</learner_explanation>`);
+  assertStringIncludes(userMessage, `<learner_message>\n${EXPLANATION}\n</learner_message>`);
+  assertStringIncludes(userMessage, 'LANGUAGE: Hebrew');
+  // Old model output without the new fields still works.
+  assertEquals(result.evaluation.next_step, 'answer_question');
+  assertEquals(result.evaluation.feedback, 'Good instinct about opposing forces.');
 });
 
 Deno.test('model failure propagates as 502', async () => {
   const llm: StructuredLlm = () => Promise.reject(new LlmError('down'));
   const err = await assertRejects(() => evaluateExplanation(llm, parseEvaluateInput(body)), LlmError);
   assertEquals(err.status, 502);
+});
+
+Deno.test('a reply in a conversation: short answers allowed, turns and language sent', async () => {
+  const conversation = [
+    { role: 'learner', text: EXPLANATION },
+    { role: 'tutor', text: 'Why would a steel ship float while a steel ball sinks?' },
+    { role: 'robot', text: 'dropped' },
+  ];
+  const input = parseEvaluateInput({ ...body, explanation: 'Shape', conversation, language: 'en' });
+  assertEquals(input.conversation.length, 2);
+  assertEquals(input.language, 'English');
+  assertThrows(() => parseEvaluateInput({ ...body, explanation: 'x', conversation }), HttpError, 'at least');
+  assertThrows(() => parseEvaluateInput({ ...body, conversation: 'no' }), HttpError, 'array');
+  assertThrows(() => parseEvaluateInput({ ...body, language: 'fr' }), HttpError, 'language');
+
+  let userMessage = '';
+  const llm: StructuredLlm = async (req) => {
+    userMessage = req.user;
+    return req.parse({ ...modelOutput, feedback: 'Closer.', next_step: 'refine_explanation', refine_quote: '"the water pushes them up"' });
+  };
+  const result = await evaluateExplanation(llm, input);
+  assertStringIncludes(userMessage, `LEARNER: ${EXPLANATION}`);
+  assertStringIncludes(userMessage, 'TUTOR: Why would a steel ship');
+  assertStringIncludes(userMessage, 'LANGUAGE: English');
+  assertEquals(result.evaluation.next_step, 'refine_explanation');
+  assertEquals(result.evaluation.refine_quote, 'the water pushes them up');
+  assertEquals(result.evaluation.feedback, 'Closer.');
+});
+
+Deno.test('a refine quote the learner never wrote is dropped; no quote means answer the question', async () => {
+  const run = (extra: Record<string, unknown>) =>
+    evaluateExplanation(async (req) => req.parse({ ...modelOutput, feedback: 'x', ...extra }), parseEvaluateInput(body));
+  assertEquals((await run({ next_step: 'refine_explanation', refine_quote: 'words never written' })).evaluation.refine_quote, '');
+  assertEquals((await run({ next_step: 'refine_explanation', refine_quote: '' })).evaluation.next_step, 'answer_question');
+  assertEquals((await run({ next_step: 'bogus', refine_quote: '' })).evaluation.next_step, 'answer_question');
+  assertEquals((await run({ next_step: 'done', refine_quote: '' })).evaluation.next_step, 'done');
 });

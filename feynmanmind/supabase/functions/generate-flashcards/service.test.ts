@@ -5,7 +5,7 @@ import type { GeneratedCard } from '../_shared/flashcard-generator.ts';
 import { generateFlashcards, mapWithConcurrency, parseGenerateInput, type GenerateInput } from './service.ts';
 
 const LONG_TEXT = Array.from({ length: 30 }, (_, i) => `Paragraph ${i}: ${'lorem ipsum '.repeat(30)}`).join('\n\n');
-const base = { subjectTitle: 'Biology', conceptTitle: 'Photosynthesis', existingQuestions: ['What is chlorophyll?'] };
+const base = { language: 'Hebrew', subjectTitle: 'Biology', conceptTitle: 'Photosynthesis', existingQuestions: ['What is chlorophyll?'] };
 const input = (over: Partial<GenerateInput> = {}): GenerateInput => ({ ...base, maxCards: 20, source: { kind: 'text', text: LONG_TEXT }, ...over });
 
 /** Every chunk returns the same cards, so cross-chunk dedupe is exercised. */

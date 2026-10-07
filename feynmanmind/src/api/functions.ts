@@ -2,11 +2,13 @@
  * Client for the stateless AI Edge Functions. The app keeps all data on
  * the device and sends only the context each request needs.
  */
-import type { FeynmanEvaluation } from '../../supabase/functions/_shared/feynman-tutor.ts';
+import type { FeynmanEvaluation as ServerEvaluation } from '../../supabase/functions/_shared/feynman-tutor.ts';
 import type { LevelKey } from '@/content/types';
 import { getAiConfig, type AiConfig } from '@/lib/env';
 
-export type { FeynmanEvaluation };
+/** The tutor's evaluation. The conversation fields are optional: a server not yet updated doesn't send them. */
+export type FeynmanEvaluation = Omit<ServerEvaluation, 'feedback' | 'next_step' | 'refine_quote'> &
+  Partial<Pick<ServerEvaluation, 'feedback' | 'next_step' | 'refine_quote'>>;
 
 export interface EvaluateRequest {
   subject_title: string;
@@ -16,6 +18,9 @@ export interface EvaluateRequest {
   reference_cards: { question: string; answer: string }[];
   /** The lesson text, for concepts from a guided course. */
   reference_text?: string;
+  /** Earlier turns of the conversation with the tutor (empty for a first explanation). */
+  conversation?: { role: 'learner' | 'tutor'; text: string }[];
+  language: 'he' | 'en';
 }
 
 export interface EvaluateResponse {
@@ -132,6 +137,8 @@ export interface AskLessonRequest {
   level: LevelKey | 'standalone';
   history?: { question: string; answer: string }[];
   language: 'he' | 'en';
+  /** Asking what the tutor's question means: the AI clarifies it without answering. */
+  tutor_question?: string;
 }
 
 export function askLesson(request: AskLessonRequest) {

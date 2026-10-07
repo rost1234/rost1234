@@ -407,3 +407,45 @@ describe('week, progress and achievements', () => {
     expect(L.achievements(db, NOW).every((a: { key: string; earned: boolean }) => !a.earned || a.key === 'firstStation' || a.key === 'firstExplain')).toBe(true);
   });
 });
+
+describe('subjectPath and the tutor chat', () => {
+  const L = jest.requireActual('../logic');
+
+  it('lays a subject out in units, marks mastered and started concepts, and finds the next one', () => {
+    const { db: seeded, subjectId, conceptId } = seed();
+    let db = seeded;
+    for (let i = 0; i < 6; i++) db = L.saveConcept(db, { subjectId, title: `מושג ${i}` }, newId, new Date(2026, 8, 25 + i))[0];
+    db = { ...db, concepts: { ...db.concepts, [conceptId]: { ...db.concepts[conceptId]!, mastery_level: 80 } } };
+    const path = L.subjectPath(db, subjectId);
+    expect(path.units.map((u: unknown[]) => u.length)).toEqual([5, 2]);
+    expect(path.units[0][0]).toMatchObject({ id: conceptId, status: 'mastered' });
+    expect(path.units[0][1].status).toBe('new');
+    expect(path.nextId).toBe(path.units[0][1].id);
+    expect(path).toMatchObject({ done: 1, total: 7 });
+  });
+
+  it('keeps a conversation per concept, hands the tutor only explanations, answers and feedback', () => {
+    const { db: seeded, conceptId } = seed();
+    const at = NOW.toISOString();
+    const feedback = { score: 60, question: 'למה?', next_step: 'answer_question', refine_quote: '', primary_gap: 'x', misconceptions: [], jargon: [] };
+    let db = L.addTutorTurns(seeded, conceptId, [
+      { id: 'a', role: 'learner', kind: 'explanation', text: 'הסבר ראשון', at },
+      { id: 'b', role: 'tutor', kind: 'feedback', text: 'טוב, חסר למה.', at, evaluation: feedback },
+      { id: 'c', role: 'learner', kind: 'clarify', text: 'לא הבנתי את השאלה', at },
+      { id: 'd', role: 'tutor', kind: 'clarification', text: 'הכוונה היא…', at },
+      { id: 'e', role: 'learner', kind: 'revision', text: 'הסבר מתוקן', at },
+    ]);
+    const chat = db.tutorChats[conceptId];
+    expect(L.tutorConversation(chat)).toEqual([
+      { role: 'learner', text: 'הסבר ראשון' },
+      { role: 'tutor', text: 'טוב, חסר למה.\nלמה?' },
+      { role: 'learner', text: 'הסבר מתוקן' },
+    ]);
+    expect(L.latestExplanation(chat)).toBe('הסבר מתוקן');
+    expect(L.lastFeedback(chat).id).toBe('b');
+    expect(L.deleteConcept(db, conceptId).tutorChats[conceptId]).toBeUndefined();
+    db = L.clearTutorChat(db, conceptId);
+    expect(db.tutorChats[conceptId]).toBeUndefined();
+    expect(() => L.addTutorTurns(db, 'missing', [])).toThrow();
+  });
+});

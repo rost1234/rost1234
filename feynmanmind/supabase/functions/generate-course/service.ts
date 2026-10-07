@@ -1,4 +1,5 @@
 import { HttpError, requireText } from '../_shared/http.ts';
+import { parseLanguage } from '../_shared/language.ts';
 import type { StructuredLlm } from '../_shared/llm.ts';
 import {
   buildCourseUserMessage,
@@ -9,7 +10,6 @@ import {
   parseCourse,
 } from '../_shared/course-generator.ts';
 
-const LANGUAGES: Record<string, string> = { he: 'Hebrew', en: 'English' };
 
 export interface CourseInput {
   topic: string;
@@ -18,8 +18,7 @@ export interface CourseInput {
 
 export function parseCourseInput(body: Record<string, unknown>): CourseInput {
   const topic = requireText(body.topic, 'topic', 2, 200);
-  const language = LANGUAGES[typeof body.language === 'string' ? body.language : 'he'];
-  if (!language) throw new HttpError(400, 'language must be "he" or "en"', 'invalid_input');
+  const language = parseLanguage(body.language);
   return { topic, language };
 }
 

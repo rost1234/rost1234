@@ -5,7 +5,7 @@
 import { calculateNextReview, initialReviewData, type QualityScore } from '@/srs/sm2';
 import type { FeynmanEvaluation } from '@/api/functions';
 import { findStation, stationsOf, type Course, type CourseConcept, type LevelKey } from '@/content/types';
-import { DuplicateError, LessonMissingError, NotFoundError, type Concept, type Flashcard, type Lesson, type LocalDB, type Placement, type QaTurn } from './types';
+import { DuplicateError, LessonMissingError, NotFoundError, type Concept, type Flashcard, type Lesson, type LocalDB, type Placement, type QaTurn, type TutorTurn } from './types';
 
 type NewId = () => string;
 
@@ -52,6 +52,7 @@ export function deleteSubject(db: LocalDB, id: string): LocalDB {
     cards: omit(db.cards, (c) => conceptIds.has(c.concept_id)),
     sessions: omit(db.sessions, (s) => conceptIds.has(s.concept_id)),
     questions: omit(db.questions, (_thread, key) => [...conceptIds].some((cid) => key === conceptThreadKey(cid))),
+    tutorChats: omit(db.tutorChats, (_chat, key) => conceptIds.has(key)),
   };
 }
 
@@ -81,6 +82,7 @@ export function deleteConcept(db: LocalDB, id: string): LocalDB {
     cards: omit(db.cards, (c) => c.concept_id === id),
     sessions: omit(db.sessions, (s) => s.concept_id === id),
     questions: omit(db.questions, (_thread, key) => key === conceptThreadKey(id)),
+    tutorChats: omit(db.tutorChats, (_chat, key) => key === id),
   };
 }
 
@@ -460,6 +462,7 @@ export function fromBackup(text: string): LocalDB {
     lessons: isRecord(d.lessons) ? d.lessons! : {},
     placements: isRecord(d.placements) ? d.placements! : {},
     questions: isRecord(d.questions) ? d.questions! : {},
+    tutorChats: isRecord(d.tutorChats) ? d.tutorChats! : {},
   };
 }
 
@@ -480,6 +483,44 @@ export function clearQuestions(db: LocalDB, threadKey: string): LocalDB {
   const { [threadKey]: _removed, ...rest } = db.questions;
   return { ...db, questions: rest };
 }
+
+// ---------------------------------------------------------------------------
+// The conversation with the Feynman tutor
+// ---------------------------------------------------------------------------
+
+/** How many messages are kept per concept (oldest dropped first, the opening explanation kept). */
+export const MAX_TUTOR_TURNS = 40;
+
+export function addTutorTurns(db: LocalDB, conceptId: string, turns: TutorTurn[]): LocalDB {
+  if (!db.concepts[conceptId]) throw new NotFoundError('Concept');
+  let chat = [...(db.tutorChats[conceptId] ?? []), ...turns];
+  if (chat.length > MAX_TUTOR_TURNS) chat = [chat[0]!, ...chat.slice(-(MAX_TUTOR_TURNS - 1))];
+  return { ...db, tutorChats: { ...db.tutorChats, [conceptId]: chat } };
+}
+
+export function clearTutorChat(db: LocalDB, conceptId: string): LocalDB {
+  if (!db.tutorChats[conceptId]) return db;
+  const { [conceptId]: _removed, ...rest } = db.tutorChats;
+  return { ...db, tutorChats: rest };
+}
+
+/** The chat as the tutor sees it: explanations, answers and its own feedback (clarifications left out). */
+export function tutorConversation(chat: TutorTurn[]): { role: 'learner' | 'tutor'; text: string }[] {
+  return chat
+    .filter((t) => t.kind !== 'clarify' && t.kind !== 'clarification')
+    .map((t) =>
+      t.role === 'learner'
+        ? { role: 'learner' as const, text: t.text }
+        : { role: 'tutor' as const, text: [t.text, t.evaluation?.question].filter(Boolean).join('\n') },
+    );
+}
+
+/** The newest full explanation (first one or a revision): what "edit the explanation" starts from. */
+export const latestExplanation = (chat: TutorTurn[]): string =>
+  [...chat].reverse().find((t) => t.role === 'learner' && (t.kind === 'explanation' || t.kind === 'revision'))?.text ?? '';
+
+/** The newest feedback turn: decides whether the learner answers, rewrites, or is done. */
+export const lastFeedback = (chat: TutorTurn[]): TutorTurn | undefined => [...chat].reverse().find((t) => t.kind === 'feedback');
 
 // ---------------------------------------------------------------------------
 // Guided courses
@@ -706,4 +747,39 @@ export function saveConceptLesson(db: LocalDB, conceptId: string, lesson: Lesson
   if (!concept) throw new NotFoundError('Concept');
   const next = { ...db, concepts: { ...db.concepts, [conceptId]: { ...concept, lesson: lesson.explanation } } };
   return addCards(next, conceptId, lesson.cards, newId, now)[0];
+}
+
+// ---------------------------------------------------------------------------
+// Library subjects as a path
+// ---------------------------------------------------------------------------
+
+/** Mastery needed for a concept to count as done on a path (same bar as course stations). */
+export const PATH_MASTERED = 71;
+
+export interface PathConcept {
+  id: string;
+  title: string;
+  mastery: number;
+  status: 'mastered' | 'started' | 'new';
+}
+
+/**
+ * A library subject laid out like a course map: its concepts in the order they
+ * were added, in units of up to `size`, and the first one not yet mastered.
+ */
+export function subjectPath(db: LocalDB, subjectId: string, size = 5): { units: PathConcept[][]; nextId: string | null; done: number; total: number } {
+  const explained = new Set(Object.values(db.sessions).map((s) => s.concept_id));
+  const concepts: PathConcept[] = Object.values(db.concepts)
+    .filter((c) => c.subject_id === subjectId)
+    .sort((a, b) => a.created_at.localeCompare(b.created_at))
+    .map((c) => ({
+      id: c.id,
+      title: c.title,
+      mastery: c.mastery_level,
+      status: c.mastery_level >= PATH_MASTERED ? 'mastered' : explained.has(c.id) || c.mastery_level > 0 ? 'started' : 'new',
+    }));
+  const units: PathConcept[][] = [];
+  for (let i = 0; i < concepts.length; i += size) units.push(concepts.slice(i, i + size));
+  const done = concepts.filter((c) => c.status === 'mastered').length;
+  return { units, nextId: concepts.find((c) => c.status !== 'mastered')?.id ?? null, done, total: concepts.length };
 }
