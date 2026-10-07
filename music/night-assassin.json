@@ -1,0 +1,703 @@
+{
+ "tune": {
+  "seed": "Night Assassin",
+  "mode": "minor",
+  "key": "D4",
+  "meter": "4/4"
+ },
+ "statements": [],
+ "tempo": 92,
+ "start": 0,
+ "length": 116,
+ "role": "theme",
+ "ritard": {
+  "from": 100,
+  "amount": 0.35
+ },
+ "dynamics": [
+  [
+   0,
+   48
+  ],
+  [
+   16,
+   62
+  ],
+  [
+   48,
+   64
+  ],
+  [
+   62,
+   104
+  ],
+  [
+   64,
+   110
+  ],
+  [
+   80,
+   118
+  ],
+  [
+   94,
+   126
+  ],
+  [
+   98,
+   72
+  ],
+  [
+   116,
+   44
+  ]
+ ],
+ "progression": {
+  "at": 0,
+  "chords": "i i bVI bVI | i bVI iv V i bVI iv V | i bVI bII V i bVI bII V | iv bII V V | i bVI bVII V i bVI bVII V | i bVI bII V i bVI bII V | i bVI iv i i"
+ },
+ "figures": {
+  "prowl": [
+   {
+    "play": "bass",
+    "range": [
+     "D2",
+     "C#3"
+    ],
+    "pattern": "x-------",
+    "step": 0.5,
+    "legato": 1.0
+   },
+   {
+    "play": "arpeggio",
+    "range": [
+     "D3",
+     "F4"
+    ],
+    "pattern": "oooooooo",
+    "step": 0.5,
+    "order": "updown",
+    "vel": -14,
+    "legato": 1.4
+   }
+  ],
+  "strike": [
+   {
+    "play": "octaves",
+    "range": [
+     "D2",
+     "D3"
+    ],
+    "pattern": "xoxoxoxo",
+    "step": 0.5,
+    "legato": 0.6
+   },
+   {
+    "play": "chord",
+    "range": [
+     "A3",
+     "F4"
+    ],
+    "pattern": "x  x  x ",
+    "step": 0.5,
+    "vel": -10,
+    "legato": 0.5
+   }
+  ]
+ },
+ "harmony": [
+  {
+   "part": "piano",
+   "from": 0,
+   "to": 16,
+   "play": "bass",
+   "range": [
+    "D2",
+    "C#3"
+   ],
+   "pattern": "x---------------",
+   "step": 0.25,
+   "vel": -6
+  },
+  {
+   "figure": "prowl",
+   "part": "piano",
+   "spans": [
+    [
+     16,
+     48
+    ]
+   ]
+  },
+  {
+   "part": "piano",
+   "from": 48,
+   "to": 64,
+   "play": "root",
+   "range": [
+    "D2",
+    "C#3"
+   ],
+   "pattern": "xooo",
+   "step": 0.25,
+   "legato": 0.7,
+   "vel": -4
+  },
+  {
+   "figure": "strike",
+   "part": "piano",
+   "spans": [
+    [
+     64,
+     96
+    ]
+   ]
+  },
+  {
+   "figure": "prowl",
+   "part": "piano",
+   "spans": [
+    [
+     96,
+     112
+    ]
+   ],
+   "vel": -10
+  },
+  {
+   "part": "violins",
+   "from": 64,
+   "to": 80,
+   "play": "arpeggio",
+   "range": [
+    "D5",
+    "D6"
+   ],
+   "pattern": "xooooooo",
+   "step": 0.5,
+   "order": "updown",
+   "vel": -2,
+   "legato": 0.8
+  },
+  {
+   "part": "violins",
+   "from": 32,
+   "to": 48,
+   "play": "third",
+   "range": [
+    "A4",
+    "A5"
+   ],
+   "pattern": "x-------",
+   "step": 1,
+   "vel": -18
+  }
+ ],
+ "lines": [
+  {
+   "part": "piano",
+   "vel": -18,
+   "notes": [
+    [
+     2,
+     "A5",
+     2
+    ],
+    [
+     6,
+     "F5",
+     2
+    ],
+    [
+     10,
+     "E5",
+     2
+    ],
+    [
+     14,
+     "C#5",
+     2
+    ]
+   ]
+  },
+  {
+   "part": "piano",
+   "vel": 8,
+   "notes": [
+    [
+     64,
+     "D1",
+     4
+    ],
+    [
+     64,
+     "D2",
+     4
+    ],
+    [
+     64,
+     "Eb3",
+     4
+    ],
+    [
+     64,
+     "A3",
+     4
+    ],
+    [
+     112,
+     "D1",
+     4
+    ],
+    [
+     112,
+     "D2",
+     4
+    ],
+    [
+     112,
+     "A2",
+     4
+    ]
+   ]
+  },
+  {
+   "part": "solo_violin",
+   "vel": -16,
+   "notes": [
+    [
+     4,
+     "A5",
+     12,
+     0,
+     {
+      "wobble": 0.12
+     }
+    ]
+   ]
+  },
+  {
+   "part": "solo_violin",
+   "lead": true,
+   "motif": "stalk",
+   "at": 16,
+   "gain": 6
+  },
+  {
+   "part": "solo_violin",
+   "lead": true,
+   "motif": "stalk",
+   "at": 24,
+   "alter": {
+    "6": "F4"
+   },
+   "gain": 6
+  },
+  {
+   "part": "solo_violin",
+   "lead": true,
+   "notes": [
+    [
+     32,
+     "D5",
+     1.5
+    ],
+    [
+     33.5,
+     "F5",
+     0.5
+    ],
+    [
+     34,
+     "A5",
+     2
+    ],
+    [
+     36,
+     "G5",
+     1
+    ],
+    [
+     37,
+     "F5",
+     1
+    ],
+    [
+     38,
+     "Eb5",
+     2
+    ],
+    [
+     40,
+     "D5",
+     1.5
+    ],
+    [
+     41.5,
+     "F5",
+     0.5
+    ],
+    [
+     42,
+     "A5",
+     2
+    ],
+    [
+     44,
+     "Bb5",
+     1
+    ],
+    [
+     45,
+     "A5",
+     1
+    ],
+    [
+     46,
+     "Eb5",
+     2,
+     0,
+     {
+      "slide": -1
+     }
+    ]
+   ],
+   "gain": 6
+  },
+  {
+   "part": "solo_violin",
+   "notes": [
+    [
+     48,
+     "A4",
+     2
+    ],
+    [
+     50,
+     "Bb4",
+     2
+    ],
+    [
+     52,
+     "B4",
+     2
+    ],
+    [
+     54,
+     "C5",
+     2
+    ],
+    [
+     56,
+     "C#5",
+     2
+    ],
+    [
+     58,
+     "D5",
+     2
+    ],
+    [
+     60,
+     "Eb5",
+     2
+    ],
+    [
+     62,
+     "E5",
+     1.5,
+     6,
+     {
+      "slide": 5
+     }
+    ],
+    [
+     63.5,
+     "D6",
+     0.5,
+     12,
+     {
+      "slide": -12
+     }
+    ]
+   ]
+  },
+  {
+   "part": "solo_violin",
+   "lead": true,
+   "motif": "stalk",
+   "at": 80,
+   "shift": 12,
+   "vel": 6,
+   "gain": 11
+  },
+  {
+   "part": "solo_violin",
+   "lead": true,
+   "motif": "stalk",
+   "at": 88,
+   "shift": 12,
+   "vel": 6,
+   "alter": {
+    "6": "C#6"
+   },
+   "gain": 11
+  },
+  {
+   "part": "solo_violin",
+   "lead": true,
+   "motif": "stalk",
+   "at": 96,
+   "stretch": 2,
+   "vel": -4,
+   "gain": 3
+  },
+  {
+   "part": "solo_violin",
+   "notes": [
+    [
+     112,
+     "D5",
+     4,
+     -6,
+     {
+      "wobble": 0.1
+     }
+    ]
+   ]
+  }
+ ],
+ "motifs": {
+  "stalk": [
+   [
+    0,
+    "D5",
+    1.5
+   ],
+   [
+    1.5,
+    "E5",
+    0.5
+   ],
+   [
+    2,
+    "F5",
+    1
+   ],
+   [
+    3,
+    "E5",
+    1
+   ],
+   [
+    4,
+    "D5",
+    1.5
+   ],
+   [
+    5.5,
+    "C#5",
+    0.5
+   ],
+   [
+    6,
+    "A4",
+    2
+   ]
+  ]
+ },
+ "patterns": [
+  {
+   "part": "drums",
+   "note": 42,
+   "from": 0,
+   "to": 16,
+   "pattern": "o.o.o.o.",
+   "step": 0.5,
+   "vel": -28
+  },
+  {
+   "part": "drums",
+   "note": 36,
+   "from": 8,
+   "to": 16,
+   "pattern": "x.o.............",
+   "step": 0.25,
+   "vel": -10
+  },
+  {
+   "part": "drums",
+   "note": 36,
+   "from": 16,
+   "to": 48,
+   "pattern": "x......o..x.....",
+   "step": 0.25,
+   "vel": -6
+  },
+  {
+   "part": "drums",
+   "note": 37,
+   "from": 16,
+   "to": 48,
+   "pattern": "....x.......x..o",
+   "step": 0.25,
+   "vel": -10
+  },
+  {
+   "part": "drums",
+   "note": 42,
+   "from": 16,
+   "to": 48,
+   "pattern": "xoooxooo",
+   "step": 0.5,
+   "vel": -22
+  },
+  {
+   "part": "drums",
+   "note": 36,
+   "from": 48,
+   "to": 64,
+   "pattern": "x",
+   "step": 1,
+   "vel": -4
+  },
+  {
+   "part": "drums",
+   "note": 38,
+   "from": 56,
+   "to": 62,
+   "pattern": "o",
+   "step": 0.25,
+   "vel": -20
+  },
+  {
+   "part": "drums",
+   "note": 45,
+   "from": 62,
+   "to": 63,
+   "pattern": "xoxo",
+   "step": 0.25
+  },
+  {
+   "part": "drums",
+   "note": 41,
+   "from": 63,
+   "to": 64,
+   "pattern": "xoxo",
+   "step": 0.25
+  },
+  {
+   "part": "drums",
+   "note": 36,
+   "from": 64,
+   "to": 96,
+   "pattern": "x..x..x.x..x..o.",
+   "step": 0.25
+  },
+  {
+   "part": "drums",
+   "note": 38,
+   "from": 64,
+   "to": 96,
+   "pattern": "....x.......x..o",
+   "step": 0.25,
+   "vel": 2
+  },
+  {
+   "part": "drums",
+   "note": 42,
+   "from": 64,
+   "to": 80,
+   "pattern": "xooo",
+   "step": 0.25,
+   "vel": -18
+  },
+  {
+   "part": "drums",
+   "note": 49,
+   "from": 72,
+   "to": 96,
+   "pattern": "x",
+   "step": 8,
+   "vel": -6
+  },
+  {
+   "part": "drums",
+   "note": 42,
+   "from": 96,
+   "to": 108,
+   "pattern": "o.o.o.o.",
+   "step": 0.5,
+   "vel": -26
+  },
+  {
+   "part": "drums",
+   "note": 36,
+   "from": 96,
+   "to": 112,
+   "pattern": "x.o.............",
+   "step": 0.25,
+   "vel": -8
+  },
+  {
+   "part": "drums",
+   "note": 51,
+   "from": 80,
+   "to": 96,
+   "pattern": "xoxo",
+   "step": 0.5,
+   "vel": -14
+  },
+  {
+   "part": "drums",
+   "note": 46,
+   "from": 80,
+   "to": 96,
+   "pattern": "..o.",
+   "step": 0.5,
+   "vel": -20
+  }
+ ],
+ "hits": [
+  {
+   "part": "drums",
+   "note": 49,
+   "at": 64,
+   "len": 4,
+   "vel": 124
+  },
+  {
+   "part": "drums",
+   "note": 57,
+   "at": 64,
+   "len": 4,
+   "vel": 118
+  },
+  {
+   "part": "drums",
+   "note": 36,
+   "at": 64,
+   "len": 1,
+   "vel": 127
+  },
+  {
+   "part": "drums",
+   "note": 49,
+   "at": 112,
+   "len": 4,
+   "vel": 70
+  },
+  {
+   "part": "drums",
+   "note": 49,
+   "at": 80,
+   "len": 4,
+   "vel": 120
+  }
+ ],
+ "mix": {
+  "drums": 1,
+  "piano": 0
+ },
+ "lead": 3
+}
