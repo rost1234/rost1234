@@ -251,6 +251,7 @@ const ACTION_LABEL: Record<DayEditAction, TranslationKey> = {
 
 function DetailRow({
   detail,
+  isToday,
   expanded,
   busy,
   onToggle,
@@ -258,6 +259,7 @@ function DetailRow({
   onEditHabit,
 }: {
   detail: HabitDayDetail;
+  isToday: boolean;
   expanded: boolean;
   busy: boolean;
   onToggle: () => void;
@@ -279,7 +281,7 @@ function DetailRow({
       : habit.isQuantitative
         ? `${habit.targetCount}${habit.unit ? ` ${habit.unit}` : ''}`
         : habit.microStep;
-  const actions = dayEditActions(habit, detail.state, detail.count);
+  const actions = dayEditActions(habit, detail.state, detail.count, isToday);
   const canEdit = !habit.isArchived;
   return (
     <View style={styles.detailBlock}>
@@ -401,7 +403,7 @@ function DaySheet({
   data: MonthData;
   today: LocalDateString;
   habitId: string | null;
-  onChanged: () => void;
+  onChanged: () => Promise<void>;
   onClose: () => void;
 }) {
   const t = useT();
@@ -485,6 +487,7 @@ function DaySheet({
             <DetailRow
               key={d.habit.id}
               detail={d}
+              isToday={date === today}
               expanded={expandedId === d.habit.id}
               busy={busy}
               onToggle={() => setExpandedId(expandedId === d.habit.id ? null : d.habit.id)}
@@ -531,18 +534,23 @@ export function CalendarScreen() {
   const [data, setData] = useState<MonthData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const reload = useCallback(
+  // Resolves once the month is on screen again, so an edit can wait for fresh data.
+  const refresh = useCallback(
     () =>
-      runDetached(
-        loadMonth(month).then((d) => {
+      loadMonth(month).then(
+        (d) => {
           setData(d);
           setError(null);
-        }),
-        (e) => setError(toErrorMessage(e)),
+        },
+        (e: unknown) => setError(toErrorMessage(e)),
       ),
     [month],
   );
-  useFocusEffect(reload);
+  useFocusEffect(
+    useCallback(() => {
+      runDetached(refresh());
+    }, [refresh]),
+  );
 
   const days = useMemo(() => {
     if (!data || data.month !== month) return null;
@@ -612,7 +620,7 @@ export function CalendarScreen() {
         ) : null}
         <Text style={[styles.hint]}>{t('cal.tapHint')}</Text>
       </ScrollView>
-      {data && selected ? <DaySheet date={selected} data={data} today={today} habitId={habitId} onChanged={reload} onClose={() => setSelected(null)} /> : null}
+      {data && selected ? <DaySheet date={selected} data={data} today={today} habitId={habitId} onChanged={refresh} onClose={() => setSelected(null)} /> : null}
     </SafeAreaView>
   );
 }

@@ -57,7 +57,6 @@ export const he: Record<TranslationKey, string> = {
   'cal.legendPause': 'הפסקה',
   'cal.legendPerfect': 'יום מושלם',
   'cal.legendToday': 'היום',
-  'cal.mood': 'מצב רוח',
   'cal.nextMonth': 'החודש הבא',
   'cal.nothingDue': 'לא היו הרגלים מתוכננים ביום הזה.',
   'cal.prevMonth': 'החודש הקודם',

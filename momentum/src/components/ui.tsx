@@ -129,6 +129,7 @@ export function Chip({
         haptics.select();
         onPress();
       }}
+      hitSlop={{ top: 4, bottom: 4 }}
       style={[styles.chip, selected && styles.chipSelected]}
     >
       <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]}>{label}</Text>

@@ -258,7 +258,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
         const previous = (await repositories.habitLogs.getForDate(date)).find((l) => l.habitId === habitId);
         if (previous?.status === next.status && previous.currentCount === next.currentCount) return;
         await repositories.habitLogs.upsert({ habitId, logDate: date, currentCount: next.currentCount, status: next.status });
-        if (previous?.status === 'forgiven' && next.status !== 'forgiven') {
+        if (previous?.status === 'forgiven' && next.status === 'completed') {
           const balance = await repositories.settings.refundStreakFreezes(1, MAX_STREAK_FREEZES);
           useSettingsStore.getState().setFreezesAvailable(balance);
         }

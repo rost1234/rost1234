@@ -243,7 +243,7 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] A day with a reflection and the reflection lock on → "Open the reflection" → fingerprint/PIN → text shows; a day without one says so
 - [ ] Tap the pencil next to a habit that was missed → "Mark done" → the pill, the ring, the month summary and the streak on Home all update
 - [ ] A habit with a count: "+1" and "-1" move the count; at the target it becomes done; "Clear the mark" resets it
-- [ ] "Skip this day" then "Undo skip"; a day covered by a freeze → "Mark done" returns the freeze (Home pill)
+- [ ] "Skip this day" and "Undo skip" appear for today only; a day covered by a freeze offers only "Mark done", which returns the freeze (Home pill); "Clear the mark" on it afterwards leaves the freeze count unchanged
 - [ ] "Edit the habit" closes the sheet and opens the habit form; coming back, the calendar is current
 - [ ] Today and future days: today can be edited; future days don't open
 - [ ] A task completed on an earlier day shows on that day; an open task planned for that day shows without a check

@@ -161,13 +161,20 @@ describe('editing a day', () => {
   const water = { isQuantitative: true, targetCount: 4 };
 
   it('offers actions that fit the day', () => {
-    expect(dayEditActions(binary, 'missed', 0)).toEqual(['done', 'skip']);
-    expect(dayEditActions(binary, 'completed', 1)).toEqual(['undo', 'skip']);
-    expect(dayEditActions(water, 'partial', 2)).toEqual(['done', 'plus', 'minus', 'undo', 'skip']);
-    expect(dayEditActions(water, 'completed', 4)).toEqual(['minus', 'undo', 'skip']);
-    expect(dayEditActions(binary, 'skipped', 0)).toEqual(['unskip', 'done']);
-    expect(dayEditActions(binary, 'forgiven', 0)).toEqual(['done']);
-    expect(dayEditActions(binary, 'not_scheduled', 0)).toEqual([]);
+    expect(dayEditActions(binary, 'missed', 0, true)).toEqual(['done', 'skip']);
+    expect(dayEditActions(binary, 'completed', 1, true)).toEqual(['undo', 'skip']);
+    expect(dayEditActions(water, 'partial', 2, true)).toEqual(['done', 'plus', 'minus', 'undo', 'skip']);
+    expect(dayEditActions(water, 'completed', 4, true)).toEqual(['minus', 'undo', 'skip']);
+    expect(dayEditActions(binary, 'skipped', 0, true)).toEqual(['unskip', 'done']);
+    expect(dayEditActions(binary, 'forgiven', 0, true)).toEqual(['done']);
+    expect(dayEditActions(binary, 'not_scheduled', 0, true)).toEqual([]);
+  });
+
+  it('never offers skipping on a past day (it would be a free streak saver)', () => {
+    expect(dayEditActions(binary, 'missed', 0, false)).toEqual(['done']);
+    expect(dayEditActions(binary, 'completed', 1, false)).toEqual(['undo']);
+    expect(dayEditActions(water, 'partial', 2, false)).toEqual(['done', 'plus', 'minus', 'undo']);
+    expect(dayEditActions(binary, 'skipped', 0, false)).toEqual(['done']);
   });
 
   it('applies them', () => {

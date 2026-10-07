@@ -134,12 +134,19 @@ export type DayEditAction = 'done' | 'undo' | 'plus' | 'minus' | 'skip' | 'unski
 
 /**
  * What can be changed on a past or current day for one habit, in menu order. A day a
- * streak freeze covered can only be marked done (which gives the freeze back).
+ * streak freeze covered can only be marked done (which gives the freeze back). Skipping
+ * is for today only: skipping a past day would be a free streak saver, and after a freeze
+ * was given back it would keep it.
  */
-export function dayEditActions(habit: Pick<Habit, 'isQuantitative'>, state: HeatCellState, count: number): DayEditAction[] {
+export function dayEditActions(
+  habit: Pick<Habit, 'isQuantitative'>,
+  state: HeatCellState,
+  count: number,
+  isToday: boolean,
+): DayEditAction[] {
   if (state === 'not_scheduled') return [];
   if (state === 'forgiven') return ['done'];
-  if (state === 'skipped') return ['unskip', 'done'];
+  if (state === 'skipped') return isToday ? ['unskip', 'done'] : ['done'];
   const actions: DayEditAction[] = [];
   if (state !== 'completed') actions.push('done');
   if (habit.isQuantitative) {
@@ -147,7 +154,7 @@ export function dayEditActions(habit: Pick<Habit, 'isQuantitative'>, state: Heat
     if (count > 0) actions.push('minus');
   }
   if (state === 'completed' || count > 0) actions.push('undo');
-  actions.push('skip');
+  if (isToday) actions.push('skip');
   return actions;
 }
 

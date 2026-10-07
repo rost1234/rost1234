@@ -55,7 +55,6 @@ export const en = {
   'cal.legendPause': 'Pause',
   'cal.legendPerfect': 'Perfect day',
   'cal.legendToday': 'Today',
-  'cal.mood': 'Mood',
   'cal.nextMonth': 'Next month',
   'cal.nothingDue': 'Nothing was scheduled that day.',
   'cal.prevMonth': 'Previous month',
