@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,6 +15,7 @@ import {
   addMonths,
   dayOfMonth,
   formatLongDate,
+  formatShortDate,
   localDateFromIso,
   monthDays,
   monthGrid,
@@ -43,6 +44,7 @@ import { MOOD_OPTIONS } from '@/features/reflection/mood';
 import { useReflectionAccess } from '@/features/reflection/ReflectionLock';
 import { useLocalDate } from '@/hooks/useLocalDate';
 import { useHabitStore } from '@/state/habitStore';
+import { useSettingsStore } from '@/state/settingsStore';
 import { useT, type TranslationKey } from '@/i18n';
 
 /** How far back the arrows go. */
@@ -128,7 +130,11 @@ function DayRing({ day, isToday }: { day: CalendarDay; isToday: boolean }) {
   );
 }
 
-const REASON_ICON: Record<Pause['reason'], string> = { vacation: '🏖', sick: '🤒', other: '⏸' };
+const REASON_ICON: Record<Pause['reason'], keyof typeof Ionicons.glyphMap> = {
+  vacation: 'airplane-outline',
+  sick: 'medkit-outline',
+  other: 'pause-outline',
+};
 
 function dayA11y(day: CalendarDay, t: ReturnType<typeof useT>): string {
   const parts = [formatLongDate(day.date, t.locale)];
@@ -141,14 +147,16 @@ function dayA11y(day: CalendarDay, t: ReturnType<typeof useT>): string {
 function MonthGrid({
   days,
   today,
+  selected,
   onSelect,
 }: {
   days: ReadonlyMap<LocalDateString, CalendarDay>;
   today: LocalDateString;
+  selected: LocalDateString | null;
   onSelect: (date: LocalDateString) => void;
 }) {
   const t = useT();
-  const { typography } = useTheme();
+  const { colors, typography } = useTheme();
   const styles = useStyles();
   const first = days.keys().next().value ?? today;
   const weeks = monthGrid(first);
@@ -176,6 +184,7 @@ function MonthGrid({
                 key={date}
                 accessibilityRole="button"
                 accessibilityLabel={dayA11y(day, t)}
+                accessibilityState={{ selected: date === selected }}
                 disabled={day.future && !isPaused}
                 onPress={() => onSelect(date)}
                 style={[
@@ -183,9 +192,10 @@ function MonthGrid({
                   isPaused && styles.band,
                   startsBand && styles.bandStart,
                   endsBand && styles.bandEnd,
+                  date === selected && { backgroundColor: colors.primarySoft, borderRadius: radius.md },
                 ]}
               >
-                {startsBand && day.pause ? <Text style={styles.bandIcon}>{REASON_ICON[day.pause.reason]}</Text> : null}
+                {startsBand && day.pause ? <Ionicons name={REASON_ICON[day.pause.reason]} size={11} color={colors.primary} style={styles.bandIcon} /> : null}
                 <DayRing day={day} isToday={date === today} />
               </Pressable>
             );
@@ -252,6 +262,7 @@ const ACTION_LABEL: Record<DayEditAction, TranslationKey> = {
 function DetailRow({
   detail,
   isToday,
+  editable,
   expanded,
   busy,
   onToggle,
@@ -260,6 +271,8 @@ function DetailRow({
 }: {
   detail: HabitDayDetail;
   isToday: boolean;
+  /** False for days that haven't come yet. */
+  editable: boolean;
   expanded: boolean;
   busy: boolean;
   onToggle: () => void;
@@ -274,18 +287,42 @@ function DetailRow({
   const [bg, fg] = pill.tone(colors);
   const { habit } = detail;
   const label =
-    detail.state === 'partial' && habit.isQuantitative ? `◐ ${detail.count}/${habit.targetCount}` : t(pill.label);
+    detail.state === 'partial' && habit.isQuantitative
+      ? `◐ ${detail.count}/${habit.targetCount}`
+      : detail.state === 'completed' && habit.isQuit
+        ? t('cal.stateQuitDone')
+        : t(pill.label);
   const note =
     detail.state === 'forgiven'
       ? t('cal.freezeNote')
       : habit.isQuantitative
         ? `${habit.targetCount}${habit.unit ? ` ${habit.unit}` : ''}`
         : habit.microStep;
-  const actions = dayEditActions(habit, detail.state, detail.count, isToday);
-  const canEdit = !habit.isArchived;
+  const actions = editable ? dayEditActions(habit, detail.state, detail.count, isToday) : [];
+  const canEdit = editable && !habit.isArchived;
+  // One tap on the circle: mark it done, or clear it when it already is.
+  const quick: DayEditAction | null = actions.includes('done') ? 'done' : actions.includes('undo') ? 'undo' : null;
+  const actionLabel = (action: DayEditAction) =>
+    habit.isQuit && action === 'done' ? t('cal.act.quitDone') : habit.isQuit && action === 'undo' ? t('cal.act.quitUndo') : t(ACTION_LABEL[action]);
   return (
     <View style={styles.detailBlock}>
       <View style={styles.detailRow}>
+        {canEdit && quick ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              quick === 'done'
+                ? t(habit.isQuit ? 'cal.quick.quitDone' : 'cal.quick.done', { title: habit.title })
+                : t('cal.quick.undo', { title: habit.title })
+            }
+            onPress={() => (busy ? undefined : onAction(quick))}
+            style={styles.quickButton}
+          >
+            <View style={[styles.quickCircle, detail.state === 'completed' && { backgroundColor: colors.success, borderColor: colors.success }]}>
+              {detail.state === 'completed' ? <Ionicons name="checkmark" size={16} color={colors.onPrimary} /> : null}
+            </View>
+          </Pressable>
+        ) : null}
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={typography.label} numberOfLines={1}>
             {habit.title}
@@ -317,8 +354,8 @@ function DetailRow({
           {actions.map((action) => (
             <Chip
               key={action}
-              label={t(ACTION_LABEL[action])}
-              accessibilityLabel={`${t(ACTION_LABEL[action])}: ${habit.title}`}
+              label={actionLabel(action)}
+              accessibilityLabel={`${actionLabel(action)}: ${habit.title}`}
               selected={false}
               onPress={() => (busy ? undefined : onAction(action))}
             />
@@ -410,7 +447,10 @@ function DaySheet({
   const { colors, typography } = useTheme();
   const styles = useStyles();
   const bottom = useSafeAreaInsets().bottom;
-  const maxHeight = useWindowDimensions().height * 0.6;
+  const maxHeight = useWindowDimensions().height * 0.7;
+  const scrollRef = useRef<ScrollView>(null);
+  const rowY = useRef<Record<string, number>>({});
+  const [note, setNote] = useState<TranslationKey | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -438,6 +478,11 @@ function DaySheet({
 
   if (!date) return null;
 
+  // Habits that didn't exist yet that day, so a missing row isn't a mystery.
+  const later = (habitId ? data.habits.filter((h) => h.id === habitId) : data.habits).filter(
+    (h) => !h.isArchived && localDateFromIso(h.createdAt) > date,
+  );
+  const createdOn = (h: Habit | undefined) => (h ? formatShortDate(localDateFromIso(h.createdAt)) : '');
   const counted = details.filter((d) => d.state !== 'skipped' && d.state !== 'paused');
   const done = details.filter((d) => d.state === 'completed').length;
   const freezes = details.filter((d) => d.state === 'forgiven').length;
@@ -452,14 +497,28 @@ function DaySheet({
 
   const act = (detail: HabitDayDetail, action: DayEditAction) => {
     const log = data.logs.find((l) => l.habitId === detail.habit.id && l.logDate === date);
+    const freezes = () => useSettingsStore.getState().settings?.streakFreezesAvailable ?? 0;
+    const before = freezes();
     setBusy(true);
+    setNote(null);
     runDetached(
       useHabitStore
         .getState()
         .setProgressOnDate(detail.habit.id, date, applyDayEdit(detail.habit, progressOf(log), action))
         .then(onChanged)
+        .then(() => {
+          const after = freezes();
+          // A change can spend a freeze to keep a streak, or give one back; say so instead of doing it silently.
+          if (after < before) setNote('cal.note.freezeUsed');
+          else if (after > before) setNote('cal.note.freezeBack');
+        })
         .finally(() => setBusy(false)),
     );
+  };
+  const toggleRow = (id: string) => {
+    const opening = expandedId !== id;
+    setExpandedId(opening ? id : null);
+    if (opening) setTimeout(() => scrollRef.current?.scrollTo({ y: Math.max(0, (rowY.current[id] ?? 0) - 8), animated: true }), 60);
   };
   const editHabit = (id: string) => {
     onClose();
@@ -480,21 +539,38 @@ function DaySheet({
             <Ionicons name="close" size={20} color={colors.text} />
           </Pressable>
         </View>
-        <ScrollView style={{ maxHeight }} contentContainerStyle={{ gap: spacing.xs }}>
+        <ScrollView ref={scrollRef} style={{ maxHeight }} contentContainerStyle={{ gap: spacing.xs }}>
           <Text style={typography.overline}>{t('cal.habitsTitle')}</Text>
-          {details.length === 0 ? <Text style={[typography.caption, { paddingVertical: spacing.md }]}>{t('cal.nothingDue')}</Text> : null}
+          {note ? (
+            <View style={styles.note} accessibilityLiveRegion="polite">
+              <Text style={typography.body}>{t(note)}</Text>
+            </View>
+          ) : null}
+          {date > today ? <Text style={[typography.caption, { paddingVertical: spacing.sm }]}>{t('cal.notYet')}</Text> : null}
+          {details.length === 0 && date <= today ? (
+            <Text style={[typography.caption, { paddingVertical: spacing.md }]}>
+              {later.length > 0 ? t.plural('cal.createdLater', later.length, { title: later[0]?.title ?? '', date: createdOn(later[0]) }) : t('cal.nothingDue')}
+            </Text>
+          ) : null}
           {details.map((d) => (
-            <DetailRow
-              key={d.habit.id}
-              detail={d}
-              isToday={date === today}
-              expanded={expandedId === d.habit.id}
-              busy={busy}
-              onToggle={() => setExpandedId(expandedId === d.habit.id ? null : d.habit.id)}
-              onAction={(action) => act(d, action)}
-              onEditHabit={() => editHabit(d.habit.id)}
-            />
+            <View key={d.habit.id} onLayout={(e) => (rowY.current[d.habit.id] = e.nativeEvent.layout.y)}>
+              <DetailRow
+                detail={d}
+                isToday={date === today}
+                editable={date <= today}
+                expanded={expandedId === d.habit.id}
+                busy={busy}
+                onToggle={() => toggleRow(d.habit.id)}
+                onAction={(action) => act(d, action)}
+                onEditHabit={() => editHabit(d.habit.id)}
+              />
+            </View>
           ))}
+          {details.length > 0 && later.length > 0 ? (
+            <Text style={[typography.caption, { paddingVertical: spacing.xs }]}>
+              {t.plural('cal.createdLater', later.length, { title: later[0]?.title ?? '', date: createdOn(later[0]) })}
+            </Text>
+          ) : null}
 
           {tasks.length > 0 ? (
             <>
@@ -531,6 +607,8 @@ export function CalendarScreen() {
   const [month, setMonth] = useState(thisMonth);
   const [habitId, setHabitId] = useState<string | null>(null);
   const [selected, setSelected] = useState<LocalDateString | null>(null);
+  // The last day opened stays marked on the grid after the sheet closes.
+  const [highlight, setHighlight] = useState<LocalDateString | null>(null);
   const [data, setData] = useState<MonthData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -586,7 +664,10 @@ export function CalendarScreen() {
               accessibilityRole="button"
               accessibilityLabel={t('cal.prevMonth')}
               disabled={!canGoBack}
-              onPress={() => setMonth(addMonths(month, -1))}
+              onPress={() => {
+                setHighlight(null);
+                setMonth(addMonths(month, -1));
+              }}
               hitSlop={8}
               style={[styles.arrow, !canGoBack && { opacity: 0.35 }]}
             >
@@ -599,14 +680,25 @@ export function CalendarScreen() {
               accessibilityRole="button"
               accessibilityLabel={t('cal.nextMonth')}
               disabled={!canGoForward}
-              onPress={() => setMonth(addMonths(month, 1))}
+              onPress={() => {
+                setHighlight(null);
+                setMonth(addMonths(month, 1));
+              }}
               hitSlop={8}
               style={[styles.arrow, !canGoForward && { opacity: 0.35 }]}
             >
               <Ionicons name={nextIcon} size={20} color={colors.text} />
             </Pressable>
           </View>
-          {days ? <MonthGrid days={days.byDate} today={today} onSelect={setSelected} /> : <View style={{ height: 300 }} />}
+          {days ? <MonthGrid
+              days={days.byDate}
+              today={today}
+              selected={highlight}
+              onSelect={(date) => {
+                setHighlight(date);
+                setSelected(date);
+              }}
+            /> : <View style={{ height: 300 }} />}
           <Legend />
         </Card>
 
@@ -684,6 +776,9 @@ const useStyles = makeStyles(({ colors, typography }) => ({
     gap: spacing.md,
     paddingVertical: spacing.md,
   },
+  quickButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  quickCircle: { width: 28, height: 28, borderRadius: 14, borderWidth: 2.5, borderColor: colors.textMuted, alignItems: 'center', justifyContent: 'center' },
+  note: { padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.freezeSoft },
   editButton: { width: 40, height: 40, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceMuted },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, paddingBottom: spacing.md },
   sectionGap: { marginTop: spacing.md },

@@ -1,5 +1,5 @@
 import type { HabitLogStatus, Task } from '../models';
-import { isPerfectDay, shouldAwardFreeze } from '../freezeRewards';
+import { isPerfectDay, refundsFreeze, shouldAwardFreeze } from '../freezeRewards';
 import { reevaluateProgress } from '../habitProgress';
 import { placementForNewTask } from '../taskPlanning';
 import { dateRange } from '@/core/localDate';
@@ -61,5 +61,16 @@ describe('reevaluateProgress after editing a habit', () => {
     expect(reevaluateProgress(quant, { currentCount: 4, status: 'completed' })).toEqual({ currentCount: 4, status: 'in_progress' });
     expect(reevaluateProgress({ ...quant, targetCount: 3 }, { currentCount: 4, status: 'in_progress' }).status).toBe('completed');
     expect(reevaluateProgress(quant, { currentCount: 1, status: 'skipped' }).status).toBe('skipped');
+  });
+});
+
+describe('refundsFreeze', () => {
+  it('returns a freeze only when a recent frozen day becomes done', () => {
+    expect(refundsFreeze('forgiven', 'completed', '2026-09-20', '2026-09-24')).toBe(true);
+    expect(refundsFreeze('forgiven', 'completed', '2026-09-10', '2026-09-24')).toBe(true);
+    expect(refundsFreeze('forgiven', 'completed', '2026-09-09', '2026-09-24')).toBe(false);
+    expect(refundsFreeze('forgiven', 'skipped', '2026-09-20', '2026-09-24')).toBe(false);
+    expect(refundsFreeze('in_progress', 'completed', '2026-09-20', '2026-09-24')).toBe(false);
+    expect(refundsFreeze(undefined, 'completed', '2026-09-20', '2026-09-24')).toBe(false);
   });
 });

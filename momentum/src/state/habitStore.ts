@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import { runDetached, toErrorMessage } from '@/core/errors';
 import type { LocalDateString } from '@/core/localDate';
-import { repositories } from '@/data/repositories';
+import { inTransaction, repositories } from '@/data/repositories';
 import { applyPrimaryAction, decrementProgress, progressOf, reevaluateProgress, type LogProgress } from '@/domain/habitProgress';
 import type { Habit, HabitLog, NewHabit } from '@/domain/models';
+import { applyDayEdit } from '@/domain/calendar';
 import { applyPauses } from '@/domain/pauses';
 import { computeStreak } from '@/domain/streaks';
-import { MAX_STREAK_FREEZES } from '@/domain/freezeRewards';
+import { MAX_STREAK_FREEZES, refundsFreeze } from '@/domain/freezeRewards';
 import { historyStart, reconcileStreakFreezes, statusesByHabit } from '@/services/streakService';
 import { refreshTodayWidget } from '@/widget/refreshWidget';
 import { usePlanningStore } from './planningStore';
@@ -230,38 +231,28 @@ export const useHabitStore = create<HabitState>((set, get) => {
     completeOnDate: async (habitId, date) => {
       const { today, habits } = get();
       const habit = habits.find((h) => h.id === habitId);
-      const key = `${habitId}:${date}`;
-      // One write per habit/day at a time, so a double tap can't refund twice.
-      if (!today || !habit || date >= today || completingPast.has(key)) return;
-      completingPast.add(key);
-      try {
-        const previous = (await repositories.habitLogs.getForDate(date)).find((l) => l.habitId === habitId);
-        if (previous?.status === 'completed') return;
-        await repositories.habitLogs.upsert({ habitId, logDate: date, currentCount: habit.targetCount, status: 'completed' });
-        if (previous?.status === 'forgiven') {
-          const balance = await repositories.settings.refundStreakFreezes(1, MAX_STREAK_FREEZES);
-          useSettingsStore.getState().setFreezesAvailable(balance);
-        }
-        await get().load(today);
-      } finally {
-        completingPast.delete(key);
-      }
+      if (!today || !habit || date >= today) return;
+      await get().setProgressOnDate(habitId, date, applyDayEdit(habit, { currentCount: 0, status: 'in_progress' }, 'done'));
     },
 
     setProgressOnDate: async (habitId, date, next) => {
       const { today, habits } = get();
       const habit = habits.find((h) => h.id === habitId);
-      const key = `${habitId}:${date}:edit`;
+      const key = `${habitId}:${date}`;
+      // One write per habit/day at a time, so a double tap can't refund twice.
       if (!today || !habit || date > today || completingPast.has(key)) return;
       completingPast.add(key);
       try {
         const previous = (await repositories.habitLogs.getForDate(date)).find((l) => l.habitId === habitId);
         if (previous?.status === next.status && previous.currentCount === next.currentCount) return;
-        await repositories.habitLogs.upsert({ habitId, logDate: date, currentCount: next.currentCount, status: next.status });
-        if (previous?.status === 'forgiven' && next.status === 'completed') {
-          const balance = await repositories.settings.refundStreakFreezes(1, MAX_STREAK_FREEZES);
-          useSettingsStore.getState().setFreezesAvailable(balance);
-        }
+        // The log and the freeze refund commit together, or not at all.
+        const balance = await inTransaction('habits.editDay', async (repos) => {
+          await repos.habitLogs.upsert({ habitId, logDate: date, currentCount: next.currentCount, status: next.status });
+          return refundsFreeze(previous?.status, next.status, date, today)
+            ? repos.settings.refundStreakFreezes(1, MAX_STREAK_FREEZES)
+            : null;
+        });
+        if (balance !== null) useSettingsStore.getState().setFreezesAvailable(balance);
         await get().load(today);
       } finally {
         completingPast.delete(key);

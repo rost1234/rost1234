@@ -764,6 +764,17 @@ export const en = {
   "cal.act.skip": "Skip this day",
   "cal.act.unskip": "Undo skip",
   "cal.act.editHabit": "Edit the habit",
+  "cal.quick.done": "Mark {title} as done",
+  "cal.quick.quitDone": "Mark a day without {title}",
+  "cal.quick.undo": "Clear the mark for {title}",
+  "cal.act.quitDone": "Mark a day without",
+  "cal.act.quitUndo": "Clear the mark",
+  "cal.stateQuitDone": "✓ A day without",
+  "cal.notYet": "This day hasn't come yet.",
+  "cal.createdLater_one": "{title} was created on {date}.",
+  "cal.createdLater_other": "{count} habits were created after this day.",
+  "cal.note.freezeUsed": "A freeze was used to keep the streak.",
+  "cal.note.freezeBack": "The freeze for that day came back.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

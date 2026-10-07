@@ -1,11 +1,23 @@
 import { addDays, lastNDays, type LocalDateString } from '@/core/localDate';
 import { habitStartDate, isHabitDueOn } from './habitSchedule';
-import type { Habit } from './models';
+import type { Habit, HabitLogStatus } from './models';
 import { computeStreak, type StatusByDate } from './streaks';
 
 /** The pool never grows beyond this, so freezes stay a safety net, not a bank. */
 export const MAX_STREAK_FREEZES = 3;
 export const PERFECT_WEEK_DAYS = 7;
+/** Editing a day in the calendar gives a spent freeze back only this far back; older days can be edited without freezes. */
+export const FREEZE_EDIT_DAYS = 14;
+
+/** A freeze comes back when a day it covered becomes done, if the day is recent. */
+export function refundsFreeze(
+  previous: HabitLogStatus | undefined,
+  next: HabitLogStatus,
+  date: LocalDateString,
+  today: LocalDateString,
+): boolean {
+  return previous === 'forgiven' && next === 'completed' && date >= addDays(today, -FREEZE_EDIT_DAYS);
+}
 
 type RewardHabit = Pick<Habit, 'id' | 'createdAt' | 'targetFrequency' | 'targetDays'>;
 

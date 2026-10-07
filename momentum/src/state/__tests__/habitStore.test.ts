@@ -7,12 +7,13 @@ const mockUpsert = jest.fn();
 const mockGetForDate = jest.fn();
 const mockRefund = jest.fn();
 
-jest.mock('@/data/repositories', () => ({
-  repositories: {
+jest.mock('@/data/repositories', () => {
+  const repos = {
     habitLogs: { upsert: (...args: unknown[]) => mockUpsert(...args), getForDate: (...args: unknown[]) => mockGetForDate(...args) },
     settings: { refundStreakFreezes: (...args: unknown[]) => mockRefund(...args) },
-  },
-}));
+  };
+  return { repositories: repos, inTransaction: (_op: string, work: (r: typeof repos) => unknown) => work(repos) };
+});
 jest.mock('@/widget/refreshWidget', () => ({ refreshTodayWidget: jest.fn() }));
 jest.mock('@/services/streakService', () => ({
   historyStart: () => '2025-01-01',
@@ -103,6 +104,14 @@ describe('setProgressOnDate (editing a day from the calendar)', () => {
     mockRefund.mockClear();
     mockGetForDate.mockResolvedValue([log('forgiven', 0)]);
     await useHabitStore.getState().setProgressOnDate('water', '2026-09-20', { currentCount: 0, status: 'skipped' });
+    expect(mockRefund).not.toHaveBeenCalled();
+  });
+
+  it('gives nothing back for a freeze older than the edit window', async () => {
+    mockGetForDate.mockResolvedValue([{ ...log('forgiven', 0), logDate: '2026-08-01' }]);
+    mockUpsert.mockResolvedValue(log('completed', 2));
+    await useHabitStore.getState().setProgressOnDate('water', '2026-08-01', { currentCount: 2, status: 'completed' });
+    expect(mockUpsert).toHaveBeenCalled();
     expect(mockRefund).not.toHaveBeenCalled();
   });
 
