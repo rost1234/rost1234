@@ -1,0 +1,579 @@
+{
+ "title": "Morvenna, the Tide Queen: Stage 1 - The Drowned Throne (v2)",
+ "tune": {
+  "seed": "Morvenna",
+  "mode": "minor",
+  "key": "D4",
+  "meter": "4/4"
+ },
+ "statements": [],
+ "tempo": 76,
+ "length": 96,
+ "role": "stage",
+ "dynamics": [
+  [
+   0,
+   60
+  ],
+  [
+   8,
+   70
+  ],
+  [
+   24,
+   82
+  ],
+  [
+   40,
+   90
+  ],
+  [
+   54,
+   104
+  ],
+  [
+   56,
+   118
+  ],
+  [
+   86,
+   124
+  ],
+  [
+   88,
+   92
+  ],
+  [
+   96,
+   104
+  ]
+ ],
+ "progression": {
+  "at": 0,
+  "chords": "i i | i iv*0.5 V*0.5 i bVI | i iv*0.5 V*0.5 i bVI | bVI bVII i V | i iv*0.5 V*0.5 i bVI | i iv*0.5 V*0.5 bVI*0.5 bVII*0.5 i | i V"
+ },
+ "motifs": {
+  "bell": [
+   [
+    0,
+    "D5",
+    1.5
+   ],
+   [
+    1.5,
+    "A4",
+    0.5
+   ],
+   [
+    2,
+    "A#4",
+    1
+   ],
+   [
+    3,
+    "A4",
+    1
+   ],
+   [
+    4,
+    "G4",
+    1
+   ],
+   [
+    5,
+    "F4",
+    1
+   ],
+   [
+    6,
+    "E4",
+    1
+   ],
+   [
+    7,
+    "A4",
+    1
+   ]
+  ],
+  "crown": [
+   [
+    0,
+    "D5",
+    1.5
+   ],
+   [
+    1.5,
+    "A4",
+    0.5
+   ],
+   [
+    2,
+    "A#4",
+    1
+   ],
+   [
+    3,
+    "C5",
+    1
+   ],
+   [
+    4,
+    "D5",
+    1
+   ],
+   [
+    5,
+    "E5",
+    1
+   ],
+   [
+    6,
+    "F5",
+    2
+   ]
+  ],
+  "crown_home": [
+   [
+    0,
+    "D5",
+    1.5
+   ],
+   [
+    1.5,
+    "A4",
+    0.5
+   ],
+   [
+    2,
+    "A#4",
+    1
+   ],
+   [
+    3,
+    "C5",
+    1
+   ],
+   [
+    4,
+    "A#4",
+    1
+   ],
+   [
+    5,
+    "C5",
+    1
+   ],
+   [
+    6,
+    "D5",
+    2
+   ]
+  ],
+  "toll": [
+   [
+    0,
+    "D5",
+    2
+   ],
+   [
+    2,
+    "A4",
+    2
+   ]
+  ]
+ },
+ "figures": {
+  "procession": [
+   {
+    "play": "root",
+    "range": [
+     "D2",
+     "C#3"
+    ],
+    "pattern": "x--o",
+    "step": 0.5,
+    "legato": 0.9
+   },
+   {
+    "play": "chord",
+    "range": [
+     "G3",
+     "A#4"
+    ],
+    "pattern": "x-------",
+    "step": 1,
+    "vel": -14
+   }
+  ]
+ },
+ "harmony": [
+  {
+   "part": "basses",
+   "from": 0,
+   "to": 96,
+   "play": "bass",
+   "range": [
+    "D2",
+    "C#3"
+   ],
+   "pattern": "x-------",
+   "step": 0.5,
+   "vel": -6
+  },
+  {
+   "part": "tremolo",
+   "from": 0,
+   "to": 8,
+   "play": "chord",
+   "range": [
+    "A3",
+    "F4"
+   ],
+   "pattern": "x-------",
+   "step": 1,
+   "vel": -18
+  },
+  {
+   "figure": "procession",
+   "part": "cellos",
+   "spans": [
+    [
+     8,
+     88
+    ]
+   ]
+  },
+  {
+   "part": "strings",
+   "from": 8,
+   "to": 88,
+   "play": "chord",
+   "range": [
+    "G3",
+    "A#4"
+   ],
+   "pattern": "x---",
+   "step": 1,
+   "vel": -14
+  },
+  {
+   "part": "choir",
+   "from": 24,
+   "to": 56,
+   "play": "chord",
+   "range": [
+    "A3",
+    "D5"
+   ],
+   "pattern": "x---",
+   "step": 1,
+   "vel": -6
+  },
+  {
+   "part": "chorus",
+   "from": 56,
+   "to": 88,
+   "play": "chord",
+   "range": [
+    "A3",
+    "D5"
+   ],
+   "pattern": "x---",
+   "step": 1
+  },
+  {
+   "part": "violins",
+   "from": 40,
+   "to": 56,
+   "play": "arpeggio",
+   "range": [
+    "D4",
+    "D5"
+   ],
+   "pattern": "oooooooo",
+   "step": 0.5,
+   "order": "updown",
+   "vel": -10,
+   "legato": 0.5
+  },
+  {
+   "part": "trombones",
+   "from": 56,
+   "to": 88,
+   "play": "root5",
+   "range": [
+    "D3",
+    "A3"
+   ],
+   "pattern": "x-.-x-.-",
+   "step": 0.5,
+   "vel": -6,
+   "legato": 0.8
+  }
+ ],
+ "lines": [
+  {
+   "part": "bells",
+   "motif": "toll",
+   "at": 0,
+   "repeat": 6,
+   "every": 4,
+   "vel": -10
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "bell",
+   "at": 8,
+   "gain": 7,
+   "double": [
+    {
+     "part": "violins2",
+     "vel": -6
+    }
+   ]
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "crown",
+   "at": 16,
+   "gain": 7,
+   "double": [
+    {
+     "part": "violins2",
+     "vel": -6
+    }
+   ]
+  },
+  {
+   "part": "violins",
+   "lead": true,
+   "motif": "bell",
+   "at": 24,
+   "double": [
+    {
+     "part": "flutes",
+     "octave": 1,
+     "vel": -6
+    }
+   ],
+   "gain": 6
+  },
+  {
+   "part": "violins",
+   "lead": true,
+   "motif": "crown",
+   "at": 32,
+   "double": [
+    {
+     "part": "flutes",
+     "octave": 1,
+     "vel": -6
+    }
+   ],
+   "gain": 5
+  },
+  {
+   "part": "horns",
+   "notes": [
+    [
+     24,
+     "A3",
+     8
+    ],
+    [
+     32,
+     "A#3",
+     8
+    ]
+   ],
+   "vel": -12
+  },
+  {
+   "part": "bells",
+   "motif": "bell",
+   "take": [
+    0,
+    4
+   ],
+   "at": 40,
+   "repeat": 4,
+   "every": 4,
+   "vel": -4
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "bell",
+   "at": 56,
+   "double": [
+    {
+     "part": "trombones",
+     "octave": -1,
+     "vel": -4
+    },
+    {
+     "part": "violins",
+     "octave": 1
+    }
+   ],
+   "gain": 3
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "crown",
+   "at": 64,
+   "double": [
+    {
+     "part": "trumpets",
+     "vel": -4
+    },
+    {
+     "part": "violins",
+     "octave": 1
+    }
+   ],
+   "gain": 3
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "bell",
+   "at": 72,
+   "double": [
+    {
+     "part": "trombones",
+     "octave": -1,
+     "vel": -4
+    },
+    {
+     "part": "violins",
+     "octave": 1
+    },
+    {
+     "part": "flutes",
+     "octave": 1
+    }
+   ],
+   "gain": 2
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "crown_home",
+   "at": 80,
+   "double": [
+    {
+     "part": "trumpets",
+     "vel": -2
+    },
+    {
+     "part": "violins",
+     "octave": 1
+    },
+    {
+     "part": "flutes",
+     "octave": 1
+    }
+   ],
+   "gain": 2
+  },
+  {
+   "part": "bells",
+   "motif": "toll",
+   "at": 88,
+   "repeat": 2,
+   "every": 4
+  }
+ ],
+ "patterns": [
+  {
+   "part": "timpani",
+   "note": "root",
+   "from": 8,
+   "to": 88,
+   "pattern": "x--ox---",
+   "step": 0.5,
+   "vel": -8
+  },
+  {
+   "part": "taiko",
+   "note": "root",
+   "from": 24,
+   "to": 88,
+   "pattern": "x...x.x.",
+   "step": 0.5,
+   "vel": -10
+  },
+  {
+   "part": "kit",
+   "note": "snare",
+   "from": 56,
+   "to": 88,
+   "pattern": "....x..o",
+   "step": 0.5,
+   "vel": -14
+  }
+ ],
+ "rolls": [
+  {
+   "part": "kit",
+   "note": "snare",
+   "from": 52,
+   "to": 56,
+   "vel": [
+    50,
+    110
+   ]
+  }
+ ],
+ "hits": [
+  {
+   "part": "gong",
+   "note": "root",
+   "at": 0,
+   "len": 8,
+   "vel": 90
+  },
+  {
+   "part": "gong",
+   "note": "root",
+   "at": 56,
+   "len": 8,
+   "vel": 120
+  },
+  {
+   "part": "kit",
+   "note": "crash",
+   "at": [
+    56,
+    72
+   ],
+   "len": 4,
+   "vel": 118
+  },
+  {
+   "part": "timpani",
+   "note": "A2",
+   "at": 92,
+   "len": 4,
+   "vel": 118
+  },
+  {
+   "part": "bass_drum",
+   "note": "root",
+   "at": 92,
+   "len": 4,
+   "vel": 112
+  },
+  {
+   "part": "kit",
+   "note": "crash",
+   "at": 92,
+   "len": 4,
+   "vel": 96
+  }
+ ]
+}
