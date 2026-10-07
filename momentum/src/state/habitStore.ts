@@ -43,8 +43,8 @@ interface HabitState {
   skipHabit: (habitId: string) => void;
   /** Marks a past day done ("done yesterday too"); a freeze spent on that day comes back. */
   completeOnDate: (habitId: string, date: LocalDateString) => Promise<void>;
-  /** Sets what a habit holds on `date` (today or earlier), e.g. from the calendar; a freeze spent on that day comes back when it becomes done. */
-  setProgressOnDate: (habitId: string, date: LocalDateString, next: LogProgress) => Promise<void>;
+  /** Sets what a habit holds on `date` (today or earlier), e.g. from the calendar; a freeze spent on that day comes back when it becomes done. Resolves true when a freeze came back. */
+  setProgressOnDate: (habitId: string, date: LocalDateString, next: LogProgress) => Promise<boolean>;
   addHabit: (input: NewHabit) => Promise<void>;
   /** Saves edits; today's log is re-evaluated against a changed target. Streak history is kept. */
   updateHabit: (habitId: string, changes: Partial<NewHabit>) => Promise<void>;
@@ -240,11 +240,11 @@ export const useHabitStore = create<HabitState>((set, get) => {
       const habit = habits.find((h) => h.id === habitId);
       const key = `${habitId}:${date}`;
       // One write per habit/day at a time, so a double tap can't refund twice.
-      if (!today || !habit || date > today || completingPast.has(key)) return;
+      if (!today || !habit || date > today || completingPast.has(key)) return false;
       completingPast.add(key);
       try {
         const previous = (await repositories.habitLogs.getForDate(date)).find((l) => l.habitId === habitId);
-        if (previous?.status === next.status && previous.currentCount === next.currentCount) return;
+        if (previous?.status === next.status && previous.currentCount === next.currentCount) return false;
         // The log and the freeze refund commit together, or not at all.
         const balance = await inTransaction('habits.editDay', async (repos) => {
           await repos.habitLogs.upsert({ habitId, logDate: date, currentCount: next.currentCount, status: next.status });
@@ -254,6 +254,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
         });
         if (balance !== null) useSettingsStore.getState().setFreezesAvailable(balance);
         await get().load(today);
+        return balance !== null;
       } finally {
         completingPast.delete(key);
       }

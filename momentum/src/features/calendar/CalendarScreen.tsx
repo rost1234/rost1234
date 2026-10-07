@@ -451,6 +451,7 @@ function DaySheet({
   const scrollRef = useRef<ScrollView>(null);
   const rowY = useRef<Record<string, number>>({});
   const [note, setNote] = useState<TranslationKey | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -501,17 +502,18 @@ function DaySheet({
     const before = freezes();
     setBusy(true);
     setNote(null);
+    setError(null);
     runDetached(
       useHabitStore
         .getState()
         .setProgressOnDate(detail.habit.id, date, applyDayEdit(detail.habit, progressOf(log), action))
-        .then(onChanged)
-        .then(() => {
-          const after = freezes();
+        .then(async (refunded) => {
+          await onChanged();
           // A change can spend a freeze to keep a streak, or give one back; say so instead of doing it silently.
-          if (after < before) setNote('cal.note.freezeUsed');
-          else if (after > before) setNote('cal.note.freezeBack');
+          if (refunded) setNote('cal.note.freezeBack');
+          else if (freezes() < before) setNote('cal.note.freezeUsed');
         })
+        .catch((e: unknown) => setError(toErrorMessage(e)))
         .finally(() => setBusy(false)),
     );
   };
@@ -541,6 +543,7 @@ function DaySheet({
         </View>
         <ScrollView ref={scrollRef} style={{ maxHeight }} contentContainerStyle={{ gap: spacing.xs }}>
           <Text style={typography.overline}>{t('cal.habitsTitle')}</Text>
+          {error ? <Banner message={error} onDismiss={() => setError(null)} /> : null}
           {note ? (
             <View style={styles.note} accessibilityLiveRegion="polite">
               <Text style={typography.body}>{t(note)}</Text>
