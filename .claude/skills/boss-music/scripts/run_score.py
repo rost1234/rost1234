@@ -1,4 +1,5 @@
-"""Render a score with GuySten's Claude-Code-Game-Master orchestra, plus two extra parts
+"""Render a score (usage: run_score.py <ccgm>/lib check|play <score.json> [--out file.ogg])
+with GuySten's Claude-Code-Game-Master orchestra, plus two extra parts
 (a piano and a standard GM drum kit) added at runtime - their files are left untouched."""
 import sys
 from pathlib import Path
