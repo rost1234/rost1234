@@ -1,7 +1,7 @@
 import { addMonths, dateRange, monthDays, monthGrid, monthStart } from '@/core/localDate';
 import { makeHabit } from '@/testing/fixtures';
 import { buildHeatmap } from '../analytics';
-import { buildCalendarDays, habitDayDetails, summarizeMonth } from '../calendar';
+import { applyDayEdit, buildCalendarDays, dayEditActions, habitDayDetails, summarizeMonth } from '../calendar';
 import { freezeHistory, perfectDaysTowardNextFreeze } from '../freezeRewards';
 import type { HabitLog, HabitLogStatus, Pause } from '../models';
 import { activePause, applyPausesToAll, endPauseChange, isPaused } from '../pauses';
@@ -153,5 +153,30 @@ describe('archived habits in the calendar', () => {
     // Nothing logged: the archived habit doesn't turn the day into a miss.
     expect(days[1]).toMatchObject({ percent: 100, perfect: true });
     expect(habitDayDetails([active, archived], logs, [], '2026-09-03', '2026-09-10').map((d) => d.habit.id)).toEqual(['a']);
+  });
+});
+
+describe('editing a day', () => {
+  const binary = { isQuantitative: false, targetCount: 1 };
+  const water = { isQuantitative: true, targetCount: 4 };
+
+  it('offers actions that fit the day', () => {
+    expect(dayEditActions(binary, 'missed', 0)).toEqual(['done', 'skip']);
+    expect(dayEditActions(binary, 'completed', 1)).toEqual(['undo', 'skip']);
+    expect(dayEditActions(water, 'partial', 2)).toEqual(['done', 'plus', 'minus', 'undo', 'skip']);
+    expect(dayEditActions(water, 'completed', 4)).toEqual(['minus', 'undo', 'skip']);
+    expect(dayEditActions(binary, 'skipped', 0)).toEqual(['unskip', 'done']);
+    expect(dayEditActions(binary, 'forgiven', 0)).toEqual(['done']);
+    expect(dayEditActions(binary, 'not_scheduled', 0)).toEqual([]);
+  });
+
+  it('applies them', () => {
+    expect(applyDayEdit(binary, { currentCount: 0, status: 'in_progress' }, 'done')).toEqual({ currentCount: 1, status: 'completed' });
+    expect(applyDayEdit(water, { currentCount: 1, status: 'in_progress' }, 'done')).toEqual({ currentCount: 4, status: 'completed' });
+    expect(applyDayEdit(water, { currentCount: 3, status: 'in_progress' }, 'plus')).toEqual({ currentCount: 4, status: 'completed' });
+    expect(applyDayEdit(water, { currentCount: 4, status: 'completed' }, 'minus')).toEqual({ currentCount: 3, status: 'in_progress' });
+    expect(applyDayEdit(water, { currentCount: 2, status: 'in_progress' }, 'undo')).toEqual({ currentCount: 0, status: 'in_progress' });
+    expect(applyDayEdit(water, { currentCount: 2, status: 'in_progress' }, 'skip')).toEqual({ currentCount: 2, status: 'skipped' });
+    expect(applyDayEdit(water, { currentCount: 2, status: 'skipped' }, 'unskip')).toEqual({ currentCount: 2, status: 'in_progress' });
   });
 });

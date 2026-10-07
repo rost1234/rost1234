@@ -238,3 +238,13 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Largest system font size → nothing clipped on Home and the urge screen
 - [ ] Focus screen and the home-screen widgets keep their own colors (not changed in this build)
 
+## Calendar: what you did that day (build 33)
+- [ ] Calendar → tap a past day → sheet shows habits, tasks (done ones with a check), the reflection text and focus minutes
+- [ ] A day with a reflection and the reflection lock on → "Open the reflection" → fingerprint/PIN → text shows; a day without one says so
+- [ ] Tap the pencil next to a habit that was missed → "Mark done" → the pill, the ring, the month summary and the streak on Home all update
+- [ ] A habit with a count: "+1" and "-1" move the count; at the target it becomes done; "Clear the mark" resets it
+- [ ] "Skip this day" then "Undo skip"; a day covered by a freeze → "Mark done" returns the freeze (Home pill)
+- [ ] "Edit the habit" closes the sheet and opens the habit form; coming back, the calendar is current
+- [ ] Today and future days: today can be edited; future days don't open
+- [ ] A task completed on an earlier day shows on that day; an open task planned for that day shows without a check
+

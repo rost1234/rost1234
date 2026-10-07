@@ -1,6 +1,6 @@
 import type { LocalDateString } from '@/core/localDate';
 import { habitDayState, indexLogs, type HeatCellState } from './analytics';
-import { completionRatio, progressOf } from './habitProgress';
+import { completionRatio, decrementProgress, incrementProgress, progressOf, type LogProgress } from './habitProgress';
 import type { Habit, HabitLog, Pause } from './models';
 import { activePause } from './pauses';
 
@@ -128,4 +128,47 @@ export function habitDayDetails(
       return { habit, state: stateOf(habit, log, date, today, pauses), count: log?.currentCount ?? 0 };
     })
     .filter((d) => d.state !== 'not_scheduled');
+}
+
+export type DayEditAction = 'done' | 'undo' | 'plus' | 'minus' | 'skip' | 'unskip';
+
+/**
+ * What can be changed on a past or current day for one habit, in menu order. A day a
+ * streak freeze covered can only be marked done (which gives the freeze back).
+ */
+export function dayEditActions(habit: Pick<Habit, 'isQuantitative'>, state: HeatCellState, count: number): DayEditAction[] {
+  if (state === 'not_scheduled') return [];
+  if (state === 'forgiven') return ['done'];
+  if (state === 'skipped') return ['unskip', 'done'];
+  const actions: DayEditAction[] = [];
+  if (state !== 'completed') actions.push('done');
+  if (habit.isQuantitative) {
+    if (state !== 'completed') actions.push('plus');
+    if (count > 0) actions.push('minus');
+  }
+  if (state === 'completed' || count > 0) actions.push('undo');
+  actions.push('skip');
+  return actions;
+}
+
+/** The log a day edit produces; `current` is what the day holds now. */
+export function applyDayEdit(
+  habit: Pick<Habit, 'isQuantitative' | 'targetCount'>,
+  current: LogProgress,
+  action: DayEditAction,
+): LogProgress {
+  switch (action) {
+    case 'done':
+      return { currentCount: habit.isQuantitative ? habit.targetCount : 1, status: 'completed' };
+    case 'undo':
+      return { currentCount: 0, status: 'in_progress' };
+    case 'plus':
+      return incrementProgress(habit, current);
+    case 'minus':
+      return decrementProgress(habit, current);
+    case 'skip':
+      return { currentCount: current.currentCount, status: 'skipped' };
+    case 'unskip':
+      return { currentCount: current.currentCount, status: 'in_progress' };
+  }
 }

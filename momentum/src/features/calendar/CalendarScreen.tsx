@@ -1,10 +1,10 @@
-import { useCallback, useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { SheetHeader } from '@/components/SheetHeader';
 import { Banner, Card, Chip } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme, type Theme } from '@/components/theme';
@@ -27,10 +27,22 @@ import {
 } from '@/core/localDate';
 import { repositories } from '@/data/repositories';
 import type { HeatCellState } from '@/domain/analytics';
-import { buildCalendarDays, habitDayDetails, summarizeMonth, type CalendarDay, type HabitDayDetail } from '@/domain/calendar';
-import type { DailyReflection, FocusSession, Habit, HabitLog, Pause } from '@/domain/models';
+import {
+  applyDayEdit,
+  buildCalendarDays,
+  dayEditActions,
+  habitDayDetails,
+  summarizeMonth,
+  type CalendarDay,
+  type DayEditAction,
+  type HabitDayDetail,
+} from '@/domain/calendar';
+import { progressOf } from '@/domain/habitProgress';
+import type { DailyReflection, FocusSession, Habit, HabitLog, Pause, Task } from '@/domain/models';
 import { MOOD_OPTIONS } from '@/features/reflection/mood';
+import { useReflectionAccess } from '@/features/reflection/ReflectionLock';
 import { useLocalDate } from '@/hooks/useLocalDate';
+import { useHabitStore } from '@/state/habitStore';
 import { useT, type TranslationKey } from '@/i18n';
 
 /** How far back the arrows go. */
@@ -228,7 +240,30 @@ const STATE_PILL: Record<Exclude<HeatCellState, 'not_scheduled'>, { label: Trans
   pending: { label: 'cal.statePending', tone: (c) => [c.surfaceMuted, c.textMuted] },
 };
 
-function DetailRow({ detail }: { detail: HabitDayDetail }) {
+const ACTION_LABEL: Record<DayEditAction, TranslationKey> = {
+  done: 'cal.act.done',
+  undo: 'cal.act.undo',
+  plus: 'cal.act.plus',
+  minus: 'cal.act.minus',
+  skip: 'cal.act.skip',
+  unskip: 'cal.act.unskip',
+};
+
+function DetailRow({
+  detail,
+  expanded,
+  busy,
+  onToggle,
+  onAction,
+  onEditHabit,
+}: {
+  detail: HabitDayDetail;
+  expanded: boolean;
+  busy: boolean;
+  onToggle: () => void;
+  onAction: (action: DayEditAction) => void;
+  onEditHabit: () => void;
+}) {
   const t = useT();
   const { colors, typography } = useTheme();
   const styles = useStyles();
@@ -244,21 +279,112 @@ function DetailRow({ detail }: { detail: HabitDayDetail }) {
       : habit.isQuantitative
         ? `${habit.targetCount}${habit.unit ? ` ${habit.unit}` : ''}`
         : habit.microStep;
+  const actions = dayEditActions(habit, detail.state, detail.count);
+  const canEdit = !habit.isArchived;
   return (
-    <View style={styles.detailRow}>
-      <View style={{ flex: 1, gap: 2 }}>
-        <Text style={typography.label} numberOfLines={1}>
-          {habit.title}
-        </Text>
-        {note ? (
-          <Text style={typography.caption} numberOfLines={2}>
-            {note}
+    <View style={styles.detailBlock}>
+      <View style={styles.detailRow}>
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text style={typography.label} numberOfLines={1}>
+            {habit.title}
           </Text>
+          {note ? (
+            <Text style={typography.caption} numberOfLines={2}>
+              {note}
+            </Text>
+          ) : null}
+        </View>
+        <View style={[styles.pill, { backgroundColor: bg }]}>
+          <Text style={[styles.pillText, { color: fg }]}>{label}</Text>
+        </View>
+        {canEdit ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded }}
+            accessibilityLabel={t('cal.editA11y', { title: habit.title })}
+            onPress={onToggle}
+            hitSlop={6}
+            style={[styles.editButton, expanded && { backgroundColor: colors.primarySoft }]}
+          >
+            <Ionicons name="create-outline" size={18} color={expanded ? colors.primary : colors.textMuted} />
+          </Pressable>
         ) : null}
       </View>
-      <View style={[styles.pill, { backgroundColor: bg }]}>
-        <Text style={[styles.pillText, { color: fg }]}>{label}</Text>
-      </View>
+      {expanded && canEdit ? (
+        <View style={styles.actions}>
+          {actions.map((action) => (
+            <Chip
+              key={action}
+              label={t(ACTION_LABEL[action])}
+              accessibilityLabel={`${t(ACTION_LABEL[action])}: ${habit.title}`}
+              selected={false}
+              onPress={() => (busy ? undefined : onAction(action))}
+            />
+          ))}
+          <Chip label={t('cal.act.editHabit')} accessibilityLabel={`${t('cal.act.editHabit')}: ${habit.title}`} selected={false} onPress={onEditHabit} />
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+function TaskRow({ task }: { task: Task }) {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
+  return (
+    <View
+      style={styles.taskRow}
+      accessible
+      accessibilityLabel={`${task.title}, ${task.isCompleted ? t('cal.taskDone') : t('cal.taskOpen')}`}
+    >
+      <Ionicons
+        name={task.isCompleted ? 'checkmark-circle' : 'ellipse-outline'}
+        size={20}
+        color={task.isCompleted ? colors.success : colors.textMuted}
+      />
+      <Text style={[typography.body, { flex: 1 }, task.isCompleted && { color: colors.textMuted }]}>{task.title}</Text>
+    </View>
+  );
+}
+
+function ReflectionBlock({ reflection }: { reflection: DailyReflection | undefined }) {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
+  const { canRead, ask } = useReflectionAccess();
+  if (!reflection) return <Text style={[typography.caption, { paddingVertical: spacing.sm }]}>{t('cal.noReflection')}</Text>;
+  const mood = MOOD_OPTIONS.find((m) => m.score === reflection.moodScore);
+  if (!canRead) {
+    return (
+      <Pressable accessibilityRole="button" accessibilityLabel={t('cal.openReflection')} onPress={ask} style={styles.lockedReflection}>
+        <Ionicons name="lock-closed" size={18} color={colors.textMuted} />
+        <Text style={[typography.label, { flex: 1 }]}>{t('cal.openReflection')}</Text>
+      </Pressable>
+    );
+  }
+  return (
+    <View style={styles.reflection}>
+      {mood ? (
+        <Text style={typography.label} accessibilityLabel={t('refl.moodA11y', { label: t(mood.label), score: mood.score })}>
+          {`${mood.emoji} ${t(mood.label)}`}
+        </Text>
+      ) : null}
+      {reflection.gratitudeText ? (
+        <View style={{ gap: 2 }}>
+          <Text style={typography.overline}>{t('cal.gratitude')}</Text>
+          <Text style={typography.body}>{reflection.gratitudeText}</Text>
+        </View>
+      ) : null}
+      {reflection.lessonText ? (
+        <View style={{ gap: 2 }}>
+          <Text style={typography.overline}>{t('cal.lesson')}</Text>
+          <Text style={typography.body}>{reflection.lessonText}</Text>
+        </View>
+      ) : null}
+      {reflection.sleepMinutes ? (
+        <Text style={typography.caption}>{t('cal.sleep', { hours: Math.round((reflection.sleepMinutes / 60) * 10) / 10 })}</Text>
+      ) : null}
     </View>
   );
 }
@@ -268,22 +394,46 @@ function DaySheet({
   data,
   today,
   habitId,
+  onChanged,
   onClose,
 }: {
   date: LocalDateString | null;
   data: MonthData;
   today: LocalDateString;
   habitId: string | null;
+  onChanged: () => void;
   onClose: () => void;
 }) {
   const t = useT();
   const { colors, typography } = useTheme();
   const styles = useStyles();
   const bottom = useSafeAreaInsets().bottom;
+  const maxHeight = useWindowDimensions().height * 0.6;
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const details = useMemo(
     () => (date ? habitDayDetails(habitId ? data.habits.filter((h) => h.id === habitId) : data.habits, data.logs, data.pauses, date, today) : []),
     [date, data, today, habitId],
   );
+
+  // Tasks planned for the day, open or done (a completed task keeps that day's date).
+  useEffect(() => {
+    if (!date) return;
+    let current = true;
+    runDetached(
+      repositories.tasks
+        .getForDate(date)
+        .catch((): Task[] => [])
+        .then((list) => {
+          if (current) setTasks(list);
+        }),
+    );
+    return () => {
+      current = false;
+    };
+  }, [date]);
+
   if (!date) return null;
 
   const counted = details.filter((d) => d.state !== 'skipped' && d.state !== 'paused');
@@ -291,13 +441,28 @@ function DaySheet({
   const freezes = details.filter((d) => d.state === 'forgiven').length;
   const minutes = data.sessions.filter((s) => localDateFromIso(s.startTime) === date).reduce((sum, s) => sum + s.durationMinutes, 0);
   const reflection = data.reflections.find((r) => r.logDate === date);
-  const mood = reflection ? MOOD_OPTIONS.find((m) => m.score === reflection.moodScore) : undefined;
   const summary = [
     counted.length > 0 ? t('cal.dayDone', { done, total: counted.length }) : null,
     freezes > 0 ? t.plural('cal.dayFreezes', freezes) : null,
   ]
     .filter(Boolean)
     .join(' · ');
+
+  const act = (detail: HabitDayDetail, action: DayEditAction) => {
+    const log = data.logs.find((l) => l.habitId === detail.habit.id && l.logDate === date);
+    setBusy(true);
+    runDetached(
+      useHabitStore
+        .getState()
+        .setProgressOnDate(detail.habit.id, date, applyDayEdit(detail.habit, progressOf(log), action))
+        .then(onChanged)
+        .finally(() => setBusy(false)),
+    );
+  };
+  const editHabit = (id: string) => {
+    onClose();
+    router.push({ pathname: '/habit/[id]', params: { id } });
+  };
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent navigationBarTranslucent>
@@ -313,22 +478,40 @@ function DaySheet({
             <Ionicons name="close" size={20} color={colors.text} />
           </Pressable>
         </View>
-        <ScrollView style={{ maxHeight: 360 }}>
+        <ScrollView style={{ maxHeight }} contentContainerStyle={{ gap: spacing.xs }}>
+          <Text style={typography.overline}>{t('cal.habitsTitle')}</Text>
           {details.length === 0 ? <Text style={[typography.caption, { paddingVertical: spacing.md }]}>{t('cal.nothingDue')}</Text> : null}
           {details.map((d) => (
-            <DetailRow key={d.habit.id} detail={d} />
+            <DetailRow
+              key={d.habit.id}
+              detail={d}
+              expanded={expandedId === d.habit.id}
+              busy={busy}
+              onToggle={() => setExpandedId(expandedId === d.habit.id ? null : d.habit.id)}
+              onAction={(action) => act(d, action)}
+              onEditHabit={() => editHabit(d.habit.id)}
+            />
           ))}
+
+          {tasks.length > 0 ? (
+            <>
+              <Text style={[typography.overline, styles.sectionGap]}>{t('cal.tasksTitle')}</Text>
+              {tasks.map((task) => (
+                <TaskRow key={task.id} task={task} />
+              ))}
+            </>
+          ) : null}
+
+          <Text style={[typography.overline, styles.sectionGap]}>{t('cal.reflectionTitle')}</Text>
+          <ReflectionBlock reflection={reflection} />
+
+          {minutes > 0 ? (
+            <View style={[styles.meta, styles.sectionGap]}>
+              <Text style={styles.metaValue}>{t('focus.minutes', { minutes })}</Text>
+              <Text style={typography.caption}>{t('cal.focus')}</Text>
+            </View>
+          ) : null}
         </ScrollView>
-        <View style={styles.metaRow}>
-          <View style={styles.meta}>
-            <Text style={styles.metaValue}>{t('focus.minutes', { minutes })}</Text>
-            <Text style={typography.caption}>{t('cal.focus')}</Text>
-          </View>
-          <View style={styles.meta}>
-            <Text style={styles.metaValue}>{mood ? `${mood.emoji} ${mood.score}/5` : '—'}</Text>
-            <Text style={typography.caption}>{t('cal.mood')}</Text>
-          </View>
-        </View>
       </View>
     </Modal>
   );
@@ -429,7 +612,7 @@ export function CalendarScreen() {
         ) : null}
         <Text style={[styles.hint]}>{t('cal.tapHint')}</Text>
       </ScrollView>
-      {data && selected ? <DaySheet date={selected} data={data} today={today} habitId={habitId} onClose={() => setSelected(null)} /> : null}
+      {data && selected ? <DaySheet date={selected} data={data} today={today} habitId={habitId} onChanged={reload} onClose={() => setSelected(null)} /> : null}
     </SafeAreaView>
   );
 }
@@ -486,17 +669,21 @@ const useStyles = makeStyles(({ colors, typography }) => ({
   grab: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: colors.border, marginBottom: spacing.xs },
   sheetHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   close: { width: 36, height: 36, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceMuted },
+  detailBlock: { borderBottomWidth: 1, borderBottomColor: colors.border },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
     paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
+  editButton: { width: 40, height: 40, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceMuted },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, paddingBottom: spacing.md },
+  sectionGap: { marginTop: spacing.md },
+  taskRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.xs + 2 },
+  reflection: { gap: spacing.sm, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.surfaceMuted },
+  lockedReflection: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 48, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.surfaceMuted },
   pill: { paddingHorizontal: spacing.md, paddingVertical: 4, borderRadius: radius.pill },
   pillText: { fontSize: 12, fontWeight: '700' },
-  metaRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
-  meta: { flex: 1, alignItems: 'center', gap: 2, padding: spacing.sm, borderRadius: radius.md, backgroundColor: colors.surfaceMuted },
+  meta: { alignItems: 'center', gap: 2, padding: spacing.sm, borderRadius: radius.md, backgroundColor: colors.surfaceMuted },
   metaValue: { fontSize: 16, fontWeight: '700', color: colors.text },
 }));

@@ -42,6 +42,8 @@ interface HabitState {
   skipHabit: (habitId: string) => void;
   /** Marks a past day done ("done yesterday too"); a freeze spent on that day comes back. */
   completeOnDate: (habitId: string, date: LocalDateString) => Promise<void>;
+  /** Sets what a habit holds on `date` (today or earlier), e.g. from the calendar; a freeze spent on that day comes back when it becomes done. */
+  setProgressOnDate: (habitId: string, date: LocalDateString, next: LogProgress) => Promise<void>;
   addHabit: (input: NewHabit) => Promise<void>;
   /** Saves edits; today's log is re-evaluated against a changed target. Streak history is kept. */
   updateHabit: (habitId: string, changes: Partial<NewHabit>) => Promise<void>;
@@ -237,6 +239,26 @@ export const useHabitStore = create<HabitState>((set, get) => {
         if (previous?.status === 'completed') return;
         await repositories.habitLogs.upsert({ habitId, logDate: date, currentCount: habit.targetCount, status: 'completed' });
         if (previous?.status === 'forgiven') {
+          const balance = await repositories.settings.refundStreakFreezes(1, MAX_STREAK_FREEZES);
+          useSettingsStore.getState().setFreezesAvailable(balance);
+        }
+        await get().load(today);
+      } finally {
+        completingPast.delete(key);
+      }
+    },
+
+    setProgressOnDate: async (habitId, date, next) => {
+      const { today, habits } = get();
+      const habit = habits.find((h) => h.id === habitId);
+      const key = `${habitId}:${date}:edit`;
+      if (!today || !habit || date > today || completingPast.has(key)) return;
+      completingPast.add(key);
+      try {
+        const previous = (await repositories.habitLogs.getForDate(date)).find((l) => l.habitId === habitId);
+        if (previous?.status === next.status && previous.currentCount === next.currentCount) return;
+        await repositories.habitLogs.upsert({ habitId, logDate: date, currentCount: next.currentCount, status: next.status });
+        if (previous?.status === 'forgiven' && next.status !== 'forgiven') {
           const balance = await repositories.settings.refundStreakFreezes(1, MAX_STREAK_FREEZES);
           useSettingsStore.getState().setFreezesAvailable(balance);
         }
