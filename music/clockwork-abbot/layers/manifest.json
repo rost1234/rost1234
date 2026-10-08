@@ -27,7 +27,8 @@
    "loopStart": 5.2174,
    "bpm": 138.0,
    "beatsPerBar": 3,
-   "barSeconds": 1.304348
+   "barSeconds": 1.304348,
+   "meter": "3/4"
   },
   {
    "id": "stage2",
@@ -41,7 +42,8 @@
    "loopStart": 2.8571,
    "bpm": 168.0,
    "beatsPerBar": 4,
-   "barSeconds": 1.428571
+   "barSeconds": 1.428571,
+   "meter": "4/4"
   }
  ],
  "cues": [
