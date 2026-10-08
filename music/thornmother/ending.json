@@ -1,0 +1,154 @@
+{
+ "title": "Thornmother: the seed (ending)",
+ "tune": {
+  "seed": "Thornmother",
+  "mode": "minor",
+  "key": "C#4",
+  "meter": "4/4"
+ },
+ "statements": [],
+ "tempo": 66,
+ "length": 20,
+ "role": "ending",
+ "dynamics": [
+  [
+   0,
+   112
+  ],
+  [
+   4,
+   72
+  ],
+  [
+   20,
+   54
+  ]
+ ],
+ "progression": {
+  "at": 0,
+  "chords": "i bVI bVII i i"
+ },
+ "harmony": [
+  {
+   "part": "choir_oo",
+   "from": 0,
+   "to": 20,
+   "play": "chord",
+   "range": [
+    "G#3",
+    "E5"
+   ],
+   "pattern": "x---",
+   "step": 1,
+   "vel": -4
+  },
+  {
+   "part": "harp",
+   "from": 4,
+   "to": 20,
+   "play": "arpeggio",
+   "range": [
+    "C#3",
+    "C#5"
+   ],
+   "pattern": "oooo",
+   "step": 1,
+   "order": "up",
+   "vel": -8
+  },
+  {
+   "part": "basses",
+   "from": 0,
+   "to": 20,
+   "play": "bass",
+   "range": [
+    "C#2",
+    "C3"
+   ],
+   "pattern": "x---",
+   "step": 1,
+   "vel": -8
+  }
+ ],
+ "lines": [
+  {
+   "part": "brass",
+   "notes": [
+    [
+     0,
+     "C#3",
+     3
+    ],
+    [
+     0,
+     "G#3",
+     3
+    ],
+    [
+     0,
+     "C#4",
+     3
+    ],
+    [
+     0,
+     "E4",
+     3
+    ]
+   ],
+   "vel": 10
+  },
+  {
+   "part": "horn_solo",
+   "lead": true,
+   "notes": [
+    [
+     4,
+     "C#4",
+     3
+    ],
+    [
+     7,
+     "G#4",
+     2
+    ],
+    [
+     9,
+     "A4",
+     1
+    ],
+    [
+     10,
+     "G#4",
+     2
+    ],
+    [
+     12,
+     "E4",
+     2
+    ],
+    [
+     14,
+     "C#4",
+     6
+    ]
+   ],
+   "gain": 4
+  }
+ ],
+ "hits": [
+  {
+   "part": "timpani",
+   "note": "C#3",
+   "at": 0,
+   "len": 4,
+   "vel": 124
+  },
+  {
+   "part": "kit",
+   "note": "crash",
+   "at": 0,
+   "len": 4,
+   "vel": 116
+  }
+ ]
+}

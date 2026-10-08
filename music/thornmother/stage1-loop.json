@@ -1,0 +1,850 @@
+{
+ "title": "Vael'Thorn, the Thornmother: Stage 1 - The Hunt",
+ "tune": {
+  "seed": "Thornmother",
+  "mode": "minor",
+  "key": "C#4",
+  "meter": "6/8"
+ },
+ "statements": [],
+ "tempo": 96,
+ "length": 324,
+ "role": "stage",
+ "loop": true,
+ "loop_from": 12,
+ "dynamics": [
+  [
+   0,
+   96
+  ],
+  [
+   12,
+   74
+  ],
+  [
+   60,
+   86
+  ],
+  [
+   108,
+   70
+  ],
+  [
+   150,
+   92
+  ],
+  [
+   156,
+   118
+  ],
+  [
+   250,
+   124
+  ],
+  [
+   252,
+   84
+  ],
+  [
+   300,
+   90
+  ],
+  [
+   318,
+   86
+  ],
+  [
+   324,
+   94
+  ]
+ ],
+ "progression": {
+  "at": 0,
+  "chords": "i i | i bIII i bVII i bIII i i | i bIII i bVII i bIII i i | bVI bVI bVII bVII bVI bVI V V | i bIII i bVII i bIII i i | i bIII i bVII i bIII i i | i bIII i bVII i bIII i i | i i V V"
+ },
+ "motifs": {
+  "hook": [
+   [
+    0,
+    "C#5",
+    3
+   ],
+   [
+    3,
+    "G#5",
+    2
+   ],
+   [
+    5,
+    "A5",
+    1
+   ],
+   [
+    6,
+    "G#5",
+    3
+   ],
+   [
+    9,
+    "E5",
+    2
+   ],
+   [
+    11,
+    "F#5",
+    1
+   ]
+  ],
+  "answer": [
+   [
+    0,
+    "C#5",
+    3
+   ],
+   [
+    3,
+    "G#5",
+    2
+   ],
+   [
+    5,
+    "A5",
+    1
+   ],
+   [
+    6,
+    "B5",
+    3
+   ],
+   [
+    9,
+    "A5",
+    2
+   ],
+   [
+    11,
+    "G#5",
+    1
+   ]
+  ],
+  "home": [
+   [
+    0,
+    "C#5",
+    3
+   ],
+   [
+    3,
+    "G#5",
+    2
+   ],
+   [
+    5,
+    "A5",
+    1
+   ],
+   [
+    6,
+    "G#5",
+    2
+   ],
+   [
+    8,
+    "E5",
+    1
+   ],
+   [
+    9,
+    "C#5",
+    3
+   ]
+  ],
+  "hook_wide": [
+   [
+    0,
+    "C#5",
+    6
+   ],
+   [
+    6,
+    "G#5",
+    4
+   ],
+   [
+    10,
+    "A5",
+    2
+   ],
+   [
+    12,
+    "G#5",
+    6
+   ],
+   [
+    18,
+    "E5",
+    4
+   ],
+   [
+    22,
+    "F#5",
+    2
+   ]
+  ]
+ },
+ "figures": {
+  "gallop": [
+   {
+    "play": "root",
+    "range": [
+     "C#2",
+     "C3"
+    ],
+    "pattern": "x  o o",
+    "step": 1,
+    "legato": 0.45
+   }
+  ],
+  "forest": [
+   {
+    "play": "arpeggio",
+    "range": [
+     "C#3",
+     "C#5"
+    ],
+    "pattern": "oooooo",
+    "step": 1,
+    "order": "updown",
+    "legato": 0.9,
+    "vel": -10
+   }
+  ]
+ },
+ "harmony": [
+  {
+   "part": "basses",
+   "from": 0,
+   "to": 324,
+   "play": "bass",
+   "range": [
+    "C#2",
+    "C3"
+   ],
+   "pattern": "x-----",
+   "step": 1,
+   "vel": -6
+  },
+  {
+   "figure": "gallop",
+   "part": "pizzicato",
+   "spans": [
+    [
+     0,
+     108
+    ],
+    [
+     156,
+     324
+    ]
+   ]
+  },
+  {
+   "figure": "gallop",
+   "part": "cellos",
+   "spans": [
+    [
+     156,
+     252
+    ]
+   ],
+   "vel": -4
+  },
+  {
+   "figure": "forest",
+   "part": "harp",
+   "spans": [
+    [
+     0,
+     324
+    ]
+   ]
+  },
+  {
+   "part": "strings",
+   "from": 12,
+   "to": 324,
+   "play": "chord",
+   "range": [
+    "G#3",
+    "E5"
+   ],
+   "pattern": "x-----",
+   "step": 1,
+   "vel": -14
+  },
+  {
+   "part": "choir_oo",
+   "from": 60,
+   "to": 156,
+   "play": "chord",
+   "range": [
+    "G#3",
+    "E5"
+   ],
+   "pattern": "x-----",
+   "step": 1,
+   "vel": -4
+  },
+  {
+   "part": "chorus",
+   "from": 156,
+   "to": 252,
+   "play": "chord",
+   "range": [
+    "G#3",
+    "E5"
+   ],
+   "pattern": "x-----",
+   "step": 1
+  },
+  {
+   "part": "trombones",
+   "from": 156,
+   "to": 252,
+   "play": "root5",
+   "range": [
+    "C#3",
+    "G#3"
+   ],
+   "pattern": "x     ",
+   "step": 1,
+   "legato": 0.8,
+   "vel": -6
+  }
+ ],
+ "lines": [
+  {
+   "part": "horn_solo",
+   "lead": true,
+   "motif": "hook",
+   "at": 0,
+   "octave": -1,
+   "gain": 7
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "hook",
+   "at": 12,
+   "gain": 8,
+   "double": [
+    {
+     "part": "violins2",
+     "vel": -4
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "answer",
+   "at": 24,
+   "gain": 8,
+   "double": [
+    {
+     "part": "violins2",
+     "vel": -4
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "hook",
+   "at": 36,
+   "gain": 8,
+   "double": [
+    {
+     "part": "violins2",
+     "vel": -4
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "home",
+   "at": 48,
+   "gain": 8,
+   "double": [
+    {
+     "part": "violins2",
+     "vel": -4
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "violins",
+   "lead": true,
+   "motif": "hook",
+   "at": 60,
+   "gain": 8,
+   "double": [
+    {
+     "part": "flutes",
+     "octave": 1,
+     "vel": -4
+    }
+   ]
+  },
+  {
+   "part": "violins",
+   "lead": true,
+   "motif": "answer",
+   "at": 72,
+   "gain": 8,
+   "double": [
+    {
+     "part": "flutes",
+     "octave": 1,
+     "vel": -4
+    }
+   ]
+  },
+  {
+   "part": "violins",
+   "lead": true,
+   "motif": "hook",
+   "at": 84,
+   "gain": 8,
+   "double": [
+    {
+     "part": "flutes",
+     "octave": 1,
+     "vel": -4
+    }
+   ]
+  },
+  {
+   "part": "violins",
+   "lead": true,
+   "motif": "home",
+   "at": 96,
+   "gain": 8,
+   "double": [
+    {
+     "part": "flutes",
+     "octave": 1,
+     "vel": -4
+    }
+   ]
+  },
+  {
+   "part": "english_horn",
+   "lead": true,
+   "motif": "hook_wide",
+   "at": 108,
+   "octave": -1,
+   "gain": 11
+  },
+  {
+   "part": "english_horn",
+   "lead": true,
+   "motif": "hook_wide",
+   "at": 132,
+   "octave": -1,
+   "gain": 11
+  },
+  {
+   "part": "cellos",
+   "lead": true,
+   "notes": [
+    [
+     108,
+     "C#3",
+     6
+    ],
+    [
+     114,
+     "C3",
+     6
+    ],
+    [
+     120,
+     "B2",
+     6
+    ],
+    [
+     126,
+     "A#2",
+     6
+    ],
+    [
+     132,
+     "A2",
+     6
+    ],
+    [
+     138,
+     "G#2",
+     6
+    ],
+    [
+     144,
+     "A2",
+     6
+    ],
+    [
+     150,
+     "G#2",
+     6
+    ]
+   ],
+   "gain": 6
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "hook",
+   "at": 156,
+   "gain": 5,
+   "double": [
+    {
+     "part": "trombones",
+     "octave": -1,
+     "vel": -4
+    },
+    {
+     "part": "violins",
+     "octave": 2
+    },
+    {
+     "part": "flutes",
+     "octave": 2
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "answer",
+   "at": 168,
+   "gain": 5,
+   "double": [
+    {
+     "part": "trombones",
+     "octave": -1,
+     "vel": -4
+    },
+    {
+     "part": "violins",
+     "octave": 2
+    },
+    {
+     "part": "flutes",
+     "octave": 2
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "hook",
+   "at": 180,
+   "gain": 5,
+   "double": [
+    {
+     "part": "trombones",
+     "octave": -1,
+     "vel": -4
+    },
+    {
+     "part": "violins",
+     "octave": 2
+    },
+    {
+     "part": "flutes",
+     "octave": 2
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "home",
+   "at": 192,
+   "gain": 5,
+   "double": [
+    {
+     "part": "trombones",
+     "octave": -1,
+     "vel": -4
+    },
+    {
+     "part": "violins",
+     "octave": 2
+    },
+    {
+     "part": "flutes",
+     "octave": 2
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "hook",
+   "at": 204,
+   "gain": 5,
+   "double": [
+    {
+     "part": "trumpets",
+     "octave": 0,
+     "vel": -4
+    },
+    {
+     "part": "violins",
+     "octave": 2
+    },
+    {
+     "part": "flutes",
+     "octave": 2
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "answer",
+   "at": 216,
+   "gain": 5,
+   "double": [
+    {
+     "part": "trumpets",
+     "octave": 0,
+     "vel": -4
+    },
+    {
+     "part": "violins",
+     "octave": 2
+    },
+    {
+     "part": "flutes",
+     "octave": 2
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "hook",
+   "at": 228,
+   "gain": 5,
+   "double": [
+    {
+     "part": "trumpets",
+     "octave": 0,
+     "vel": -4
+    },
+    {
+     "part": "violins",
+     "octave": 2
+    },
+    {
+     "part": "flutes",
+     "octave": 2
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "horns",
+   "lead": true,
+   "motif": "home",
+   "at": 240,
+   "gain": 5,
+   "double": [
+    {
+     "part": "trumpets",
+     "octave": 0,
+     "vel": -4
+    },
+    {
+     "part": "violins",
+     "octave": 2
+    },
+    {
+     "part": "flutes",
+     "octave": 2
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "cellos",
+   "lead": true,
+   "motif": "hook",
+   "at": 252,
+   "gain": 8,
+   "double": [
+    {
+     "part": "bassoons",
+     "vel": -4
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "cellos",
+   "lead": true,
+   "motif": "answer",
+   "at": 264,
+   "gain": 8,
+   "double": [
+    {
+     "part": "bassoons",
+     "vel": -4
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "cellos",
+   "lead": true,
+   "motif": "hook",
+   "at": 276,
+   "gain": 8,
+   "double": [
+    {
+     "part": "bassoons",
+     "vel": -4
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "cellos",
+   "lead": true,
+   "motif": "home",
+   "at": 288,
+   "gain": 8,
+   "double": [
+    {
+     "part": "bassoons",
+     "vel": -4
+    }
+   ],
+   "octave": -1
+  },
+  {
+   "part": "horn_solo",
+   "lead": true,
+   "motif": "hook",
+   "at": 300,
+   "octave": -1,
+   "gain": 7
+  }
+ ],
+ "patterns": [
+  {
+   "part": "taiko",
+   "note": "root",
+   "from": 0,
+   "to": 12,
+   "pattern": "x     ",
+   "step": 1
+  },
+  {
+   "part": "taiko",
+   "note": "root",
+   "from": 12,
+   "to": 108,
+   "pattern": "x  x  ",
+   "step": 1,
+   "vel": -8
+  },
+  {
+   "part": "timpani",
+   "note": "root",
+   "from": 60,
+   "to": 108,
+   "pattern": "x     ",
+   "step": 1,
+   "vel": -8
+  },
+  {
+   "part": "taiko",
+   "note": "root",
+   "from": 108,
+   "to": 150,
+   "pattern": "x     ",
+   "step": 1,
+   "vel": -16
+  },
+  {
+   "part": "taiko",
+   "note": "root",
+   "from": 150,
+   "to": 324,
+   "pattern": "x  x x",
+   "step": 1,
+   "vel": -4
+  },
+  {
+   "part": "timpani",
+   "note": "root",
+   "from": 156,
+   "to": 252,
+   "pattern": "x  x  ",
+   "step": 1,
+   "vel": -6
+  },
+  {
+   "part": "taiko",
+   "note": "root",
+   "from": 318,
+   "to": 324,
+   "pattern": "xxxxxx",
+   "step": 1
+  }
+ ],
+ "hits": [
+  {
+   "part": "reverse_cymbal",
+   "note": "C4",
+   "at": 148,
+   "len": 8,
+   "vel": 104
+  },
+  {
+   "part": "kit",
+   "note": "crash",
+   "at": 156,
+   "len": 6,
+   "vel": 116
+  }
+ ],
+ "layers": {
+  "rhythm": [
+   "taiko",
+   "timpani",
+   "trombones",
+   "reverse_cymbal",
+   "kit"
+  ],
+  "melody": [
+   "horn_solo",
+   "english_horn"
+  ]
+ }
+}

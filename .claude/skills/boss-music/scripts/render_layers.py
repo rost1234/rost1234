@@ -98,7 +98,7 @@ def main() -> None:
         _write_ogg(f, wet, rate)
         files[k] = f.name
     entry = {"id": a.id, "name": name, "layers": files, "seconds": round(len(mastered) / rate, 4),
-             "loopStart": round(at / rate, 4), "bpm": tempo, "beatsPerBar": BEATS_PER_BAR.get(meter, 4),
+             "loopStart": round(at / rate, 4), "bpm": tempo, "meter": meter, "beatsPerBar": BEATS_PER_BAR.get(meter, 4),
              "barSeconds": round(bar_s, 6)}
     _manifest(a, "stages", entry)
     print(json.dumps(entry, indent=1))

@@ -1,0 +1,121 @@
+{
+ "title": "Thornmother: the fire catches (rise into stage 2)",
+ "tune": {
+  "seed": "Thornmother",
+  "mode": "minor",
+  "key": "C#4",
+  "meter": "4/4"
+ },
+ "statements": [],
+ "tempo": 156,
+ "length": 10,
+ "lands_at": 8,
+ "role": "rise",
+ "dynamics": [
+  [
+   0,
+   66
+  ],
+  [
+   8,
+   124
+  ],
+  [
+   10,
+   112
+  ]
+ ],
+ "progression": {
+  "at": 0,
+  "chords": "V V i*0.5"
+ },
+ "harmony": [
+  {
+   "part": "tremolo",
+   "from": 0,
+   "to": 8,
+   "play": "chord",
+   "range": [
+    "G#3",
+    "D#5"
+   ],
+   "pattern": "x-------",
+   "step": 1
+  },
+  {
+   "part": "violins2",
+   "from": 4,
+   "to": 8,
+   "play": "arpeggio",
+   "range": [
+    "G#4",
+    "G#5"
+   ],
+   "pattern": "oooooooo",
+   "step": 0.5,
+   "order": "up",
+   "legato": 0.4
+  }
+ ],
+ "lines": [
+  {
+   "part": "brass",
+   "notes": [
+    [
+     0,
+     "G#2",
+     8
+    ],
+    [
+     0,
+     "D#3",
+     8
+    ],
+    [
+     0,
+     "G#3",
+     8
+    ],
+    [
+     0,
+     "B#3",
+     8
+    ]
+   ],
+   "vel": -6
+  }
+ ],
+ "patterns": [
+  {
+   "part": "taiko",
+   "note": "root",
+   "from": 4,
+   "to": 8,
+   "pattern": "x.x.x.x.",
+   "step": 0.5
+  }
+ ],
+ "hits": [
+  {
+   "part": "reverse_cymbal",
+   "note": "C4",
+   "at": 4,
+   "len": 4,
+   "vel": 110
+  },
+  {
+   "part": "kit",
+   "note": "crash",
+   "at": 8,
+   "len": 2,
+   "vel": 120
+  },
+  {
+   "part": "timpani",
+   "note": "C#3",
+   "at": 8,
+   "len": 2,
+   "vel": 124
+  }
+ ]
+}

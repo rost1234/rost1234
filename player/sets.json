@@ -1,3 +1,10 @@
 [
- {"id": "clockwork-abbot", "manifest": "../music/clockwork-abbot/layers/manifest.json"}
+ {
+  "id": "clockwork-abbot",
+  "manifest": "../music/clockwork-abbot/layers/manifest.json"
+ },
+ {
+  "id": "thornmother",
+  "manifest": "../music/thornmother/layers/manifest.json"
+ }
 ]

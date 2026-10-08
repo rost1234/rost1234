@@ -1,0 +1,71 @@
+{
+ "title": "ואל'ת'ורן, אם הקוצים",
+ "intensities": {
+  "calm": [
+   "bed"
+  ],
+  "tense": [
+   "bed",
+   "rhythm"
+  ],
+  "full": [
+   "bed",
+   "rhythm",
+   "melody"
+  ]
+ },
+ "stages": [
+  {
+   "id": "stage1",
+   "name": "הציד",
+   "layers": {
+    "bed": "stage1-bed.ogg",
+    "rhythm": "stage1-rhythm.ogg",
+    "melody": "stage1-melody.ogg"
+   },
+   "seconds": 67.5,
+   "loopStart": 2.5,
+   "bpm": 96.0,
+   "beatsPerBar": 2,
+   "barSeconds": 1.25,
+   "meter": "6/8"
+  },
+  {
+   "id": "stage2",
+   "name": "אש בער",
+   "layers": {
+    "bed": "stage2-bed.ogg",
+    "rhythm": "stage2-rhythm.ogg",
+    "melody": "stage2-melody.ogg"
+   },
+   "seconds": 67.6923,
+   "loopStart": 3.0769,
+   "bpm": 156.0,
+   "beatsPerBar": 4,
+   "barSeconds": 1.538462,
+   "meter": "4/4"
+  }
+ ],
+ "cues": [
+  {
+   "id": "rise",
+   "name": "האש נתפסת",
+   "file": "rise.ogg",
+   "seconds": 6.6461,
+   "bpm": 156.0,
+   "beatsPerBar": 4,
+   "barSeconds": 1.538462,
+   "landsAt": 3.0769,
+   "to": "stage2"
+  },
+  {
+   "id": "ending",
+   "name": "הזרע",
+   "file": "ending.ogg",
+   "seconds": 20.9818,
+   "bpm": 66.0,
+   "beatsPerBar": 4,
+   "barSeconds": 3.636364
+  }
+ ]
+}
