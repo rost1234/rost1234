@@ -1,0 +1,632 @@
+diff --git a/lib/layered_player.js b/lib/layered_player.js
+new file mode 100644
+index 0000000..7aba69c
+--- /dev/null
++++ b/lib/layered_player.js
+@@ -0,0 +1,332 @@
++/*
++ * LayeredPlayer - looping boss music in layers, switched on the bar.
++ *
++ * A "set" is described by a manifest.json (written by
++ * .claude/skills/boss-music/scripts/render_layers.py):
++ *
++ *   { "title": "...",
++ *     "intensities": { "calm": ["bed"], "tense": ["bed", "rhythm"], "full": ["bed", "rhythm", "melody"] },
++ *     "stages": [ { "id": "stage1", "name": "...", "layers": { "bed": "stage1-bed.ogg", ... },
++ *                   "seconds": 88.69, "loopStart": 5.21, "bpm": 138, "beatsPerBar": 3, "barSeconds": 1.304 } ],
++ *     "cues":   [ { "id": "rise", "file": "rise.ogg", "seconds": 6.37, "landsAt": 2.857 },
++ *                 { "id": "ending", "file": "ending.ogg", "seconds": 9.2 } ] }
++ *
++ * Every layer of a stage is the same length with the same loop point, so the layers
++ * play in sample-accurate step: the entry [0, loopStart) once, then [loopStart, end)
++ * over and over, for as long as the scene takes. Changing the intensity fades layers
++ * in and out; changing the stage waits for the next bar line.
++ *
++ * No dependencies, no build step: load it with a plain <script src="layered-player.js">
++ * (it defines `window.LayeredPlayer`), or require() it.
++ *
++ *   const p = new LayeredPlayer();
++ *   await p.load("music/clockwork-abbot/layers/manifest.json");
++ *   p.start("stage1", { intensity: "calm" });   // call from a click: browsers need a gesture
++ *   p.setIntensity("full");                     // fades over a bar
++ *   p.goTo("stage2", { via: "rise" });          // on the next bar line, through the rise
++ *   p.playCue("ending");                        // on the next bar line; the loop stops
++ *
++ * To follow a shared clock (every player at a table hearing the same bar), pass
++ * `elapsed` - seconds since the stage started for everyone - to start().
++ */
++(function (root) {
++  "use strict";
++
++  const EPS = 0.03;          // (seconds) the soonest a change can be scheduled
++  const XFADE = 0.6;         // (seconds) the old stage's fade under the new one's entry
++
++  class LayeredPlayer {
++    constructor(opts = {}) {
++      this.ctx = opts.context || null;
++      this._dest = opts.destination || null;
++      this.manifest = null;
++      this.base = "";
++      this.buffers = new Map();         // url -> AudioBuffer
++      this.voice = null;                // the stage now playing
++      this.intensity = opts.intensity || "full";
++      this.volume = opts.volume == null ? 0.8 : opts.volume;
++      this.pending = null;              // {kind, at, ...} a change waiting for its bar line
++      this.listeners = {};
++      this._timers = [];
++    }
++
++    // --- events: "state" (anything changed), "bar" ({bar, stage}), "error" ---
++    on(name, fn) { (this.listeners[name] = this.listeners[name] || []).push(fn); return this; }
++    _emit(name, data) { (this.listeners[name] || []).forEach((fn) => { try { fn(data); } catch (e) { console.error(e); } }); }
++
++    _audio() {
++      if (!this.ctx) {
++        const AC = root.AudioContext || root.webkitAudioContext;
++        this.ctx = new AC();
++      }
++      if (!this.master) {
++        // A gentle limiter: the layers are mastered together, but a stage change overlaps two.
++        this.limiter = this.ctx.createDynamicsCompressor();
++        this.limiter.threshold.value = -2;
++        this.limiter.knee.value = 2;
++        this.limiter.ratio.value = 20;
++        this.limiter.attack.value = 0.003;
++        this.limiter.release.value = 0.25;
++        this.master = this.ctx.createGain();
++        this.master.gain.value = this.volume;
++        this.master.connect(this.limiter);
++        this.limiter.connect(this._dest || this.ctx.destination);
++      }
++      return this.ctx;
++    }
++
++    /**
++     * Fetch and decode a set: `source` is the manifest's URL, or the manifest object itself.
++     * `onProgress(done, total)` is called as files arrive. `opts.resolve(file)` -> the URL
++     * to fetch a file from (default: next to the manifest).
++     */
++    async load(source, onProgress, opts = {}) {
++      const ctx = this._audio();
++      const here = root.location ? root.location.href : undefined;
++      if (typeof source === "string") {
++        const res = await fetch(source);
++        if (!res.ok) throw new Error(`manifest ${source}: HTTP ${res.status}`);
++        this.manifest = await res.json();
++        this.base = new URL(".", new URL(source, here)).href;
++      } else {
++        this.manifest = source;
++        this.base = here || "";
++      }
++      this.resolve = opts.resolve || ((f) => new URL(f, this.base).href);
++      const urls = [];
++      for (const s of this.manifest.stages || []) for (const f of Object.values(s.layers)) urls.push(f);
++      for (const c of this.manifest.cues || []) urls.push(c.file);
++      let done = 0;
++      await Promise.all(urls.map(async (f) => {
++        const url = this.resolve(f);
++        const r = await fetch(url);
++        if (!r.ok) throw new Error(`${f}: HTTP ${r.status}`);
++        const data = await r.arrayBuffer();
++        const buf = await new Promise((ok, bad) => ctx.decodeAudioData(data, ok, bad));
++        this.buffers.set(url, buf);
++        done += 1;
++        if (onProgress) onProgress(done, urls.length);
++      }));
++      this._emit("state", this.state());
++      return this.manifest;
++    }
++
++    stage(id) { return (this.manifest.stages || []).find((s) => s.id === id); }
++    cue(id) { return (this.manifest.cues || []).find((c) => c.id === id); }
++    _buf(file) { return this.buffers.get(this.resolve(file)); }
++    _layersOn(name) {
++      const m = (this.manifest && this.manifest.intensities) || {};
++      return Array.isArray(name) ? name : (m[name] || ["bed", "rhythm", "melody"]);
++    }
++
++    /** Where a stage is (seconds into its file) `e` seconds after it started. */
++    static position(stage, e) {
++      const dur = stage.seconds, ls = stage.loopStart || 0;
++      if (e < dur) return Math.max(0, e);
++      return ls + ((e - ls) % (dur - ls));
++    }
++
++    /** The audio-clock time of the next bar line of the stage playing (or now). */
++    nextBar(after) {
++      const ctx = this._audio();
++      const t = Math.max(after == null ? ctx.currentTime : after, ctx.currentTime) + EPS;
++      const v = this.voice;
++      if (!v) return t;
++      const bar = v.stage.barSeconds;
++      return v.t0 + Math.ceil((t - v.t0) / bar) * bar;
++    }
++
++    /** `at` (a bar line a shared clock chose), or - when it has already passed - the next one. */
++    _barAt(at) {
++      if (at == null) return this.nextBar();
++      return at >= this.ctx.currentTime + EPS ? at : this.nextBar();
++    }
++
++    _startVoice(stage, at, elapsed, fadeIn) {
++      const ctx = this.ctx;
++      const out = ctx.createGain();
++      out.gain.value = 0;
++      out.connect(this.master);
++      const on = this._layersOn(this.intensity);
++      const voice = { stage, out, sources: {}, gains: {}, t0: at - (elapsed || 0) };
++      const offset = LayeredPlayer.position(stage, elapsed || 0);
++      for (const [name, file] of Object.entries(stage.layers)) {
++        const buf = this._buf(file);
++        if (!buf) continue;
++        const g = ctx.createGain();
++        g.gain.value = on.includes(name) ? 1 : 0;
++        g.connect(out);
++        const src = ctx.createBufferSource();
++        src.buffer = buf;
++        src.loop = true;
++        src.loopStart = Math.min(stage.loopStart || 0, buf.duration - 0.01);
++        src.loopEnd = buf.duration;
++        src.connect(g);
++        src.start(at, offset);
++        voice.sources[name] = src;
++        voice.gains[name] = g;
++      }
++      out.gain.setValueAtTime(0, at);
++      out.gain.linearRampToValueAtTime(1, at + (fadeIn || 0.02));
++      return voice;
++    }
++
++    _endVoice(voice, at, fade) {
++      if (!voice) return;
++      const g = voice.out.gain;
++      g.cancelScheduledValues(at);
++      g.setValueAtTime(g.value, Math.max(this.ctx.currentTime, at - 0.001));
++      g.linearRampToValueAtTime(0, at + fade);
++      for (const s of Object.values(voice.sources)) { try { s.stop(at + fade + 0.05); } catch (e) { /* stopped */ } }
++      this._later(at + fade + 0.2, () => voice.out.disconnect());
++    }
++
++    _later(atCtx, fn) {
++      const ms = Math.max(0, (atCtx - this.ctx.currentTime) * 1000);
++      const id = setTimeout(() => { this._timers = this._timers.filter((x) => x !== id); fn(); }, ms);
++      this._timers.push(id);
++    }
++
++    /**
++     * Start a stage now (no bar to wait for). `intensity`: a name from the manifest or a
++     * list of layers. `elapsed`: seconds since it started on a shared clock (late joiners).
++     * `at`: an audio-clock time to start it at instead of now.
++     */
++    start(stageId, opts = {}) {
++      const ctx = this._audio();
++      if (ctx.state === "suspended") ctx.resume();
++      const stage = this.stage(stageId);
++      if (!stage) throw new Error(`no stage ${stageId}`);
++      if (opts.intensity) this.intensity = opts.intensity;
++      this._cancelPending();
++      const at = opts.at != null ? Math.max(opts.at, ctx.currentTime + EPS) : ctx.currentTime + EPS;
++      if (this.voice) this._endVoice(this.voice, at, 0.4);
++      this.voice = this._startVoice(stage, at, opts.elapsed || 0, opts.elapsed ? 1.0 : 0.02);
++      this._tick();
++      this._emit("state", this.state());
++    }
++
++    /** Fade layers to an intensity (a name or a list of layers) over `fade` seconds (default: a bar). */
++    setIntensity(name, opts = {}) {
++      this.intensity = name;
++      const v = this.voice;
++      if (v) {
++        const t = this.ctx.currentTime;
++        const fade = opts.fade == null ? Math.max(1, v.stage.barSeconds) : opts.fade;
++        const on = this._layersOn(name);
++        for (const [layer, g] of Object.entries(v.gains)) {
++          g.gain.cancelScheduledValues(t);
++          g.gain.setValueAtTime(g.gain.value, t);
++          g.gain.linearRampToValueAtTime(on.includes(layer) ? 1 : 0, t + fade);
++        }
++      }
++      this._emit("state", this.state());
++    }
++
++    /**
++     * Move to another stage on the next bar line. `via`: a cue id (a rise) played from
++     * that bar line; the new stage starts where it lands (its "landsAt"), the old loop
++     * plays on under it until then. `opts.at`: the audio-clock time of that bar line
++     * instead (a shared clock decided it).
++     */
++    goTo(stageId, opts = {}) {
++      const ctx = this._audio();
++      const stage = this.stage(stageId);
++      if (!stage) throw new Error(`no stage ${stageId}`);
++      if (!this.voice) return this.start(stageId, opts);
++      if (opts.intensity) this.intensity = opts.intensity;
++      this._cancelPending();
++      const at = this._barAt(opts.at);
++      const via = opts.via ? this.cue(opts.via) : null;
++      const lands = via ? at + (via.landsAt || via.seconds) : at;
++      const old = this.voice;
++      if (via) this._playBuffer(via.file, at);
++      this.pending = { kind: "stage", to: stageId, via: opts.via || null, at: lands };
++      this._endVoice(old, lands, via ? 0.12 : XFADE);
++      this.voice = this._startVoice(stage, lands, 0, 0.02);
++      this._later(lands, () => { this.pending = null; this._emit("state", this.state()); });
++      this._emit("state", this.state());
++    }
++
++    /** Play a one-shot cue (an ending) on the next bar line (or `opts.at`); the loop stops under its attack. */
++    playCue(cueId, opts = {}) {
++      const cue = this.cue(cueId);
++      if (!cue) throw new Error(`no cue ${cueId}`);
++      this._audio();
++      this._cancelPending();
++      const at = opts.at != null ? this._barAt(opts.at)
++        : opts.now || !this.voice ? this.ctx.currentTime + EPS : this.nextBar();
++      this._playBuffer(cue.file, at);
++      if (opts.keepLoop !== true && this.voice) {
++        const v = this.voice;
++        this.voice = null;
++        this._endVoice(v, at, 0.15);
++      }
++      this.pending = { kind: "cue", cue: cueId, at };
++      this._later(at, () => { this.pending = null; this._emit("state", this.state()); });
++      this._emit("state", this.state());
++    }
++
++    _playBuffer(file, at) {
++      const buf = this._buf(file);
++      if (!buf) return;
++      const src = this.ctx.createBufferSource();
++      src.buffer = buf;
++      src.connect(this.master);
++      src.start(at);
++    }
++
++    _cancelPending() {
++      // (a change already scheduled on the audio clock stays scheduled; this only clears the note of it)
++      this.pending = null;
++    }
++
++    /** Fade everything out over `fade` seconds. */
++    stop(opts = {}) {
++      if (!this.ctx) return;
++      const fade = opts.fade == null ? 1.5 : opts.fade;
++      this._cancelPending();
++      this._endVoice(this.voice, this.ctx.currentTime + EPS, fade);
++      this.voice = null;
++      this._emit("state", this.state());
++    }
++
++    setVolume(v) {
++      this.volume = Math.max(0, Math.min(1, v));
++      if (this.master) this.master.gain.setTargetAtTime(this.volume, this.ctx.currentTime, 0.05);
++    }
++
++    /** What is playing: {stage, intensity, bar, beat, pending, playing}. */
++    state() {
++      const v = this.voice, ctx = this.ctx;
++      let bar = null, beat = null, inLoop = false;
++      if (v && ctx && ctx.currentTime >= v.t0) {
++        const e = ctx.currentTime - v.t0, s = v.stage;
++        const pos = LayeredPlayer.position(s, e);
++        bar = Math.floor(pos / s.barSeconds);
++        beat = Math.floor((pos % s.barSeconds) / (s.barSeconds / s.beatsPerBar));
++        inLoop = e >= (s.loopStart || 0);
++      }
++      return {
++        loaded: !!this.manifest, playing: !!v, stage: v ? v.stage.id : null,
++        intensity: this.intensity, bar, beat, inLoop,
++        pending: this.pending ? { ...this.pending, inSeconds: ctx ? Math.max(0, this.pending.at - ctx.currentTime) : 0 } : null,
++      };
++    }
++
++    _tick() {
++      if (this._raf) return;
++      let last = null;
++      const step = () => {
++        const s = this.state();
++        const key = `${s.stage}:${s.bar}:${s.beat}`;
++        if (key !== last) { last = key; this._emit("bar", s); }
++        this._raf = this.voice || this.pending ? (root.requestAnimationFrame || setTimeout)(step, 16) : null;
++      };
++      step();
++    }
++  }
++
++  root.LayeredPlayer = LayeredPlayer;
++  if (typeof module !== "undefined" && module.exports) module.exports = { LayeredPlayer };
++})(typeof window !== "undefined" ? window : globalThis);
+diff --git a/lib/table_page.html b/lib/table_page.html
+index b2b87bf..5921290 100644
+--- a/lib/table_page.html
++++ b/lib/table_page.html
+@@ -687,6 +687,7 @@
+   <div id="sheet-body"></div>
+ </dialog>
+ 
++<script src="/layered-player.js"></script>
+ <script>
+ (function () {
+   "use strict";
+@@ -1543,6 +1544,52 @@
+       },
+     };
+   }
++  // A layered set (lib/layered_player.js, gm-table.sh music layers): every layer of the
++  // stage in step, faded in and out by the intensity. The table decides the bar line a
++  // stage change or an ending lands on, so every page switches on the same beat.
++  function layeredTrack(m) {
++    const ctx = audioCtx();
++    const out = ctx.createGain();
++    out.gain.value = musicLevel();
++    out.connect(ctx.destination);
++    const player = new LayeredPlayer({ context: ctx, destination: out, intensity: m.intensity, volume: 1 });
++    const tableNow = () => (Date.now() + skew) / 1000;
++    const ctxAt = (t) => ctx.currentTime + (t - tableNow());
++    const url = (f) => "/music/" + encodeURIComponent(f) + "?code=" + encodeURIComponent(code);
++    let live = true, ready = false, shown = { ...m };
++    const begin = () => {
++      if (!live || !ready) return;
++      if (ctx.state === "suspended") { pendingPlay = begin; setStatus(t("tapForMusic"), true); return; }
++      if (shown.cue && tableNow() >= shown.cue.at) return;          // (it ended before we joined)
++      const e = tableNow() - (shown.started_at || 0);
++      player.start(shown.stage, e >= 0 ? { elapsed: e, intensity: shown.intensity }
++                                       : { at: ctxAt(shown.started_at), intensity: shown.intensity });
++      if (shown.cue) player.playCue(shown.cue.id, { at: ctxAt(shown.cue.at) });
++    };
++    player.load(m.layers, null, { resolve: url })
++      .then(() => { ready = true; begin(); })
++      .catch(() => setStatus("🎵 " + (m.title || "") + " ✗", true));
++    return {
++      update(n) {
++        const was = shown;
++        shown = { ...n };
++        if (!live || !ready) return;
++        if (!player.state().playing) { if (!n.cue) begin(); return; }      // (after an ending, or before a tap)
++        if (n.stage !== was.stage || n.started_at !== was.started_at) {
++          player.goTo(n.stage, { via: n.via || null, at: ctxAt(n.via ? n.via_at : n.started_at) });
++        }
++        if (n.intensity !== was.intensity) player.setIntensity(n.intensity);
++        if (n.cue && (!was.cue || was.cue.at !== n.cue.at)) player.playCue(n.cue.id, { at: ctxAt(n.cue.at) });
++      },
++      setLevel(v) { out.gain.setTargetAtTime(v, ctx.currentTime, 0.1); },
++      stop(ms = 1200, after = 0) {
++        live = false;
++        setTimeout(() => player.stop({ fade: ms / 1000 }), after * 1000);
++        setTimeout(() => out.disconnect(), after * 1000 + ms + 400);
++      },
++    };
++  }
++
+   // A boss fight's sting (a rise, a break, a hit): played once over the music, in step
+   // with the table; a late joiner hears it only if it's still sounding.
+   let stingId = null;
+@@ -1566,7 +1613,7 @@
+     const changed = !musicState || !m || (musicState.id !== m.id);
+     musicState = m || null;
+     updateMusicToggle();
+-    if (!changed) return levelChanged();
++    if (!changed) { if (track && track.update && m) track.update(m); return levelChanged(); }
+     // A boss fight's cues cut in on time (combat starts at once; a fail cue cuts straight
+     // in). A rise builds over the old loop until the new stage lands; a break's impact
+     // cuts it.
+@@ -1579,6 +1626,7 @@
+     if (!m || !m.track || !musicOn) return;
+     track = m.kind === "ambient" ? ambientTrack(m)
+           : m.kind === "theme" ? ambientTrack(m, themeBuilder(m.src, !!m.boss))
++          : m.kind === "layered" && window.LayeredPlayer && audioCtx() ? layeredTrack(m)
+           : m.loop && m.loop_from > 0 && audioCtx() ? entryTrack(m)
+           : fileTrack(m);
+   }
+diff --git a/lib/table_server.py b/lib/table_server.py
+index d50ce02..4842638 100644
+--- a/lib/table_server.py
++++ b/lib/table_server.py
+@@ -666,6 +666,79 @@ class TableState:
+             self._save_music()
+             return dict(self.music)
+ 
++    # --- layered music: a set's stages in layers (bed, rhythm, melody), switched on the bar ---
++    # A set is <name>.layers.json in music/ (lib/layered_player.js reads it), its audio files
++    # beside it. The page plays every layer of the stage in step and fades layers in and out
++    # by the intensity; a stage change waits for the next bar line, which the table decides
++    # here (from the stage's own clock) so every player switches on the same beat.
++    LAYERS_LEAD = 4.5           # (seconds) the soonest bar line a change can land on: every page
++                                # hears of it first (they ask for the table's state every 4 s)
++
++    def layered_set(self, name: str) -> Optional[Dict[str, Any]]:
++        """A layered set's manifest by name (music/<name>.layers.json), or None."""
++        stem = score_music.slug(str(name))
++        for d in self.music_dirs():
++            f = d / f"{stem}.layers.json"
++            if f.is_file():
++                return json.loads(f.read_text(encoding="utf-8"))
++        return None
++
++    def set_layers(self, name: str, stage: Optional[str] = None, intensity: Optional[str] = None,
++                   via: Optional[str] = None, cue: Optional[str] = None) -> Dict[str, Any]:
++        """Play a layered set, or move the one playing on: to a stage (on the next bar line;
++        through a cue that rises into it, ``via``), to an intensity (its layers fade), or to
++        a one-shot cue (an ending: on the next bar line, the loop stops under it). Raises
++        ValueError for a set, stage, intensity or cue that isn't there."""
++        import math
++        man = self.layered_set(name)
++        if man is None:
++            raise ValueError(f"no layered set {name}: music/{score_music.slug(str(name))}.layers.json")
++        stages = {s["id"]: s for s in man.get("stages") or []}
++        cues = {c["id"]: c for c in man.get("cues") or []}
++        if not stages:
++            raise ValueError(f"the set {name} has no stages")
++        stage_id = None
++        if stage is not None:
++            stage_id = f"stage{stage}" if str(stage).isdigit() else str(stage)
++            if stage_id not in stages:
++                raise ValueError(f"no {stage_id} in {name} (it has {', '.join(stages)})")
++        if intensity is not None and intensity not in (man.get("intensities") or {}):
++            raise ValueError(f"no intensity {intensity} (one of {', '.join(man.get('intensities') or {})})")
++        for c in (via, cue):
++            if c is not None and c not in cues:
++                raise ValueError(f"no cue {c} in {name} (it has {', '.join(cues) or 'none'})")
++        set_name = score_music.slug(str(name))
++        now = time.time()
++        with self.lock:
++            m = self.music
++            playing = m.get("kind") == "layered" and m.get("src") == set_name and m.get("track")
++            if playing and m.get("cue") and cue is None:
++                playing = False                       # (it ended: anything after an ending starts it again)
++            if not playing:
++                self.music_revert = None
++                self.music = {"id": int(m.get("id", 0)) + 1, "track": f"layers:{set_name}", "kind": "layered",
++                              "src": set_name, "title": man.get("title") or set_name, "volume": 0.7,
++                              "loop": True, "mood": "boss", "boss": True, "layers": man,
++                              "stage": stage_id or next(iter(stages)), "intensity": intensity or "full",
++                              "started_at": now}
++            else:
++                m = dict(m)
++                cur = stages[m["stage"]]
++                bar = float(cur["barSeconds"])
++                e = now + self.LAYERS_LEAD - float(m["started_at"])
++                boundary = float(m["started_at"]) + max(0, math.ceil(e / bar)) * bar
++                if stage_id is not None and stage_id != m["stage"]:
++                    lands = boundary + (float(cues[via].get("landsAt") or cues[via]["seconds"]) if via else 0.0)
++                    m.update(stage=stage_id, started_at=lands, via=via, via_at=boundary if via else None)
++                    m.pop("cue", None)
++                if intensity is not None:
++                    m["intensity"] = intensity
++                if cue is not None:
++                    m["cue"] = {"id": cue, "at": boundary}
++                self.music = m
++            self._save_music()
++            return dict(self.music)
++
+     # --- automatic music by scene mood ---
+     @property
+     def auto_music(self) -> bool:
+@@ -3395,6 +3468,9 @@ def make_handler(state: TableState, code: str, host_key: str):
+             q = {k: v[0] for k, v in parse_qs(url.query).items()}
+             if url.path in ("/", "/index.html"):
+                 return self._send(200, page_html().encode("utf-8"), "text/html; charset=utf-8")
++            if url.path == "/layered-player.js":
++                return self._send(200, (Path(__file__).parent / "layered_player.js").read_bytes(),
++                                  "application/javascript; charset=utf-8")
+             if url.path.startswith("/music/"):
+                 if not self._code_ok(q.get("code")):
+                     return self._err("bad table code", 403)
+@@ -3797,6 +3873,14 @@ def make_handler(state: TableState, code: str, host_key: str):
+                 r = state.atone(str(data.get("pc", "")))
+                 return self._json(r, 200 if r["ok"] else 409)
+             if path == "/api/gm/music":
++                if data.get("layers"):
++                    try:
++                        music = state.set_layers(str(data["layers"])[:80], stage=data.get("stage"),
++                                                 intensity=data.get("intensity"), via=data.get("via"),
++                                                 cue=data.get("cue"))
++                    except ValueError as e:
++                        return self._err(str(e))
++                    return self._json({"ok": True, "music": music})
+                 if data.get("boss_fight"):
+                     try:
+                         music = state.boss_music(str(data["boss_fight"])[:80], stage=data.get("stage"),
+@@ -4415,8 +4499,10 @@ def main() -> None:
+     mu.add_argument("more", nargs="?", help="After 'boss <name> stage': the stage; after 'boss <name> end': "
+                                             "victory, requiem, escape or wipe")
+     mu.add_argument("--boss", action="store_true", help="With 'theme <enemy>': the boss version")
+-    mu.add_argument("--via", choices=["rise", "break"],
++    mu.add_argument("--via",
+                     help="With 'boss <name> stage N': through a rise (escalation) or a break (transformation)")
++    mu.add_argument("--intensity", help="With 'layers <set>': calm, tense or full (the set's own names)")
++    mu.add_argument("--cue", help="With 'layers <set>': play a one-shot cue (an ending) on the next bar")
+     mu.add_argument("--volume", type=float, default=0.5, help="0.0 – 1.0 (default 0.5)")
+     mu.add_argument("--no-loop", action="store_true", help="Play once instead of looping")
+     mu.add_argument("--title", help="What players see (default: from the file name)")
+@@ -4714,6 +4800,20 @@ def main() -> None:
+             m = r.get("music") or {}
+             print(f"MUSIC {m.get('title')} [{m.get('track')}]")
+             return
++        if args.track == "layers":
++            if not args.value:
++                sys.exit('Usage: gm-table.sh music layers "<set>" [stage N] [--intensity calm|tense|full] '
++                         '[--via rise] [--cue <ending>]')
++            body = {"layers": args.value, "intensity": args.intensity, "cue": args.cue, "via": args.via}
++            if args.extra == "stage" or (args.extra or "").isdigit():
++                body["stage"] = args.more if args.extra == "stage" else args.extra
++            r = _call(campaign_dir, "POST", "/api/gm/music", body)
++            if not r.get("ok"):
++                sys.exit(f"[ERROR] {r.get('error')}")
++            m = r["music"]
++            print(f"MUSIC {m.get('title')} [{m.get('stage')}, {m.get('intensity')}]"
++                  + (f" + {m['cue']['id']}" if m.get("cue") else ""))
++            return
+         if args.track == "boss":
+             what = args.extra
+             if not args.value or what not in ("stage", "hit", "end"):
+diff --git a/tests/test_table_server.py b/tests/test_table_server.py
+index 1cc14dc..1915f57 100644
+--- a/tests/test_table_server.py
++++ b/tests/test_table_server.py
+@@ -2291,3 +2291,65 @@ def test_the_map_shows_where_the_party_has_been_and_what_they_saw_from_there(tab
+     by = {p["name"]: p for p in m["places"]}
+     assert by["Market Square"]["label"] == "כיכר השוק"
+     assert by["The Sunken Crypt"]["label"] == "The Sunken Crypt"
++
++
++def _layered_set(camp, name="horologe"):
++    """A layered set: music/<name>.layers.json and its (dummy) audio files."""
++    music = camp / "music"
++    music.mkdir(exist_ok=True)
++    man = {"title": "Horologe", "intensities": {"calm": ["bed"], "full": ["bed", "rhythm", "melody"]},
++           "stages": [{"id": f"stage{i}", "name": f"Stage {i}", "seconds": 60.0, "loopStart": 2.0,
++                       "bpm": 120, "beatsPerBar": 4, "barSeconds": 2.0,
++                       "layers": {k: f"{name}-stage{i}-{k}.ogg" for k in ("bed", "rhythm", "melody")}}
++                      for i in (1, 2)],
++           "cues": [{"id": "rise", "file": f"{name}-rise.ogg", "seconds": 5.0, "landsAt": 3.0, "to": "stage2"},
++                    {"id": "ending", "file": f"{name}-ending.ogg", "seconds": 8.0}]}
++    (music / f"{name}.layers.json").write_text(json.dumps(man))
++    for s in man["stages"]:
++        for f in s["layers"].values():
++            (music / f).write_bytes(b"\0" * 1024)
++    for c in man["cues"]:
++        (music / c["file"]).write_bytes(b"\0" * 1024)
++    return man
++
++
++def test_layered_music_switches_on_the_tables_bar_line(table):
++    _layered_set(table["camp"])
++    call = table["call"]
++    status, body = call("/api/gm/music", {"layers": "Horologe", "intensity": "calm"}, host=True)
++    m = body["music"]
++    assert status == 200 and m["kind"] == "layered" and m["stage"] == "stage1" and m["intensity"] == "calm"
++    assert m["layers"]["stages"][0]["layers"]["bed"] == "horologe-stage1-bed.ogg"
++    first_id, started = m["id"], m["started_at"]
++
++    # The intensity changes in place: the same track (no restart), its layers fade.
++    m = call("/api/gm/music", {"layers": "horologe", "intensity": "full"}, host=True)[1]["music"]
++    assert m["id"] == first_id and m["intensity"] == "full" and m["started_at"] == started
++
++    # A stage change lands on the playing stage's next bar line (2 s bars), through the rise.
++    m = call("/api/gm/music", {"layers": "horologe", "stage": 2, "via": "rise"}, host=True)[1]["music"]
++    assert m["id"] == first_id and m["stage"] == "stage2" and m["via"] == "rise"
++    bars = (m["via_at"] - started) / 2.0
++    assert abs(bars - round(bars)) < 1e-6 and m["via_at"] >= time.time()
++    assert abs(m["started_at"] - (m["via_at"] + 3.0)) < 1e-6          # where the rise lands
++
++    # An ending on the next bar line of stage 2's own clock.
++    m = call("/api/gm/music", {"layers": "horologe", "cue": "ending"}, host=True)[1]["music"]
++    assert m["cue"]["id"] == "ending" and m["cue"]["at"] >= m["started_at"]
++
++    # After an ending, the set starts again from the top.
++    again = call("/api/gm/music", {"layers": "horologe", "stage": 1}, host=True)[1]["music"]
++    assert again["id"] > first_id and again["stage"] == "stage1" and "cue" not in again
++
++    for bad in ({"stage": 9}, {"intensity": "loud"}, {"cue": "victory"}, {"via": "break", "stage": 2}):
++        assert call("/api/gm/music", {"layers": "horologe", **bad}, host=True)[0] == 400
++    assert call("/api/gm/music", {"layers": "nobody"}, host=True)[0] == 400
++    assert call("/api/gm/music", {"layers": "horologe"})[0] == 403          # players can't
++
++    # Every page plays the same state, with the engine the page loads.
++    _, info = call(f"/api/info?code={CODE}")
++    assert info["music"]["stage"] == "stage1" and info["music"]["intensity"] == "full"
++    with table["opener"].open(f"{table['base']}/layered-player.js", timeout=5) as resp:
++        assert b"class LayeredPlayer" in resp.read()
++    with table["opener"].open(f"{table['base']}/", timeout=5) as resp:
++        assert b'<script src="/layered-player.js"></script>' in resp.read()

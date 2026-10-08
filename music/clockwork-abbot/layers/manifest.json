@@ -1,0 +1,69 @@
+{
+ "title": "הורולוג', אב המנזר של השעון",
+ "intensities": {
+  "calm": [
+   "bed"
+  ],
+  "tense": [
+   "bed",
+   "rhythm"
+  ],
+  "full": [
+   "bed",
+   "rhythm",
+   "melody"
+  ]
+ },
+ "stages": [
+  {
+   "id": "stage1",
+   "name": "השעה של אב המנזר",
+   "layers": {
+    "bed": "stage1-bed.ogg",
+    "rhythm": "stage1-rhythm.ogg",
+    "melody": "stage1-melody.ogg"
+   },
+   "seconds": 88.6956,
+   "loopStart": 5.2174,
+   "bpm": 138.0,
+   "beatsPerBar": 3,
+   "barSeconds": 1.304348
+  },
+  {
+   "id": "stage2",
+   "name": "נמתח מדי",
+   "layers": {
+    "bed": "stage2-bed.ogg",
+    "rhythm": "stage2-rhythm.ogg",
+    "melody": "stage2-melody.ogg"
+   },
+   "seconds": 57.1429,
+   "loopStart": 2.8571,
+   "bpm": 168.0,
+   "beatsPerBar": 4,
+   "barSeconds": 1.428571
+  }
+ ],
+ "cues": [
+  {
+   "id": "rise",
+   "name": "מעבר לשלב 2",
+   "file": "rise.ogg",
+   "seconds": 6.3714,
+   "bpm": 168.0,
+   "beatsPerBar": 4,
+   "barSeconds": 1.428571,
+   "landsAt": 2.8571,
+   "to": "stage2"
+  },
+  {
+   "id": "ending",
+   "name": "השעון נשבר",
+   "file": "ending.ogg",
+   "seconds": 9.2285,
+   "bpm": 168.0,
+   "beatsPerBar": 4,
+   "barSeconds": 1.428571
+  }
+ ]
+}

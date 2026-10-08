@@ -1,0 +1,254 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>נגן השכבות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=Assistant:wght@400;600;700&display=swap">
+<style>
+  /* Layout: one narrow console column - the set, its stages, the intensity, the cues, the clock.
+     A deliberately dark single theme: a DM's console at the table at night. */
+  :root {
+    --bg: #12151c;        /* ink */
+    --panel: #1a1f29;
+    --line: #2b3242;
+    --fg: #ece6d8;        /* parchment */
+    --muted: #98a1b1;
+    --brass: #d9a441;     /* the one accent */
+    --brass-ink: #1b1406;
+    --wait: #7fb4c9;      /* a change waiting for its bar line */
+    --font-display: "Secular One", "Assistant", system-ui, sans-serif;
+    --font-body: "Assistant", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color-scheme: dark;
+  }
+  html, body { background: var(--bg); color: var(--fg); }
+  body { margin: 0; font: 16px/1.5 var(--font-body); }
+  .wrap { max-width: 760px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 48px;
+          display: grid; gap: 22px; }
+  header { display: grid; gap: 4px; }
+  .eyebrow { font-size: 13px; letter-spacing: .06em; color: var(--muted); }
+  h1 { font: 30px/1.15 var(--font-display); margin: 0; text-wrap: balance; }
+  .status { color: var(--muted); font-size: 14px; min-height: 1.5em; }
+  .status.err { color: #f08a7a; }
+  h2 { font: 15px/1.2 var(--font-body); font-weight: 700; letter-spacing: .04em; color: var(--muted); margin: 0 0 8px; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+  .transport { display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+               background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .play { background: var(--brass); color: var(--brass-ink); border: 0; border-radius: 999px;
+          padding: 10px 22px; font-weight: 700; min-width: 96px; }
+  .play[disabled] { opacity: .45; cursor: default; }
+  .clock { display: flex; align-items: center; gap: 10px; font-variant-numeric: tabular-nums; }
+  .beats { display: flex; gap: 6px; }
+  .beats i { width: 12px; height: 12px; border-radius: 50%; background: var(--line); transition: background .08s; }
+  .beats i.on { background: var(--brass); }
+  .beats i.one { width: 16px; height: 16px; }
+  .where { color: var(--muted); font-size: 14px; }
+  .vol { display: flex; align-items: center; gap: 8px; margin-inline-start: auto; color: var(--muted); font-size: 14px; }
+  .vol input { width: 120px; accent-color: var(--brass); }
+
+  .stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .stage { text-align: start; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+           padding: 12px 14px; display: grid; gap: 4px; min-width: 0; }
+  .stage .num { font-size: 13px; color: var(--muted); }
+  .stage .name { font: 20px/1.2 var(--font-display); }
+  .stage .meta { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .stage.active { border-color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass); }
+  .stage.waiting { border-color: var(--wait); }
+  .stage .tag { font-size: 13px; color: var(--wait); min-height: 1.4em; }
+  .stage.active .tag { color: var(--brass); }
+  .via { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; color: var(--muted); }
+  .via input { accent-color: var(--brass); }
+
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid var(--line);
+         border-radius: 12px; overflow: hidden; }
+  .seg button { background: var(--panel); border: 0; border-inline-start: 1px solid var(--line);
+                padding: 12px 8px; display: grid; gap: 6px; justify-items: center; }
+  .seg button:first-child { border-inline-start: 0; }
+  .seg button .lbl { font-weight: 700; font-size: 17px; }
+  .seg button[aria-pressed="true"] { background: var(--brass); color: var(--brass-ink); }
+  .chips { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
+  .chips span { white-space: nowrap; font-size: 12px; padding: 1px 7px; border-radius: 999px; border: 1px solid currentColor; opacity: .85; }
+  .hint { font-size: 14px; color: var(--muted); margin: 8px 0 0; max-width: 65ch; }
+
+  .cues { display: flex; flex-wrap: wrap; gap: 10px; }
+  .cue { background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px; }
+  .cue:hover { border-color: var(--brass); }
+
+  details { color: var(--muted); font-size: 14px; }
+  summary { cursor: pointer; }
+  kbd { font: 13px var(--font-body); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; color: var(--fg); }
+  .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin-top: 10px; }
+  select { background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font: inherit; }
+  @media (prefers-reduced-motion: reduce) { .beats i { transition: none; } }
+</style>
+
+<div class="wrap" dir="rtl">
+  <header>
+    <div class="eyebrow">נגן שכבות למוזיקת בוס</div>
+    <h1 id="title">טוען…</h1>
+    <div class="status" id="status" role="status"></div>
+    <label id="setPick" hidden>סט: <select id="sets"></select></label>
+  </header>
+
+  <section class="transport" aria-label="נגינה">
+    <button class="play" id="play" disabled>נגן</button>
+    <div class="clock">
+      <div class="beats" id="beats" aria-hidden="true"></div>
+      <span class="where" id="where">עצור</span>
+    </div>
+    <label class="vol">עוצמה <input type="range" id="vol" min="0" max="100" value="80"></label>
+  </section>
+
+  <section aria-labelledby="h-stages">
+    <h2 id="h-stages">שלבים · המעבר קורה בתחילת התיבה הבאה</h2>
+    <div class="stages" id="stages"></div>
+    <label class="via" id="viaWrap" hidden><input type="checkbox" id="via" checked> להיכנס לשלב דרך המעבר שלו, כשיש</label>
+  </section>
+
+  <section aria-labelledby="h-int">
+    <h2 id="h-int">עוצמת הקרב</h2>
+    <div class="seg" id="seg" role="group" aria-labelledby="h-int"></div>
+    <p class="hint">בזמן שקוראים את הסיפור וכותבים תגובות: <b>רגוע</b>. כשמתקרבים לפעולה: <b>מתח</b>. כשהקרב בעיצומו: <b>מלא</b>. השכבות מתחלפות בהדרגה, בלי לעצור את המוזיקה.</p>
+  </section>
+
+  <section aria-labelledby="h-cues" id="cuesWrap" hidden>
+    <h2 id="h-cues">סיומים</h2>
+    <div class="cues" id="cues"></div>
+  </section>
+
+  <details>
+    <summary>קיצורי מקלדת</summary>
+    <div class="keys">
+      <kbd>רווח</kbd><span>נגן / עצור</span>
+      <kbd>1</kbd><span>מעבר לשלב 1, 2, 3…</span>
+      <kbd>Q W E</kbd><span>רגוע / מתח / מלא</span>
+    </div>
+  </details>
+</div>
+
+<script src="layered-player.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const LAYER_HE = { bed: "מצע", rhythm: "קצב", melody: "מנגינה" };
+  const INT_HE = { calm: "רגוע", tense: "מתח", full: "מלא" };
+  const KEYS = { q: "calm", w: "tense", e: "full", "/": "calm", "'": "tense", "ק": "full" };
+  let player = null, sets = [], current = null;
+
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* no storage */ } },
+  };
+  function status(text, err) { $("status").textContent = text || ""; $("status").classList.toggle("err", !!err); }
+
+  async function boot() {
+    try {
+      const r = await fetch("sets.json");
+      sets = r.ok ? await r.json() : [];
+    } catch (e) { sets = []; }
+    if (!sets.length) { status("לא נמצא sets.json ליד הנגן.", true); $("title").textContent = "אין סט לטעון"; return; }
+    if (sets.length > 1) {
+      $("setPick").hidden = false;
+      $("sets").innerHTML = sets.map((s) => `<option value="${s.id}">${s.id}</option>`).join("");
+      $("sets").addEventListener("change", () => loadSet($("sets").value));
+    }
+    loadSet(store.get("set", sets[0].id));
+  }
+
+  async function loadSet(id) {
+    const s = sets.find((x) => x.id === id) || sets[0];
+    if (player) player.stop({ fade: 0.3 });
+    current = s; store.set("set", s.id);
+    if ($("sets")) $("sets").value = s.id;
+    player = new LayeredPlayer({ intensity: store.get("intensity", "calm"), volume: store.get("vol", 80) / 100 });
+    $("vol").value = Math.round(player.volume * 100);
+    $("play").disabled = true;
+    status("טוען את הקבצים…");
+    try {
+      const url = new URL(s.manifest, new URL("sets.json", location.href)).href;
+      const m = await player.load(url, (d, n) => status(`טוען את הקבצים… ${d}/${n}`));
+      $("title").textContent = m.title || s.id;
+      status("מוכן. לחץ נגן כדי להתחיל.");
+      build(m);
+      $("play").disabled = false;
+      player.on("state", render).on("bar", render);
+      render(player.state());
+    } catch (e) {
+      status("הטעינה נכשלה: " + e.message, true);
+    }
+  }
+
+  function build(m) {
+    $("stages").innerHTML = m.stages.map((s, i) => `
+      <button class="stage" data-id="${s.id}">
+        <span class="num">שלב ${i + 1}</span>
+        <span class="name">${s.name}</span>
+        <span class="meta"><bdi dir="ltr">${Math.round(s.bpm)} BPM</bdi> · <bdi dir="ltr">${s.beatsPerBar}/4</bdi> · לופ ${Math.round(s.seconds - s.loopStart)} שנ׳</span>
+        <span class="tag"></span>
+      </button>`).join("");
+    $("stages").querySelectorAll(".stage").forEach((b) => b.addEventListener("click", () => toStage(b.dataset.id)));
+    $("viaWrap").hidden = !(m.cues || []).some((c) => c.to);
+    const ints = Object.keys(m.intensities || { calm: 1, tense: 1, full: 1 });
+    $("seg").innerHTML = ints.map((k) => `
+      <button data-int="${k}" aria-pressed="false">
+        <span class="lbl">${INT_HE[k] || k}</span>
+        <span class="chips">${(m.intensities[k] || []).map((l) => `<span>${LAYER_HE[l] || l}</span>`).join("")}</span>
+      </button>`).join("");
+    $("seg").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => intensity(b.dataset.int)));
+    const ends = (m.cues || []).filter((c) => c.landsAt == null);
+    $("cuesWrap").hidden = !ends.length;
+    $("cues").innerHTML = ends.map((c) => `<button class="cue" data-id="${c.id}">${c.name || c.id}</button>`).join("");
+    $("cues").querySelectorAll(".cue").forEach((b) => b.addEventListener("click", () => player.playCue(b.dataset.id)));
+  }
+
+  function toStage(id) {
+    const st = player.state();
+    if (!st.playing) { player.start(id); return; }
+    if (st.stage === id) return;
+    const via = $("via").checked ? (player.manifest.cues || []).find((c) => c.to === id) : null;
+    player.goTo(id, { via: via ? via.id : null });
+  }
+  function intensity(k) { player.setIntensity(k); store.set("intensity", k); }
+
+  function render(st) {
+    if (!player || !player.manifest) return;
+    const m = player.manifest;
+    $("play").textContent = st.playing ? "עצור" : "נגן";
+    const stage = st.stage ? player.stage(st.stage) : m.stages[0];
+    const n = stage.beatsPerBar;
+    const dots = $("beats");
+    if (dots.children.length !== n) dots.innerHTML = Array.from({ length: n }, (_, i) => `<i class="${i ? "" : "one"}"></i>`).join("");
+    [...dots.children].forEach((d, i) => d.classList.toggle("on", st.playing && st.beat === i));
+    const wait = st.pending && st.pending.inSeconds > 0.05 ? st.pending : null;
+    $("where").textContent = !st.playing && !wait ? "עצור"
+      : st.bar == null ? "מתחיל…"
+      : `תיבה ${st.bar + 1}${st.inLoop ? "" : " · פתיחה"}`;
+    $("stages").querySelectorAll(".stage").forEach((b) => {
+      const id = b.dataset.id, waiting = wait && wait.kind === "stage" && wait.to === id;
+      const active = st.stage === id && !waiting;
+      b.classList.toggle("active", active);
+      b.classList.toggle("waiting", !!waiting);
+      b.setAttribute("aria-pressed", String(active));
+      b.querySelector(".tag").textContent = waiting ? `נכנס בעוד ${wait.inSeconds.toFixed(1)} שנ׳${wait.via ? " · דרך מעבר" : ""}`
+        : active ? "מתנגן עכשיו" : "";
+    });
+    $("seg").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.int === st.intensity)));
+  }
+
+  $("play").addEventListener("click", () => {
+    const st = player.state();
+    if (st.playing) player.stop(); else player.start(player.manifest.stages[0].id);
+  });
+  $("vol").addEventListener("input", () => { player && player.setVolume($("vol").value / 100); store.set("vol", +$("vol").value); });
+  document.addEventListener("keydown", (e) => {
+    if (!player || !player.manifest || e.target.closest("input, select") || e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key.toLowerCase();
+    if (k === " ") { e.preventDefault(); $("play").click(); }
+    else if (/^[1-9]$/.test(k)) { const s = player.manifest.stages[+k - 1]; if (s) toStage(s.id); }
+    else if (KEYS[k]) intensity(KEYS[k]);
+  });
+  boot();
+})();
+</script>

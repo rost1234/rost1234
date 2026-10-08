@@ -61,6 +61,32 @@ The score format is documented at the top of `$SP/ccgm/lib/music/arrangement.py`
 8. **Commit, push, and send** the README and the MP3s with SendUserFile. Say plainly
    that you can't hear audio: the checks are technical, the user's ears decide.
 
+## 2b. Loops and layers (for the table: a scene of unknown length)
+
+Every stage that will be played at a table is a **loop with an entry** and is rendered
+as **three layers** for the layered player (`player/`, see `player/README.md`):
+
+1. In the stage's score: `"loop": true`, `"loop_from": <the entry's length>` - the entry
+   (whole bars) plays once, the body loops. No ending inside the body: the last bars lead
+   back into `loop_from` (a swell or a pickup on the drums of the body, never a roll).
+   `check` must not report a seam step. Endings and rises are separate one-shot cues.
+2. Name the layers in the score: `"layers": {"rhythm": [drums, percussion, punches],
+   "melody": [the parts that carry the motif]}`; everything else is the `bed`, and every
+   lead line and its doubles go to `melody` by themselves. The bed alone ("calm", while the
+   players read and write) must still sound like this boss: its engine and harmony.
+3. Render and collect a set:
+   ```bash
+   R=<repo>/.claude/skills/boss-music/scripts/render_layers.py
+   $PY $R $SP/ccgm/lib music/<boss>/stage1-loop.json --id stage1 --name "<name>" \
+       --out-dir music/<boss>/layers --manifest music/<boss>/layers/manifest.json
+   $PY $R $SP/ccgm/lib music/<boss>/rise.json --id rise --to stage2 ...     # a one-shot: "lands_at" in beats
+   $PY $R $SP/ccgm/lib music/<boss>/ending.json --id ending ...
+   ```
+   then add the set to `player/sets.json`. A rise score has `"lands_at"` (beats): where
+   the next stage starts.
+4. Test in a browser (`python3 -m http.server`, open `/player/`), and for Guy's table
+   export with `player/export_ccgm.py` (`integration/ccgm/README.md`).
+
 ## 3. When the user listens
 
 - Convert a timestamp to beats (`seconds * tempo / 60`) and find what plays there
@@ -79,3 +105,8 @@ The score format is documented at the top of `$SP/ccgm/lib/music/arrangement.py`
 - Quick string notes: keep `"legato"` low so each note is under 0.3 s, or they smear.
 - `root5` with a pattern that re-strikes while the last note rings: lower `"legato"`.
 - The lead needs `"gain"` until `check` stops warning that it isn't on top.
+- libsndfile's Ogg Vorbis writer crashes on long files: `render_layers.py` writes WAV and
+  encodes with ffmpeg.
+- `check` warnings about a loop that "never states the tune whole", a quiet entry or a body
+  under 150 s are the original project's taste rules; follow GUIDELINES.md instead. A seam
+  step is technical: fix it.

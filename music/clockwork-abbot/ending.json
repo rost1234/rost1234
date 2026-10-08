@@ -1,0 +1,96 @@
+{
+ "title": "Horologe: the clock breaks (ending)",
+ "tune": {
+  "seed": "Horologe",
+  "mode": "minor",
+  "key": "E4",
+  "meter": "4/4"
+ },
+ "statements": [],
+ "tempo": 168,
+ "length": 18,
+ "role": "ending",
+ "dynamics": [
+  [
+   0,
+   126
+  ],
+  [
+   18,
+   60
+  ]
+ ],
+ "progression": {
+  "at": 0,
+  "chords": "i i i i i"
+ },
+ "lines": [
+  {
+   "part": "brass",
+   "notes": [
+    [
+     0,
+     "E3",
+     8
+    ],
+    [
+     0,
+     "B3",
+     8
+    ],
+    [
+     0,
+     "E4",
+     8
+    ],
+    [
+     0,
+     "G4",
+     8
+    ]
+   ],
+   "vel": 10
+  },
+  {
+   "part": "celesta",
+   "notes": [
+    [
+     12,
+     "E5",
+     3
+    ]
+   ],
+   "vel": -8
+  }
+ ],
+ "hits": [
+  {
+   "part": "gong",
+   "note": "root",
+   "at": 0,
+   "len": 16,
+   "vel": 124
+  },
+  {
+   "part": "timpani",
+   "note": "E2",
+   "at": 0,
+   "len": 8,
+   "vel": 124
+  },
+  {
+   "part": "bass_drum",
+   "note": "root",
+   "at": 0,
+   "len": 8,
+   "vel": 122
+  },
+  {
+   "part": "kit",
+   "note": "crash",
+   "at": 0,
+   "len": 4,
+   "vel": 120
+  }
+ ]
+}

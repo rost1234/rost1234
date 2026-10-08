@@ -1,0 +1,92 @@
+{
+ "title": "Horologe: rise into stage 2",
+ "tune": {
+  "seed": "Horologe",
+  "mode": "minor",
+  "key": "E4",
+  "meter": "4/4"
+ },
+ "statements": [],
+ "tempo": 168,
+ "length": 10,
+ "lands_at": 8,
+ "role": "rise",
+ "dynamics": [
+  [
+   0,
+   70
+  ],
+  [
+   8,
+   124
+  ],
+  [
+   10,
+   110
+  ]
+ ],
+ "progression": {
+  "at": 0,
+  "chords": "V V i*0.5"
+ },
+ "harmony": [
+  {
+   "part": "tremolo",
+   "from": 0,
+   "to": 8,
+   "play": "chord",
+   "range": [
+    "B3",
+    "F#5"
+   ],
+   "pattern": "x-------",
+   "step": 1
+  },
+  {
+   "part": "cellos",
+   "from": 0,
+   "to": 8,
+   "play": "root",
+   "range": [
+    "B2",
+    "B3"
+   ],
+   "pattern": "xoxoxoxo",
+   "step": 0.5,
+   "legato": 0.5
+  }
+ ],
+ "patterns": [
+  {
+   "part": "taiko",
+   "note": "root",
+   "from": 4,
+   "to": 8,
+   "pattern": "xoxoxoxo",
+   "step": 0.5
+  }
+ ],
+ "hits": [
+  {
+   "part": "reverse_cymbal",
+   "note": "C4",
+   "at": 4,
+   "len": 4,
+   "vel": 110
+  },
+  {
+   "part": "kit",
+   "note": "crash",
+   "at": 8,
+   "len": 2,
+   "vel": 120
+  },
+  {
+   "part": "timpani",
+   "note": "E2",
+   "at": 8,
+   "len": 2,
+   "vel": 124
+  }
+ ]
+}
