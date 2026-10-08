@@ -1,3 +1,48 @@
+diff --git a/.claude/skills/gm-craft/references/boss-fights.md b/.claude/skills/gm-craft/references/boss-fights.md
+index ebd1865..d006b26 100644
+--- a/.claude/skills/gm-craft/references/boss-fights.md
++++ b/.claude/skills/gm-craft/references/boss-fights.md
+@@ -72,6 +72,11 @@ none of this. Numbers refer to `design-directives.md`; sources at the end.
+     narration: `gm-table.sh music boss "<boss>" stage 2 --via break` (a transformation)
+     or `--via rise` (an escalation); `... hit` for a decisive blow; `... end victory|requiem|escape|wipe`
+     when it falls, yields, flees or the party falls (`boss-music.md`). [Giffyglyph; Angry GM]
++    A boss with **layered music** (CLAUDE.md, music) takes the same commands, and you also set
++    how much of the stage plays: `tense` for its reveal before initiative, `full` from
++    initiative, `calm` while it talks or the fight pauses; the stage change itself goes on
++    the narration of the trigger (`--via rise` when the new stage grows out of the old, plain
++    when it is a cut), and `end` only once it has fallen, yielded or fled.
+ 11a. **The boss takes its turns, and its stages come in order.** Every turn it has is played
+     (by the `combat-referee` agent, like any foe; its legendary or villain actions as planned).
+     Each stage fires on its own trigger, in the written order: never a later stage first.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 88aa088..2ccbf0b 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -114,6 +114,24 @@ moment and finds everything in their language. While the table is open:
+   escalates mid-way (phase two, true form) → `--mood boss` upgrades the playing theme; a
+   boss with no name → `--mood boss` (epic battle music). Regular foes and mooks: just
+   `--mood combat`. `music list` / `music themes` show what's available.
++- **A boss with layered music** (`music/<boss>.layers.json`, the boss's name as a file name) is played
++  the usual way - `say --theme "<boss>" --boss` starts its stage 1, `music boss "<boss>" stage N
++  [--via rise]` and `music boss "<boss>" end <how>` move it on - and every change lands on the
++  next bar line, for every player at once (~5 s after you send it). Each stage loops for as long
++  as the scene takes; what you choose is **how much of it plays**, by the fiction the players are
++  reading and answering - never by who is typing (they are always typing):
++  - `say --intensity calm` (its bed: the boss's engine and harmony, no drums, no tune): the boss
++    is there but nobody is fighting - it speaks, bargains or gloats; the party talks, plans,
++    searches, heals, or hides; the fight has paused.
++  - `--intensity tense` (bed + drums): danger is coming but no blows yet - the reveal before
++    initiative, a standoff, a chase, the boss gathering a big attack, the party fleeing.
++  - `--intensity full` (everything, the tune on top): blows are traded - from initiative until
++    the fight truly pauses, including the rounds the players spend choosing their next move.
++  Re-judge it every beat like the mood, but hold it while the situation holds: never flicker
++  calm-full-calm across one exchange. Step one level at a time (calm -> tense -> full); jump
++  straight to full only for an ambush or a strike out of nowhere. With no `--intensity`, a mood
++  sets it: `combat`/`boss` -> full, `dread` -> tense. A calmer mood (`calm`, `sad`, `victory`...)
++  ends the boss's music as it always does - so after the ending, not during a pause.
+ - **Written music (if the host set up the orchestra; harmless otherwise).** Mark the
+   campaign's MAIN villain(s) when they first appear: `say --theme "<name>" --villain
+   --look "<what they're like>"`: their theme is asked for (`gm-music.sh wanted`), and the
 diff --git a/lib/layered_player.js b/lib/layered_player.js
 new file mode 100644
 index 0000000..7aba69c
@@ -419,10 +464,36 @@ index b2b87bf..5921290 100644
            : fileTrack(m);
    }
 diff --git a/lib/table_server.py b/lib/table_server.py
-index d50ce02..4842638 100644
+index d50ce02..3890491 100644
 --- a/lib/table_server.py
 +++ b/lib/table_server.py
-@@ -666,6 +666,79 @@ class TableState:
+@@ -614,6 +614,25 @@ class TableState:
+         requiem, escape, wipe: played once, then quiet). Raises ValueError if the cue
+         isn't there."""
+         name = " ".join(str(name).split())
++        man = self.layered_set(name)
++        if man is not None:                                 # their boss fight, in layers
++            cues = {c["id"]: c for c in man.get("cues") or []}
++            if hit:
++                return dict(self.music)                     # (a layered set has no accents)
++            if end:
++                if end not in ("victory", "requiem", "escape", "wipe"):
++                    raise ValueError("an ending is victory, requiem, escape or wipe")
++                tag = end if end in cues else next((c for c in cues if not cues[c].get("landsAt")
++                                                    and not cues[c].get("to")), None)
++                if tag is None:
++                    raise ValueError(f"no ending in {name}'s layered set")
++                return self.set_layers(name, cue=tag, theme=name)
++            sid = f"stage{int(stage or 1)}" if str(stage or 1).isdigit() else str(stage)
++            # (the cue asked for if it leads here, else any of the set's that rises into this stage)
++            into = [c for c, v in cues.items() if v.get("to") == sid]
++            rise = (via if via in cues and cues[via].get("to") in (None, sid) and cues[via].get("landsAt")
++                    else into[0] if into else None) if via else None
++            return self.set_layers(name, stage=sid, via=rise, theme=name)
+         def cue(tag):
+             f = self.boss_cue(name, tag)
+             if f is None:
+@@ -666,6 +685,92 @@ class TableState:
              self._save_music()
              return dict(self.music)
  
@@ -431,6 +502,7 @@ index d50ce02..4842638 100644
 +    # beside it. The page plays every layer of the stage in step and fades layers in and out
 +    # by the intensity; a stage change waits for the next bar line, which the table decides
 +    # here (from the stage's own clock) so every player switches on the same beat.
++    LAYERS_BY_MOOD = {"combat": "full", "boss": "full", "dread": "tense"}
 +    LAYERS_LEAD = 4.5           # (seconds) the soonest bar line a change can land on: every page
 +                                # hears of it first (they ask for the table's state every 4 s)
 +
@@ -444,7 +516,8 @@ index d50ce02..4842638 100644
 +        return None
 +
 +    def set_layers(self, name: str, stage: Optional[str] = None, intensity: Optional[str] = None,
-+                   via: Optional[str] = None, cue: Optional[str] = None) -> Dict[str, Any]:
++                   via: Optional[str] = None, cue: Optional[str] = None,
++                   theme: Optional[str] = None) -> Dict[str, Any]:
 +        """Play a layered set, or move the one playing on: to a stage (on the next bar line;
 +        through a cue that rises into it, ``via``), to an intensity (its layers fade), or to
 +        a one-shot cue (an ending: on the next bar line, the loop stops under it). Raises
@@ -480,7 +553,7 @@ index d50ce02..4842638 100644
 +                              "src": set_name, "title": man.get("title") or set_name, "volume": 0.7,
 +                              "loop": True, "mood": "boss", "boss": True, "layers": man,
 +                              "stage": stage_id or next(iter(stages)), "intensity": intensity or "full",
-+                              "started_at": now}
++                              "started_at": now, "theme": theme or man.get("boss") or set_name}
 +            else:
 +                m = dict(m)
 +                cur = stages[m["stage"]]
@@ -499,10 +572,34 @@ index d50ce02..4842638 100644
 +            self._save_music()
 +            return dict(self.music)
 +
++    def layers_follow(self, mood: Optional[str], intensity: Optional[str]) -> Optional[Dict[str, Any]]:
++        """A layered set playing: the beat's intensity (``say --intensity``), or the one its
++        mood implies (combat, boss: full; dread: tense). None when nothing changes."""
++        m = self.music
++        if m.get("kind") != "layered" or not m.get("track") or m.get("cue"):
++            return None
++        want = intensity or self.LAYERS_BY_MOOD.get(mood or "")
++        if not want or want == m.get("intensity") or want not in (m.get("layers") or {}).get("intensities", {}):
++            return None
++        return self.set_layers(m["src"], intensity=want)
++
      # --- automatic music by scene mood ---
      @property
      def auto_music(self) -> bool:
-@@ -3395,6 +3468,9 @@ def make_handler(state: TableState, code: str, host_key: str):
+@@ -1505,6 +1610,12 @@ class TableState:
+ 
+     def apply_theme(self, name: str, boss: bool = False, battle: bool = False) -> Optional[Dict[str, Any]]:
+         name = " ".join(str(name).split())
++        if boss and self.layered_set(name) is not None:     # their boss fight, in layers
++            m = self.music
++            if m.get("kind") == "layered" and m.get("src") == score_music.slug(name) and not m.get("cue"):
++                return None
++            self.show_foe(name, True)
++            return self.set_layers(name, theme=name)
+         if boss:
+             self.queue_theme(name, True)   # a boss earns battle music (for the GM to write)
+         same = party_roster._same_name(self.music.get("theme"), name) and (
+@@ -3395,6 +3506,9 @@ def make_handler(state: TableState, code: str, host_key: str):
              q = {k: v[0] for k, v in parse_qs(url.query).items()}
              if url.path in ("/", "/index.html"):
                  return self._send(200, page_html().encode("utf-8"), "text/html; charset=utf-8")
@@ -512,7 +609,16 @@ index d50ce02..4842638 100644
              if url.path.startswith("/music/"):
                  if not self._code_ok(q.get("code")):
                      return self._err("bad table code", 403)
-@@ -3797,6 +3873,14 @@ def make_handler(state: TableState, code: str, host_key: str):
+@@ -3727,6 +3841,8 @@ def make_handler(state: TableState, code: str, host_key: str):
+                                               battle=mood == "combat")
+                 elif not to and mood:
+                     music = state.apply_mood(mood)
++                if not to:                       # (a layered boss set: its intensity, quietly)
++                    state.layers_follow(mood, data.get("intensity"))
+                 if not to and theme and data.get("villain"):
+                     state.queue_theme(theme, False)      # a main villain: their theme is wanted
+                 hero = " ".join(str(data.get("heroic") or "").split())[:60]
+@@ -3797,6 +3913,14 @@ def make_handler(state: TableState, code: str, host_key: str):
                  r = state.atone(str(data.get("pc", "")))
                  return self._json(r, 200 if r["ok"] else 409)
              if path == "/api/gm/music":
@@ -527,7 +633,16 @@ index d50ce02..4842638 100644
                  if data.get("boss_fight"):
                      try:
                          music = state.boss_music(str(data["boss_fight"])[:80], stage=data.get("stage"),
-@@ -4415,8 +4499,10 @@ def main() -> None:
+@@ -4383,6 +4507,8 @@ def main() -> None:
+     s.add_argument("--image", help="Attach an image from the campaign's images/ folder")
+     s.add_argument("--lang", metavar="CODE",
+                    help="This is the version of the beat for players in this language only")
++    s.add_argument("--intensity", choices=["calm", "tense", "full"],
++                   help="A boss's layered music: how much of the stage plays (CLAUDE.md, music)")
+     s.add_argument("--mood", choices=list(MOODS) + [SILENCE],
+                    help="The scene's mood; the music follows it (no change if it's the same)")
+     s.add_argument("--theme", metavar="ENEMY",
+@@ -4415,8 +4541,10 @@ def main() -> None:
      mu.add_argument("more", nargs="?", help="After 'boss <name> stage': the stage; after 'boss <name> end': "
                                              "victory, requiem, escape or wipe")
      mu.add_argument("--boss", action="store_true", help="With 'theme <enemy>': the boss version")
@@ -539,7 +654,16 @@ index d50ce02..4842638 100644
      mu.add_argument("--volume", type=float, default=0.5, help="0.0 – 1.0 (default 0.5)")
      mu.add_argument("--no-loop", action="store_true", help="Play once instead of looping")
      mu.add_argument("--title", help="What players see (default: from the file name)")
-@@ -4714,6 +4800,20 @@ def main() -> None:
+@@ -4660,7 +4788,7 @@ def main() -> None:
+         text = sys.stdin.read() if args.stdin else (args.text or "")
+         r = _call(campaign_dir, "POST", "/api/gm/say",
+                   {"text": text.strip(), "to": args.to, "image": args.image,
+-                   "lang": args.lang, "mood": args.mood, "theme": args.theme,
++                   "lang": args.lang, "mood": args.mood, "theme": args.theme, "intensity": args.intensity,
+                    "boss": args.boss, "look": args.look, "loot": args.loot,
+                    "villain": args.villain, "heroic": args.heroic,
+                    "loot_look": args.loot_look, "loot_for": args.loot_for})
+@@ -4714,6 +4842,20 @@ def main() -> None:
              m = r.get("music") or {}
              print(f"MUSIC {m.get('title')} [{m.get('track')}]")
              return
@@ -561,10 +685,10 @@ index d50ce02..4842638 100644
              what = args.extra
              if not args.value or what not in ("stage", "hit", "end"):
 diff --git a/tests/test_table_server.py b/tests/test_table_server.py
-index 1cc14dc..1915f57 100644
+index 1cc14dc..6c2d547 100644
 --- a/tests/test_table_server.py
 +++ b/tests/test_table_server.py
-@@ -2291,3 +2291,65 @@ def test_the_map_shows_where_the_party_has_been_and_what_they_saw_from_there(tab
+@@ -2291,3 +2291,99 @@ def test_the_map_shows_where_the_party_has_been_and_what_they_saw_from_there(tab
      by = {p["name"]: p for p in m["places"]}
      assert by["Market Square"]["label"] == "כיכר השוק"
      assert by["The Sunken Crypt"]["label"] == "The Sunken Crypt"
@@ -574,7 +698,8 @@ index 1cc14dc..1915f57 100644
 +    """A layered set: music/<name>.layers.json and its (dummy) audio files."""
 +    music = camp / "music"
 +    music.mkdir(exist_ok=True)
-+    man = {"title": "Horologe", "intensities": {"calm": ["bed"], "full": ["bed", "rhythm", "melody"]},
++    man = {"title": "Horologe", "intensities": {"calm": ["bed"], "tense": ["bed", "rhythm"],
++                                                "full": ["bed", "rhythm", "melody"]},
 +           "stages": [{"id": f"stage{i}", "name": f"Stage {i}", "seconds": 60.0, "loopStart": 2.0,
 +                       "bpm": 120, "beatsPerBar": 4, "barSeconds": 2.0,
 +                       "layers": {k: f"{name}-stage{i}-{k}.ogg" for k in ("bed", "rhythm", "melody")}}
@@ -630,3 +755,36 @@ index 1cc14dc..1915f57 100644
 +        assert b"class LayeredPlayer" in resp.read()
 +    with table["opener"].open(f"{table['base']}/", timeout=5) as resp:
 +        assert b'<script src="/layered-player.js"></script>' in resp.read()
++
++
++def test_the_gm_drives_a_bosss_layered_set_from_say_and_boss_commands(table):
++    _layered_set(table["camp"], "vael-thorn")
++    call = table["call"]
++    # The GM's usual boss entrance plays the set (stage 1, full).
++    m = call("/api/gm/say", {"text": "The Thornmother rises.", "theme": "Vael Thorn", "boss": True},
++             host=True)[1]
++    music = call(f"/api/info?code={CODE}")[1]["music"]
++    assert music["kind"] == "layered" and music["stage"] == "stage1" and music["theme"] == "Vael Thorn"
++    first = music["id"]
++    notes = lambda: sum("🎵" in x["text"] for x in table["state"].messages if x["kind"] == "system")
++    announced = notes()
++    # The beat's intensity, explicit or from its mood; a holding mood never ends the set.
++    call("/api/gm/say", {"text": "She circles, waiting.", "mood": "dread"}, host=True)
++    assert call(f"/api/info?code={CODE}")[1]["music"]["intensity"] == "tense"
++    call("/api/gm/say", {"text": "She speaks.", "mood": "dread", "intensity": "calm"}, host=True)
++    music = call(f"/api/info?code={CODE}")[1]["music"]
++    assert music["intensity"] == "calm" and music["id"] == first
++    call("/api/gm/say", {"text": "She strikes!", "mood": "combat"}, host=True)
++    assert call(f"/api/info?code={CODE}")[1]["music"]["intensity"] == "full"
++    # music boss ... stage N goes through the set's rise into that stage; end plays its ending.
++    # (no "break" cue in this set: its rise into stage 2 takes the transition)
++    r = call("/api/gm/music", {"boss_fight": "Vael Thorn", "stage": 2, "via": "break"}, host=True)[1]
++    assert r["music"]["stage"] == "stage2" and r["music"]["via"] == "rise"
++    # A rise into stage 2 never leads into another stage: back to stage 1 straight on the bar.
++    r = call("/api/gm/music", {"boss_fight": "Vael Thorn", "stage": 1, "via": "rise"}, host=True)[1]
++    assert r["music"]["stage"] == "stage1" and r["music"]["via"] is None
++    r = call("/api/gm/music", {"boss_fight": "Vael Thorn", "end": "victory"}, host=True)[1]
++    assert r["music"]["cue"]["id"] == "ending"
++    # A calm mood after the fight ends the boss music as always.
++    call("/api/gm/say", {"text": "The forest is quiet.", "mood": "calm"}, host=True)
++    assert call(f"/api/info?code={CODE}")[1]["music"]["kind"] != "layered"
