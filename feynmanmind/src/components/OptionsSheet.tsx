@@ -1,4 +1,5 @@
 import { Modal, Pressable, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useT } from '@/i18n';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
@@ -16,10 +17,11 @@ export function OptionsSheet({ visible, title, options, onClose }: { visible: bo
   const t = useT();
   const styles = useStyles();
   const { colors, typography } = useTheme();
+  const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={t('common.cancel')}>
-        <Pressable style={styles.sheet} accessibilityViewIsModal onPress={() => {}}>
+        <Pressable style={[styles.sheet, { paddingBottom: Math.max(spacing.xxl, insets.bottom + spacing.md) }]} accessibilityViewIsModal onPress={() => {}}>
           {title ? (
             <Text style={[typography.caption, styles.title]} numberOfLines={1}>
               {title}

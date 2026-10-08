@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Keyboard, Platform, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 /** Whether the on-screen keyboard is open. */
 export function useKeyboardVisible(): boolean {
@@ -19,10 +20,12 @@ export function useKeyboardVisible(): boolean {
  * A view that keeps its bottom edge above the keyboard. It measures how much of
  * itself the keyboard actually covers and pads exactly that much, so it works
  * whether or not the system already resized the window (Android edge-to-edge
- * often doesn't). Put a fixed bar as its last child and it sits on the keyboard.
+ * often doesn't). Put a fixed bar as its last child and it sits on the keyboard,
+ * and, with the keyboard closed, above the phone's back/home bar (`safeBottom`).
  */
-export function KeyboardInsetView({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
+export function KeyboardInsetView({ children, style, safeBottom = true }: { children: ReactNode; style?: StyleProp<ViewStyle>; safeBottom?: boolean }) {
   const ref = useRef<View>(null);
+  const insets = useSafeAreaInsets();
   const [keyboardTop, setKeyboardTop] = useState<number | null>(null);
   const [inset, setInset] = useState(0);
 
@@ -48,7 +51,7 @@ export function KeyboardInsetView({ children, style }: { children: ReactNode; st
   useEffect(measure, [measure]);
 
   return (
-    <View ref={ref} onLayout={measure} style={[{ flex: 1 }, style, { paddingBottom: keyboardTop === null ? 0 : inset }]}>
+    <View ref={ref} onLayout={measure} style={[{ flex: 1 }, style, { paddingBottom: keyboardTop === null ? (safeBottom ? insets.bottom : 0) : inset }]}>
       {children}
     </View>
   );

@@ -108,9 +108,22 @@ const coursePlan = {
       await expectText('העתקה', 'copy button');
       await expectText('קריאה', 'lesson steps');
       await shot('05a-lesson-read');
-      await page.getByRole('button', { name: 'הבא: נקודות מפתח' }).click();
-      await page.waitForTimeout(500);
-      await expectText('מה חשוב לזכור', 'lesson key points');
+      // Swipe to the next step (right-to-left reading: drag toward the right). Web swallows some mouse
+      // drags (the phone uses a native pager), so try a few times until the step changes.
+      const nextButton = () => page.getByRole('button', { name: /^הבא:/ }).first().textContent();
+      for (let attempt = 0; attempt < 4 && (await nextButton())?.includes('נקודות מפתח'); attempt++) {
+        await page.mouse.move(20, 246);
+        await page.mouse.down();
+        for (let i = 1; i <= 30; i++) {
+          await page.mouse.move(20 + (350 * i) / 30, 246);
+          await page.waitForTimeout(10);
+        }
+        await page.mouse.up();
+        await page.waitForTimeout(800);
+      }
+      const nextLabel = await nextButton();
+      if (!nextLabel?.includes('הסבר')) failures.push(`swipe between steps: next button says "${nextLabel}"`);
+      await shot('05b-swiped');
 
       // Ask about the lesson in the bottom sheet: typed question, then a suggested follow-up.
       await page.getByRole('button', { name: /^שאל שאלה/ }).click();

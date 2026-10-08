@@ -39,7 +39,7 @@ export function AskButton({ context }: { context: AskContext }) {
       </Pressable>
 
       <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
-        <KeyboardInsetView style={styles.backdrop}>
+        <KeyboardInsetView style={styles.backdrop} safeBottom={false}>
           <Pressable style={{ flex: 1, minHeight: 40 }} onPress={() => setOpen(false)} accessibilityLabel={t('common.close')} />
           <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, spacing.md) }]} accessibilityViewIsModal>
             <View style={styles.header}>
