@@ -24,6 +24,10 @@ export interface SheetLabels {
   gratitude: string;
   lesson: string;
   notes: string;
+  /** "What I did today", the free-text line of the day. */
+  did: string;
+  /** The day column of the back-page table. */
+  day: string;
   /** Printed beside a habit to quit. */
   quitTag: string;
   monthSheetTitle: string;
@@ -50,7 +54,17 @@ export interface SheetInput {
   days?: number;
   /** Colorful (the app's Calm colors) or black and white. */
   color: boolean;
+  /** Month calendar with a space for everything: which parts to include (all by default). */
+  fields?: Partial<CalendarFields>;
   labels: SheetLabels;
+}
+
+export interface CalendarFields {
+  sleep: boolean;
+  mood: boolean;
+  /** Gratitude and "what I did" lines go on a second page, a table of days. */
+  gratitude: boolean;
+  did: boolean;
 }
 
 export interface Sheet {
@@ -59,9 +73,9 @@ export interface Sheet {
 }
 
 /** The ways to lay habits out on a page. */
-export type SheetKind = 'monthRows' | 'monthColumns' | 'monthByTime' | 'monthCards' | 'week' | 'day' | 'calendar';
+export type SheetKind = 'monthRows' | 'monthColumns' | 'monthByTime' | 'monthCards' | 'calendarFull' | 'week' | 'day' | 'calendar';
 
-export const SHEET_KINDS: readonly SheetKind[] = ['monthRows', 'monthColumns', 'monthByTime', 'monthCards', 'week', 'day', 'calendar'];
+export const SHEET_KINDS: readonly SheetKind[] = ['monthRows', 'monthColumns', 'monthByTime', 'monthCards', 'calendarFull', 'week', 'day', 'calendar'];
 
 const MIN_ROWS = { month: 12, week: 8, day: 8, columns: 8 } as const;
 const LAST_SLEEP = 10;
@@ -362,11 +376,82 @@ export function renderCalendarSheet(input: SheetInput): Sheet {
   return { html: shell(labels.calendarSheetTitle, body, labels, true, p), landscape: true };
 }
 
+/**
+ * A month calendar (landscape) with room in every day for the habits (numbered boxes), the hours slept and the mood.
+ * The gratitude and "what I did today" lines go on a second page: a table of days, two halves of the month side by side.
+ */
+export function renderCalendarFull(input: SheetInput): Sheet {
+  const { labels, habits } = input;
+  const p = printPalette(input.color);
+  const fields: CalendarFields = { sleep: true, mood: true, gratitude: true, did: true, ...input.fields };
+  const grid = monthGrid(input.start);
+  const small = habits.length > 9;
+  const size = small ? 12 : 15;
+  const color = (i: number) => (p.isColor ? accentFor(p, i) : p.line);
+  const tiny = (text: string) => `<i class="ci" dir="ltr" style="min-width:15px;height:15px;font-size:8px;line-height:13px;margin:0 0.5px">${e(text)}</i>`;
+  const legend = habits
+    .map((habit, i) => `<span style="display:inline-flex;align-items:center;gap:3px;margin-inline-end:10px">${circle(String(i + 1), p.isColor ? color(i) : undefined)}${habitName(habit, labels)}</span>`)
+    .join('');
+  const sleeps = Array.from({ length: LAST_SLEEP - FIRST_SLEEP + 1 }, (_, n) => tiny(n === 0 ? `≤${FIRST_SLEEP}` : n === LAST_SLEEP - FIRST_SLEEP ? `${LAST_SLEEP}+` : String(FIRST_SLEEP + n))).join('');
+  const moods = [1, 2, 3, 4, 5].map((n) => tiny(String(n))).join('');
+  const head = [0, 1, 2, 3, 4, 5, 6]
+    .map((d) => `<th class="${d === 5 || d === 6 ? 'grey' : ''}" style="height:18px">${e(labels.weekdayNames[d] ?? '')}</th>`)
+    .join('');
+  const cellHeight = grid.length > 5 ? 96 : 116;
+  const rows = grid
+    .map(
+      (week) =>
+        `<tr>${week
+          .map((date, col) => {
+            if (!date) return '<td></td>';
+            const boxes = habits
+              .map((habit, i) =>
+                isHabitDueOn(habit, date)
+                  ? `<i class="bx" style="width:${size}px;height:${size}px;border-color:${color(i)};color:${color(i)};font-style:normal;font-size:8px;line-height:${size - 2}px;text-align:center" dir="ltr">${i + 1}</i>`
+                  : `<i class="bx off" style="width:${size}px;height:${size}px;border-color:#999"></i>`,
+              )
+              .join('');
+            return `<td class="${col === 5 || col === 6 ? 'grey' : ''}" style="height:${cellHeight}px;vertical-align:top;text-align:start;padding:2px 4px"><b style="font-size:12px">${dayOfMonth(date)}</b>
+<div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:2px">${boxes}</div>
+${fields.mood ? `<div style="margin-top:4px;white-space:nowrap" aria-hidden="true">${moods}</div>` : ''}
+${fields.sleep ? `<div style="margin-top:3px;white-space:nowrap">${sleeps}</div>` : ''}</td>`;
+          })
+          .join('')}</tr>`,
+    )
+    .join('');
+  const key = [
+    fields.mood ? `${e(labels.mood)}: 1 ${e(labels.moods[0] ?? '')} &ndash; 5 ${e(labels.moods[4] ?? '')}` : '',
+    fields.sleep ? `${e(labels.sleep)}: ${FIRST_SLEEP}&ndash;${LAST_SLEEP}` : '',
+  ]
+    .filter(Boolean)
+    .join(' &nbsp;&middot;&nbsp; ');
+  const front = `<section class="page"><h1>${e(labels.calendarSheetTitle)} &middot; ${e(input.monthName)}</h1><p class="how">${e(labels.howTo)}${key ? ` &nbsp; ${key}` : ''}</p>
+<div style="margin-bottom:5px">${legend}</div>
+<table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></section>`;
+
+  const dates = monthDays(input.start);
+  const half = Math.ceil(dates.length / 2);
+  const columns = [fields.gratitude ? labels.gratitude : '', fields.did ? labels.did : ''].filter(Boolean);
+  const dayTable = (list: readonly LocalDateString[]) =>
+    `<table style="flex:1"><thead><tr><th style="width:11%">${e(labels.day)}</th>${columns.map((c) => `<th>${e(c)}</th>`).join('')}</tr></thead><tbody>${list
+      .map(
+        (date) =>
+          `<tr style="height:${columns.length > 1 ? 36 : 28}px"><td class="${isWeekend(date) ? 'grey' : ''}"><b>${dayOfMonth(date)}</b> <small>${e(labels.weekdayInitials[getWeekday(date)] ?? '')}</small></td>${columns.map(() => '<td></td>').join('')}</tr>`,
+      )
+      .join('')}</tbody></table>`;
+  const back =
+    columns.length === 0
+      ? ''
+      : `<section class="page"><h1>${e(columns.join(' · '))} &middot; ${e(input.monthName)}</h1><div style="display:flex;gap:12px;margin-top:8px">${dayTable(dates.slice(0, half))}${dayTable(dates.slice(half))}</div></section>`;
+  return { html: shell(labels.calendarSheetTitle, front + back, labels, true, p), landscape: true };
+}
+
 export const SHEET_RENDERERS: Record<SheetKind, (input: SheetInput) => Sheet> = {
   monthRows: renderMonthRows,
   monthColumns: renderMonthColumns,
   monthByTime: renderMonthByTime,
   monthCards: renderMonthCards,
+  calendarFull: renderCalendarFull,
   week: renderWeekSheet,
   day: renderDaySheets,
   calendar: renderCalendarSheet,

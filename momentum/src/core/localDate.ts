@@ -94,6 +94,12 @@ export function weekdayLabel(day: Weekday, locale = 'en-US'): string {
   return intlFormat(reference, locale, { weekday: 'short' }) ?? WEEKDAY_SHORT[day];
 }
 
+/** Full weekday name, e.g. "Monday" / "יום שני". */
+export function weekdayName(day: Weekday, locale = 'en-US'): string {
+  const reference = new Date(2026, 8, 20 + day, 12);
+  return intlFormat(reference, locale, { weekday: 'long' }) ?? WEEKDAY_SHORT[day];
+}
+
 /** First day of the month containing `value`. */
 export function monthStart(value: LocalDateString): LocalDateString {
   return `${value.slice(0, 7)}-01`;

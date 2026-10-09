@@ -1,6 +1,6 @@
 import { makeHabit } from '@/testing/fixtures';
 import { printPalette } from '../printPalette';
-import { renderCalendarSheet, renderDaySheets, renderMonthByTime, renderMonthCards, renderMonthColumns, renderMonthRows, renderWeekSheet, SHEET_KINDS, SHEET_RENDERERS, type SheetLabels } from '../printSheets';
+import { renderCalendarSheet, renderDaySheets, renderMonthByTime, renderMonthCards, renderMonthColumns, renderCalendarFull, renderMonthRows, renderWeekSheet, SHEET_KINDS, SHEET_RENDERERS, type SheetLabels } from '../printSheets';
 
 const labels: SheetLabels = {
   lang: 'he',
@@ -17,6 +17,8 @@ const labels: SheetLabels = {
   gratitude: 'דבר טוב',
   lesson: 'לקח',
   notes: 'הערות',
+  did: 'מה עשיתי היום',
+  day: 'יום',
   quitTag: 'בלי',
   monthSheetTitle: 'לוח חודשי',
   weekSheetTitle: 'שבוע',
@@ -94,6 +96,25 @@ describe('blank sheets', () => {
     expect((html.match(/<div class="card"/g) ?? []).length).toBe(4);
     expect(html).toContain('ליד החלון');
     expect(html).toContain('3 כוסות'.replace('3', '6'));
+  });
+
+  it('full calendar: habits, mood and sleep in every day, and a back page for gratitude and what I did', () => {
+    const html = renderCalendarFull(input).html;
+    expect(html).toContain('A4 landscape');
+    expect((html.match(/<section class="page">/g) ?? []).length).toBe(2);
+    // 30 days: 5 mood circles and 7 sleep circles in each
+    expect((html.match(/class="ci" dir="ltr" style="min-width:15px/g) ?? []).length).toBe(30 * (5 + 7));
+    expect(html).toContain('הכרת הטוב'.replace('הכרת הטוב', 'דבר טוב'));
+    expect(html).toContain('מה עשיתי היום');
+  });
+
+  it('full calendar: parts can be left out', () => {
+    const none = renderCalendarFull({ ...input, fields: { sleep: false, mood: false, gratitude: false, did: false } }).html;
+    expect((none.match(/<section class="page">/g) ?? []).length).toBe(1);
+    expect(none).not.toContain('min-width:15px');
+    const onlyDid = renderCalendarFull({ ...input, fields: { gratitude: false } }).html;
+    expect(onlyDid).toContain('מה עשיתי היום');
+    expect(onlyDid.split('<section class="page">')[2] ?? '').not.toContain('דבר טוב');
   });
 
   it('every layout works in black and white and in color', () => {

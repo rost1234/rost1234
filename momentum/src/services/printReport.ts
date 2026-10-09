@@ -93,3 +93,24 @@ export async function printMonthReport(request: MonthReportRequest): Promise<voi
   );
   await Print.printAsync({ html, width: PAGE.width, height: PAGE.height });
 }
+
+export interface ReportData {
+  habits: Habit[];
+  logs: HabitLog[];
+  pauses: Pause[];
+  reflections: DailyReflection[];
+}
+
+/** Everything the monthly report reads, for the month that starts on `month`. */
+export async function loadReportData(month: LocalDateString): Promise<ReportData> {
+  const dates = monthDays(month);
+  const start = dates[0] ?? month;
+  const end = dates[dates.length - 1] ?? month;
+  const [habits, logs, pauses, reflections] = await Promise.all([
+    repositories.habits.getAll({ includeArchived: true }),
+    repositories.habitLogs.getInRange(start, end),
+    repositories.pauses.getAll(),
+    repositories.reflections.getInRange(start, end),
+  ]);
+  return { habits, logs, pauses, reflections };
+}

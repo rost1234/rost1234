@@ -253,13 +253,14 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] A quit habit says "A day without" (circle, chips, pill) and never "done"; a habit created after the chosen day isn't listed, with a line saying when it was created
 - [ ] 10+ habits on a small phone: opening a row near the bottom scrolls it into view
 
-## Printing (build 34)
-- [ ] Calendar → "Print the month's report" → the Android print window opens with an A4 preview; choose "Save as PDF" and open it
-- [ ] The report is black and white, right to left in Hebrew: title and month, four numbers, a habit × day grid (day 1 at the right), a legend, totals per habit
-- [ ] A quit habit, a counted habit with a partial day, a frozen day and a paused day show the right marks
-- [ ] Tasks on: each day with tasks lists them with [x] / [ ]; off: no task section
-- [ ] Reflections on, lock off: mood, gratitude, lesson and sleep show per day; with the lock on, the fingerprint/PIN is asked first and cancelling prints nothing
-- [ ] Pick one habit in the calendar's filter → the report has only that habit
-- [ ] A month with 10+ habits and many notes runs onto a second page without cutting a day in half; switch the app to English → LTR report in English
-- [ ] Print to a real printer (or any "print to PDF" app) from the print window
+## Printing (builds 34 and 35)
+- [ ] Calendar → "Print" opens a Print screen; "Print" button opens the Android print window with an A4 preview; "Save as PDF" works
+- [ ] Monthly calendar to fill in (default, next month): landscape, a numbered box per habit in each day, 5 mood circles and 7 sleep circles, a legend of the habits; page 2 is a table of days for gratitude and what I did; switching those chips off drops page 2 / the columns
+- [ ] A month that spans 6 weeks still fits on one front page
+- [ ] Black and white: only black, white and grey; color: blue headers, a color per habit, readable when printed
+- [ ] Other layouts print: habits as rows, days as rows, by time of day, a card per habit, a week, a page per day (7 pages), wall calendar
+- [ ] Habits not planned that day (e.g. a Mon/Wed/Fri habit) are hatched; a quit habit has the "without" tag
+- [ ] The month's report: black and white or color, marks per day and totals; tasks on/off; reflections off by default and asking for the fingerprint/PIN when the lock is on (cancel prints nothing)
+- [ ] With no habits: a clear message instead of an empty sheet
+- [ ] Hebrew RTL and English LTR both print correctly
 
