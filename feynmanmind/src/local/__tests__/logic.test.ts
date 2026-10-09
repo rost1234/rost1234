@@ -449,3 +449,53 @@ describe('subjectPath and the tutor chat', () => {
     expect(() => L.addTutorTurns(db, 'missing', [])).toThrow();
   });
 });
+
+describe('structured lessons and tutor help', () => {
+  const L = jest.requireActual('../logic');
+  const parts = {
+    hook: 'למה?',
+    sections: [{ heading: 'א', body: 'גוף א' }, { heading: 'ב', body: 'גוף ב' }],
+    example: { title: 'דוגמה', body: 'מספרים' },
+    check: [{ question: 'ש?', options: ['1', '2', '3', '4'], correct: 2, why: 'כי' }],
+  };
+
+  it('saves a concept lesson with its parts and keeps existing cards on rewrite', () => {
+    const { db: seeded, conceptId } = seed();
+    const lesson = { explanation: 'טקסט', parts, cards: [{ question: 'q1?', answer: 'a1' }] };
+    let db = L.saveConceptLesson(seeded, conceptId, lesson, newId, NOW);
+    expect(db.concepts[conceptId].lessonParts).toEqual(parts);
+    const before = L.cardsOf(db, conceptId).length;
+    db = L.saveConceptLesson(db, conceptId, { ...lesson, cards: [{ question: 'q1?', answer: 'other' }, { question: 'q2?', answer: 'a2' }] }, newId, NOW);
+    expect(L.cardsOf(db, conceptId).length).toBe(before + 1);
+  });
+
+  it('a built-in station with parts yields its plain text and parts', () => {
+    const course = { id: 'c', title: 'C', description: '', icon: 'x', builtIn: true, levels: [{ key: 'foundations', quiz: [], stations: [{ key: 's', title: 'S', summary: 'סיכום', parts, cards: [{ question: 'q?', answer: 'a' }] }] }] };
+    const lesson = L.lessonFor(seed().db, course, course.levels[0].stations[0]);
+    expect(lesson.parts).toBe(parts);
+    expect(lesson.explanation).toContain('א\nגוף א');
+    expect(lesson.explanation).toContain('דוגמה\nמספרים');
+  });
+
+  it('reveals hints one by one (never past the last), then the answer and the model explanation', () => {
+    const { db: seeded, conceptId } = seed();
+    const at = NOW.toISOString();
+    const evaluation = { score: 50, question: '?', next_step: 'answer_question', refine_quote: '', primary_gap: '', misconceptions: [], jargon: [], hints: ['h1', 'h2'] };
+    let db = L.addTutorTurns(seeded, conceptId, [{ id: 'f', role: 'tutor', kind: 'feedback', text: '', at, evaluation }]);
+    const shown = () => db.tutorChats[conceptId][0].evaluation.shown;
+    db = L.revealTutorHelp(db, conceptId, 'f', 'hint');
+    db = L.revealTutorHelp(db, conceptId, 'f', 'hint');
+    db = L.revealTutorHelp(db, conceptId, 'f', 'hint');
+    expect(shown()).toEqual({ hints: 2, answer: false, model: false });
+    db = L.revealTutorHelp(db, conceptId, 'f', 'answer');
+    db = L.revealTutorHelp(db, conceptId, 'f', 'model');
+    expect(shown()).toEqual({ hints: 2, answer: true, model: true });
+    expect(() => L.revealTutorHelp(db, conceptId, 'nope', 'hint')).toThrow();
+  });
+
+  it('remembers the tutor\'s main gap on the session', () => {
+    const { db: seeded, conceptId } = seed();
+    const [db, id] = L.addSession(seeded, conceptId, 'הסבר', { ...evaluation, primary_gap: 'למה זה קורה' }, newId, NOW);
+    expect(db.sessions[id].primary_gap).toBe('למה זה קורה');
+  });
+});
