@@ -1,7 +1,7 @@
 import * as Print from 'expo-print';
-import { addDays, formatLongDate, getWeekday, monthLabel, monthStart, weekdayLabel, weekdayName, type LocalDateString, type Weekday } from '@/core/localDate';
+import { formatLongDate, monthLabel, weekdayLabel, weekdayName, type LocalDateString, type Weekday } from '@/core/localDate';
 import type { Habit } from '@/domain/models';
-import { SHEET_RENDERERS, type CalendarFields, type SheetKind, type SheetLabels } from '@/domain/printSheets';
+import { SHEET_RENDERERS, sheetStart, type CalendarFields, type SheetKind, type SheetLabels, type SheetPeriod } from '@/domain/printSheets';
 import type { Translator } from '@/i18n';
 
 const HEBREW_INITIALS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
@@ -13,7 +13,7 @@ function sheetLabels(t: Translator): SheetLabels {
   return {
     lang: t.language,
     dir: t.isRTL ? 'rtl' : 'ltr',
-    weekdayInitials: t.isRTL ? HEBREW_INITIALS : days.map((d) => [...weekdayLabel(d, t.locale)][0] ?? ''),
+    weekdayInitials: t.isRTL ? HEBREW_INITIALS : days.map((d) => [...weekdayLabel(d, t.locale)].slice(0, 2).join('')),
     weekdayNames: days.map((d) => weekdayName(d, t.locale)),
     howTo: t('sheet.howTo'),
     howToQuit: t('sheet.howToQuit'),
@@ -40,22 +40,7 @@ function sheetLabels(t: Translator): SheetLabels {
   };
 }
 
-/** Sunday of the week containing `date`. */
-export function weekStart(date: LocalDateString): LocalDateString {
-  return addDays(date, -(getWeekday(date) as number));
-}
-
-export type SheetPeriod = 'current' | 'next';
-
-/** The first day a sheet starts on: the month's first day, or a week's Sunday. */
-export function sheetStart(kind: SheetKind, period: SheetPeriod, today: LocalDateString): LocalDateString {
-  if (kind === 'week' || kind === 'day') {
-    const sunday = weekStart(today);
-    return period === 'current' ? sunday : addDays(sunday, 7);
-  }
-  const first = monthStart(today);
-  return period === 'current' ? first : monthStart(addDays(first, 32));
-}
+export type { SheetPeriod };
 
 export interface SheetRequest {
   kind: SheetKind;

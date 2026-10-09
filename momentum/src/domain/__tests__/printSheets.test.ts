@@ -1,6 +1,6 @@
 import { makeHabit } from '@/testing/fixtures';
 import { printPalette } from '../printPalette';
-import { renderCalendarSheet, renderDaySheets, renderMonthByTime, renderMonthCards, renderMonthColumns, renderCalendarFull, renderMonthRows, renderWeekSheet, SHEET_KINDS, SHEET_RENDERERS, type SheetLabels } from '../printSheets';
+import { renderCalendarSheet, renderDaySheets, renderMonthByTime, renderMonthCards, renderMonthColumns, renderCalendarFull, renderMonthRows, renderWeekSheet, SHEET_KINDS, SHEET_RENDERERS, sheetStart, type SheetLabels } from '../printSheets';
 
 const labels: SheetLabels = {
   lang: 'he',
@@ -52,7 +52,7 @@ describe('blank sheets', () => {
   it('week: seven columns with tasks, mood and sleep', () => {
     const html = renderWeekSheet(input).html;
     expect(html).toContain('3 של היום');
-    expect((html.match(/class="ci" dir="ltr">1</g) ?? []).length).toBe(7);
+    expect((html.match(/min-width:12px/g) ?? []).length).toBe(7 * 5);
     expect(html).toContain('שעות שינה');
   });
 
@@ -110,7 +110,9 @@ describe('blank sheets', () => {
 
   it('full calendar: parts can be left out', () => {
     const none = renderCalendarFull({ ...input, fields: { sleep: false, mood: false, gratitude: false, did: false } }).html;
-    expect((none.match(/<section class="page">/g) ?? []).length).toBe(1);
+    // one page only: no page break is forced after the calendar
+    expect((none.match(/<section class="page">/g) ?? []).length).toBe(0);
+    expect((none.match(/<section/g) ?? []).length).toBe(1);
     expect(none).not.toContain('min-width:15px');
     const onlyDid = renderCalendarFull({ ...input, fields: { gratitude: false } }).html;
     expect(onlyDid).toContain('מה עשיתי היום');
@@ -159,5 +161,21 @@ describe('print palette', () => {
     expect(ratio(color.muted, color.soft)).toBeGreaterThanOrEqual(4.5);
     expect(ratio(color.headFg, color.headBg)).toBeGreaterThanOrEqual(4.5);
     expect(ratio(color.headFg, color.weekendHead)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe('sheetStart', () => {
+  it('starts months on the 1st, this one or the next (across the year end)', () => {
+    expect(sheetStart('calendarFull', 'current', '2026-10-09')).toBe('2026-10-01');
+    expect(sheetStart('calendarFull', 'next', '2026-10-09')).toBe('2026-11-01');
+    expect(sheetStart('monthRows', 'next', '2026-12-31')).toBe('2027-01-01');
+    expect(sheetStart('monthCards', 'next', '2026-01-31')).toBe('2026-02-01');
+  });
+
+  it('starts weeks on Sunday, this week or the next', () => {
+    // 2026-10-09 is a Friday; the week began on Sunday the 4th.
+    expect(sheetStart('week', 'current', '2026-10-09')).toBe('2026-10-04');
+    expect(sheetStart('week', 'next', '2026-10-09')).toBe('2026-10-11');
+    expect(sheetStart('day', 'current', '2026-10-04')).toBe('2026-10-04');
   });
 });

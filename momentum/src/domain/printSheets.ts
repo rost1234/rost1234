@@ -1,4 +1,4 @@
-import { addDays, dayOfMonth, getWeekday, monthDays, monthGrid, type LocalDateString } from '@/core/localDate';
+import { addDays, dayOfMonth, getWeekday, monthDays, monthGrid, monthStart, type LocalDateString } from '@/core/localDate';
 import { isHabitDueOn } from './habitSchedule';
 import type { Habit, TimeOfDay } from './models';
 import { accentFor, printPalette, type PrintPalette } from './printPalette';
@@ -89,10 +89,13 @@ const circle = (text: string, color?: string) =>
   `<i class="ci" dir="ltr"${color ? ` style="border-color:${color};color:${color}"` : ''}>${e(text)}</i>`;
 const box = (extra = '', color?: string) => `<i class="bx ${extra}"${color ? ` style="border-color:${color}"` : ''}></i>`;
 
-const isWeekend = (date: LocalDateString) => {
-  const day = getWeekday(date);
-  return day === 5 || day === 6;
-};
+/** Weekend columns: Friday and Saturday on a right-to-left (Hebrew) page, Saturday and Sunday otherwise. */
+const isWeekendDay = (day: number, labels: SheetLabels) => (labels.dir === 'rtl' ? day === 5 || day === 6 : day === 0 || day === 6);
+const isWeekend = (date: LocalDateString, labels: SheetLabels) => isWeekendDay(getWeekday(date), labels);
+
+/** A small numbered circle, for tight cells. */
+const tinyCircle = (text: string) =>
+  `<i class="ci" dir="ltr" style="min-width:15px;height:15px;font-size:8px;line-height:13px;margin:0 0.5px">${e(text)}</i>`;
 
 function shell(title: string, body: string, labels: SheetLabels, landscape: boolean, p: PrintPalette, extraCss = ''): string {
   const css = `
@@ -153,14 +156,14 @@ function monthTable(
   const head = dates
     .map(
       (date) =>
-        `<th class="${isWeekend(date) ? 'grey' : ''}"><b>${dayOfMonth(date)}</b><br><small>${e(labels.weekdayInitials[getWeekday(date)] ?? '')}</small></th>`,
+        `<th class="${isWeekend(date, labels) ? 'grey' : ''}"><b>${dayOfMonth(date)}</b><br><small>${e(labels.weekdayInitials[getWeekday(date)] ?? '')}</small></th>`,
     )
     .join('');
   const cells = (habit: Habit | null) =>
     dates
       .map((date) => {
         const off = habit && !isHabitDueOn(habit, date);
-        return `<td class="${off ? 'off' : isWeekend(date) ? 'grey' : ''}"></td>`;
+        return `<td class="${off ? 'off' : isWeekend(date, labels) ? 'grey' : ''}"></td>`;
       })
       .join('');
   const rows = groups
@@ -205,7 +208,7 @@ export function renderMonthColumns(input: SheetInput): Sheet {
   ].join('');
   const rows = dates
     .map((date) => {
-      const weekend = isWeekend(date);
+      const weekend = isWeekend(date, labels);
       const cells = [
         ...habits.map((habit) => `<td class="${!isHabitDueOn(habit, date) ? 'off' : weekend ? 'grey' : ''}"></td>`),
         ...Array.from({ length: blanks }, () => `<td class="${weekend ? 'grey' : ''}"></td>`),
@@ -271,7 +274,7 @@ export function renderWeekSheet(input: SheetInput): Sheet {
   const p = printPalette(input.color);
   const dates = Array.from({ length: 7 }, (_, i) => addDays(input.start, i));
   const head = dates
-    .map((date) => `<th class="${isWeekend(date) ? 'grey' : ''}"><b>${e(labels.weekdayNames[getWeekday(date)] ?? '')}</b><br>${dayOfMonth(date)}</th>`)
+    .map((date) => `<th class="${isWeekend(date, labels) ? 'grey' : ''}"><b>${e(labels.weekdayNames[getWeekday(date)] ?? '')}</b><br>${dayOfMonth(date)}</th>`)
     .join('');
   const habitRow = (habit: Habit | null, index: number) =>
     `<tr style="height:34px"><td class="name" style="${stripe(p, index)}">${habit ? habitName(habit, labels) : ''}</td>${dates
@@ -281,16 +284,13 @@ export function renderWeekSheet(input: SheetInput): Sheet {
   const taskCells = dates
     .map(
       (date) =>
-        `<td class="${isWeekend(date) ? 'grey' : ''}" style="padding:3px 3px;text-align:start;vertical-align:top">${[0, 1, 2]
+        `<td class="${isWeekend(date, labels) ? 'grey' : ''}" style="padding:3px 3px;text-align:start;vertical-align:top">${[0, 1, 2]
           .map(() => `<div style="height:24px;border-bottom:0.6px solid ${p.line};display:flex;align-items:flex-end;gap:3px;padding-bottom:2px">${box()}</div>`)
           .join('')}</td>`,
     )
     .join('');
   const moodCells = dates
-    .map(
-      () =>
-        `<td style="padding:6px 0;height:34px;white-space:nowrap"><span style="display:inline-block;transform:scale(0.78);transform-origin:center">${[1, 2, 3, 4, 5].map((n) => circle(String(n))).join('')}</span></td>`,
-    )
+    .map(() => `<td style="padding:6px 0;height:34px;white-space:nowrap">${[1, 2, 3, 4, 5].map((n) => `<i class="ci" dir="ltr" style="min-width:12px;height:12px;font-size:7px;line-height:10px;margin:0 0.5px">${n}</i>`).join('')}</td>`)
     .join('');
   const sleepCells = dates.map(() => `<td style="height:28px"></td>`).join('');
   const body = `<h1>${e(labels.weekSheetTitle)} &middot; ${e(labels.dateLabel(dates[0] ?? input.start))} &ndash; ${e(labels.dateLabel(dates[6] ?? input.start))}</h1>${howTo(habits, labels)}
@@ -309,9 +309,10 @@ export function renderDaySheets(input: SheetInput): Sheet {
   const p = printPalette(input.color);
   const count = input.days ?? 7;
   const blanks = Math.max(0, MIN_ROWS.day - habits.length);
+  const rowHeight = habits.length > 10 ? 24 : 32;
   const habitRow = (habit: Habit | null, index: number) => {
     const note = habit ? habitNote(habit, habits, labels) : '';
-    return `<div style="display:flex;align-items:center;gap:10px;border-bottom:0.6px solid ${p.line};padding:5px 0;min-height:32px;${stripe(p, index)}${p.isColor ? 'padding-inline-start:8px;' : ''}">${box('big', p.isColor ? accentFor(p, index) : undefined)}<div style="flex:1">${habit ? `<b style="font-size:13px">${habitName(habit, labels)}</b>${note ? `<br><small>${e(note)}</small>` : ''}` : ''}</div></div>`;
+    return `<div style="display:flex;align-items:center;gap:10px;border-bottom:0.6px solid ${p.line};padding:${habits.length > 10 ? 2 : 5}px 0;min-height:${rowHeight}px;${stripe(p, index)}${p.isColor ? 'padding-inline-start:8px;' : ''}">${box('big', p.isColor ? accentFor(p, index) : undefined)}<div style="flex:1">${habit ? `<b style="font-size:13px">${habitName(habit, labels)}</b>${note ? `<br><small>${e(note)}</small>` : ''}` : ''}</div></div>`;
   };
   const pages = Array.from({ length: count }, (_, i) => {
     const date = addDays(input.start, i);
@@ -349,7 +350,7 @@ export function renderCalendarSheet(input: SheetInput): Sheet {
     )
     .join('');
   const head = [0, 1, 2, 3, 4, 5, 6]
-    .map((d) => `<th class="${d === 5 || d === 6 ? 'grey' : ''}" style="height:20px">${e(labels.weekdayNames[d] ?? '')}</th>`)
+    .map((d) => `<th class="${isWeekendDay(d, labels) ? 'grey' : ''}" style="height:20px">${e(labels.weekdayNames[d] ?? '')}</th>`)
     .join('');
   const rows = grid
     .map(
@@ -365,7 +366,7 @@ export function renderCalendarSheet(input: SheetInput): Sheet {
                   : `<i class="bx off" style="width:${size}px;height:${size}px;border-color:#999"></i>`;
               })
               .join('');
-            return `<td class="${col === 5 || col === 6 ? 'grey' : ''}" style="height:${grid.length > 5 ? 74 : 88}px;vertical-align:top;text-align:start;padding:3px 4px"><b style="font-size:12px">${dayOfMonth(date)}</b><div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:3px">${boxes}</div></td>`;
+            return `<td class="${isWeekendDay(col, labels) ? 'grey' : ''}" style="height:${grid.length > 5 ? 74 : 88}px;vertical-align:top;text-align:start;padding:3px 4px"><b style="font-size:12px">${dayOfMonth(date)}</b><div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:3px">${boxes}</div></td>`;
           })
           .join('')}</tr>`,
     )
@@ -388,16 +389,16 @@ export function renderCalendarFull(input: SheetInput): Sheet {
   const small = habits.length > 9;
   const size = small ? 12 : 15;
   const color = (i: number) => (p.isColor ? accentFor(p, i) : p.line);
-  const tiny = (text: string) => `<i class="ci" dir="ltr" style="min-width:15px;height:15px;font-size:8px;line-height:13px;margin:0 0.5px">${e(text)}</i>`;
+  const tiny = tinyCircle;
   const legend = habits
     .map((habit, i) => `<span style="display:inline-flex;align-items:center;gap:3px;margin-inline-end:10px">${circle(String(i + 1), p.isColor ? color(i) : undefined)}${habitName(habit, labels)}</span>`)
     .join('');
   const sleeps = Array.from({ length: LAST_SLEEP - FIRST_SLEEP + 1 }, (_, n) => tiny(n === 0 ? `≤${FIRST_SLEEP}` : n === LAST_SLEEP - FIRST_SLEEP ? `${LAST_SLEEP}+` : String(FIRST_SLEEP + n))).join('');
   const moods = [1, 2, 3, 4, 5].map((n) => tiny(String(n))).join('');
   const head = [0, 1, 2, 3, 4, 5, 6]
-    .map((d) => `<th class="${d === 5 || d === 6 ? 'grey' : ''}" style="height:18px">${e(labels.weekdayNames[d] ?? '')}</th>`)
+    .map((d) => `<th class="${isWeekendDay(d, labels) ? 'grey' : ''}" style="height:18px">${e(labels.weekdayNames[d] ?? '')}</th>`)
     .join('');
-  const cellHeight = grid.length > 5 ? 96 : 116;
+  const cellHeight = grid.length > 5 ? 84 : 106;
   const rows = grid
     .map(
       (week) =>
@@ -411,7 +412,7 @@ export function renderCalendarFull(input: SheetInput): Sheet {
                   : `<i class="bx off" style="width:${size}px;height:${size}px;border-color:#999"></i>`,
               )
               .join('');
-            return `<td class="${col === 5 || col === 6 ? 'grey' : ''}" style="height:${cellHeight}px;vertical-align:top;text-align:start;padding:2px 4px"><b style="font-size:12px">${dayOfMonth(date)}</b>
+            return `<td class="${isWeekendDay(col, labels) ? 'grey' : ''}" style="height:${cellHeight}px;vertical-align:top;text-align:start;padding:2px 4px"><b style="font-size:12px">${dayOfMonth(date)}</b>
 <div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:2px">${boxes}</div>
 ${fields.mood ? `<div style="margin-top:4px;white-space:nowrap" aria-hidden="true">${moods}</div>` : ''}
 ${fields.sleep ? `<div style="margin-top:3px;white-space:nowrap">${sleeps}</div>` : ''}</td>`;
@@ -421,11 +422,12 @@ ${fields.sleep ? `<div style="margin-top:3px;white-space:nowrap">${sleeps}</div>
     .join('');
   const key = [
     fields.mood ? `${e(labels.mood)}: 1 ${e(labels.moods[0] ?? '')} &ndash; 5 ${e(labels.moods[4] ?? '')}` : '',
-    fields.sleep ? `${e(labels.sleep)}: ${FIRST_SLEEP}&ndash;${LAST_SLEEP}` : '',
+    fields.sleep ? `${e(labels.sleep)}: <bdi dir="ltr">${FIRST_SLEEP}&ndash;${LAST_SLEEP}</bdi>` : '',
   ]
     .filter(Boolean)
     .join(' &nbsp;&middot;&nbsp; ');
-  const front = `<section class="page"><h1>${e(labels.calendarSheetTitle)} &middot; ${e(input.monthName)}</h1><p class="how">${e(labels.howTo)}${key ? ` &nbsp; ${key}` : ''}</p>
+  const columnsBack = fields.gratitude || fields.did;
+  const front = `<section class="${columnsBack ? 'page' : ''}"><h1>${e(labels.calendarSheetTitle)} &middot; ${e(input.monthName)}</h1><p class="how">${e(labels.howTo)}${key ? ` &nbsp; ${key}` : ''}</p>
 <div style="margin-bottom:5px">${legend}</div>
 <table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></section>`;
 
@@ -436,7 +438,7 @@ ${fields.sleep ? `<div style="margin-top:3px;white-space:nowrap">${sleeps}</div>
     `<table style="flex:1"><thead><tr><th style="width:11%">${e(labels.day)}</th>${columns.map((c) => `<th>${e(c)}</th>`).join('')}</tr></thead><tbody>${list
       .map(
         (date) =>
-          `<tr style="height:${columns.length > 1 ? 36 : 28}px"><td class="${isWeekend(date) ? 'grey' : ''}"><b>${dayOfMonth(date)}</b> <small>${e(labels.weekdayInitials[getWeekday(date)] ?? '')}</small></td>${columns.map(() => '<td></td>').join('')}</tr>`,
+          `<tr style="height:${columns.length > 1 ? 36 : 28}px"><td class="${isWeekend(date, labels) ? 'grey' : ''}"><b>${dayOfMonth(date)}</b> <small>${e(labels.weekdayInitials[getWeekday(date)] ?? '')}</small></td>${columns.map(() => '<td></td>').join('')}</tr>`,
       )
       .join('')}</tbody></table>`;
   const back =
@@ -444,6 +446,23 @@ ${fields.sleep ? `<div style="margin-top:3px;white-space:nowrap">${sleeps}</div>
       ? ''
       : `<section class="page"><h1>${e(columns.join(' · '))} &middot; ${e(input.monthName)}</h1><div style="display:flex;gap:12px;margin-top:8px">${dayTable(dates.slice(0, half))}${dayTable(dates.slice(half))}</div></section>`;
   return { html: shell(labels.calendarSheetTitle, front + back, labels, true, p), landscape: true };
+}
+
+export type SheetPeriod = 'current' | 'next';
+
+/** Sunday of the week containing `date`. */
+export function weekStart(date: LocalDateString): LocalDateString {
+  return addDays(date, -getWeekday(date));
+}
+
+/** The first day a sheet starts on: the month's first day, or a week's Sunday; this period or the next. */
+export function sheetStart(kind: SheetKind, period: SheetPeriod, today: LocalDateString): LocalDateString {
+  if (kind === 'week' || kind === 'day') {
+    const sunday = weekStart(today);
+    return period === 'current' ? sunday : addDays(sunday, 7);
+  }
+  const first = monthStart(today);
+  return period === 'current' ? first : monthStart(addDays(first, 32));
 }
 
 export const SHEET_RENDERERS: Record<SheetKind, (input: SheetInput) => Sheet> = {

@@ -718,7 +718,7 @@ export function CalendarScreen() {
         <Button
           label={t('print.open')}
           variant="secondary"
-          onPress={() => router.push({ pathname: '/print', params: habitId ? { habitId } : {} })}
+          onPress={() => router.push({ pathname: '/print', params: habitId ? { habitId, month } : { month } })}
         />
       </ScrollView>
       {data && selected ? <DaySheet date={selected} data={data} today={today} habitId={habitId} onChanged={refresh} onClose={() => setSelected(null)} /> : null}

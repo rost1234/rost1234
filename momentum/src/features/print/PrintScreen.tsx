@@ -8,7 +8,7 @@ import { Banner, Button, Card, Chip } from '@/components/ui';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { useBottomSpace } from '@/components/useBottomSpace';
 import { toErrorMessage } from '@/core/errors';
-import { addDays, monthStart } from '@/core/localDate';
+import { addDays, monthLabel, monthStart } from '@/core/localDate';
 import { SHEET_KINDS, type CalendarFields, type SheetKind } from '@/domain/printSheets';
 import { useReflectionAccess } from '@/features/reflection/ReflectionLock';
 import { useLocalDate } from '@/hooks/useLocalDate';
@@ -36,7 +36,7 @@ export function PrintScreen() {
   const styles = useStyles();
   const bottomSpace = useBottomSpace();
   const today = useLocalDate();
-  const params = useLocalSearchParams<{ habitId?: string }>();
+  const params = useLocalSearchParams<{ habitId?: string; month?: string }>();
   const allHabits = useHabitStore((s) => s.habits);
   const habits = allHabits.filter((h) => !h.isArchived);
   const { canRead, ask } = useReflectionAccess();
@@ -58,8 +58,12 @@ export function PrintScreen() {
     setPeriod(next === 'report' ? 'current' : 'next');
   };
 
+  // The report is for the month the calendar was showing (this month when opened from elsewhere).
+  const reportMonth = params.month && /^\d{4}-\d{2}-01$/.test(params.month) ? params.month : monthStart(today);
+  const previousMonth = monthStart(addDays(reportMonth, -1));
+
   const periodLabel = (value: SheetPeriod): string => {
-    if (isReport) return value === 'current' ? t('print.period.current.month') : t('print.period.last');
+    if (isReport) return monthLabel(value === 'current' ? reportMonth : previousMonth, t.locale);
     return t(`print.period.${value}.${weekly ? 'week' : 'month'}` as TranslationKey);
   };
 
@@ -75,8 +79,7 @@ export function PrintScreen() {
       if (isReport) {
         // Reflections are private: ask for the fingerprint / PIN first when the lock is on.
         if (withReflections && !canRead && !(await ask())) return;
-        const thisMonth = monthStart(today);
-        const month = period === 'current' ? thisMonth : monthStart(addDays(thisMonth, -1));
+        const month = period === 'current' ? reportMonth : previousMonth;
         const data = await loadReportData(month);
         await printMonthReport({ month, today, ...data, habitId: params.habitId ?? null, includeTasks: withTasks, includeReflections: withReflections, color, t });
       } else {

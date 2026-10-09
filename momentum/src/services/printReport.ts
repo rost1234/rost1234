@@ -45,7 +45,7 @@ function reportLabels(t: Translator): ReportLabels {
       return t('refl.moodA11y', { label: option ? t(option.label) : '', score });
     },
     habitsDone: (done, total) => t('cal.dayDone', { done, total }),
-    weekdays: (t.isRTL ? HEBREW_INITIALS : [0, 1, 2, 3, 4, 5, 6].map((d) => [...weekdayLabel(d as Weekday, t.locale)][0] ?? '')) as unknown as ReportLabels['weekdays'],
+    weekdays: (t.isRTL ? HEBREW_INITIALS : [0, 1, 2, 3, 4, 5, 6].map((d) => [...weekdayLabel(d as Weekday, t.locale)].slice(0, 2).join(''))) as unknown as ReportLabels['weekdays'],
   };
 }
 
