@@ -30,17 +30,17 @@ describe('built-in courses', () => {
     'foundation station %s ships with a full lesson',
     (_id, station) => {
       expect(station.summary.length).toBeGreaterThan(10);
-      if (station.parts) {
-        expect(lessonProblems(station.parts)).toEqual([]);
-        expect(station.parts.sections.length).toBeGreaterThanOrEqual(2);
-        expect(station.parts.check.length).toBeGreaterThanOrEqual(2);
-        expect(station.parts.check.length).toBeLessThanOrEqual(3);
-        expect(lessonPlainText(station.parts).length).toBeGreaterThan(400);
-        // No leftover second copy of the lesson.
-        expect(station.explanation).toBeUndefined();
-      } else {
-        expect(station.explanation!.length).toBeGreaterThan(300);
-      }
+      // Every built-in lesson is structured (see lesson.ts), with no leftover plain-text copy.
+      expect(station.parts).toBeDefined();
+      expect(station.explanation).toBeUndefined();
+      const parts = station.parts!;
+      expect(lessonProblems(parts)).toEqual([]);
+      expect(parts.sections.length).toBeGreaterThanOrEqual(2);
+      expect(parts.example).toBeDefined();
+      expect(parts.misconception).toBeDefined();
+      expect(parts.check.length).toBeGreaterThanOrEqual(2);
+      expect(parts.check.length).toBeLessThanOrEqual(3);
+      expect(lessonPlainText(parts).length).toBeGreaterThan(400);
       expect(station.cards!.length).toBeGreaterThanOrEqual(3);
       for (const card of station.cards!) {
         expect(card.question.trim().length).toBeGreaterThan(3);
