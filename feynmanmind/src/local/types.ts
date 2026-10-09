@@ -1,4 +1,5 @@
 import type { FeynmanEvaluation } from '@/api/functions';
+import type { LessonParts } from '@/content/lesson';
 import type { Course } from '@/content/types';
 import type { ReviewData } from '@/srs/sm2';
 
@@ -65,8 +66,11 @@ export interface ReviewDay {
 }
 
 export interface Lesson {
+  /** Plain text (derived from `parts` when the lesson has them). */
   explanation: string;
   cards: { question: string; answer: string }[];
+  /** The structured lesson (lessons written before 2.3 don't have it). */
+  parts?: LessonParts;
 }
 
 export interface Placement {

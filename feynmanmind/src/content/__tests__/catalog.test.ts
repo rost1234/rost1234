@@ -1,4 +1,5 @@
 import { BUILT_IN_COURSES } from '../catalog';
+import { lessonPlainText, lessonProblems } from '../lesson';
 import { LEVEL_KEYS, stationsOf, unitsOf } from '../types';
 
 describe('built-in courses', () => {
@@ -29,7 +30,17 @@ describe('built-in courses', () => {
     'foundation station %s ships with a full lesson',
     (_id, station) => {
       expect(station.summary.length).toBeGreaterThan(10);
-      expect(station.explanation!.length).toBeGreaterThan(300);
+      if (station.parts) {
+        expect(lessonProblems(station.parts)).toEqual([]);
+        expect(station.parts.sections.length).toBeGreaterThanOrEqual(2);
+        expect(station.parts.check.length).toBeGreaterThanOrEqual(2);
+        expect(station.parts.check.length).toBeLessThanOrEqual(3);
+        expect(lessonPlainText(station.parts).length).toBeGreaterThan(400);
+        // No leftover second copy of the lesson.
+        expect(station.explanation).toBeUndefined();
+      } else {
+        expect(station.explanation!.length).toBeGreaterThan(300);
+      }
       expect(station.cards!.length).toBeGreaterThanOrEqual(3);
       for (const card of station.cards!) {
         expect(card.question.trim().length).toBeGreaterThan(3);

@@ -6,6 +6,7 @@ import { calculateNextReview, initialReviewData, type QualityScore } from '@/srs
 import type { FeynmanEvaluation } from '@/api/functions';
 import { findStation, stationsOf, type Course, type CourseConcept, type LevelKey } from '@/content/types';
 import { DuplicateError, LessonMissingError, NotFoundError, type Concept, type Flashcard, type Lesson, type LocalDB, type Placement, type QaTurn, type TutorTurn } from './types';
+import { lessonPlainText } from '@/content/lesson';
 
 type NewId = () => string;
 
@@ -567,6 +568,7 @@ export const lessonKey = (courseId: string, stationKey: string) => `${courseId}/
 
 /** The station's lesson: built in, or previously written by the AI and saved. */
 export function lessonFor(db: LocalDB, course: Course, station: CourseConcept): Lesson | null {
+  if (station.parts && station.cards?.length) return { explanation: lessonPlainText(station.parts), cards: station.cards, parts: station.parts };
   if (station.explanation && station.cards?.length) return { explanation: station.explanation, cards: station.cards };
   return db.lessons[lessonKey(course.id, station.key)] ?? null;
 }

@@ -1,3 +1,5 @@
+import type { LessonParts } from './lesson';
+
 /** The four levels every course climbs through, from the basics to master's-degree depth. */
 export const LEVEL_KEYS = ['foundations', 'advanced', 'bachelor', 'master'] as const;
 export type LevelKey = (typeof LEVEL_KEYS)[number];
@@ -38,6 +40,8 @@ export interface CourseConcept {
    * the first time they're opened, and they're then saved on the device.
    */
   explanation?: string;
+  /** The lesson in its structured form (preferred over `explanation`; see lesson.ts). */
+  parts?: LessonParts;
   cards?: { question: string; answer: string }[];
 }
 
