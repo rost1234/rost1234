@@ -791,8 +791,11 @@ export const en = {
   "print.include": "Include",
   "print.withTasks": "Tasks",
   "print.withReflections": "Reflections",
-  "print.hint": "Black and white. It opens in your device's print window: print it, or save it as a PDF.",
+  "print.hint": "It opens in your device's print window, where you can print it or save it as a PDF.",
   "print.error": "Couldn't print: {error}",
+  "print.colorful": "In color",
+  "print.blackWhite": "Black and white",
+  "print.colors": "Colors",
 } as const;
 
 export type TranslationKey = keyof typeof en;

@@ -60,6 +60,7 @@ export interface MonthReportRequest {
   habitId: string | null;
   includeTasks: boolean;
   includeReflections: boolean;
+  color: boolean;
   t: Translator;
 }
 
@@ -85,6 +86,7 @@ export async function printMonthReport(request: MonthReportRequest): Promise<voi
       tasks,
       includeTasks: request.includeTasks,
       includeReflections: request.includeReflections,
+      color: request.color,
       generatedOn: formatLongDate(today, t.locale),
     },
     reportLabels(t),

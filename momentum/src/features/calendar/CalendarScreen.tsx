@@ -617,6 +617,7 @@ export function CalendarScreen() {
   const [error, setError] = useState<string | null>(null);
   const [withTasks, setWithTasks] = useState(true);
   const [withReflections, setWithReflections] = useState(false);
+  const [withColor, setWithColor] = useState(false);
   const [printing, setPrinting] = useState(false);
   const { canRead, ask } = useReflectionAccess();
 
@@ -660,6 +661,7 @@ export function CalendarScreen() {
         habitId,
         includeTasks: withTasks,
         includeReflections: withReflections,
+        color: withColor,
         t,
       });
     } catch (e) {
@@ -750,6 +752,11 @@ export function CalendarScreen() {
           <View style={styles.printChips}>
             <Chip label={t('print.withTasks')} selected={withTasks} onPress={() => setWithTasks(!withTasks)} />
             <Chip label={t('print.withReflections')} selected={withReflections} onPress={() => setWithReflections(!withReflections)} />
+          </View>
+          <Text style={typography.label}>{t('print.colors')}</Text>
+          <View style={styles.printChips}>
+            <Chip label={t('print.blackWhite')} selected={!withColor} onPress={() => setWithColor(false)} />
+            <Chip label={t('print.colorful')} selected={withColor} onPress={() => setWithColor(true)} />
           </View>
           <Button label={t('print.button')} variant="secondary" onPress={() => void print()} loading={printing} disabled={!days} />
           <Text style={typography.caption}>{t('print.hint')}</Text>

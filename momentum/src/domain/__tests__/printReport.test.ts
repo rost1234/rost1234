@@ -60,6 +60,7 @@ const base: ReportInput = {
   tasks: [task],
   includeTasks: true,
   includeReflections: true,
+  color: false,
   generatedOn: '10.9.2026',
 };
 
@@ -104,9 +105,15 @@ describe('renderReportHtml', () => {
     expect(renderReportHtml({ ...base, habits: [], logs: [] }, labels)).toContain('אין הרגלים');
   });
 
-  it('uses only black, white and grey', () => {
-    const html = renderReportHtml(base, labels);
-    const colors = html.match(/#[0-9a-fA-F]{3,6}\b/g) ?? [];
-    for (const color of colors) expect(['#000', '#fff']).toContain(color.toLowerCase());
+  it('uses only black, white and grey, unless color is asked for', () => {
+    const grey = (hex: string) => {
+      const h = hex.slice(1).toLowerCase();
+      const f = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+      return f.slice(0, 2) === f.slice(2, 4) && f.slice(2, 4) === f.slice(4, 6);
+    };
+    for (const color of renderReportHtml(base, labels).match(/#[0-9a-fA-F]{3,6}\b/g) ?? []) expect(grey(color)).toBe(true);
+    const colored = renderReportHtml({ ...base, color: true }, labels);
+    expect(colored).toContain('#2d6a9f');
+    expect(colored).toContain('#2a7048');
   });
 });

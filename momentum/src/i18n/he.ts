@@ -793,6 +793,9 @@ export const he: Record<TranslationKey, string> = {
   "print.include": "מה לכלול",
   "print.withTasks": "משימות",
   "print.withReflections": "רפלקציות",
-  "print.hint": "הדוח בשחור לבן ונפתח בחלון ההדפסה של המכשיר, ושם אפשר להדפיס או לשמור כ-PDF.",
+  "print.hint": "הדוח נפתח בחלון ההדפסה של המכשיר, ושם אפשר להדפיס או לשמור כ-PDF.",
   "print.error": "ההדפסה לא הצליחה: {error}",
+  "print.colorful": "צבעוני",
+  "print.blackWhite": "שחור לבן",
+  "print.colors": "צבעים",
 };

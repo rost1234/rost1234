@@ -2,6 +2,7 @@ import { dayOfMonth, getWeekday, type LocalDateString, type Weekday } from '@/co
 import { buildCalendarDays, habitDayDetails, summarizeMonth, type HabitDayDetail } from './calendar';
 import type { HeatCellState } from './analytics';
 import type { DailyReflection, Habit, HabitLog, MoodScore, Pause, Task } from './models';
+import { printPalette } from './printPalette';
 
 /** Everything the printed monthly report says, already translated. */
 export interface ReportLabels {
@@ -51,6 +52,8 @@ export interface ReportInput {
   tasks: readonly Task[];
   includeTasks: boolean;
   includeReflections: boolean;
+  /** Colorful (the app's Calm colors) or black and white. */
+  color: boolean;
   /** Printed under the title, e.g. the date the report was made. */
   generatedOn: string;
 }
@@ -168,30 +171,34 @@ export function renderReportHtml(input: ReportInput, labels: ReportLabels): stri
     .map(([label, value]) => `<div class="stat"><b>${escapeHtml(value ?? '')}</b><span>${escapeHtml(label ?? '')}</span></div>`)
     .join('');
 
+  const p = printPalette(input.color);
   const css = `
 @page { size: A4; margin: 12mm; }
-* { box-sizing: border-box; color: #000; }
-body { margin: 0; background: #fff; font-family: sans-serif; font-size: 11px; line-height: 1.45; }
+* { box-sizing: border-box; color: ${p.ink}; }
+body { margin: 0; background: #fff; font-family: sans-serif; font-size: 11px; line-height: 1.45; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 h1 { font-size: 20px; margin: 0; }
-h2 { font-size: 14px; margin: 16px 0 6px; border-bottom: 1px solid #000; padding-bottom: 2px; }
+h2 { font-size: 14px; margin: 16px 0 6px; border-bottom: 1px solid ${p.line}; padding-bottom: 2px; }
 h3 { font-size: 12px; margin: 0 0 3px; }
 small { font-weight: normal; font-size: 10px; }
-.sub { margin: 2px 0 10px; font-size: 10px; }
+.sub { margin: 2px 0 10px; font-size: 10px; color: ${p.muted}; }
 .stats { display: flex; gap: 8px; margin-bottom: 4px; }
-.stat { flex: 1; border: 1px solid #000; padding: 4px 6px; text-align: center; }
+.stat { flex: 1; border: 1px solid ${p.line}; padding: 4px 6px; text-align: center; background: ${p.soft}; }
 .stat b { display: block; font-size: 16px; }
 .stat span { font-size: 9px; }
 table.grid { border-collapse: collapse; width: 100%; table-layout: fixed; }
-.grid th, .grid td { border: 0.5px solid #000; text-align: center; padding: 1px 0; font-size: 8px; height: 16px; }
+.grid th, .grid td { border: 0.5px solid ${p.line}; text-align: center; padding: 1px 0; font-size: 8px; height: 16px; }
+.grid th { background: ${p.headBg}; color: ${p.headFg}; }
+.grid th * { color: ${p.headFg}; }
+.grid th small { color: ${p.headFg}; }
 .grid th b { font-size: 8px; }
 .grid .name { width: 26%; text-align: start; padding: 1px 4px; font-size: 10px; overflow: hidden; }
 .grid .tot { width: 8%; font-size: 9px; font-weight: bold; }
-.dot { display: inline-block; width: 7px; height: 7px; border: 1px solid #000; border-radius: 50%; vertical-align: middle; }
-.dot.full { background: #000; }
-.dot.half { background: linear-gradient(to right, #000 50%, #fff 50%); }
-.frz { display: inline-block; min-width: 9px; border: 1px solid #000; border-radius: 3px; font-style: normal; font-size: 8px; font-weight: bold; line-height: 9px; }
+.dot { display: inline-block; width: 7px; height: 7px; border: 1px solid ${p.done}; border-radius: 50%; vertical-align: middle; }
+.dot.full { background: ${p.done}; }
+.dot.half { border-color: ${p.partial}; background: linear-gradient(to right, ${p.partial} 50%, #fff 50%); }
+.frz { display: inline-block; min-width: 9px; border: 1px solid ${p.freeze}; color: ${p.freeze}; border-radius: 3px; font-style: normal; font-size: 8px; font-weight: bold; line-height: 9px; }
 .legend { margin-top: 6px; font-size: 9px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
-.day { break-inside: avoid; page-break-inside: avoid; border-bottom: 0.5px solid #000; padding: 5px 0; }
+.day { break-inside: avoid; page-break-inside: avoid; border-bottom: 0.5px solid ${p.line}; padding: 5px 0; }
 .day p { margin: 1px 0; }
 .day ul { margin: 1px 0; padding-inline-start: 16px; list-style: none; }
 .k { font-size: 9px; font-weight: bold; text-decoration: underline; }
