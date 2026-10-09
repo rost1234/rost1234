@@ -270,6 +270,36 @@ const coursePlan = {
       await page.waitForTimeout(400);
       await expectText('ימים שחזרתם', 'calendar legend');
       await shot('10b-review-month');
+      // Learning on paper: make a month kit (black and white, paper saver) and check the pages.
+      await page.getByRole('button', { name: 'ליצור ערכה לחודש' }).click();
+      await page.waitForTimeout(800);
+      await expectText('חיסכון מקסימלי', 'paper modes');
+      await page.getByRole('radio', { name: /חיסכון ⭐/ }).click();
+      await page.getByRole('tab', { name: 'שחור-לבן' }).click();
+      await shot('14a-print-settings');
+      const popupPromise = page.waitForEvent('popup');
+      await page.getByRole('button', { name: 'הדפסה' }).click();
+      const popup = await popupPromise;
+      await popup.waitForLoadState();
+      await popup.setViewportSize({ width: 1123, height: 794 });
+      const kit = await popup.evaluate(() => ({
+        pages: document.querySelectorAll('.page').length,
+        bw: document.body.className,
+        text: document.body.innerText.slice(0, 4000),
+        // Anything cut off at the bottom of a page (content taller than the page or its boxes).
+        cut: [...document.querySelectorAll('.page, .side, .half, .quarter, .col')].filter((e) => e.scrollHeight > e.clientHeight + 2).length,
+      }));
+      if (kit.cut) failures.push(`kit has ${kit.cut} boxes with cut-off content`);
+      if (kit.bw !== 'bw') failures.push(`kit colour mode: ${kit.bw}`);
+      if (kit.pages < 3) failures.push(`kit pages: ${kit.pages}`);
+      if (!kit.text.includes('נושא')) failures.push('kit has no tracker');
+      await popup.screenshot({ path: `${OUT}/${scheme}-14b-kit.png` });
+      await popup.close();
+      await page.waitForTimeout(600);
+      await expectText('הערכה מוכנה', 'kit done');
+      await shot('14c-print-done');
+      await page.goBack();
+      await page.waitForTimeout(600);
       await page.getByRole('tab', { name: /^אני/ }).click();
       await page.waitForTimeout(700);
       await expectText('הישגים', 'achievements');

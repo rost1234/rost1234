@@ -31,6 +31,12 @@ interface PrefsState {
   highContrast: boolean;
   reduceMotion: boolean;
   hapticsEnabled: boolean;
+  /** The last printed-kit settings (see src/print). */
+  printCourses: string[];
+  printDays: number[];
+  printPerDay: number;
+  printMode: 'full' | 'saver' | 'max' | 'track';
+  printColor: boolean;
   set: (patch: Partial<Omit<PrefsState, 'set'>>) => void;
 }
 
@@ -53,6 +59,11 @@ export const usePrefsStore = create<PrefsState>()(
       highContrast: false,
       reduceMotion: false,
       hapticsEnabled: true,
+      printCourses: [],
+      printDays: [0, 1, 2, 3, 4],
+      printPerDay: 1,
+      printMode: 'saver',
+      printColor: true,
       set: (patch) => set(patch),
     }),
     {

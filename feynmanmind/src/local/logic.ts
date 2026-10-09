@@ -5,7 +5,7 @@
 import { calculateNextReview, initialReviewData, type QualityScore } from '@/srs/sm2';
 import type { FeynmanEvaluation } from '@/api/functions';
 import { findStation, stationsOf, type Course, type CourseConcept, type LevelKey } from '@/content/types';
-import { DuplicateError, LessonMissingError, NotFoundError, type Concept, type Flashcard, type Lesson, type LocalDB, type Placement, type QaTurn, type TutorTurn } from './types';
+import { DuplicateError, LessonMissingError, NotFoundError, type Concept, type Flashcard, type Lesson, type LocalDB, type Placement, type PrintKit, type QaTurn, type TutorTurn } from './types';
 import { lessonPlainText } from '@/content/lesson';
 
 type NewId = () => string;
@@ -465,6 +465,7 @@ export function fromBackup(text: string): LocalDB {
     placements: isRecord(d.placements) ? d.placements! : {},
     questions: isRecord(d.questions) ? d.questions! : {},
     tutorChats: isRecord(d.tutorChats) ? d.tutorChats! : {},
+    printKits: isRecord(d.printKits) ? d.printKits! : {},
   };
 }
 
@@ -766,6 +767,69 @@ export function saveConceptLesson(db: LocalDB, conceptId: string, lesson: Lesson
   const next = { ...db, concepts: { ...db.concepts, [conceptId]: { ...concept, lesson: lesson.explanation, lessonParts: lesson.parts } } };
   // Rewriting a lesson (upgrade) keeps the cards the learner already has; addCards skips duplicates.
   return addCards(next, conceptId, lesson.cards, newId, now)[0];
+}
+
+// ---------------------------------------------------------------------------
+// Learning on paper
+// ---------------------------------------------------------------------------
+
+export function savePrintKit(db: LocalDB, kit: PrintKit): LocalDB {
+  return { ...db, printKits: { ...db.printKits, [kit.id]: kit } };
+}
+
+/** The newest printed kit whose results haven't been entered yet. */
+export function openPrintKit(db: LocalDB): PrintKit | null {
+  return Object.values(db.printKits)
+    .filter((k) => !k.applied_at)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))[0] ?? null;
+}
+
+/** First review after learning on paper, by the self-rating (1–5 stars; 0 = not rated). */
+const PAPER_INTERVAL: Record<number, number> = { 0: 1, 1: 1, 2: 1, 3: 3, 4: 7, 5: 14 };
+
+/**
+ * Brings what was done on paper into the app: each lesson marked as learned
+ * starts its station (concept + flashcards), and its new cards are scheduled
+ * by how well you rated yourself — a topic you knew well comes back later,
+ * one you struggled with comes back tomorrow.
+ */
+export function applyPaperResults(
+  db: LocalDB,
+  kitId: string,
+  results: { n: number; done: boolean; stars: number }[],
+  findCourse: (id: string) => Course | undefined,
+  newId: NewId,
+  now: Date,
+): LocalDB {
+  const kit = db.printKits[kitId];
+  if (!kit) throw new NotFoundError('Kit');
+  let next = db;
+  for (const r of results) {
+    const s = kit.stations.find((x) => x.n === r.n);
+    const course = s && findCourse(s.courseId);
+    if (!s || !course || !r.done) continue;
+    let conceptId: string;
+    try {
+      [next, conceptId] = startStation(next, course, s.key, newId, now);
+    } catch (e) {
+      if (e instanceof LessonMissingError) continue;
+      throw e;
+    }
+    const stars = Math.max(0, Math.min(5, Math.round(r.stars)));
+    const days = PAPER_INTERVAL[stars]!;
+    const due = new Date(now.getFullYear(), now.getMonth(), now.getDate() + days, 9).toISOString();
+    const cards = { ...next.cards };
+    for (const card of Object.values(cards)) {
+      // Only cards the app hasn't scheduled from a real review.
+      if (card.concept_id !== conceptId || card.review.last_reviewed_at) continue;
+      cards[card.id] = {
+        ...card,
+        review: { ...card.review, interval_days: days, repetitions: stars >= 3 ? 1 : 0, easiness_factor: stars >= 4 ? 2.6 : stars === 3 ? 2.5 : 2.2, next_review_date: due },
+      };
+    }
+    next = { ...next, cards };
+  }
+  return { ...next, printKits: { ...next.printKits, [kitId]: { ...kit, applied_at: now.toISOString() } } };
 }
 
 // ---------------------------------------------------------------------------

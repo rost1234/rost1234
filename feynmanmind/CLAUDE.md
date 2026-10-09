@@ -39,7 +39,11 @@ wants a short answer, a rewrite (`refine_quote`), or is done; it also returns ke
 hidden help the app reveals on request (3 `hints`, then `question_answer`, and `model_explanation`
 after a score of 71+ or three attempts); "I didn't understand the question" goes to
 `ask-lesson` with `tutor_question` (clarify, never answer). Screens with typing use `KeyboardInsetView`
-(`src/lib/keyboard.tsx`). Library subjects open as a map too (`subject/[id].tsx`). Everything else
+(`src/lib/keyboard.tsx`). Library subjects open as a map too (`subject/[id].tsx`). Learning on paper
+(`print/index.tsx`, from the Review tab): `src/print/plan.ts` lays out a month (lesson days, reviews at
++1/+3/+7/+14), `src/print/html.ts` draws A4-landscape pages in four paper modes (full/saver/max/track),
+colour or black and white; `expo-print` prints or saves a PDF; `print/results.tsx` brings the paper
+results back (`applyPaperResults`). Everything else
 (course maps, stations, concept pages, the review session) is a stack screen in `src/app/(app)/`.
 Review limits and accessibility live in `src/state/prefsStore.ts`; the theme reads text size and
 contrast from it (`useTheme().textScale`), `useReduceMotion()` covers animations.

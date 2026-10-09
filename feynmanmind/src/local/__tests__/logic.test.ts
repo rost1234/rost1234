@@ -499,3 +499,41 @@ describe('structured lessons and tutor help', () => {
     expect(db.sessions[id].primary_gap).toBe('למה זה קורה');
   });
 });
+
+describe('learning on paper', () => {
+  const L = jest.requireActual('../logic');
+  const { physics } = jest.requireActual('../../content/courses/physics');
+  const find = (id: string) => (id === 'physics' ? physics : undefined);
+  const kit = {
+    id: 'k1',
+    year: 2026,
+    month: 8,
+    created_at: '2026-09-01T00:00:00.000Z',
+    stations: [
+      { n: 1, courseId: 'physics', key: 'velocity', title: 'מהירות', learn: '2026-09-01' },
+      { n: 2, courseId: 'physics', key: 'inertia', title: 'התמדה', learn: '2026-09-02' },
+      { n: 3, courseId: 'physics', key: 'newton2', title: 'ניוטון', learn: '2026-09-03' },
+    ],
+  };
+
+  it('saves a kit and finds the open one', () => {
+    const db = L.savePrintKit(seed().db, kit);
+    expect(L.openPrintKit(db).id).toBe('k1');
+    expect(L.openPrintKit({ ...db, printKits: { k1: { ...kit, applied_at: 'x' } } })).toBeNull();
+  });
+
+  it('starts the lessons marked as done and schedules their cards by the self-rating', () => {
+    let db = L.savePrintKit(seed().db, kit);
+    db = L.applyPaperResults(db, 'k1', [{ n: 1, done: true, stars: 5 }, { n: 2, done: true, stars: 2 }, { n: 3, done: false, stars: 0 }], find, newId, NOW);
+    const concepts = (Object.values(db.concepts) as { id: string; course_key?: string }[]).filter((c) => c.course_key) as { id: string; course_key: string }[];
+    expect(concepts.map((c) => c.course_key).sort()).toEqual(['inertia', 'velocity']);
+    const dueDay = (key: string) => {
+      const id = concepts.find((c) => c.course_key === key)!.id;
+      return new Set(L.cardsOf(db, id).map((c: { review: { next_review_date: string } }) => new Date(c.review.next_review_date).getDate()));
+    };
+    expect(dueDay('velocity')).toEqual(new Set([NOW.getDate() + 14 - 30])); // 24 Sep + 14 = 8 Oct
+    expect(dueDay('inertia')).toEqual(new Set([25]));
+    expect(db.printKits.k1.applied_at).toBe(NOW.toISOString());
+    expect(() => L.applyPaperResults(db, 'nope', [], find, newId, NOW)).toThrow();
+  });
+});

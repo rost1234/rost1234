@@ -21,6 +21,19 @@ export interface LocalDB {
   questions: Record<string, QaTurn[]>;
   /** The conversation with the Feynman tutor, per concept id (explanation, feedback, answers, clarifications). */
   tutorChats: Record<string, TutorTurn[]>;
+  /** Monthly kits printed for learning on paper, so their results can be entered afterwards. */
+  printKits: Record<string, PrintKit>;
+}
+
+export interface PrintKit {
+  id: string;
+  year: number;
+  /** 0-based. */
+  month: number;
+  created_at: string;
+  stations: { n: number; courseId: string; key: string; title: string; learn: string }[];
+  /** When the results from the paper were entered. */
+  applied_at?: string;
 }
 
 /** One message in the conversation with the tutor. */
@@ -146,6 +159,7 @@ export const emptyDB = (): LocalDB => ({
   placements: {},
   questions: {},
   tutorChats: {},
+  printKits: {},
 });
 
 export class DuplicateError extends Error {
