@@ -58,6 +58,18 @@ export default function ConceptScreen() {
         {!station.data && concept.data.lesson ? (
           <>
             <LessonView title={concept.data.title} explanation={concept.data.lesson} parts={concept.data.lessonParts} />
+            {!concept.data.lessonParts ? (
+              <Card style={{ borderStyle: 'dashed', borderColor: colors.primary }}>
+                <Text style={typography.subheading}>✨ {t('lesson.upgradeTitle')}</Text>
+                <Text style={typography.caption}>{t('lesson.upgradeBody')}</Text>
+                {writeLesson.isPending ? (
+                  <LoadingState label={t('lesson.writing')} />
+                ) : (
+                  <Button label={t('lesson.upgrade')} icon="sparkles-outline" variant="secondary" disabled={!aiReady} onPress={() => writeLesson.mutate({ conceptId: id, language: 'he' })} />
+                )}
+                <InlineError message={writeLesson.error ? errorMessage(writeLesson.error, t) : null} />
+              </Card>
+            ) : null}
             <LessonQA
               context={{
                 threadKey: conceptThreadKey(id),

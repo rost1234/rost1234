@@ -20,6 +20,9 @@ Expo SDK 57 / React Native 0.86 / expo-router. Hebrew-first UI (RTL), English al
     `fromUnits([{ unit, stations }])`. Upper stations have only `title` + `summary`; the AI writes the
     lesson on first visit (it receives the station's `unit`, i.e. the real university course).
   - `types.ts` — `Course`, `CourseLevel`, `CourseConcept`, `unitsOf`, `stationsOf`, `sources`.
+  - `lesson.ts` — `LessonParts`, the structured lesson (hook, sections, example, misconception,
+    connection, 2–3 `check` questions). Built-in foundations lessons use `parts` (no `explanation`);
+    the AI writes the same shape (`_shared/lesson-writer.ts`). `lessonPlainText` gives the text form.
   - Each built-in course cites the curricula it follows in `sources` (shown at the end of its map).
 
 ## Navigation
@@ -28,11 +31,13 @@ Expo SDK 57 / React Native 0.86 / expo-router. Hebrew-first UI (RTL), English al
 bottom — Expo Router 57 refuses `@react-navigation/*` packages, use its wrappers): Today (next step +
 checklist, `src/features/today`), Learn (search, my courses, catalog, library — `src/features/learn`),
 Review (count, filters, week, forecast — `src/features/review`), Me (stats, achievements, grouped settings).
-A station (`course/[id]/[key].tsx`) runs in four steps (read → key points → explain → practice); moving
+A station (`course/[id]/[key].tsx`) runs in four steps (read → check yourself → explain → practice); moving
 past the key points starts it; swiping sideways or the bottom bar moves between steps, and the bar's 💬 opens
 lesson questions in a bottom sheet (`features/lesson/AskSheet.tsx`). Explaining (`concept/[id]/explain.tsx`)
 is a chat with the tutor saved per concept (`LocalDB.tutorChats`): the tutor's `next_step` says whether it
-wants a short answer, a rewrite (`refine_quote`), or is done; "I didn't understand the question" goes to
+wants a short answer, a rewrite (`refine_quote`), or is done; it also returns key-idea `coverage` and
+hidden help the app reveals on request (3 `hints`, then `question_answer`, and `model_explanation`
+after a score of 71+ or three attempts); "I didn't understand the question" goes to
 `ask-lesson` with `tutor_question` (clarify, never answer). Screens with typing use `KeyboardInsetView`
 (`src/lib/keyboard.tsx`). Library subjects open as a map too (`subject/[id].tsx`). Everything else
 (course maps, stations, concept pages, the review session) is a stack screen in `src/app/(app)/`.
