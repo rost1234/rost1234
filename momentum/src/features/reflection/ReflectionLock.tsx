@@ -16,16 +16,15 @@ AppState.addEventListener('change', (state) => {
 });
 
 /** For inline reflection text: whether it may be read now, and a way to ask for the fingerprint / PIN. Shares the unlock with `ReflectionLock`. */
-export function useReflectionAccess(): { canRead: boolean; ask: () => void } {
+export function useReflectionAccess(): { canRead: boolean; ask: () => Promise<boolean> } {
   const locked = useDevicePrefsStore((s) => s.lockReflections || !s.isHydrated);
   const [open, setOpen] = useState(unlockedThisVisit);
   const ask = () =>
-    runDetached(
-      unlock().then((ok) => {
-        unlockedThisVisit = ok;
-        setOpen(ok);
-      }),
-    );
+    unlock().then((ok) => {
+      unlockedThisVisit = ok;
+      setOpen(ok);
+      return ok;
+    });
   return { canRead: !locked || open, ask };
 }
 

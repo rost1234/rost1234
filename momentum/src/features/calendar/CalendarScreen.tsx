@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
 import { router, useFocusEffect } from 'expo-router';
 import { SheetHeader } from '@/components/SheetHeader';
-import { Banner, Card, Chip } from '@/components/ui';
+import { Banner, Button, Card, Chip } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme, type Theme } from '@/components/theme';
 import { useBottomSpace } from '@/components/useBottomSpace';
 import { runDetached, toErrorMessage } from '@/core/errors';
@@ -43,6 +43,7 @@ import type { DailyReflection, FocusSession, Habit, HabitLog, Pause, Task } from
 import { MOOD_OPTIONS } from '@/features/reflection/mood';
 import { useReflectionAccess } from '@/features/reflection/ReflectionLock';
 import { useLocalDate } from '@/hooks/useLocalDate';
+import { printMonthReport } from '@/services/printReport';
 import { useHabitStore } from '@/state/habitStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { useT, type TranslationKey } from '@/i18n';
@@ -396,7 +397,7 @@ function ReflectionBlock({ reflection }: { reflection: DailyReflection | undefin
   const mood = MOOD_OPTIONS.find((m) => m.score === reflection.moodScore);
   if (!canRead) {
     return (
-      <Pressable accessibilityRole="button" accessibilityLabel={t('cal.openReflection')} onPress={ask} style={styles.lockedReflection}>
+      <Pressable accessibilityRole="button" accessibilityLabel={t('cal.openReflection')} onPress={() => runDetached(ask())} style={styles.lockedReflection}>
         <Ionicons name="lock-closed" size={18} color={colors.textMuted} />
         <Text style={[typography.label, { flex: 1 }]}>{t('cal.openReflection')}</Text>
       </Pressable>
@@ -602,7 +603,7 @@ function DaySheet({
 /** A month at a glance: every day's habits, freezes and pauses. */
 export function CalendarScreen() {
   const t = useT();
-  const { colors } = useTheme();
+  const { colors, typography } = useTheme();
   const styles = useStyles();
   const bottomSpace = useBottomSpace();
   const today = useLocalDate();
@@ -614,6 +615,10 @@ export function CalendarScreen() {
   const [highlight, setHighlight] = useState<LocalDateString | null>(null);
   const [data, setData] = useState<MonthData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [withTasks, setWithTasks] = useState(true);
+  const [withReflections, setWithReflections] = useState(false);
+  const [printing, setPrinting] = useState(false);
+  const { canRead, ask } = useReflectionAccess();
 
   // Resolves once the month is on screen again, so an edit can wait for fresh data.
   const refresh = useCallback(
@@ -638,6 +643,31 @@ export function CalendarScreen() {
     const list = buildCalendarDays(data.habits, data.logs, data.pauses, monthDays(month), today, habitId);
     return { byDate: new Map(list.map((d) => [d.date, d] as const)), summary: summarizeMonth(list) };
   }, [data, month, today, habitId]);
+
+  const print = async () => {
+    if (!data || data.month !== month || printing) return;
+    // Reflections are private: ask for the fingerprint / PIN first when the lock is on.
+    if (withReflections && !canRead && !(await ask())) return;
+    setPrinting(true);
+    try {
+      await printMonthReport({
+        month,
+        today,
+        habits: data.habits,
+        logs: data.logs,
+        pauses: data.pauses,
+        reflections: data.reflections,
+        habitId,
+        includeTasks: withTasks,
+        includeReflections: withReflections,
+        t,
+      });
+    } catch (e) {
+      setError(t('print.error', { error: toErrorMessage(e) }));
+    } finally {
+      setPrinting(false);
+    }
+  };
 
   // Archived habits still count toward past days, but can't be picked as a filter.
   const activeHabits = useMemo(() => data?.habits.filter((h) => !h.isArchived) ?? [], [data]);
@@ -714,6 +744,16 @@ export function CalendarScreen() {
           </View>
         ) : null}
         <Text style={[styles.hint]}>{t('cal.tapHint')}</Text>
+
+        <Card style={{ gap: spacing.sm }}>
+          <Text style={typography.label}>{t('print.include')}</Text>
+          <View style={styles.printChips}>
+            <Chip label={t('print.withTasks')} selected={withTasks} onPress={() => setWithTasks(!withTasks)} />
+            <Chip label={t('print.withReflections')} selected={withReflections} onPress={() => setWithReflections(!withReflections)} />
+          </View>
+          <Button label={t('print.button')} variant="secondary" onPress={() => void print()} loading={printing} disabled={!days} />
+          <Text style={typography.caption}>{t('print.hint')}</Text>
+        </Card>
       </ScrollView>
       {data && selected ? <DaySheet date={selected} data={data} today={today} habitId={habitId} onChanged={refresh} onClose={() => setSelected(null)} /> : null}
     </SafeAreaView>
@@ -724,6 +764,7 @@ const useStyles = makeStyles(({ colors, typography }) => ({
   safe: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, gap: spacing.md },
   chips: { gap: spacing.sm, paddingVertical: 2 },
+  printChips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   monthNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   arrow: { width: 36, height: 36, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceMuted },
   monthLabel: { ...typography.heading },
