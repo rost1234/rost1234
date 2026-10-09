@@ -44,9 +44,9 @@ export async function writeLesson(llm: StructuredLlm, input: LessonInput): Promi
     system: lessonSystemPrompt(input.level),
     user: buildLessonUserMessage(input),
     schema: LESSON_RESPONSE_SCHEMA,
-    parse: parseLesson,
+    parse: (raw) => parseLesson(raw),
     temperature: 0.3,
-    maxOutputTokens: 3000,
+    maxOutputTokens: 6000,
   });
   if (!lesson.explanation) throw new HttpError(422, 'That concept could not be turned into a lesson', 'invalid_topic');
   return { prompt_version: LESSON_PROMPT_VERSION, lesson };

@@ -1,3 +1,4 @@
+import type { LessonParts } from '@/content/lesson';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { generateLesson } from '@/api/functions';
 import { addLooseConcept, cardsOf, deleteConcept, saveConcept, saveConceptLesson } from '@/local/logic';
@@ -34,6 +35,7 @@ export interface ConceptDetail {
   subject: { id: string; title: string; loose: boolean };
   /** A lesson written for this concept (standalone concepts). */
   lesson?: string;
+  lessonParts?: LessonParts;
 }
 
 export function useConcept(id: string) {
@@ -51,6 +53,7 @@ export function useConcept(id: string) {
           mastery_level: c.mastery_level,
           subject: { id: s.id, title: s.title, loose: !!s.loose },
           lesson: c.lesson,
+          lessonParts: c.lessonParts,
         };
       }),
   });

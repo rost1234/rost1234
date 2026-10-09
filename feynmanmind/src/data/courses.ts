@@ -135,12 +135,12 @@ export function useDeleteCourse() {
 /** Writes the lesson for a station that doesn't have one yet (AI), and saves it on the device. */
 export function useWriteStationLesson() {
   return useMutation({
-    mutationFn: async ({ courseId, key, language }: { courseId: string; key: string; language: 'he' | 'en' }) => {
+    mutationFn: async ({ courseId, key, language, upgrade }: { courseId: string; key: string; language: 'he' | 'en'; /** Rewrite an existing lesson in the new structure. */ upgrade?: boolean }) => {
       const course = findCourse(courseId);
       const ref = course && findStation(course, key);
       if (!course || !ref) throw new NotFoundError('Station');
       const existing = lessonFor(getDB(), course, ref.station);
-      if (existing) return existing;
+      if (existing && !upgrade) return existing;
       const { lesson } = await generateLesson({
         concept_title: ref.station.title,
         summary: ref.station.summary,

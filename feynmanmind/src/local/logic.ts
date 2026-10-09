@@ -172,6 +172,7 @@ export function addSession(
           socratic_question: evaluation.socratic_question,
           jargon_detected: evaluation.jargon_detected,
           misconceptions: evaluation.misconceptions,
+          primary_gap: evaluation.primary_gap,
           created_at: now.toISOString(),
         },
       },
@@ -516,6 +517,21 @@ export function tutorConversation(chat: TutorTurn[]): { role: 'learner' | 'tutor
     );
 }
 
+/** Opens the next hint, the answer, or the model explanation on a feedback turn. */
+export function revealTutorHelp(db: LocalDB, conceptId: string, turnId: string, what: 'hint' | 'answer' | 'model'): LocalDB {
+  const chat = db.tutorChats[conceptId];
+  const turn = chat?.find((t) => t.id === turnId);
+  if (!chat || !turn?.evaluation) throw new NotFoundError('Message');
+  const shown = turn.evaluation.shown ?? { hints: 0, answer: false, model: false };
+  const next = {
+    hints: what === 'hint' ? Math.min((turn.evaluation.hints ?? []).length, shown.hints + 1) : shown.hints,
+    answer: shown.answer || what === 'answer',
+    model: shown.model || what === 'model',
+  };
+  const updated = { ...turn, evaluation: { ...turn.evaluation, shown: next } };
+  return { ...db, tutorChats: { ...db.tutorChats, [conceptId]: chat.map((t) => (t.id === turnId ? updated : t)) } };
+}
+
 /** The newest full explanation (first one or a revision): what "edit the explanation" starts from. */
 export const latestExplanation = (chat: TutorTurn[]): string =>
   [...chat].reverse().find((t) => t.role === 'learner' && (t.kind === 'explanation' || t.kind === 'revision'))?.text ?? '';
@@ -747,7 +763,8 @@ export function addLooseConcept(db: LocalDB, title: string, looseTitle: string, 
 export function saveConceptLesson(db: LocalDB, conceptId: string, lesson: Lesson, newId: NewId, now: Date): LocalDB {
   const concept = db.concepts[conceptId];
   if (!concept) throw new NotFoundError('Concept');
-  const next = { ...db, concepts: { ...db.concepts, [conceptId]: { ...concept, lesson: lesson.explanation } } };
+  const next = { ...db, concepts: { ...db.concepts, [conceptId]: { ...concept, lesson: lesson.explanation, lessonParts: lesson.parts } } };
+  // Rewriting a lesson (upgrade) keeps the cards the learner already has; addCards skips duplicates.
   return addCards(next, conceptId, lesson.cards, newId, now)[0];
 }
 

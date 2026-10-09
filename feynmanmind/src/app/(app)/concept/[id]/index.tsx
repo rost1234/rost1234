@@ -10,7 +10,7 @@ import { useDeleteFlashcard, useFlashcards, type CardRow } from '@/data/flashcar
 import { useSessions } from '@/data/sessions';
 import { useT } from '@/i18n';
 import { confirmAsync } from '@/lib/dialogs';
-import { LessonCard } from '@/features/lesson/LessonCard';
+import { LessonView } from '@/features/lesson/LessonView';
 import { LessonQA } from '@/features/lesson/LessonQA';
 import { useAiConfigured } from '@/lib/env';
 import { errorMessage } from '@/lib/errors';
@@ -57,7 +57,7 @@ export default function ConceptScreen() {
 
         {!station.data && concept.data.lesson ? (
           <>
-            <LessonCard title={concept.data.title} explanation={concept.data.lesson} />
+            <LessonView title={concept.data.title} explanation={concept.data.lesson} parts={concept.data.lessonParts} />
             <LessonQA
               context={{
                 threadKey: conceptThreadKey(id),

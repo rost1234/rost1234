@@ -8,7 +8,9 @@ import { Button, Card, Chip, ErrorState, InlineError, LoadingState, Screen } fro
 import { useStartStation, useStation, useWriteStationLesson } from '@/data/courses';
 import { useT, type TranslationKey } from '@/i18n';
 import { AskButton } from '@/features/lesson/AskSheet';
+import { CheckQuiz } from '@/features/lesson/CheckQuiz';
 import { LessonCard } from '@/features/lesson/LessonCard';
+import { LessonView } from '@/features/lesson/LessonView';
 import { useAiConfigured } from '@/lib/env';
 import { errorMessage } from '@/lib/errors';
 import { haptics } from '@/lib/haptics';
@@ -17,14 +19,15 @@ import { lessonKey } from '@/local/logic';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 import { useBottomInset } from '@/lib/safeArea';
 
-const STEPS: TranslationKey[] = ['lesson.step.read', 'lesson.step.points', 'lesson.step.explain', 'lesson.step.practice'];
+const STEPS: TranslationKey[] = ['lesson.step.read', 'lesson.step.check', 'lesson.step.explain', 'lesson.step.practice'];
 const ROUTES = STEPS.map((key) => ({ key }));
 const BAR_HEIGHT = 76;
 
 /**
  * One station on the map, in four steps: read the lesson (written by the AI on
- * first visit if it doesn't ship with one), go over the key points, explain it
- * in your own words, and practice its flashcards. Moving past the key points
+ * first visit if it doesn't ship with one), check yourself with a few quick
+ * questions, explain it in your own words, and practice its flashcards. Moving
+ * past the check
  * starts the station (adds its concept and cards to the library). The steps
  * are pages of a native pager: swipe sideways (it follows the finger) or use
  * the bottom bar; the bar's 💬 button opens questions about the lesson.
@@ -98,14 +101,22 @@ export default function StationScreen() {
     );
   }
 
+  const upgrade = () => write.mutate({ courseId: course.id, key: station.key, language: 'he', upgrade: true }, { onSuccess: () => haptics.success() });
   const pages: ReactNode[] = [
-    <Fragment key="p1">
+    <Fragment key="read">
       <Text style={[typography.body, { color: colors.textMuted }]}>{station.summary}</Text>
-      <LessonCard title={station.title} explanation={lesson.explanation} part="text" />
+      <LessonView title={station.title} explanation={lesson.explanation} parts={lesson.parts} keyPoints={lesson.cards} />
+      {!lesson.parts && !station.explanation ? <UpgradeLesson onPress={upgrade} busy={write.isPending} error={write.error ? errorMessage(write.error, t) : null} /> : null}
     </Fragment>,
-    <Fragment key="p2">
-      <Text style={typography.caption}>{t('lesson.pointsIntro')}</Text>
-      <LessonCard title={station.title} explanation={lesson.explanation} keyPoints={lesson.cards} part="points" />
+    <Fragment key="check">
+      {lesson.parts?.check.length ? (
+        <CheckQuiz questions={lesson.parts.check} />
+      ) : (
+        <>
+          <Text style={typography.caption}>{t('lesson.pointsIntro')}</Text>
+          <LessonCard title={station.title} explanation={lesson.explanation} keyPoints={lesson.cards} part="points" />
+        </>
+      )}
     </Fragment>,
     <View key="explain" style={styles.cta}>
       <View style={styles.row}>
@@ -121,7 +132,7 @@ export default function StationScreen() {
       <InlineError message={start.error ? errorMessage(start.error, t) : null} />
       {p.conceptId && p.mastery > 0 ? <MasteryCard mastery={p.mastery} mastered={p.status === 'mastered'} /> : null}
     </View>,
-    <Fragment key="p3">
+    <Fragment key="practice">
       {p.conceptId ? (
         <>
           <MasteryCard mastery={p.mastery} mastered={p.status === 'mastered'} />
@@ -228,6 +239,22 @@ function StepBar({ step, onPick }: { step: number; onPick: (i: number) => void }
           </Text>
         </Pressable>
       ))}
+    </View>
+  );
+}
+
+/** Older AI lessons are plain text: offer to rewrite them with sections, an example and check questions. */
+function UpgradeLesson({ onPress, busy, error }: { onPress: () => void; busy: boolean; error: string | null }) {
+  const t = useT();
+  const styles = useStyles();
+  const { typography } = useTheme();
+  const aiReady = useAiConfigured();
+  return (
+    <View style={styles.cta}>
+      <Text style={typography.subheading}>✨ {t('lesson.upgradeTitle')}</Text>
+      <Text style={typography.caption}>{t('lesson.upgradeBody')}</Text>
+      {busy ? <LoadingState label={t('lesson.writing')} /> : <Button label={t('lesson.upgrade')} icon="sparkles-outline" variant="secondary" onPress={onPress} disabled={!aiReady} />}
+      <InlineError message={!aiReady ? t('error.aiNotConfigured') : error} />
     </View>
   );
 }

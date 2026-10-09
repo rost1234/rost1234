@@ -10,7 +10,7 @@
 
 import { LANGUAGE_RULES } from './language.ts';
 
-export const FEYNMAN_PROMPT_VERSION = 'feynman-tutor@2.0.0';
+export const FEYNMAN_PROMPT_VERSION = 'feynman-tutor@2.1.0';
 
 export const FEYNMAN_SYSTEM_PROMPT = `
 You are the FeynmanMind Tutor: a patient, rigorous Socratic coach. A learner is
@@ -27,8 +27,10 @@ curious 12-year-old — to find the gaps in their own understanding.
 
 ## Hard rules
 - NEVER give the correct explanation, the answer, or a corrected version of
-  the learner's sentence. Not in the question, not in hints, not in feedback.
-  The learner must do the thinking.
+  the learner's sentence in feedback, encouragement, socratic_question,
+  primary_gap, issue_area or plain_language_hint. The learner must do the
+  thinking. (Only the hidden fields below — hints, question_answer,
+  model_explanation — may get closer to or state the answer.)
 - For misconceptions, quote what the learner said and name the AREA that needs
   rethinking (e.g. "what causes the pressure change") — never the fix.
 - "plain_language_hint" only nudges ("try describing what this does, not what
@@ -51,6 +53,33 @@ explanation, an answer to your last question (short answers are fine), or a
 revised explanation. Judge the understanding the learner has shown across the
 whole conversation so far: an answer that correctly closes the gap raises the
 score; a wrong answer doesn't erase what was right before.
+
+## Level
+LEVEL is how deep the learner studies (foundations = curious beginner …
+master = graduate). Pitch the question and the feedback to it: analogies and
+everyday words for foundations; precise definitions, mechanisms and
+conditions at university levels. Score against what LEVEL expects.
+
+## Key ideas (coverage)
+coverage: the 3–6 key ideas a good explanation of CONCEPT must contain — take
+them from the reference flashcards when there are some, otherwise choose
+them yourself. Each: idea (≤ 8 words, a topic, not the answer — e.g. "why
+the copies are identical"), status: "covered", "partial" or "missing",
+judged across the whole conversation.
+
+## Memory
+PREVIOUS_GAPS lists the main gaps from the learner's earlier attempts at this
+concept. If the learner has now closed one, say so briefly in feedback; if
+it is still open, prefer it as the target.
+
+## Hidden help (shown only when the learner asks for it)
+- hints: exactly 3 hints for socratic_question, each one sentence, each
+  stronger than the one before; the third almost gives it away but still
+  leaves the final step to the learner.
+- question_answer: the answer to socratic_question, 1–2 sentences.
+- model_explanation: how an excellent student at LEVEL would explain CONCEPT,
+  80–150 words, plain words, an example included — an explanation that would
+  score 95+.
 
 ## What happens next (next_step)
 - "answer_question": the learner should reply to socratic_question in a new,
@@ -104,6 +133,10 @@ export interface FeynmanTutorInput {
   /** Optional source notes to judge accuracy against. Never quoted back. */
   referenceMaterial?: string;
   previousQuestions?: string[];
+  /** Main gaps from earlier attempts at this concept. */
+  previousGaps?: string[];
+  /** How deep the learner studies (foundations … master, or standalone). */
+  level?: string;
   userExplanation: string;
 }
 
@@ -115,6 +148,7 @@ export function buildFeynmanUserMessage(input: FeynmanTutorInput): string {
     : 'none (this is the learner\'s first explanation)';
   return [
     `LANGUAGE: ${input.language ?? 'Hebrew'}`,
+    `LEVEL: ${input.level ?? 'standalone'}`,
     `SUBJECT: ${input.subjectTitle}`,
     `CONCEPT: ${input.conceptTitle}`,
     input.referenceMaterial
@@ -123,6 +157,7 @@ export function buildFeynmanUserMessage(input: FeynmanTutorInput): string {
     `PREVIOUS_QUESTIONS:\n${
       input.previousQuestions?.length ? input.previousQuestions.map((q) => `- ${q}`).join('\n') : '- none'
     }`,
+    `PREVIOUS_GAPS:\n${input.previousGaps?.length ? input.previousGaps.map((g) => `- ${strip(g)}`).join('\n') : '- none'}`,
     `<conversation>\n${conversation}\n</conversation>`,
     `<learner_message>\n${strip(input.userExplanation)}\n</learner_message>`,
   ].join('\n\n');
@@ -142,6 +177,10 @@ export const FEYNMAN_RESPONSE_SCHEMA = {
     'feedback',
     'next_step',
     'refine_quote',
+    'coverage',
+    'hints',
+    'question_answer',
+    'model_explanation',
   ],
   properties: {
     comprehension_score: {
@@ -209,6 +248,19 @@ export const FEYNMAN_RESPONSE_SCHEMA = {
       type: 'string',
       description: 'For refine_explanation: verbatim excerpt (≤ 25 words) of the learner text to fix; else "".',
     },
+    coverage: {
+      type: 'array',
+      description: '3–6 key ideas of the concept and whether the learner covered them.',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['idea', 'status'],
+        properties: { idea: { type: 'string' }, status: { type: 'string', enum: ['covered', 'partial', 'missing'] } },
+      },
+    },
+    hints: { type: 'array', description: 'Exactly 3 progressively stronger hints for socratic_question.', items: { type: 'string' } },
+    question_answer: { type: 'string', description: 'The answer to socratic_question, 1–2 sentences (hidden until asked).' },
+    model_explanation: { type: 'string', description: 'An excellent explanation of the concept at LEVEL, 80–150 words (hidden until asked).' },
   },
 } as const;
 
@@ -229,6 +281,14 @@ export interface FeynmanEvaluation {
   next_step: NextStep;
   /** The learner's words to fix (refine_explanation), verbatim; '' otherwise. */
   refine_quote: string;
+  /** Key ideas of the concept and whether the learner covered them. */
+  coverage: { idea: string; status: 'covered' | 'partial' | 'missing' }[];
+  /** Up to 3 progressively stronger hints for the question (shown one at a time on request). */
+  hints: string[];
+  /** The answer to the question (shown on request). */
+  question_answer: string;
+  /** How an excellent student would explain the concept (shown on request). */
+  model_explanation: string;
 }
 
 export function verdictForScore(score: number): MasteryVerdict {
@@ -288,5 +348,12 @@ export function parseFeynmanEvaluation(raw: unknown, learnerText = ''): FeynmanE
     next_step: nextStep,
     // Only keep a quote the learner really wrote, so the app can highlight it.
     refine_quote: nextStep === 'refine_explanation' && refineQuote && (!learnerText || learnerText.includes(refineQuote)) ? refineQuote : '',
+    coverage: (Array.isArray(o.coverage) ? o.coverage : [])
+      .filter((c): c is Record<string, unknown> => isObj(c) && isStr(c.idea) && ['covered', 'partial', 'missing'].includes(c.status as string))
+      .slice(0, 6)
+      .map((c) => ({ idea: String(c.idea).trim().slice(0, 120), status: c.status as 'covered' | 'partial' | 'missing' })),
+    hints: (Array.isArray(o.hints) ? o.hints : []).filter(isStr).slice(0, 3).map((h) => h.trim().slice(0, 400)),
+    question_answer: isStr(o.question_answer) ? o.question_answer.trim().slice(0, 800) : '',
+    model_explanation: isStr(o.model_explanation) ? o.model_explanation.trim().slice(0, 2000) : '',
   };
 }

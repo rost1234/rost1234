@@ -98,3 +98,28 @@ Deno.test('a refine quote the learner never wrote is dropped; no quote means ans
   assertEquals((await run({ next_step: 'bogus', refine_quote: '' })).evaluation.next_step, 'answer_question');
   assertEquals((await run({ next_step: 'done', refine_quote: '' })).evaluation.next_step, 'done');
 });
+
+Deno.test('level, earlier gaps and the hidden help', async () => {
+  let userMessage = '';
+  let system = '';
+  const llm: StructuredLlm = async (req) => {
+    userMessage = req.user;
+    system = req.system;
+    return req.parse({
+      ...modelOutput,
+      coverage: [{ idea: 'what pushes up', status: 'covered' }, { idea: 'density', status: 'missing' }, { idea: '', status: 'covered' }, { idea: 'x', status: 'maybe' }],
+      hints: ['Think about the water.', 'Compare a ship and a ball.', 'Which one pushes away more water?', 'extra'],
+      question_answer: 'The ship displaces more water than its weight.',
+      model_explanation: 'Things float when the water they push aside weighs as much as they do.',
+    });
+  };
+  const { evaluation } = await evaluateExplanation(llm, parseEvaluateInput({ ...body, level: 'bachelor', previous_gaps: ['what decides the push'] }));
+  assertStringIncludes(userMessage, 'LEVEL: bachelor');
+  assertStringIncludes(userMessage, '- what decides the push');
+  assertStringIncludes(system, 'Hidden help');
+  assertEquals(evaluation.coverage, [{ idea: 'what pushes up', status: 'covered' }, { idea: 'density', status: 'missing' }]);
+  assertEquals(evaluation.hints.length, 3);
+  assertEquals(evaluation.question_answer, 'The ship displaces more water than its weight.');
+  assertStringIncludes(evaluation.model_explanation, 'float');
+  assertEquals(parseEvaluateInput({ ...body, level: 'phd' }).level, 'standalone');
+});

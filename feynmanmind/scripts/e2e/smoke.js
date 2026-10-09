@@ -11,10 +11,24 @@ const API = 'https://mock-project.supabase.co';
 const PREFS = { state: { language: 'he', theme: 'auto', onboardingDone: true, remindersEnabled: false, reminderHour: 19, defaultCardCount: 15, aiUrl: API, aiKey: 'sb_publishable_test' }, version: 1 };
 fs.mkdirSync(OUT, { recursive: true });
 
-const lesson = (topic) => ({
-  explanation: `${topic} הוא רעיון חשוב. `.repeat(12) + '\n\nפסקה שנייה שמעמיקה ומסבירה למה זה נכון ולמה זה חשוב.',
-  cards: [1, 2, 3, 4].map((n) => ({ question: `שאלה ${n} על ${topic}?`, answer: `תשובה ${n}.` })),
-});
+const lesson = (topic) => {
+  const parts = {
+    hook: `למה ${topic} חשוב בכלל?`,
+    sections: [
+      { heading: 'הרעיון', body: `${topic} הוא רעיון חשוב. `.repeat(8) },
+      { heading: 'למה זה עובד', body: 'פסקה שנייה שמעמיקה ומסבירה למה זה נכון ולמה זה חשוב.' },
+    ],
+    example: { title: 'דוגמה: מספרים', body: 'חישוב קטן עם מספרים אמיתיים.' },
+    misconception: { myth: 'רבים חושבים שזה פשוט.', truth: 'בעצם יש כאן עומק.' },
+    connection: 'זה מתחבר לתחנה הקודמת.',
+    check: [1, 2, 3].map((n) => ({ question: `שאלת בדיקה ${n}?`, options: ['נכונה', 'שגויה א', 'שגויה ב', 'שגויה ג'], correct: 0, why: 'כי כך.' })),
+  };
+  return {
+    explanation: [parts.hook, ...parts.sections.map((x) => x.heading + '\n' + x.body)].join('\n\n'),
+    parts,
+    cards: [1, 2, 3, 4].map((n) => ({ question: `שאלה ${n} על ${topic}?`, answer: `תשובה ${n}.` })),
+  };
+};
 const q = { question: 'שאלה?', options: ['נכון', 'לא', 'גם לא', 'בכלל לא'], correct: 0 };
 const coursePlan = {
   title: 'אסטרונומיה',
@@ -55,7 +69,7 @@ const coursePlan = {
         const step = turn === 0 ? 'answer_question' : turn === 2 ? 'refine_explanation' : 'done';
         const quote = step === 'refine_explanation' ? body.conversation[0].text.split(' ').slice(0, 3).join(' ') : '';
         const score = { answer_question: 60, refine_explanation: 48, done: 92 }[step];
-        return json({ prompt_version: 'mock', evaluation: { comprehension_score: score, mastery_verdict: 'needs_work', jargon_detected: [], misconceptions: [], primary_gap: 'פער', socratic_question: 'ומה היה קורה אילו?', encouragement: 'יפה!', feedback: `משוב ${turn}: יפה, חסר הסבר למה.`, next_step: step, refine_quote: quote } });
+        return json({ prompt_version: 'mock', evaluation: { comprehension_score: score, mastery_verdict: 'needs_work', jargon_detected: [], misconceptions: [], primary_gap: 'פער', socratic_question: 'ומה היה קורה אילו?', encouragement: 'יפה!', feedback: `משוב ${turn}: יפה, חסר הסבר למה.`, next_step: step, refine_quote: quote, coverage: [{ idea: 'מה זה וקטור', status: 'covered' }, { idea: 'למה מפרקים כוחות', status: 'missing' }], hints: ['רמז ראשון', 'רמז שני'], question_answer: 'זו התשובה לשאלה.', model_explanation: 'ככה מסבירים את זה היטב.' } });
       }
       return route.fulfill({ status: 404, headers: cors, body: '{}' });
     });
@@ -105,13 +119,15 @@ const coursePlan = {
       await page.waitForTimeout(1200);
       const req = requests['/functions/v1/generate-lesson']?.at(-1);
       if (req?.level !== 'advanced' || !req?.unit || req?.course_title !== 'פיזיקה') failures.push(`lesson request: ${JSON.stringify(req)?.slice(0, 200)}`);
+      await expectText('טעות נפוצה', 'lesson misconception');
+      await expectText('דוגמה: מספרים', 'lesson example');
       await expectText('העתקה', 'copy button');
       await expectText('קריאה', 'lesson steps');
       await shot('05a-lesson-read');
       // Swipe to the next step (right-to-left reading: drag toward the right). Web swallows some mouse
       // drags (the phone uses a native pager), so try a few times until the step changes.
       const nextButton = () => page.getByRole('button', { name: /^הבא:/ }).first().textContent();
-      for (let attempt = 0; attempt < 4 && (await nextButton())?.includes('נקודות מפתח'); attempt++) {
+      for (let attempt = 0; attempt < 4 && (await nextButton())?.includes('בדיקה'); attempt++) {
         await page.mouse.move(20, 246);
         await page.mouse.down();
         for (let i = 1; i <= 30; i++) {
@@ -124,6 +140,12 @@ const coursePlan = {
       const nextLabel = await nextButton();
       if (!nextLabel?.includes('הסבר')) failures.push(`swipe between steps: next button says "${nextLabel}"`);
       await shot('05b-swiped');
+      // Check yourself: a wrong answer, then the right one.
+      await page.getByRole('radio', { name: 'שגויה א' }).first().click();
+      await expectText('לא בדיוק.', 'quiz wrong answer');
+      await page.getByRole('radio', { name: 'נכונה' }).first().click();
+      await expectText('נכון!', 'quiz right answer');
+      await shot('05c-check');
 
       // Ask about the lesson in the bottom sheet: typed question, then a suggested follow-up.
       await page.getByRole('button', { name: /^שאל שאלה/ }).click();
@@ -162,10 +184,20 @@ const coursePlan = {
       const clar = requests['/functions/v1/ask-lesson']?.at(-1);
       if (clar?.tutor_question !== 'ומה היה קורה אילו?') failures.push(`clarify request: ${JSON.stringify(clar)?.slice(0, 160)}`);
       await expectText('רמז, לא תשובה', 'clarification shown');
+      await expectText('מה כיסית', 'coverage shown');
+      await page.getByRole('button', { name: /רמז 1\/2/ }).click();
+      await expectText('רמז ראשון', 'first hint');
+      await page.getByRole('button', { name: /רמז 2\/2/ }).click();
+      await page.getByRole('button', { name: /להראות את התשובה/ }).click();
+      await expectText('זו התשובה לשאלה.', 'answer revealed');
+      await page.getByRole('button', { name: 'להוסיף ככרטיסייה' }).click();
+      await expectText('נוסף לכרטיסיות', 'card from tutor');
+      await shot('13b2-explain-help');
       await page.getByLabel('כתבו תשובה לשאלה…').fill('הכוח היה מתפרק אחרת');
       await page.getByRole('button', { name: 'שליחה' }).click();
       await page.waitForTimeout(1000);
       const answerReq = requests['/functions/v1/feynman-evaluate']?.at(-1);
+      if (answerReq?.level !== 'advanced') failures.push(`tutor level: ${answerReq?.level}`);
       if (answerReq?.conversation?.length !== 2 || answerReq?.language !== 'he') failures.push(`answer request: ${JSON.stringify(answerReq)?.slice(0, 200)}`);
       await expectText('לחדד את ההסבר', 'tutor asks to refine');
       await shot('13c-explain-refine');
@@ -176,6 +208,8 @@ const coursePlan = {
       await page.getByRole('button', { name: 'שליחה' }).click();
       await page.waitForTimeout(1000);
       await expectText('אפשר לסיים כאן', 'tutor done');
+      await page.getByRole('button', { name: /הסבר לדוגמה/ }).click();
+      await expectText('ככה מסבירים את זה היטב.', 'model explanation');
       await shot('13e-explain-done');
       await page.goBack();
       await page.waitForTimeout(800);

@@ -1,10 +1,22 @@
 import { assertEquals, assertRejects, assertStringIncludes, assertThrows } from 'jsr:@std/assert@1';
 import { HttpError } from '../_shared/http.ts';
 import type { StructuredLlm } from '../_shared/llm.ts';
-import { parseLesson } from '../_shared/lesson-writer.ts';
+import { parseLesson, shuffleOptions } from '../_shared/lesson-writer.ts';
 import { parseLessonInput, writeLesson } from './service.ts';
 
-const explanation = 'A lesson paragraph that is long enough to count as a real explanation of the idea. '.repeat(6);
+const body = 'A paragraph that is long enough to count as a real explanation of the idea. '.repeat(3);
+const check = (n: number) => ({ question: `Check ${n}?`, options: ['right', 'wrong a', 'wrong b', 'wrong c'], correct: 0, why: 'Because.' });
+const cards = [{ question: 'Q1?', answer: 'A' }, { question: '', answer: 'x' }, { question: 'Q2?', answer: 'B' }];
+const full = {
+  hook: 'Why does a ship float?',
+  sections: [{ heading: 'The idea', body }, { heading: 'Why it works', body }, { heading: '', body: 'dropped' }],
+  example: { title: 'Example: a boat', body: 'A 10 kg boat displaces 10 litres.' },
+  misconception: { myth: 'Many think heavy things sink.', truth: 'Density decides.' },
+  connection: 'Builds on pressure.',
+  check: [check(1), check(2), { ...check(3), options: ['same', 'same', 'x', 'y'] }],
+  cards,
+};
+const empty = { hook: '', sections: [], example: { title: '', body: '' }, misconception: { myth: '', truth: '' }, connection: '', check: [], cards: [] };
 
 Deno.test('parseLessonInput defaults and validation', () => {
   const input = parseLessonInput({ concept_title: ' Entropy ', previous_titles: ['Heat', 2] });
@@ -16,13 +28,26 @@ Deno.test('parseLessonInput defaults and validation', () => {
   assertThrows(() => parseLessonInput({ level: 'master' }), HttpError, 'concept_title');
 });
 
-Deno.test('parseLesson keeps valid cards and rejects thin lessons', () => {
-  const lesson = parseLesson({ explanation, cards: [{ question: 'Q1?', answer: 'A' }, { question: '', answer: 'x' }, { question: 'Q2?', answer: 'B' }] });
+Deno.test('parseLesson builds the structured lesson, its plain text, and rejects thin ones', () => {
+  const lesson = parseLesson(full, () => 0.99);
   assertEquals(lesson.cards.length, 2);
-  assertThrows(() => parseLesson({ explanation: 'short', cards: [] }));
-  // A one-paragraph answer with cards is still too thin to be a lesson.
-  assertThrows(() => parseLesson({ explanation: 'x'.repeat(200), cards: [{ question: 'Q1?', answer: 'A' }, { question: 'Q2?', answer: 'B' }] }), Error, 'too thin');
-  assertEquals(parseLesson({ explanation: '', cards: [] }).cards, []);
+  assertEquals(lesson.parts!.sections.length, 2);
+  // The invalid check question is dropped; options are shuffled and `correct` follows the right answer.
+  assertEquals(lesson.parts!.check.length, 2);
+  for (const q of lesson.parts!.check) assertEquals(q.options[q.correct], 'right');
+  assertStringIncludes(lesson.explanation, 'Why does a ship float?');
+  assertStringIncludes(lesson.explanation, 'The idea\n');
+  assertStringIncludes(lesson.explanation, 'Density decides.');
+  assertThrows(() => parseLesson({ ...full, sections: full.sections.slice(0, 1) }), Error, 'too thin');
+  assertThrows(() => parseLesson({ ...full, check: [check(1)] }), Error, 'too thin');
+  assertEquals(parseLesson(empty).cards, []);
+});
+
+Deno.test('shuffleOptions keeps the right answer marked', () => {
+  for (const r of [0, 0.3, 0.6, 0.99]) {
+    const q = shuffleOptions({ options: ['a', 'b', 'c', 'd'], correct: 2 }, () => r);
+    assertEquals(q.options[q.correct], 'c');
+  }
 });
 
 Deno.test('writeLesson pitches the prompt at the level and passes context', async () => {
@@ -31,7 +56,7 @@ Deno.test('writeLesson pitches the prompt at the level and passes context', asyn
   const llm: StructuredLlm = async (req) => {
     system = req.system;
     user = req.user;
-    return req.parse({ explanation, cards: [{ question: 'Q1?', answer: 'A' }, { question: 'Q2?', answer: 'B' }] });
+    return req.parse(full);
   };
   await writeLesson(llm, parseLessonInput({ concept_title: 'Noether', level: 'master', course_title: 'Physics', unit: 'Classical Mechanics II', previous_titles: ['Lagrangian'] }));
   assertStringIncludes(system, "master's student");
@@ -42,7 +67,7 @@ Deno.test('writeLesson pitches the prompt at the level and passes context', asyn
 });
 
 Deno.test('an unteachable concept becomes 422', async () => {
-  const llm: StructuredLlm = async (req) => req.parse({ explanation: '', cards: [] });
+  const llm: StructuredLlm = async (req) => req.parse(empty);
   const err = await assertRejects(() => writeLesson(llm, parseLessonInput({ concept_title: 'asdfgh' })), HttpError);
   assertEquals(err.code, 'invalid_topic');
 });

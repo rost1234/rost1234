@@ -1,6 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import { askLesson, evaluateExplanation } from '@/api/functions';
-import { addSession, addTutorTurns, cardsOf, clearTutorChat, sessionsOf, stationOf, tutorConversation } from '@/local/logic';
+import type { LessonParts } from '@/content/lesson';
+import type { LevelKey } from '@/content/types';
+import { addCards, addSession, addTutorTurns, cardsOf, clearTutorChat, revealTutorHelp, sessionsOf, stationOf, tutorConversation } from '@/local/logic';
 import { commit, getDB, newId, useDBStore } from '@/local/store';
 import { NotFoundError, type LocalDB, type TutorTurn } from '@/local/types';
 import { findCourse } from './courses';
@@ -13,12 +15,33 @@ export function useTutorChat(conceptId: string): TutorTurn[] {
 }
 
 /** The lesson behind a concept (its course station's, or its own), to peek at while explaining. */
-export function conceptLesson(db: LocalDB, conceptId: string): { text: string; keyPoints: { question: string; answer: string }[]; level: string } | null {
-  const station = stationOf(db, conceptId, findCourse);
-  if (station?.lesson) return { text: station.lesson.explanation, keyPoints: station.lesson.cards, level: station.course.levels.find((l) => l.stations.includes(station.station))?.key ?? 'standalone' };
-  const own = db.concepts[conceptId]?.lesson;
-  return own ? { text: own, keyPoints: cardsOf(db, conceptId).slice(0, 6).map((c) => ({ question: c.question, answer: c.answer })), level: 'standalone' } : null;
+export interface ConceptLesson {
+  text: string;
+  parts?: LessonParts;
+  keyPoints: { question: string; answer: string }[];
+  level: LevelKey | 'standalone';
 }
+
+export function conceptLesson(db: LocalDB, conceptId: string): ConceptLesson | null {
+  const station = stationOf(db, conceptId, findCourse);
+  if (station?.lesson)
+    return {
+      text: station.lesson.explanation,
+      parts: station.lesson.parts,
+      keyPoints: station.lesson.cards,
+      level: station.course.levels.find((l) => l.stations.includes(station.station))?.key ?? 'standalone',
+    };
+  const concept = db.concepts[conceptId];
+  return concept?.lesson
+    ? { text: concept.lesson, parts: concept.lessonParts, keyPoints: cardsOf(db, conceptId).slice(0, 6).map((c) => ({ question: c.question, answer: c.answer })), level: 'standalone' }
+    : null;
+}
+
+/** The concept's level (for the tutor): its course station's, or standalone. */
+const conceptLevel = (db: LocalDB, conceptId: string): LevelKey | 'standalone' => {
+  const station = stationOf(db, conceptId, findCourse);
+  return station?.course.levels.find((l) => l.stations.includes(station.station))?.key ?? 'standalone';
+};
 
 export type TutorMessageKind = 'explanation' | 'revision' | 'answer';
 
@@ -35,12 +58,19 @@ export function useSendToTutor(conceptId: string) {
       const subject = concept && db.subjects[concept.subject_id];
       if (!concept || !subject) throw new NotFoundError('Concept');
       const chat = kind === 'explanation' ? [] : (db.tutorChats[conceptId] ?? []);
+      const sessions = sessionsOf(db, conceptId);
       const { evaluation } = await evaluateExplanation({
         subject_title: subject.title,
         concept_title: concept.title,
         explanation: text,
         conversation: tutorConversation(chat),
-        previous_questions: sessionsOf(db, conceptId)
+        level: conceptLevel(db, conceptId),
+        // What was missing in earlier attempts, so the tutor can check whether it's fixed now.
+        previous_gaps: sessions
+          .map((s) => s.primary_gap)
+          .filter((g): g is string => !!g)
+          .slice(0, 3),
+        previous_questions: sessions
           .map((s) => s.socratic_question)
           .filter((q): q is string => !!q)
           .slice(0, 5),
@@ -66,6 +96,11 @@ export function useSendToTutor(conceptId: string) {
           primary_gap: evaluation.primary_gap,
           misconceptions: evaluation.misconceptions,
           jargon: evaluation.jargon_detected,
+          coverage: evaluation.coverage ?? [],
+          hints: evaluation.hints ?? [],
+          question_answer: evaluation.question_answer ?? '',
+          model_explanation: evaluation.model_explanation ?? '',
+          shown: { hints: 0, answer: false, model: false },
         },
       };
       commit((current) => {
@@ -104,6 +139,17 @@ export function useClarifyTutorQuestion(conceptId: string) {
       );
     },
   });
+}
+
+/** Opens the next hint, the answer to the tutor's question, or the model explanation. */
+export function revealHelp(conceptId: string, turnId: string, what: 'hint' | 'answer' | 'model') {
+  useDBStore.getState().update((db) => revealTutorHelp(db, conceptId, turnId, what));
+}
+
+/** Turns the tutor's question and its answer into a flashcard (returns false if it already exists). */
+export function addCardFromTutor(conceptId: string, question: string, answer: string): boolean {
+  const added = commit((db) => addCards(db, conceptId, [{ question, answer }], newId, new Date()));
+  return added.length > 0;
 }
 
 export function resetTutorChat(conceptId: string) {

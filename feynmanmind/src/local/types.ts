@@ -47,6 +47,12 @@ export interface TutorFeedback {
   primary_gap: string;
   misconceptions: FeynmanEvaluation['misconceptions'];
   jargon: FeynmanEvaluation['jargon_detected'];
+  coverage?: { idea: string; status: 'covered' | 'partial' | 'missing' }[];
+  hints?: string[];
+  question_answer?: string;
+  model_explanation?: string;
+  /** What the learner has opened so far: how many hints, the answer, the model explanation. */
+  shown?: { hints: number; answer: boolean; model: boolean };
 }
 
 export interface QaTurn {
@@ -102,6 +108,8 @@ export interface Concept {
   course_key?: string;
   /** A lesson written for this concept (standalone concepts), shown on its page. */
   lesson?: string;
+  /** The same lesson in structured form (lessons written since 2.3). */
+  lessonParts?: LessonParts;
 }
 
 export interface Flashcard {
@@ -122,6 +130,8 @@ export interface FeynmanSession {
   socratic_question: string | null;
   jargon_detected: FeynmanEvaluation['jargon_detected'];
   misconceptions: FeynmanEvaluation['misconceptions'];
+  /** The tutor's main gap, remembered for the next attempt. */
+  primary_gap?: string;
   created_at: string;
 }
 

@@ -5,7 +5,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ChoiceChips } from '@/components/ChoiceChips';
 import { Button, Card, ErrorState, IconButton, InlineError, LoadingState } from '@/components/ui';
 import { useConcept } from '@/data/concepts';
-import { conceptLesson, resetTutorChat, useClarifyTutorQuestion, useSendToTutor, useTutorChat, type TutorMessageKind } from '@/data/tutor';
+import { addCardFromTutor, conceptLesson, resetTutorChat, revealHelp, useClarifyTutorQuestion, useSendToTutor, useTutorChat, type TutorMessageKind } from '@/data/tutor';
 import { ChatBubble, PendingBubble } from '@/features/tutor/ChatBubbles';
 import { LessonPeekButton } from '@/features/tutor/LessonPeek';
 import { useT } from '@/i18n';
@@ -48,7 +48,7 @@ export default function ExplainScreen() {
 
   const last = lastFeedback(chat);
   const writing = chat.length === 0 || editing;
-  const peek = lesson ? { title: concept.data.title, text: lesson.text, keyPoints: lesson.keyPoints } : null;
+  const peek = lesson ? { title: concept.data.title, text: lesson.text, parts: lesson.parts, keyPoints: lesson.keyPoints } : null;
 
   const startOver = async () => {
     const ok = await confirmAsync({
@@ -222,7 +222,7 @@ function Writer({
   );
 }
 
-type Chip = 'clarify' | 'edit' | 'finish' | 'new';
+type Chip = 'clarify' | 'hint' | 'answer' | 'model' | 'edit' | 'finish';
 
 /** The messages, then what you can do next: answer, edit, ask what the question means, or finish. */
 function Conversation({ conceptId, onEdit }: { conceptId: string; onEdit: () => void }) {
@@ -256,14 +256,31 @@ function Conversation({ conceptId, onEdit }: { conceptId: string; onEdit: () => 
     );
   };
 
+  const e = last?.evaluation;
+  const shown = e?.shown ?? { hints: 0, answer: false, model: false };
+  const hints = e?.hints ?? [];
+  const attempts = chat.filter((turn) => turn.kind === 'feedback').length;
+  const canHint = !!question && step !== 'done' && shown.hints < hints.length;
+  // The answer opens once the hints are used up (or there are none).
+  const canAnswer = !!question && !!e?.question_answer && !shown.answer && shown.hints >= hints.length;
+  // The model explanation is a reward or a rescue: after a good score, or after three tries.
+  const canModel = !!e?.model_explanation && !shown.model && ((e?.score ?? 0) >= 71 || attempts >= 3);
+
   const onChip = (chip: Chip) => {
     if (chip === 'edit') return onEdit();
     if (chip === 'finish') return router.back();
-    if (chip === 'clarify' && question) clarify.mutate({ question: t('tutor.didntUnderstand'), tutorQuestion: question });
+    if (chip === 'clarify' && question) return clarify.mutate({ question: t('tutor.didntUnderstand'), tutorQuestion: question });
+    if (last && (chip === 'hint' || chip === 'answer' || chip === 'model')) {
+      haptics.tap();
+      revealHelp(conceptId, last.id, chip);
+    }
   };
 
   const chips: { value: Chip; label: string }[] = [
     ...(question && step !== 'done' ? [{ value: 'clarify' as const, label: `🤔 ${t('tutor.didntUnderstand')}` }] : []),
+    ...(canHint ? [{ value: 'hint' as const, label: `💡 ${t('tutor.hintChip', { n: shown.hints + 1, total: hints.length })}` }] : []),
+    ...(canAnswer ? [{ value: 'answer' as const, label: `🔑 ${t('tutor.showAnswer')}` }] : []),
+    ...(canModel ? [{ value: 'model' as const, label: `📖 ${t('tutor.showModel')}` }] : []),
     ...(step === 'answer_question' ? [{ value: 'edit' as const, label: `✏️ ${t('tutor.editExplanation')}` }] : []),
     { value: 'finish', label: step === 'done' ? `✓ ${t('tutor.finishDone')}` : t('tutor.finish') },
   ];
@@ -278,7 +295,7 @@ function Conversation({ conceptId, onEdit }: { conceptId: string; onEdit: () => 
         onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: true })}
       >
         {chat.map((turn) => (
-          <ChatBubble key={turn.id} turn={turn} latest={turn === last} />
+          <ChatBubble key={turn.id} turn={turn} latest={turn === last} onAddCard={(q, a) => addCardFromTutor(conceptId, q, a)} />
         ))}
         {send.isPending ? <PendingBubble text={send.variables.text} /> : null}
         {clarify.isPending ? <PendingBubble text={clarify.variables.question} /> : null}

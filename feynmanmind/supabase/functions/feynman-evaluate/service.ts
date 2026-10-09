@@ -12,6 +12,7 @@ import {
 } from '../_shared/feynman-tutor.ts';
 
 export const MIN_EXPLANATION_CHARS = 20;
+const LEVELS = ['foundations', 'advanced', 'bachelor', 'master', 'standalone'];
 /** A reply in an ongoing conversation (e.g. a short answer to the tutor's question). */
 export const MIN_REPLY_CHARS = 2;
 const MAX_TURNS = 12;
@@ -28,6 +29,10 @@ export interface EvaluateInput {
   language: string;
   /** Recent Socratic questions for this concept, so the tutor doesn't repeat itself. */
   previousQuestions: string[];
+  /** Main gaps from earlier attempts, so the tutor can check whether they closed. */
+  previousGaps: string[];
+  /** foundations | advanced | bachelor | master | standalone. */
+  level: string;
   /** The learner's own flashcards for the concept, used as ground truth. */
   referenceCards: { question: string; answer: string }[];
   /** The lesson the learner studied (guided courses), also ground truth. */
@@ -52,6 +57,8 @@ export function parseEvaluateInput(body: Record<string, unknown>): EvaluateInput
     conversation,
     language: parseLanguage(body.language),
     previousQuestions: stringList(body.previous_questions, 'previous_questions', 5, 500),
+    previousGaps: stringList(body.previous_gaps, 'previous_gaps', 5, 300),
+    level: LEVELS.includes(body.level as string) ? (body.level as string) : 'standalone',
     referenceCards: parseCards(body.reference_cards),
     referenceText: typeof body.reference_text === 'string' ? body.reference_text.trim().slice(0, 6000) : '',
   };
@@ -95,12 +102,14 @@ export async function evaluateExplanation(llm: StructuredLlm, input: EvaluateInp
       userExplanation: input.explanation,
       conversation: input.conversation,
       language: input.language,
+      previousGaps: input.previousGaps,
+      level: input.level,
     }),
     schema: FEYNMAN_RESPONSE_SCHEMA,
     parse: (raw) =>
       parseFeynmanEvaluation(raw, [input.explanation, ...input.conversation.filter((t) => t.role === 'learner').map((t) => t.text)].join('\n')),
     temperature: 0.3,
-    maxOutputTokens: 1500,
+    maxOutputTokens: 3000,
   });
   return { prompt_version: FEYNMAN_PROMPT_VERSION, evaluation };
 }

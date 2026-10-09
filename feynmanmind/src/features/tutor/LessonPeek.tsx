@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { LessonCard } from '@/features/lesson/LessonCard';
+import type { LessonParts } from '@/content/lesson';
+import { LessonView } from '@/features/lesson/LessonView';
 import { useT } from '@/i18n';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 import { useBottomInset } from '@/lib/safeArea';
@@ -10,6 +11,7 @@ export interface PeekLesson {
   title: string;
   text: string;
   keyPoints: { question: string; answer: string }[];
+  parts?: LessonParts;
 }
 
 /** "📖 Lesson": opens the lesson in a sheet (closing the keyboard), without leaving what you're writing. */
@@ -40,7 +42,7 @@ export function LessonPeekButton({ lesson, compact }: { lesson: PeekLesson | nul
               </Pressable>
             </View>
             <ScrollView contentContainerStyle={{ paddingBottom: spacing.lg }}>
-              <LessonCard title={lesson.title} explanation={lesson.text} keyPoints={lesson.keyPoints} />
+              <LessonView title={lesson.title} explanation={lesson.text} parts={lesson.parts} keyPoints={lesson.keyPoints} />
             </ScrollView>
           </View>
         </View>

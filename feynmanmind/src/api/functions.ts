@@ -3,12 +3,13 @@
  * the device and sends only the context each request needs.
  */
 import type { FeynmanEvaluation as ServerEvaluation } from '../../supabase/functions/_shared/feynman-tutor.ts';
+import type { LessonParts } from '@/content/lesson';
 import type { LevelKey } from '@/content/types';
 import { getAiConfig, type AiConfig } from '@/lib/env';
 
 /** The tutor's evaluation. The conversation fields are optional: a server not yet updated doesn't send them. */
-export type FeynmanEvaluation = Omit<ServerEvaluation, 'feedback' | 'next_step' | 'refine_quote'> &
-  Partial<Pick<ServerEvaluation, 'feedback' | 'next_step' | 'refine_quote'>>;
+type ConversationFields = 'feedback' | 'next_step' | 'refine_quote' | 'coverage' | 'hints' | 'question_answer' | 'model_explanation';
+export type FeynmanEvaluation = Omit<ServerEvaluation, ConversationFields> & Partial<Pick<ServerEvaluation, ConversationFields>>;
 
 export interface EvaluateRequest {
   subject_title: string;
@@ -20,6 +21,9 @@ export interface EvaluateRequest {
   reference_text?: string;
   /** Earlier turns of the conversation with the tutor (empty for a first explanation). */
   conversation?: { role: 'learner' | 'tutor'; text: string }[];
+  /** Main gaps from earlier attempts. */
+  previous_gaps?: string[];
+  level?: LevelKey | 'standalone';
   language: 'he' | 'en';
 }
 
@@ -125,7 +129,7 @@ export interface LessonRequest {
 }
 
 export function generateLesson(request: LessonRequest) {
-  return call<{ prompt_version: string; lesson: { explanation: string; cards: { question: string; answer: string }[] } }>('generate-lesson', {
+  return call<{ prompt_version: string; lesson: { explanation: string; cards: { question: string; answer: string }[]; parts?: LessonParts } }>('generate-lesson', {
     ...request,
   });
 }
