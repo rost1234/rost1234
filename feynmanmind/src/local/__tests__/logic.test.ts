@@ -471,7 +471,7 @@ describe('structured lessons and tutor help', () => {
 
   it('a built-in station with parts yields its plain text and parts', () => {
     const course = { id: 'c', title: 'C', description: '', icon: 'x', builtIn: true, levels: [{ key: 'foundations', quiz: [], stations: [{ key: 's', title: 'S', summary: 'סיכום', parts, cards: [{ question: 'q?', answer: 'a' }] }] }] };
-    const lesson = L.lessonFor(seed().db, course, course.levels[0].stations[0]);
+    const lesson = L.lessonFor(seed().db, course, course.levels[0]!.stations[0]);
     expect(lesson.parts).toBe(parts);
     expect(lesson.explanation).toContain('א\nגוף א');
     expect(lesson.explanation).toContain('דוגמה\nמספרים');
