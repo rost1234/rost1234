@@ -19,9 +19,9 @@ function cellColor(state: HeatCellState, colors: Theme['colors']): string {
     case 'paused':
       return colors.primarySoft;
     case 'missed':
-      return colors.dangerSoft;
-    case 'pending':
       return colors.surfaceMuted;
+    case 'pending':
+      return 'transparent';
     case 'not_scheduled':
       return 'transparent';
   }
@@ -46,8 +46,6 @@ function cellInk(state: HeatCellState, colors: Theme['colors']): string {
       return '#FFFFFF';
     case 'partial':
       return colors.text;
-    case 'missed':
-      return colors.danger;
     case 'paused':
       return colors.primary;
     default:
@@ -76,6 +74,7 @@ function Cell({ state, size }: { state: HeatCellState; size: number }) {
         styles.cell,
         { width: size, height: size, backgroundColor: cellColor(state, colors) },
         state === 'not_scheduled' && styles.cellEmpty,
+        state === 'pending' && styles.cellPending,
       ]}
     >
       {symbol && size >= 12 ? (
@@ -161,6 +160,7 @@ const useStyles = makeStyles(({ colors, typography }) => ({
   cell: { borderRadius: radius.sm / 2, alignItems: 'center', justifyContent: 'center' },
   symbol: { fontWeight: '800', textAlign: 'center' },
   cellEmpty: { borderWidth: 1, borderColor: colors.surfaceMuted },
+  cellPending: { borderWidth: 1, borderColor: colors.border },
   dayLabel: { ...typography.caption, fontSize: 11, textAlign: 'center' },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },

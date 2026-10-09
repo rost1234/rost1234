@@ -7,10 +7,10 @@ export const START_FOCUS_ACTION = 'START_FOCUS';
 
 /** Always dark, like the Focus screen. */
 const P = {
-  bg: '#1B1C3A' as HexColor,
-  button: '#5B5BD6' as HexColor,
-  text: '#F2F3F7' as HexColor,
-  muted: '#A3A8BA' as HexColor,
+  bg: '#17303A' as HexColor,
+  button: '#2D6A9F' as HexColor,
+  text: '#E4EEEE' as HexColor,
+  muted: '#9DB2B3' as HexColor,
 };
 
 function Body({ model, minutes }: { model: FocusWidgetModel; minutes: number }) {

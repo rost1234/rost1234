@@ -42,7 +42,7 @@ export function FocusButton({
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
 }) {
-  const color = variant === 'primary' ? '#0B0C1A' : variant === 'ghost' ? focusColors.textMuted : focusColors.text;
+  const color = variant === 'primary' ? '#0B1517' : variant === 'ghost' ? focusColors.textMuted : focusColors.text;
   return (
     <Pressable
       accessibilityRole="button"
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     borderRadius: radius.pill,
   },
-  primary: { backgroundColor: '#EEEEFB' },
+  primary: { backgroundColor: '#E4EEEE' },
   secondary: { backgroundColor: focusColors.surface, borderWidth: 1, borderColor: focusColors.border },
   ghost: { backgroundColor: 'transparent' },
   buttonLabel: { fontSize: 16, fontWeight: '700' },

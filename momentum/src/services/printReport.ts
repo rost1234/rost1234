@@ -6,6 +6,9 @@ import { renderReportHtml, type ReportLabels } from '@/domain/printReport';
 import { MOOD_OPTIONS } from '@/features/reflection/mood';
 import type { Translator } from '@/i18n';
 
+/** One letter per weekday, so 31 narrow columns fit on A4 (Sunday first). */
+const HEBREW_INITIALS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
+
 /** A4 at 72 ppi, the unit expo-print sizes pages in. */
 const PAGE = { width: 595, height: 842 } as const;
 
@@ -22,7 +25,6 @@ function reportLabels(t: Translator): ReportLabels {
     habitsHeading: t('cal.habitsTitle'),
     totalColumn: t('print.total'),
     noHabits: t('print.noHabits'),
-    legend: '',
     legendDone: t('print.done'),
     legendPartial: t('print.partial'),
     legendFreeze: t('print.freeze'),
@@ -43,7 +45,7 @@ function reportLabels(t: Translator): ReportLabels {
       return t('refl.moodA11y', { label: option ? t(option.label) : '', score });
     },
     habitsDone: (done, total) => t('cal.dayDone', { done, total }),
-    weekdays: [0, 1, 2, 3, 4, 5, 6].map((d) => weekdayLabel(d as Weekday, t.locale)) as unknown as ReportLabels['weekdays'],
+    weekdays: (t.isRTL ? HEBREW_INITIALS : [0, 1, 2, 3, 4, 5, 6].map((d) => [...weekdayLabel(d as Weekday, t.locale)][0] ?? '')) as unknown as ReportLabels['weekdays'],
   };
 }
 

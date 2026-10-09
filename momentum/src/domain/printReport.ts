@@ -16,7 +16,6 @@ export interface ReportLabels {
   habitsHeading: string;
   totalColumn: string;
   noHabits: string;
-  legend: string;
   legendDone: string;
   legendPartial: string;
   legendFreeze: string;

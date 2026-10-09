@@ -11,7 +11,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#6B5CE0",
+        "backgroundColor": "#2D6A9F",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -77,10 +77,10 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 180,
           "resizeMode": "contain",
-          "backgroundColor": "#5B5BD6",
+          "backgroundColor": "#2D6A9F",
           "dark": {
             "image": "./assets/splash-icon.png",
-            "backgroundColor": "#1B1C3A"
+            "backgroundColor": "#101A1C"
           }
         }
       ],
@@ -90,15 +90,15 @@
           "androidIcons": {
             "shortcut_focus": {
               "foregroundImage": "./assets/shortcuts/shortcut_focus.png",
-              "backgroundColor": "#5B5BD6"
+              "backgroundColor": "#2D6A9F"
             },
             "shortcut_reflection": {
               "foregroundImage": "./assets/shortcuts/shortcut_reflection.png",
-              "backgroundColor": "#5B5BD6"
+              "backgroundColor": "#2D6A9F"
             },
             "shortcut_task": {
               "foregroundImage": "./assets/shortcuts/shortcut_task.png",
-              "backgroundColor": "#5B5BD6"
+              "backgroundColor": "#2D6A9F"
             }
           }
         }

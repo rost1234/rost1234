@@ -112,7 +112,7 @@ export function SoundPicker({ isPlaying }: SoundPickerProps) {
     <View style={styles.container}>
       <FocusLabel>{t('sound.title')}</FocusLabel>
       <View style={styles.grid} accessibilityRole="radiogroup">
-        <SoundTile label={t('sound.silence')} icon="volume-mute-outline" tint="#9C9DC6" selected={!first} onPress={() => choose('off')} />
+        <SoundTile label={t('sound.silence')} icon="volume-mute-outline" tint="#9DB2B3" selected={!first} onPress={() => choose('off')} />
         {FOCUS_SOUNDS.map((sound) => (
           <SoundTile
             key={sound.id}

@@ -76,16 +76,16 @@ export const darkColors: Palette = {
 
 /** Immersive dark palette for the focus screen (same in both themes). */
 export const focusColors = {
-  backgroundTop: '#1B1C3A',
-  backgroundBottom: '#0B0C1A',
+  backgroundTop: '#17303A',
+  backgroundBottom: '#0B1517',
   surface: 'rgba(255,255,255,0.06)',
-  surfaceActive: 'rgba(139,139,255,0.18)',
+  surfaceActive: 'rgba(127,184,230,0.18)',
   border: 'rgba(255,255,255,0.10)',
-  text: '#EEEEFB',
-  textMuted: '#9C9DC6',
+  text: '#E4EEEE',
+  textMuted: '#9DB2B3',
   ringTrack: 'rgba(255,255,255,0.08)',
-  ringStart: '#8B8BFF',
-  ringEnd: '#38BDF8',
+  ringStart: '#7FB8E6',
+  ringEnd: '#5CC4DD',
   paused: '#FBBF24',
 } as const;
 

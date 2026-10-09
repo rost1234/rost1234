@@ -15,7 +15,6 @@ const labels: ReportLabels = {
   habitsHeading: 'הרגלים',
   totalColumn: 'סה״כ',
   noHabits: 'אין הרגלים',
-  legend: 'מקרא',
   legendDone: 'בוצע',
   legendPartial: 'חלקי',
   legendFreeze: 'הקפאה',

@@ -193,7 +193,7 @@ function MonthGrid({
                   isPaused && styles.band,
                   startsBand && styles.bandStart,
                   endsBand && styles.bandEnd,
-                  date === selected && { backgroundColor: colors.primarySoft, borderRadius: radius.md },
+                  date === selected && { borderWidth: 2, borderColor: colors.primary, borderRadius: radius.md },
                 ]}
               >
                 {startsBand && day.pause ? <Ionicons name={REASON_ICON[day.pause.reason]} size={11} color={colors.primary} style={styles.bandIcon} /> : null}

@@ -18,22 +18,22 @@ interface Palette {
 
 const LIGHT: Palette = {
   bg: '#FFFFFF',
-  row: '#F6F7FB',
-  rowDone: '#DCF5E4',
-  text: '#141726',
-  muted: '#646A80',
-  accent: '#4F46E5',
-  success: '#16A34A',
+  row: '#F2F7F6',
+  rowDone: '#E6F3EB',
+  text: '#12312F',
+  muted: '#4F6868',
+  accent: '#2D6A9F',
+  success: '#2A7048',
 };
 
 const DARK: Palette = {
-  bg: '#16181F',
-  row: '#232633',
-  rowDone: '#173B25',
-  text: '#F2F3F7',
-  muted: '#A3A8BA',
-  accent: '#8B85FF',
-  success: '#4ADE80',
+  bg: '#172427',
+  row: '#1F3033',
+  rowDone: '#15292A',
+  text: '#E4EEEE',
+  muted: '#9DB2B3',
+  accent: '#7FB8E6',
+  success: '#6FCF97',
 };
 
 function HabitRow({ row, p }: { row: WidgetHabitRow; p: Palette }) {
