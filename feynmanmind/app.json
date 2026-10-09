@@ -2,7 +2,7 @@
   "expo": {
     "name": "FeynmanMind",
     "slug": "feynmanmind",
-    "version": "2.2.1",
+    "version": "2.2.2",
     "scheme": "feynmanmind",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
