@@ -10,11 +10,12 @@ import {
   type TextInputProps,
   type ViewStyle,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets, type Edge } from 'react-native-safe-area-context';
+import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useT } from '@/i18n';
 import { haptics } from '@/lib/haptics';
 import { makeStyles, radius, spacing, useTheme, type Palette } from '@/theme';
+import { useBottomInset } from '@/lib/safeArea';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -38,11 +39,11 @@ export const SCROLL_BOTTOM_BUFFER = 96;
 
 export function Screen({ children, scroll = true, edges = [], contentStyle, refreshControl, scrollRef }: ScreenProps) {
   const styles = useStyles();
-  const insets = useSafeAreaInsets();
+  const bottomInset = useBottomInset();
   // The bottom inset (home indicator / gesture bar) is added inside the scroll
   // content rather than as outer padding, so content scrolls edge to edge but
   // the last item always ends above the indicator with room to spare.
-  const bottom = { paddingBottom: insets.bottom + (scroll ? SCROLL_BOTTOM_BUFFER : spacing.xl) };
+  const bottom = { paddingBottom: bottomInset + (scroll ? SCROLL_BOTTOM_BUFFER : spacing.xl) };
   return (
     <SafeAreaView edges={edges.filter((e) => e !== 'bottom')} style={styles.screen}>
       {scroll ? (
@@ -52,7 +53,7 @@ export function Screen({ children, scroll = true, edges = [], contentStyle, refr
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           refreshControl={refreshControl}
-          scrollIndicatorInsets={{ bottom: insets.bottom }}
+          scrollIndicatorInsets={{ bottom: bottomInset }}
         >
           {children}
         </ScrollView>

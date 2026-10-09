@@ -2,7 +2,6 @@ import { Fragment, useState, type ReactNode } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
 import { TabView } from 'react-native-tab-view';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ScoreRing } from '@/components/ScoreRing';
 import { Button, Card, Chip, ErrorState, InlineError, LoadingState, Screen } from '@/components/ui';
@@ -16,6 +15,7 @@ import { haptics } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/motion';
 import { lessonKey } from '@/local/logic';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
+import { useBottomInset } from '@/lib/safeArea';
 
 const STEPS: TranslationKey[] = ['lesson.step.read', 'lesson.step.points', 'lesson.step.explain', 'lesson.step.practice'];
 const ROUTES = STEPS.map((key) => ({ key }));
@@ -34,7 +34,7 @@ export default function StationScreen() {
   const t = useT();
   const styles = useStyles();
   const { colors, typography } = useTheme();
-  const insets = useSafeAreaInsets();
+  const bottomInset = useBottomInset();
   const aiReady = useAiConfigured();
   const query = useStation(id, key);
   const start = useStartStation();
@@ -57,7 +57,7 @@ export default function StationScreen() {
   };
   const goNextStation = () => (next ? router.replace(`/course/${course.id}/${next.key}`) : router.back());
   const last = step === STEPS.length - 1;
-  const bottomPad = Math.max(insets.bottom, spacing.md);
+  const bottomPad = Math.max(bottomInset, spacing.md);
 
   const header = (
     <View style={{ gap: spacing.xs }}>

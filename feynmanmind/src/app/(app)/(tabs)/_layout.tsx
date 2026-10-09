@@ -1,5 +1,4 @@
 import { Platform, Pressable, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import TopTabs, { type MaterialTopTabBarProps } from 'expo-router/js-top-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueueCount } from '@/data/study';
@@ -7,6 +6,7 @@ import { useT } from '@/i18n';
 import { haptics } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/motion';
 import { makeStyles, radius, spacing, useTheme, type Palette } from '@/theme';
+import { useBottomInset } from '@/lib/safeArea';
 
 /** Swipeable tabs (material top tabs) with the tab bar moved to the bottom. */
 const SwipeTabs = TopTabs;
@@ -53,11 +53,11 @@ function BottomBar({ state, navigation }: MaterialTopTabBarProps) {
   const t = useT();
   const styles = useStyles();
   const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
+  const bottomInset = useBottomInset();
   const due = useQueueCount();
   return (
     <View
-      style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.sm) }, Platform.OS === 'web' && t.isRTL && { direction: 'rtl' }]}
+      style={[styles.bar, { paddingBottom: Math.max(bottomInset, spacing.sm) }, Platform.OS === 'web' && t.isRTL && { direction: 'rtl' }]}
       accessibilityRole="tablist"
     >
       {state.routes.map((route: { key: string; name: string }, index: number) => {

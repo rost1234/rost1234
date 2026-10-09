@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { AskContext } from '@/data/questions';
 import { useQuestionThread } from '@/data/questions';
@@ -8,6 +7,7 @@ import { useT } from '@/i18n';
 import { KeyboardInsetView } from '@/lib/keyboard';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 import { LessonQA } from './LessonQA';
+import { useBottomInset } from '@/lib/safeArea';
 
 /**
  * The 💬 button in the lesson's bottom bar (with the number of questions asked),
@@ -18,7 +18,7 @@ export function AskButton({ context }: { context: AskContext }) {
   const t = useT();
   const styles = useStyles();
   const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
+  const bottomInset = useBottomInset();
   const [open, setOpen] = useState(false);
   const count = useQuestionThread(context.threadKey).length;
 
@@ -41,7 +41,7 @@ export function AskButton({ context }: { context: AskContext }) {
       <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
         <KeyboardInsetView style={styles.backdrop} safeBottom={false}>
           <Pressable style={{ flex: 1, minHeight: 40 }} onPress={() => setOpen(false)} accessibilityLabel={t('common.close')} />
-          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, spacing.md) }]} accessibilityViewIsModal>
+          <View style={[styles.sheet, { paddingBottom: Math.max(bottomInset, spacing.md) }]} accessibilityViewIsModal>
             <View style={styles.header}>
               <View style={styles.grab} />
               <Pressable accessibilityRole="button" accessibilityLabel={t('common.close')} hitSlop={12} onPress={() => setOpen(false)} style={styles.close}>

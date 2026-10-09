@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LessonCard } from '@/features/lesson/LessonCard';
 import { useT } from '@/i18n';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
+import { useBottomInset } from '@/lib/safeArea';
 
 export interface PeekLesson {
   title: string;
@@ -17,7 +17,7 @@ export function LessonPeekButton({ lesson, compact }: { lesson: PeekLesson | nul
   const t = useT();
   const styles = useStyles();
   const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
+  const bottomInset = useBottomInset();
   const [open, setOpen] = useState(false);
   if (!lesson) return null;
   return (
@@ -29,7 +29,7 @@ export function LessonPeekButton({ lesson, compact }: { lesson: PeekLesson | nul
       <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
         <View style={styles.backdrop}>
           <Pressable style={{ flex: 1 }} onPress={() => setOpen(false)} accessibilityLabel={t('common.close')} />
-          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, spacing.md) }]} accessibilityViewIsModal>
+          <View style={[styles.sheet, { paddingBottom: Math.max(bottomInset, spacing.md) }]} accessibilityViewIsModal>
             <View style={styles.head}>
               <Text style={[styles.title, { flex: 1 }]} numberOfLines={1}>
                 {lesson.title}

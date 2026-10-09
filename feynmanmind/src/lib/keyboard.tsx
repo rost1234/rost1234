@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Keyboard, Platform, View, type StyleProp, type ViewStyle } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useBottomInset } from './safeArea';
 
 /** Whether the on-screen keyboard is open. */
 export function useKeyboardVisible(): boolean {
@@ -25,7 +25,7 @@ export function useKeyboardVisible(): boolean {
  */
 export function KeyboardInsetView({ children, style, safeBottom = true }: { children: ReactNode; style?: StyleProp<ViewStyle>; safeBottom?: boolean }) {
   const ref = useRef<View>(null);
-  const insets = useSafeAreaInsets();
+  const bottomInset = useBottomInset();
   const [keyboardTop, setKeyboardTop] = useState<number | null>(null);
   const [inset, setInset] = useState(0);
 
@@ -51,7 +51,7 @@ export function KeyboardInsetView({ children, style, safeBottom = true }: { chil
   useEffect(measure, [measure]);
 
   return (
-    <View ref={ref} onLayout={measure} style={[{ flex: 1 }, style, { paddingBottom: keyboardTop === null ? (safeBottom ? insets.bottom : 0) : inset }]}>
+    <View ref={ref} onLayout={measure} style={[{ flex: 1 }, style, { paddingBottom: keyboardTop === null ? (safeBottom ? bottomInset : 0) : inset }]}>
       {children}
     </View>
   );
