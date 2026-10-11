@@ -56,6 +56,16 @@ comes from the file (optional `hook`/`sections`/`example`/`misconception`/`conne
 Review limits and accessibility live in `src/state/prefsStore.ts`; the theme reads text size and
 contrast from it (`useTheme().textScale`), `useReduceMotion()` covers animations.
 
+## Look (`src/theme/`)
+
+Light mode is a **lab notebook**, dark mode a **chalkboard**. `useTheme()` gives `colors` (incl. `button`,
+`ink`, `highlight`, `chrome`), `fonts` (body/heading/hand), `map` (course-map level colors) and `texture`.
+Fonts are bundled per weight (`assets/fonts`, expo-font plugin in app.json, `@font-face` on web via
+`lib/fonts.web.ts`): Frank Ruhl Libre (paper), Rubik (chalk body), Amatic SC (handwriting/chalk headings —
+its Latin letters are all caps). Always use `Text`/`TextInput` from `@/components/Text` (they apply the font).
+`components/Backdrop` draws the ruled paper / chalkboard behind a screen (`Screen` includes it);
+`components/Pinned` is the taped sheet / dashed-chalk card. Don't hard-code colors: use the palette or `theme.map`.
+
 ## Rules that must not be broken
 
 1. **Never change or remove an existing station `key`.** Saved progress (`Concept.course_key`) points at

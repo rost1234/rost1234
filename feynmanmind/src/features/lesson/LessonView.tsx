@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import { PinnedCard } from '@/components/Pinned';
 import { Text } from '@/components/Text';
 import * as Clipboard from 'expo-clipboard';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -45,11 +46,11 @@ export function LessonView({
         <CopyButton onCopy={copyAll} label={t('lesson.copy')} />
       </View>
 
-      <View style={styles.hook}>
+      <PinnedCard tilt={-0.4}>
         <Text style={styles.hookText} selectable>
-          🎯 {parts.hook}
+          {parts.hook}
         </Text>
-      </View>
+      </PinnedCard>
 
       <View style={styles.card}>
         {parts.sections.map((s, i) => (
@@ -131,8 +132,7 @@ function Box({ icon, tone, soft, title, children }: { icon: React.ComponentProps
 
 const useStyles = makeStyles(({ colors, textScale }) => ({
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  hook: { backgroundColor: colors.primary, borderRadius: radius.lg, padding: spacing.lg },
-  hookText: { color: colors.onPrimary, fontSize: Math.round(18 * textScale), lineHeight: Math.round(28 * textScale), fontWeight: '700' },
+  hookText: { color: colors.text, fontSize: Math.round(18 * textScale), lineHeight: Math.round(27 * textScale), fontWeight: '700', fontStyle: 'italic' },
   card: { backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, padding: spacing.lg, gap: spacing.lg },
   heading: { color: colors.text, fontSize: Math.round(19 * textScale), fontWeight: '800' },
   paragraph: { color: colors.text, fontSize: Math.round(17 * textScale), lineHeight: Math.round(29 * textScale) },

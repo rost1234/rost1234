@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { Text } from '@/components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Backdrop } from '@/components/Backdrop';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Button, type IconName } from '@/components/ui';
 import { useT, type TranslationKey } from '@/i18n';
@@ -24,6 +25,7 @@ export function Onboarding({ onFinish }: { onFinish: () => void }) {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
+      <Backdrop />
       <View style={styles.top}>
         {!last ? <Button label={t('onboarding.skip')} variant="ghost" onPress={onFinish} /> : <View style={{ height: 48 }} />}
       </View>

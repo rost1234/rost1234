@@ -1,17 +1,15 @@
 import type { ComponentPropsWithRef } from 'react';
-import { StyleSheet, Text as RNText, TextInput as RNTextInput } from 'react-native';
+import { Text as RNText, TextInput as RNTextInput } from 'react-native';
+import { useTheme } from '@/theme';
 
-/** The app's typeface (Hebrew + Latin). Bundled per weight; see the expo-font plugin in app.json and lib/fonts. */
-export const FONT_FAMILY = 'Rubik';
-
-const styles = StyleSheet.create({ font: { fontFamily: FONT_FAMILY } });
-
-/** React Native's Text in the app's typeface; a style's own fontFamily still wins. */
+/** React Native's Text in the current mode's body font (serif on paper, sans on the chalkboard); a style's own fontFamily wins. */
 export function Text({ style, ...rest }: ComponentPropsWithRef<typeof RNText>) {
-  return <RNText {...rest} style={[styles.font, style]} />;
+  const { fonts } = useTheme();
+  return <RNText {...rest} style={[{ fontFamily: fonts.body }, style]} />;
 }
 
-/** React Native's TextInput in the app's typeface. */
+/** React Native's TextInput in the current mode's body font. */
 export function TextInput({ style, ...rest }: ComponentPropsWithRef<typeof RNTextInput>) {
-  return <RNTextInput {...rest} style={[styles.font, style]} />;
+  const { fonts } = useTheme();
+  return <RNTextInput {...rest} style={[{ fontFamily: fonts.body }, style]} />;
 }

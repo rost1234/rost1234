@@ -3,6 +3,7 @@ import { Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { router, Stack } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { PinnedCard } from '@/components/Pinned';
 import { Button, Card, InlineError, LoadingState, Screen, TextField } from '@/components/ui';
 import type { CourseConcept, LevelKey } from '@/content/types';
 import { useStartStation } from '@/data/courses';
@@ -187,10 +188,12 @@ export function SelfCheckStation({ courseId, courseTitle, station, index, total,
                   {saved === null ? <Button label={t('self.edit')} variant="ghost" icon="create-outline" onPress={() => setRevealed(false)} /> : null}
                 </Card>
               ) : null}
-              <View style={styles.reference} testID="self-reference">
-                <Text style={[typography.label, { color: colors.primary }]}>{t('self.reference').toLocaleUpperCase()}</Text>
-                <Text style={typography.body}>{station.reference}</Text>
-              </View>
+              <PinnedCard tilt={0.5} style={{ marginTop: spacing.xs }}>
+                <View testID="self-reference" style={{ gap: spacing.xs }}>
+                  <Text style={typography.label}>{t('self.reference')}</Text>
+                  <Text style={typography.body}>{station.reference}</Text>
+                </View>
+              </PinnedCard>
               {points.length ? (
                 <Card style={{ padding: 0, gap: 0 }}>
                   <Text style={[typography.subheading, styles.pointsHead]}>{t('self.keyPoints')}</Text>

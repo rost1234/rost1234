@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode, Ref } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
+import { Backdrop } from '@/components/Backdrop';
 import { Text, TextInput } from '@/components/Text';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -37,6 +38,7 @@ export function Screen({ children, scroll = true, edges = [], contentStyle, refr
   const bottom = { paddingBottom: bottomInset + (scroll ? SCROLL_BOTTOM_BUFFER : spacing.xl) };
   return (
     <SafeAreaView edges={edges.filter((e) => e !== 'bottom')} style={styles.screen}>
+      <Backdrop />
       {scroll ? (
         <ScrollView
           ref={scrollRef}
@@ -77,12 +79,14 @@ export function Card({ children, style, onPress, accessibilityLabel }: {
 
 export function SectionHeader({ title, action }: { title: string; action?: ReactNode }) {
   const styles = useStyles();
-  const { typography } = useTheme();
+  const { typography, isDark } = useTheme();
   return (
     <View style={styles.sectionHeader}>
       <Text accessibilityRole="header" style={typography.label}>
-        {title.toLocaleUpperCase()}
+        {title}
       </Text>
+      {/* On paper, a section heading sits on a thin red rule, like a ruled notebook heading. */}
+      {isDark ? null : <View style={styles.sectionRule} />}
       {action}
     </View>
   );
@@ -97,9 +101,9 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 function buttonColors(variant: ButtonVariant, colors: Palette) {
   switch (variant) {
     case 'primary':
-      return { bg: colors.primary, fg: colors.onPrimary };
+      return { bg: colors.button, fg: colors.onButton };
     case 'secondary':
-      return { bg: colors.primarySoft, fg: colors.primary };
+      return { bg: 'transparent', fg: colors.text };
     case 'ghost':
       return { bg: 'transparent', fg: colors.primary };
     case 'danger':
@@ -134,7 +138,10 @@ export function Button({ label, onPress, variant = 'primary', icon, disabled, lo
       }}
       style={({ pressed }) => [
         styles.button,
+        variant === 'primary' && styles.buttonPrimary,
+        variant === 'secondary' && styles.buttonSecondary,
         { backgroundColor: palette.bg, opacity: inactive ? 0.5 : pressed ? 0.85 : 1 },
+        pressed && variant === 'primary' && styles.buttonPressed,
         style,
       ]}
     >
@@ -361,42 +368,56 @@ export function InlineError({ message }: { message: string | null | undefined })
   );
 }
 
-const useStyles = makeStyles(({ colors }) => ({
+/** Hand-drawn corners: the chalk outlines are a little uneven. */
+const chalkCorners = { borderTopLeftRadius: 20, borderTopRightRadius: 8, borderBottomRightRadius: 22, borderBottomLeftRadius: 10 };
+
+const useStyles = makeStyles(({ colors, isDark, fonts }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: colors.background },
   screenContent: { padding: spacing.lg, gap: spacing.lg },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    gap: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
+  card: isDark
+    ? { backgroundColor: 'rgba(255,255,255,0.04)', ...chalkCorners, padding: spacing.lg, gap: spacing.sm, borderWidth: 2, borderColor: colors.border }
+    : {
+        // A sheet of paper laid on the page.
+        backgroundColor: colors.surface,
+        borderRadius: 3,
+        padding: spacing.lg,
+        gap: spacing.sm,
+        borderWidth: 1,
+        borderColor: colors.border,
+        boxShadow: '0px 1px 0px #CDB68A, 0px 6px 14px rgba(90,60,20,0.10)',
+      },
   pressed: { opacity: 0.85 },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: spacing.sm,
     marginTop: spacing.sm,
   },
+  sectionRule: { flex: 1, height: 1, backgroundColor: 'rgba(163,48,31,0.35)' },
   button: {
     minHeight: 48,
-    borderRadius: radius.md,
+    borderRadius: isDark ? 0 : 3,
+    ...(isDark ? { borderTopLeftRadius: 26, borderTopRightRadius: 12, borderBottomRightRadius: 24, borderBottomLeftRadius: 14 } : {}),
     paddingHorizontal: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
   },
-  buttonLabel: { fontSize: 16, fontWeight: '700' },
+  // Paper: dark ink with a red offset, like a stamped label. Chalk: a stick of yellow chalk.
+  buttonPrimary: isDark ? {} : { boxShadow: '3px 3px 0px #A3301F' },
+  buttonPressed: isDark ? {} : { boxShadow: '1px 1px 0px #A3301F', transform: [{ translateX: 1 }, { translateY: 1 }] },
+  buttonSecondary: { borderWidth: isDark ? 2 : 1.5, borderColor: isDark ? 'rgba(238,240,232,0.7)' : colors.text, borderStyle: isDark ? 'dashed' : 'solid' },
+  buttonLabel: isDark ? { fontSize: 26, lineHeight: 30, fontWeight: '700', fontFamily: fonts.hand } : { fontSize: 16, fontWeight: '700' },
   field: { gap: spacing.xs },
   input: {
     minHeight: 48,
-    borderRadius: radius.md,
-    borderWidth: 1,
+    borderRadius: isDark ? radius.md : 3,
+    borderWidth: isDark ? 2 : 1,
     borderColor: colors.border,
-    backgroundColor: colors.surface,
+    backgroundColor: isDark ? 'rgba(0,0,0,0.14)' : colors.surface,
     color: colors.text,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -418,9 +439,9 @@ const useStyles = makeStyles(({ colors }) => ({
   chipLabel: { fontSize: 12, fontWeight: '700' },
   statTile: {
     flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : colors.surface,
+    borderRadius: isDark ? radius.lg : 3,
+    borderWidth: isDark ? 2 : 1,
     borderColor: colors.border,
     padding: spacing.md,
     gap: 2,

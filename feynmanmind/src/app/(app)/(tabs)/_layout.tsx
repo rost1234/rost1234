@@ -53,7 +53,9 @@ export default function TabsLayout() {
 function BottomBar({ state, navigation }: MaterialTopTabBarProps) {
   const t = useT();
   const styles = useStyles();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+  // The selected tab: red pen on paper, yellow chalk on the board.
+  const active = isDark ? colors.primary : colors.danger;
   const bottomInset = useBottomInset();
   const due = useQueueCount();
   return (
@@ -83,11 +85,11 @@ function BottomBar({ state, navigation }: MaterialTopTabBarProps) {
             }}
             style={styles.item}
           >
-            <View style={[styles.iconWrap, focused && { backgroundColor: colors.primarySoft }]}>
-              <Ionicons name={focused ? tab.icon : (`${tab.icon}-outline` as const)} size={22} color={focused ? colors.primary : colors.textMuted} />
+            <View style={styles.iconWrap}>
+              <Ionicons name={focused ? tab.icon : (`${tab.icon}-outline` as const)} size={22} color={focused ? active : colors.textMuted} />
               {badge > 0 ? <Badge count={badge} colors={colors} /> : null}
             </View>
-            <Text style={[styles.label, { color: focused ? colors.primary : colors.textMuted }]} numberOfLines={1}>
+            <Text style={[styles.label, { color: focused ? active : colors.textMuted }]} numberOfLines={1}>
               {label}
             </Text>
           </Pressable>
@@ -106,17 +108,19 @@ function Badge({ count, colors }: { count: number; colors: Palette }) {
   );
 }
 
-const useStyles = makeStyles(({ colors, textScale }) => ({
+const useStyles = makeStyles(({ colors, textScale, isDark, fonts }) => ({
   bar: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderTopWidth: 1,
+    backgroundColor: colors.chrome,
+    borderTopWidth: isDark ? 2 : 1,
     borderTopColor: colors.border,
     paddingTop: spacing.xs,
   },
   item: { flex: 1, alignItems: 'center', gap: 2, minHeight: 52, justifyContent: 'center' },
   iconWrap: { paddingHorizontal: spacing.lg, paddingVertical: 4, borderRadius: radius.pill },
-  label: { fontSize: Math.round(12 * textScale), fontWeight: '700' },
+  label: isDark
+    ? { fontFamily: fonts.hand, fontSize: Math.round(22 * textScale), lineHeight: Math.round(24 * textScale), fontWeight: '700' }
+    : { fontSize: Math.round(12 * textScale), fontWeight: '700' },
   badge: {
     position: 'absolute',
     top: -2,

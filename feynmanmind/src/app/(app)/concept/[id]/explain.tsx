@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { Keyboard, Pressable, ScrollView, View } from 'react-native';
+import { Backdrop } from '@/components/Backdrop';
 import { Text, TextInput } from '@/components/Text';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -74,6 +75,7 @@ export default function ExplainScreen() {
         }}
       />
       <KeyboardInsetView style={{ backgroundColor: colors.background }}>
+        <Backdrop />
         {editing && last?.evaluation ? (
           <View style={[styles.pin, styles.pinRefine]}>
             <Text style={styles.pinTitle}>🎯 {last.text || t('tutor.tag.refine')}</Text>

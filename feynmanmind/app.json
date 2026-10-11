@@ -87,6 +87,44 @@
                     "weight": 800
                   }
                 ]
+              },
+              {
+                "fontFamily": "FrankRuhl",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/FrankRuhlLibre_400Regular.ttf",
+                    "weight": 400
+                  },
+                  {
+                    "path": "./assets/fonts/FrankRuhlLibre_500Medium.ttf",
+                    "weight": 500
+                  },
+                  {
+                    "path": "./assets/fonts/FrankRuhlLibre_600SemiBold.ttf",
+                    "weight": 600
+                  },
+                  {
+                    "path": "./assets/fonts/FrankRuhlLibre_700Bold.ttf",
+                    "weight": 700
+                  },
+                  {
+                    "path": "./assets/fonts/FrankRuhlLibre_800ExtraBold.ttf",
+                    "weight": 800
+                  },
+                  {
+                    "path": "./assets/fonts/FrankRuhlLibre_900Black.ttf",
+                    "weight": 900
+                  }
+                ]
+              },
+              {
+                "fontFamily": "Amatic",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/AmaticSC_700Bold.ttf",
+                    "weight": 700
+                  }
+                ]
               }
             ]
           },
@@ -96,7 +134,14 @@
               "./assets/fonts/Rubik_500Medium.ttf",
               "./assets/fonts/Rubik_600SemiBold.ttf",
               "./assets/fonts/Rubik_700Bold.ttf",
-              "./assets/fonts/Rubik_800ExtraBold.ttf"
+              "./assets/fonts/Rubik_800ExtraBold.ttf",
+              "./assets/fonts/FrankRuhlLibre_400Regular.ttf",
+              "./assets/fonts/FrankRuhlLibre_500Medium.ttf",
+              "./assets/fonts/FrankRuhlLibre_600SemiBold.ttf",
+              "./assets/fonts/FrankRuhlLibre_700Bold.ttf",
+              "./assets/fonts/FrankRuhlLibre_800ExtraBold.ttf",
+              "./assets/fonts/FrankRuhlLibre_900Black.ttf",
+              "./assets/fonts/AmaticSC_700Bold.ttf"
             ]
           }
         }

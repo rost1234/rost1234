@@ -2,6 +2,7 @@ import { Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { router, type Href } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { PinnedCard } from '@/components/Pinned';
 import { Button, ProgressBar } from '@/components/ui';
 import { useContinueLearning } from '@/data/courses';
 import { useWeakConcepts } from '@/data/concepts';
@@ -10,7 +11,7 @@ import { useT } from '@/i18n';
 import { todayActivity } from '@/local/logic';
 import { useDBStore } from '@/local/store';
 import { usePrefsStore } from '@/state/prefsStore';
-import { makeStyles, radius, spacing, useTheme } from '@/theme';
+import { makeStyles, spacing, useTheme } from '@/theme';
 
 interface Step {
   key: string;
@@ -71,18 +72,18 @@ export function DailyPlan() {
   return (
     <View style={{ gap: spacing.md }}>
       {firstOpen ? (
-        <View style={styles.hero}>
-          <Text style={[typography.label, styles.heroSub]}>{t('plan.nextStep').toLocaleUpperCase()}</Text>
-          <Text style={[typography.heading, styles.heroText]}>{firstOpen.title}</Text>
-          <Text style={[typography.caption, styles.heroSub]}>{firstOpen.detail}</Text>
-          <Button label={t('plan.startNow')} icon="play" variant="secondary" onPress={() => router.push(firstOpen.href)} style={{ marginTop: spacing.sm }} />
-        </View>
+        <PinnedCard style={{ marginTop: spacing.sm }}>
+          <Text style={[typography.caption, styles.kicker]}>✎ {t('plan.nextStep')}</Text>
+          <Text style={typography.heading}>{firstOpen.title}</Text>
+          <Text style={typography.caption}>{firstOpen.detail}</Text>
+          <Button label={t('plan.startNow')} icon="play" onPress={() => router.push(firstOpen.href)} style={{ marginTop: spacing.sm }} />
+        </PinnedCard>
       ) : (
-        <View style={[styles.hero, { backgroundColor: colors.success }]}>
-          <Ionicons name="trophy" size={28} color={colors.onPrimary} />
-          <Text style={[typography.heading, styles.heroText]}>{t('plan.allDone')}</Text>
-          <Text style={[typography.caption, styles.heroSub]}>{t('plan.allDoneBody')}</Text>
-        </View>
+        <PinnedCard style={{ marginTop: spacing.sm }}>
+          <Ionicons name="trophy" size={28} color={colors.accent} />
+          <Text style={typography.heading}>{t('plan.allDone')}</Text>
+          <Text style={typography.caption}>{t('plan.allDoneBody')}</Text>
+        </PinnedCard>
       )}
 
       <View style={styles.card}>
@@ -101,11 +102,9 @@ export function DailyPlan() {
             onPress={() => router.push(step.href)}
             style={({ pressed }) => [styles.step, pressed && { opacity: 0.7 }]}
           >
-            <View style={[styles.check, step.done && { backgroundColor: colors.success, borderColor: colors.success }]}>
-              {step.done ? <Ionicons name="checkmark" size={16} color={colors.onPrimary} /> : null}
-            </View>
+            <View style={styles.check}>{step.done ? <Text style={styles.tick}>✓</Text> : null}</View>
             <View style={{ flex: 1, gap: 2 }}>
-              <Text style={[typography.body, { fontWeight: '600' }, step.done && { color: colors.textMuted, textDecorationLine: 'line-through' }]} numberOfLines={2}>
+              <Text style={[typography.body, { fontWeight: '600' }, step.done && styles.struck]} numberOfLines={2}>
                 {step.title}
               </Text>
               <Text style={typography.caption} numberOfLines={1}>
@@ -120,19 +119,15 @@ export function DailyPlan() {
   );
 }
 
-const useStyles = makeStyles(({ colors }) => ({
-  hero: { backgroundColor: colors.primary, borderRadius: radius.lg, padding: spacing.lg, gap: spacing.xs },
-  heroText: { color: colors.onPrimary },
-  heroSub: { color: colors.onPrimary, opacity: 0.88 },
-  card: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    gap: spacing.sm,
-  },
+const useStyles = makeStyles(({ colors, isDark, fonts }) => ({
+  kicker: { color: isDark ? colors.primary : colors.danger, fontWeight: '700' },
+  card: isDark
+    ? { borderWidth: 2, borderColor: colors.border, borderTopLeftRadius: 20, borderTopRightRadius: 8, borderBottomRightRadius: 22, borderBottomLeftRadius: 10, padding: spacing.lg, gap: spacing.sm }
+    : { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 3, padding: spacing.lg, gap: spacing.sm, boxShadow: '0px 1px 0px #CDB68A' },
+  // A pen tick in a hand-drawn box; done items are struck through in red pen / pink chalk.
+  tick: { fontFamily: fonts.hand, fontSize: 26, lineHeight: 28, fontWeight: '700', color: isDark ? colors.danger : colors.ink },
+  struck: { color: colors.textMuted, textDecorationLine: 'line-through', textDecorationColor: colors.danger },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   step: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 52, paddingVertical: spacing.xs },
-  check: { width: 26, height: 26, borderRadius: 13, borderWidth: 2, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  check: { width: 24, height: 24, borderRadius: isDark ? 5 : 2, borderWidth: isDark ? 2 : 1.5, borderColor: isDark ? 'rgba(238,240,232,0.8)' : colors.text, alignItems: 'center', justifyContent: 'center' },
 }));

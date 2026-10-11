@@ -13,13 +13,6 @@ import { subjectPath, type PathConcept } from '@/local/logic';
 import { useDBStore } from '@/local/store';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
-const GOLD = { main: '#FFC800', lip: '#E0A800', ink: '#6B4A00' };
-const UNIT_COLORS = [
-  { main: '#58CC02', lip: '#46A302' },
-  { main: '#1CB0F6', lip: '#1899D6' },
-  { main: '#CE82FF', lip: '#A568CC' },
-  { main: '#FF9600', lip: '#CC7800' },
-];
 const WIND = [0, 48, 72, 48, 0, -48, -72, -48];
 
 /**
@@ -31,7 +24,7 @@ export default function SubjectMapScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const t = useT();
   const styles = useStyles();
-  const { colors, typography } = useTheme();
+  const { colors, typography, map } = useTheme();
   const db = useDBStore((s) => s.db);
   const subject = db.subjects[id];
   const save = useSaveConcept();
@@ -57,12 +50,12 @@ export default function SubjectMapScreen() {
 
         {path.total === 0 ? <Text style={typography.body}>{t('subject.empty.body')}</Text> : null}
         {path.units.map((unit, u) => {
-          const palette = UNIT_COLORS[u % UNIT_COLORS.length]!;
+          const palette = map.levels[u % map.levels.length]!;
           const unitDone = unit.filter((c) => c.status === 'mastered').length;
           return (
             <View key={u} style={{ gap: spacing.md }}>
-              <View style={[styles.unit, { backgroundColor: palette.main }]}>
-                <Text style={styles.unitTitle}>{t('course.unit', { n: u + 1 })}</Text>
+              <View style={[styles.unit, { borderColor: palette.main }]}>
+                <Text style={[styles.unitTitle, { color: palette.main }]}>{t('course.unit', { n: u + 1 })}</Text>
                 <Text style={styles.unitSub}>{t('course.unitProgress', { done: unitDone, total: unit.length })}</Text>
               </View>
               {unit.map((c) => (
@@ -71,8 +64,8 @@ export default function SubjectMapScreen() {
                 </View>
               ))}
               <View style={styles.nodeRow}>
-                <View style={[styles.trophy, unitDone === unit.length ? { backgroundColor: GOLD.main, borderBottomColor: GOLD.lip } : null]}>
-                  <Ionicons name="trophy" size={28} color={unitDone === unit.length ? GOLD.ink : colors.textMuted} />
+                <View style={[styles.trophy, unitDone === unit.length ? { backgroundColor: map.gold.main, borderBottomColor: map.gold.lip } : null]}>
+                  <Ionicons name="trophy" size={28} color={unitDone === unit.length ? map.gold.ink : colors.textMuted} />
                 </View>
               </View>
             </View>
@@ -118,9 +111,10 @@ export default function SubjectMapScreen() {
 function Node({ concept, current, palette }: { concept: PathConcept; current: boolean; palette: { main: string; lip: string } }) {
   const t = useT();
   const styles = useStyles();
-  const { colors, typography } = useTheme();
+  const { colors, typography, map, isDark } = useTheme();
   const mastered = concept.status === 'mastered';
-  const fill = mastered ? GOLD : current || concept.status === 'started' ? palette : { main: colors.surfaceMuted, lip: colors.border };
+  const active = current || concept.status === 'started';
+  const ring = mastered ? map.gold.main : active ? palette.main : colors.border;
   const icon: IconName = mastered ? 'star' : current ? 'play' : concept.status === 'started' ? 'chatbubbles' : 'bulb';
   return (
     <View style={styles.nodeWrap}>
@@ -136,11 +130,11 @@ function Node({ concept, current, palette }: { concept: PathConcept; current: bo
         style={({ pressed }) => [
           styles.node,
           current && styles.nodeCurrent,
-          { backgroundColor: fill.main, borderBottomColor: fill.lip },
-          pressed && { borderBottomWidth: 2, transform: [{ translateY: 4 }] },
+          { backgroundColor: mastered ? map.gold.main : isDark ? 'transparent' : colors.surface, borderColor: ring, borderStyle: active || mastered ? 'solid' : 'dashed' },
+          pressed && { opacity: 0.7 },
         ]}
       >
-        <Ionicons name={icon} size={30} color={mastered ? GOLD.ink : fill === palette ? '#FFFFFF' : colors.textMuted} />
+        <Ionicons name={icon} size={30} color={mastered ? map.gold.ink : active ? palette.main : colors.textMuted} />
       </Pressable>
       <Text style={[typography.caption, styles.nodeTitle, current && { color: colors.text, fontWeight: '700' }]} numberOfLines={2}>
         {concept.title}
@@ -149,15 +143,15 @@ function Node({ concept, current, palette }: { concept: PathConcept; current: bo
   );
 }
 
-const useStyles = makeStyles(({ colors }) => ({
+const useStyles = makeStyles(({ colors, isDark }) => ({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  unit: { borderRadius: radius.lg, padding: spacing.md, gap: 2 },
-  unitTitle: { color: '#FFFFFF', fontWeight: '800', fontSize: 17 },
-  unitSub: { color: '#FFFFFF', opacity: 0.9, fontSize: 13 },
+  unit: { borderRadius: isDark ? radius.lg : 3, borderWidth: 2, padding: spacing.md, gap: 2, backgroundColor: isDark ? 'transparent' : colors.surface },
+  unitTitle: { fontWeight: '800', fontSize: 17 },
+  unitSub: { color: colors.textMuted, fontSize: 13 },
   nodeRow: { alignItems: 'center' },
   nodeWrap: { alignItems: 'center', gap: 6, width: 140 },
-  node: { width: 70, height: 66, borderRadius: 35, borderBottomWidth: 6, alignItems: 'center', justifyContent: 'center' },
-  nodeCurrent: { width: 80, height: 76, borderRadius: 40 },
+  node: { width: 70, height: 70, borderRadius: 35, borderWidth: 3, alignItems: 'center', justifyContent: 'center' },
+  nodeCurrent: { width: 80, height: 80, borderRadius: 40 },
   nodeTitle: { textAlign: 'center' },
   bubble: { borderWidth: 2, borderRadius: radius.md, paddingHorizontal: spacing.md, paddingVertical: 4, backgroundColor: colors.surface },
   bubbleText: { fontWeight: '800' },

@@ -14,14 +14,6 @@ import { UpgradeImported } from '@/features/learn/UpgradeImported';
 import { IMPORTED_COURSE_ID, type StationProgress } from '@/local/logic';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
-/** One color per level (foundations → master), with a darker "lip" for the raised-button look. */
-const LEVEL_COLORS = [
-  { main: '#2FA84F', lip: '#23843C' },
-  { main: '#1A8FE3', lip: '#146FB3' },
-  { main: '#9B59E0', lip: '#7A41B8' },
-  { main: '#F07B12', lip: '#C0600A' },
-] as const;
-const GOLD = { main: '#FFC800', lip: '#E0A800', ink: '#6B4A00' };
 /** Horizontal offsets, applied station after station, that make the map wind like a path. */
 const WIND = [0, 48, 72, 48, 0, -48, -72, -48];
 const NODE = 72;
@@ -33,7 +25,7 @@ export default function CourseMapScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const t = useT();
   const styles = useStyles();
-  const { colors, typography } = useTheme();
+  const { colors, typography, map } = useTheme();
   const query = useCourse(id);
   const remove = useDeleteCourse();
   const scrollRef = useRef<ScrollView>(null);
@@ -72,13 +64,13 @@ export default function CourseMapScreen() {
   // layout y is relative to the scroll content, which is what auto-scrolling needs.
   const rows: ReactNode[] = [];
   course.levels.forEach((level, levelIndex) => {
-    const palette = LEVEL_COLORS[levelIndex % LEVEL_COLORS.length]!;
+    const palette = map.levels[levelIndex % map.levels.length]!;
     const lp = progress.levels[levelIndex]!;
     rows.push(
-      <View key={`level-${level.key}`} style={[styles.levelBanner, { backgroundColor: palette.main, borderBottomColor: palette.lip }]}>
+      <View key={`level-${level.key}`} style={[styles.levelBanner, { borderColor: palette.main }]}>
         <View style={{ flex: 1, gap: 2 }}>
-          <Text style={styles.levelKicker}>{t('course.levelN', { n: levelIndex + 1 })}</Text>
-          <Text style={styles.levelTitle} accessibilityRole="header">
+          <Text style={[styles.levelKicker, { color: palette.main }]}>{t('course.levelN', { n: levelIndex + 1 })}</Text>
+          <Text style={[styles.levelTitle, { color: palette.main }]} accessibilityRole="header">
             {t(`level.${level.key}`)}
           </Text>
           <Text style={styles.levelHint}>{t(`level.${level.key}.hint`)}</Text>
@@ -89,8 +81,8 @@ export default function CourseMapScreen() {
             <Text style={styles.levelPillText}>{t('placement.known')}</Text>
           </View>
         ) : (
-          <View style={styles.levelPill}>
-            <Text style={styles.levelPillText}>{`${lp.done}/${lp.total}`}</Text>
+          <View style={[styles.levelPill, { borderColor: palette.main }]}>
+            <Text style={[styles.levelPillText, { color: palette.main }]}>{`${lp.done}/${lp.total}`}</Text>
           </View>
         )}
       </View>,
@@ -137,8 +129,8 @@ export default function CourseMapScreen() {
       });
       rows.push(
         <View key={`trophy-${unitNumber}`} style={styles.trophyRow} accessibilityLabel={t('course.unitTrophy')}>
-          <View style={[styles.trophy, complete ? { backgroundColor: GOLD.main, borderBottomColor: GOLD.lip } : { backgroundColor: colors.surfaceMuted, borderBottomColor: colors.border }]}>
-            <Ionicons name="trophy" size={30} color={complete ? GOLD.ink : colors.textMuted} />
+          <View style={[styles.trophy, complete ? { backgroundColor: map.gold.main, borderBottomColor: map.gold.lip } : { backgroundColor: colors.surfaceMuted, borderBottomColor: colors.border }]}>
+            <Ionicons name="trophy" size={30} color={complete ? map.gold.ink : colors.textMuted} />
           </View>
         </View>,
       );
@@ -253,7 +245,7 @@ function PathNode({
 }) {
   const t = useT();
   const styles = useStyles();
-  const { colors, typography } = useTheme();
+  const { colors, typography, map, isDark } = useTheme();
   const [pulse] = useState(() => new Animated.Value(0));
   const reduceMotion = useReduceMotion();
 
@@ -271,9 +263,12 @@ function PathNode({
 
   const mastered = progress.status === 'mastered';
   const active = current || progress.status !== 'new';
-  const fill = mastered ? GOLD : active ? palette : { main: colors.surfaceMuted, lip: colors.border };
+  // Drawn like the page: a filled circle when done, an outline in the level's color while in progress, faint when new.
+  const done = mastered || progress.status === 'known';
+  const ring = mastered ? map.gold.main : active ? palette.main : colors.border;
+  const fillColor = mastered ? map.gold.main : done ? palette.main : isDark ? 'transparent' : colors.surface;
   const icon: IconName = mastered ? 'star' : progress.status === 'known' ? 'checkmark' : progress.status === 'started' && !current ? 'book' : 'star';
-  const iconColor = mastered ? GOLD.ink : active ? '#FFFFFF' : colors.textMuted;
+  const iconColor = mastered ? map.gold.ink : done ? map.onFill : active ? palette.main : colors.textMuted;
 
   return (
     <View style={styles.nodeWrap}>
@@ -298,11 +293,7 @@ function PathNode({
           accessibilityRole="button"
           accessibilityLabel={`${t('course.station', { n: number })}: ${station.title}`}
           onPress={onPress}
-          style={({ pressed }) => [
-            styles.node,
-            { backgroundColor: fill.main, borderBottomColor: fill.lip },
-            pressed && { borderBottomWidth: 2, transform: [{ translateY: 4 }] },
-          ]}
+          style={({ pressed }) => [styles.node, { backgroundColor: fillColor, borderColor: ring, borderStyle: active || done ? 'solid' : 'dashed' }, pressed && { opacity: 0.7 }]}
         >
           <Ionicons name={icon} size={32} color={iconColor} />
         </Pressable>
@@ -319,7 +310,7 @@ function PathNode({
   );
 }
 
-const useStyles = makeStyles(({ colors }) => ({
+const useStyles = makeStyles(({ colors, map, isDark, fonts }) => ({
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   headerIcon: {
     width: 60,
@@ -341,40 +332,42 @@ const useStyles = makeStyles(({ colors }) => ({
     borderRadius: radius.md,
     padding: spacing.md,
   },
+  // A level is a chapter heading drawn in its color: an outlined box, not a filled button.
   levelBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    borderRadius: radius.lg,
-    borderBottomWidth: 5,
+    borderWidth: isDark ? 2.5 : 2,
+    ...(isDark ? { borderTopLeftRadius: 22, borderTopRightRadius: 8, borderBottomRightRadius: 24, borderBottomLeftRadius: 10 } : { borderRadius: 3 }),
+    backgroundColor: isDark ? 'transparent' : colors.surface,
     padding: spacing.lg,
     marginTop: spacing.lg,
   },
-  levelKicker: { color: '#FFFFFF', opacity: 0.85, fontWeight: '800', fontSize: 12 },
-  levelTitle: { color: '#FFFFFF', fontWeight: '800', fontSize: 22 },
-  levelHint: { color: '#FFFFFF', opacity: 0.9, fontSize: 13 },
+  levelKicker: { fontWeight: '800', fontSize: 12 },
+  levelTitle: isDark ? { fontFamily: fonts.hand, fontWeight: '700', fontSize: 38, lineHeight: 42 } : { fontFamily: fonts.heading, fontWeight: '900', fontSize: 24 },
+  levelHint: { color: colors.textMuted, fontSize: 13 },
   levelPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(0,0,0,0.18)',
+    borderWidth: 1.5,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },
-  levelPillText: { color: '#FFFFFF', fontWeight: '800' },
+  levelPillText: { fontWeight: '800' },
   unitHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    borderWidth: 2,
-    borderRadius: radius.lg,
+    borderWidth: isDark ? 2 : 1.5,
+    borderRadius: isDark ? radius.lg : 3,
     padding: spacing.md,
-    backgroundColor: colors.surface,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : colors.surface,
     marginTop: spacing.md,
   },
   unitBadge: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  unitBadgeText: { color: '#FFFFFF', fontWeight: '800', fontSize: 16 },
+  unitBadgeText: { color: map.onFill, fontWeight: '800', fontSize: 16 },
   nodeRow: { alignItems: 'center', marginTop: spacing.sm },
   nodeWrap: { alignItems: 'center', width: 170 },
   nodeHolder: { width: NODE + 20, height: NODE + 20, alignItems: 'center', justifyContent: 'center' },
@@ -383,7 +376,7 @@ const useStyles = makeStyles(({ colors }) => ({
     width: NODE,
     height: NODE,
     borderRadius: NODE / 2,
-    borderBottomWidth: 6,
+    borderWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
   },

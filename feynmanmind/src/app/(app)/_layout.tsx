@@ -1,17 +1,16 @@
 import { Stack } from 'expo-router';
-import { FONT_FAMILY } from '@/components/Text';
 import { useT } from '@/i18n';
 import { useTheme } from '@/theme';
 
 export default function AppLayout() {
   const t = useT();
-  const { colors } = useTheme();
+  const { colors, fonts, isDark } = useTheme();
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: colors.surface },
+        headerStyle: { backgroundColor: colors.chrome },
         headerTintColor: colors.primary,
-        headerTitleStyle: { color: colors.text, fontFamily: FONT_FAMILY, fontWeight: '700' },
+        headerTitleStyle: { color: colors.text, fontFamily: fonts.heading, fontWeight: '700', fontSize: isDark ? 30 : 19 },
         headerShadowVisible: false,
         contentStyle: { backgroundColor: colors.background },
         headerBackButtonDisplayMode: 'minimal',
