@@ -1,4 +1,5 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '@/components/Text';
 import { haptics } from '@/lib/haptics';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 

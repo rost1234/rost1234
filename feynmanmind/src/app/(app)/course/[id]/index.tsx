@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Animated, Easing, Linking, Pressable, ScrollView, Text, View } from 'react-native';
+import { Animated, Easing, Linking, Pressable, ScrollView, View } from 'react-native';
+import { Text } from '@/components/Text';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Button, Card, ErrorState, IconButton, LoadingState, ProgressBar, Screen, type IconName } from '@/components/ui';

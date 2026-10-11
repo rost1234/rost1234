@@ -1,4 +1,5 @@
-import { Switch, Text, View } from 'react-native';
+import { Switch, View } from 'react-native';
+import { Text } from '@/components/Text';
 import { Segmented } from '@/components/ui';
 import { useT } from '@/i18n';
 import { usePrefsStore, type TextSizePref } from '@/state/prefsStore';

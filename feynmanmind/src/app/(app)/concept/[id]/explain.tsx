@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
-import { Keyboard, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Keyboard, Pressable, ScrollView, View } from 'react-native';
+import { Text, TextInput } from '@/components/Text';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ChoiceChips } from '@/components/ChoiceChips';

@@ -1,4 +1,4 @@
-import { Text } from 'react-native';
+import { Text } from '@/components/Text';
 import { useLocalSearchParams } from 'expo-router';
 import { Card, ErrorState, LoadingState, Screen, SectionHeader } from '@/components/ui';
 import { useSession } from '@/data/sessions';

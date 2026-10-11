@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Switch, Text, View } from 'react-native';
+import { Switch, View } from 'react-native';
+import { Text } from '@/components/Text';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { Collapsible, CollapsibleGroup } from '@/components/Collapsible';

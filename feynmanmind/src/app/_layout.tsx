@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { I18nManager, Platform, Text, View } from 'react-native';
+import { I18nManager, Platform, View } from 'react-native';
+import { Text } from '@/components/Text';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack, type ErrorBoundaryProps } from 'expo-router';
@@ -8,6 +9,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Button } from '@/components/ui';
 import '@/data/local';
 import { resolveLanguage, useT } from '@/i18n';
+import { loadAppFonts } from '@/lib/fonts';
 import { queryClient } from '@/lib/queryClient';
 import { useDBStore } from '@/local/store';
 import { configureNotifications, syncDailyReminder } from '@/services/reminders';
@@ -16,6 +18,7 @@ import { spacing, useTheme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 configureNotifications();
+loadAppFonts();
 
 /** Route-level error boundary: catches render errors anywhere below the root. */
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {

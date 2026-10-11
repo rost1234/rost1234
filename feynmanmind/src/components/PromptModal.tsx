@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, View } from 'react-native';
+import { Text } from '@/components/Text';
 import { useT } from '@/i18n';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 import { Button, InlineError, TextField } from './ui';

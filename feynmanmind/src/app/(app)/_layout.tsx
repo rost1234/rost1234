@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { FONT_FAMILY } from '@/components/Text';
 import { useT } from '@/i18n';
 import { useTheme } from '@/theme';
 
@@ -10,7 +11,7 @@ export default function AppLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: colors.surface },
         headerTintColor: colors.primary,
-        headerTitleStyle: { color: colors.text },
+        headerTitleStyle: { color: colors.text, fontFamily: FONT_FAMILY, fontWeight: '700' },
         headerShadowVisible: false,
         contentStyle: { backgroundColor: colors.background },
         headerBackButtonDisplayMode: 'minimal',

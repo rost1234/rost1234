@@ -1,15 +1,6 @@
 import type { ComponentProps, ReactNode, Ref } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-  type StyleProp,
-  type TextInputProps,
-  type ViewStyle,
-} from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
+import { Text, TextInput } from '@/components/Text';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useT } from '@/i18n';

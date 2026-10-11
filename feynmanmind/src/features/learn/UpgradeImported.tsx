@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/Text';
 import { Button, InlineError, LoadingState, ProgressBar } from '@/components/ui';
 import { useUpgradeAllImported } from '@/data/imports';
 import { useT } from '@/i18n';

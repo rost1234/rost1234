@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { TextInput } from '@/components/Text';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Screen } from '@/components/ui';
 import { TabHeader } from '@/components/TabHeader';

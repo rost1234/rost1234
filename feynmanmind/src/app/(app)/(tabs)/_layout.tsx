@@ -1,4 +1,5 @@
-import { Platform, Pressable, Text, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
+import { Text } from '@/components/Text';
 import TopTabs, { type MaterialTopTabBarProps } from 'expo-router/js-top-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueueCount } from '@/data/study';

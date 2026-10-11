@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Modal, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, View } from 'react-native';
+import { Text } from '@/components/Text';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { AskContext } from '@/data/questions';
 import { useQuestionThread } from '@/data/questions';

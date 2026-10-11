@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Platform, Text } from 'react-native';
+import { Platform } from 'react-native';
+import { Text } from '@/components/Text';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { Button, Card, InlineError, Screen, TextField } from '@/components/ui';

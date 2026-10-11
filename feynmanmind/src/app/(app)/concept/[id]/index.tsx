@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, RefreshControl, Text, View } from 'react-native';
+import { Pressable, RefreshControl, View } from 'react-native';
+import { Text } from '@/components/Text';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ScoreRing } from '@/components/ScoreRing';

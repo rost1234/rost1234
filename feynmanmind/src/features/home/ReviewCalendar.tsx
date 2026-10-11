@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '@/components/Text';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useCalendarMonth, type CalendarDay } from '@/data/study';
 import { useT } from '@/i18n';

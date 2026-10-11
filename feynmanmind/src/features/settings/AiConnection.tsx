@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Text } from 'react-native';
+import { Text } from '@/components/Text';
 import { testConnection, type ConnectionResult } from '@/api/functions';
 import { Button, Card, TextField } from '@/components/ui';
 import { useT, type TranslationKey } from '@/i18n';

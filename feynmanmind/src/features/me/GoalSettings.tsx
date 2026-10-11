@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/Text';
 import { Stepper } from '@/components/ui';
 import { useT } from '@/i18n';
 import { usePrefsStore } from '@/state/prefsStore';

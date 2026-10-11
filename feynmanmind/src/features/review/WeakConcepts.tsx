@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/Text';
 import { router } from 'expo-router';
 import { ScoreRing } from '@/components/ScoreRing';
 import { Card, Chevron, SectionHeader } from '@/components/ui';

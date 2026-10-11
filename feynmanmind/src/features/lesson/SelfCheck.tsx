@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '@/components/Text';
 import { router, Stack } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Button, Card, InlineError, LoadingState, Screen, TextField } from '@/components/ui';

@@ -1,5 +1,6 @@
 import { Fragment, useState, type ReactNode } from 'react';
-import { Platform, Pressable, Text, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
+import { Text } from '@/components/Text';
 import { TabView } from 'react-native-tab-view';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
