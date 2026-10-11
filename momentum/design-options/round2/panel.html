@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Momentum סבב 2: 3 לוח מכשירים: ציר זמן ונתונים (רציני)</title>
+<style>
+body{margin:0;padding:24px 20px;font-family:system-ui,sans-serif;background:#E8E8EC;color:#1b1b22}
+h1{font-size:22px;margin:0 0 4px} p{margin:0 0 16px;color:#44444f;font-size:14px}
+.row{display:flex;gap:40px;overflow-x:auto;padding-bottom:16px} .row{direction:ltr}
+figure{margin:0;flex:none} figcaption{font-size:14px;margin-bottom:6px;text-align:center}
+iframe{border:0;border-radius:18px;box-shadow:0 2px 14px rgba(0,0,0,.2);background:#fff;display:block}
+</style></head><body>
+<h1>3 לוח מכשירים: ציר זמן ונתונים (רציני)</h1><p>גופנים: IBM Plex Sans Hebrew + IBM Plex Mono. הלוחות נפתחים משמאל לימין: היום · היום, כהה · פוקוס · תובנות · יום בלוח. נדרש חיבור לרשת לטעינת הגופנים.</p>
+<div class="row"><figure><figcaption>היום</figcaption><iframe title="היום" width="390" height="844" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;he&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;&lt;style&gt;
+body{margin:0}
+.r{--bg:#EDF0F3;--sf:#FFFFFF;--tx:#12202E;--mu:#4A5B6B;--ln:#C5CED7;--ac:#0B5CAD;--onac:#FFFFFF;--ok:#0B6B50;--okb:#DDF1EA;--wr:#8F4A00;--wrb:#FBEBD2;--acb:#E0ECF8;font-family:&#x27;IBM Plex Sans Hebrew&#x27;,sans-serif;color:var(--tx);background:var(--bg);position:relative;overflow:hidden;box-sizing:border-box}
+.r.dk{--bg:#0E141B;--sf:#151D26;--tx:#E6EDF3;--mu:#9AABBB;--ln:#2A3744;--ac:#6FB2F5;--onac:#0B1A2A;--ok:#5FD3A6;--okb:#123327;--wr:#F0B35A;--wrb:#3A2A10;--acb:#14283D}
+.r *{box-sizing:border-box}
+.r h1,.r h2,.r h3,.r p{margin:0;font-weight:400}
+.r button{font:inherit;color:inherit;cursor:pointer}
+.m{font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-variant-numeric:tabular-nums}
+.kp{padding:10px 12px;border-inline-start:1px solid var(--ln);min-width:0}
+.kp:first-child{border-inline-start:0}
+.kl{font-size:12px;color:var(--mu)}
+.sc{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mu);margin:14px 0 6px}
+.sc::after{content:&quot;&quot;;flex:1;height:1px;background:var(--ln)}
+.rw{display:flex;align-items:center;gap:10px;background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:8px 10px;min-height:64px;position:relative}
+.nd{position:absolute;right:-20px;top:50%;width:9px;height:9px;margin-top:-4.500px;border:2px solid var(--mu);background:var(--bg);border-radius:50%}
+.nd.on{background:var(--ok);border-color:var(--ok)}
+.cb{width:44px;height:44px;border-radius:6px;border:1.500px solid var(--mu);background:var(--sf);display:flex;align-items:center;justify-content:center;flex:none;padding:0}
+.cb.on{background:var(--ok);border-color:var(--ok)}
+.nm{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mt{font-size:12px;color:var(--mu);margin-top:2px}
+.sq{min-width:38px;border:1.500px solid var(--wr);border-radius:4px;color:var(--wr);text-align:center;padding:2px 4px;line-height:1.1}
+.sq b{display:block;font-size:17px;font-weight:600}
+.sq span{font-size:10px}
+.bi{flex:1;height:64px;border:0;border-inline-start:1px solid var(--ln);background:var(--sf);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;color:var(--mu);padding:0}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;r&quot; dir=&quot;rtl&quot; lang=&quot;he&quot; style=&quot;width:390px;height:844px&quot;&gt;
+  &lt;div style=&quot;display:flex;justify-content:space-between;align-items:center;padding:18px 16px 0&quot;&gt;
+    &lt;h1 style=&quot;font-size:24px;font-weight:600&quot;&gt;היום&lt;/h1&gt;
+    &lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:13px;color:var(--mu)&quot;&gt;SUN 11.10.2026&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;margin:10px 16px 0;background:var(--sf);border:1px solid var(--ln);border-radius:6px;display:grid;grid-template-columns:1.2fr 1fr 1fr&quot;&gt;
+    &lt;div class=&quot;kp&quot; style=&quot;display:flex;align-items:center;gap:10px&quot;&gt;
+      &lt;button aria-label=&quot;33 אחוז מההרגלים, לפתיחת תובנות&quot; style=&quot;border:0;background:none;padding:0;width:48px;height:48px;position:relative;flex:none&quot;&gt;&lt;svg width=&quot;48&quot; height=&quot;48&quot; viewBox=&quot;0 0 48 48&quot; aria-hidden=&quot;true&quot;&gt;&lt;circle cx=&quot;24&quot; cy=&quot;24&quot; r=&quot;19&quot; fill=&quot;none&quot; stroke=&quot;var(--ln)&quot; stroke-width=&quot;5&quot;/&gt;&lt;circle cx=&quot;24&quot; cy=&quot;24&quot; r=&quot;19&quot; fill=&quot;none&quot; stroke=&quot;var(--ac)&quot; stroke-width=&quot;5&quot; stroke-dasharray=&quot;39 120&quot; transform=&quot;rotate(-90 24 24)&quot;/&gt;&lt;/svg&gt;&lt;span class=&quot;m&quot; style=&quot;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600&quot;&gt;33%&lt;/span&gt;&lt;/button&gt;
+      &lt;div&gt;&lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:22px;font-weight:600;line-height:1&quot;&gt;1/3&lt;/p&gt;&lt;p class=&quot;kl&quot;&gt;הרגלים&lt;/p&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;kp&quot;&gt;&lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:22px;font-weight:600;line-height:1.1&quot;&gt;12&lt;/p&gt;&lt;p class=&quot;kl&quot;&gt;ימי רצף מוביל&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&quot;kp&quot;&gt;&lt;div style=&quot;display:flex;align-items:center;gap:6px&quot;&gt;&lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:22px;font-weight:600;line-height:1.1&quot;&gt;2/3&lt;/p&gt;&lt;/div&gt;&lt;p class=&quot;kl&quot;&gt;הקפאות&lt;/p&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;margin:8px 16px 0;background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:8px 12px;display:flex;align-items:center;gap:10px&quot;&gt;
+    &lt;span class=&quot;kl&quot; style=&quot;flex:none&quot;&gt;זמן באפליקציה&lt;/span&gt;
+    &lt;div dir=&quot;ltr&quot; style=&quot;flex:1;height:8px;background:var(--bg);border:1px solid var(--ln);position:relative&quot; role=&quot;img&quot; aria-label=&quot;3 דקות ו-40 שניות מתוך 5&quot;&gt;&lt;i style=&quot;position:absolute;left:0;top:0;bottom:0;width:73%;background:var(--ac)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;position:absolute;right:0;top:-4px;bottom:-4px;width:2px;background:var(--tx)&quot;&gt;&lt;/i&gt;&lt;/div&gt;
+    &lt;span class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:13px;font-weight:500&quot;&gt;3:40 / 5:00&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;padding:0 30px 0 16px;position:relative&quot;&gt;
+    &lt;div style=&quot;position:absolute;right:15px;top:14px;bottom:8px;width:1px;background:var(--ln)&quot;&gt;&lt;/div&gt;
+    &lt;p class=&quot;sc&quot;&gt;בוקר&lt;/p&gt;
+    &lt;div class=&quot;rw&quot; style=&quot;background:var(--okb)&quot;&gt;&lt;i class=&quot;nd on&quot;&gt;&lt;/i&gt;
+      &lt;div style=&quot;flex:1;min-width:0&quot;&gt;&lt;p class=&quot;nm&quot;&gt;מדיטציה&lt;/p&gt;&lt;p class=&quot;mt&quot;&gt;בוצע &lt;span class=&quot;m&quot;&gt;08:10&lt;/span&gt; · הפעם ה-&lt;span class=&quot;m&quot;&gt;47&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;
+      &lt;svg width=&quot;58&quot; height=&quot;24&quot; viewBox=&quot;0 0 58 24&quot; fill=&quot;none&quot; stroke=&quot;var(--mu)&quot; stroke-width=&quot;3&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M2 22V4M6 22V18M10 22V4M14 22V4M18 22V4M22 22V4M26 22V4M30 22V4M34 22V4M38 22V4M42 22V4M46 22V4M50 22V4M54 22V4&quot;/&gt;&lt;/svg&gt;
+      &lt;div class=&quot;sq m&quot;&gt;&lt;b&gt;12&lt;/b&gt;&lt;span&gt;ימים&lt;/span&gt;&lt;/div&gt;
+      &lt;button class=&quot;cb on&quot; aria-label=&quot;מדיטציה: בוצע, לחיצה לביטול&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;var(--onac)&quot; stroke-width=&quot;3&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M5 12.500l4.500 4.500L19 7.500&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;p class=&quot;sc&quot;&gt;צהריים&lt;/p&gt;
+    &lt;div class=&quot;rw&quot;&gt;&lt;i class=&quot;nd&quot;&gt;&lt;/i&gt;
+      &lt;div style=&quot;flex:1;min-width:0&quot;&gt;&lt;p class=&quot;nm&quot;&gt;8 כוסות מים&lt;/p&gt;&lt;div dir=&quot;ltr&quot; style=&quot;display:flex;gap:2px;margin-top:6px&quot; role=&quot;img&quot; aria-label=&quot;5 מתוך 8&quot;&gt;&lt;i style=&quot;flex:1;height:8px;background:var(--ac)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;flex:1;height:8px;background:var(--ac)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;flex:1;height:8px;background:var(--ac)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;flex:1;height:8px;background:var(--ac)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;flex:1;height:8px;background:var(--ac)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;flex:1;height:8px;border:1px solid var(--mu)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;flex:1;height:8px;border:1px solid var(--mu)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;flex:1;height:8px;border:1px solid var(--mu)&quot;&gt;&lt;/i&gt;&lt;/div&gt;&lt;/div&gt;
+      &lt;svg width=&quot;58&quot; height=&quot;24&quot; viewBox=&quot;0 0 58 24&quot; fill=&quot;none&quot; stroke=&quot;var(--mu)&quot; stroke-width=&quot;3&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M2 22V4M6 22V10M10 22V4M14 22V18M18 22V4M22 22V4M26 22V10M30 22V18M34 22V4M38 22V4M42 22V4M46 22V4M50 22V4M54 22V10&quot;/&gt;&lt;/svg&gt;
+      &lt;div class=&quot;sq m&quot;&gt;&lt;b&gt;5&lt;/b&gt;&lt;span&gt;ימים&lt;/span&gt;&lt;/div&gt;
+      &lt;button class=&quot;cb&quot; aria-label=&quot;מים: להוסיף כוס, כרגע 5 מתוך 8&quot; style=&quot;font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:15px;font-weight:600;color:var(--ac);border-color:var(--ac)&quot;&gt;+1&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;p class=&quot;sc&quot;&gt;ערב&lt;/p&gt;
+    &lt;div class=&quot;rw&quot; style=&quot;flex-wrap:wrap;row-gap:8px;padding:10px&quot;&gt;&lt;i class=&quot;nd&quot; style=&quot;top:34px&quot;&gt;&lt;/i&gt;
+      &lt;div style=&quot;flex:1;min-width:0&quot;&gt;&lt;p class=&quot;nm&quot;&gt;בלי גלילה ברשתות&lt;/p&gt;&lt;p class=&quot;mt&quot;&gt;אחרי ארוחה ← לשטוף פנים&lt;/p&gt;&lt;p class=&quot;mt&quot;&gt;נחסכו &lt;span class=&quot;m&quot;&gt;444&lt;/span&gt; ₪ · &lt;span class=&quot;m&quot;&gt;6&lt;/span&gt; שעות&lt;/p&gt;&lt;/div&gt;
+      &lt;div class=&quot;sq m&quot;&gt;&lt;b&gt;9&lt;/b&gt;&lt;span&gt;נקיים&lt;/span&gt;&lt;/div&gt;
+      &lt;button class=&quot;cb&quot; aria-label=&quot;סימון: היום בלי&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;var(--mu)&quot; stroke-width=&quot;3&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M5 12.500l4.500 4.500L19 7.500&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+      &lt;button style=&quot;width:100%;height:44px;border-radius:4px;border:1.500px solid var(--wr);background:var(--wrb);color:var(--wr);font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px&quot;&gt;&lt;svg width=&quot;20&quot; height=&quot;20&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;7&quot;/&gt;&lt;path d=&quot;M12 2v6M12 16v6M2 12h6M16 12h6&quot;/&gt;&lt;/svg&gt;בא לי עכשיו&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;padding:0 16px&quot;&gt;
+    &lt;p class=&quot;sc&quot; style=&quot;margin-top:14px&quot;&gt;3 של היום · &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt; פתוחה&lt;/p&gt;
+    &lt;div class=&quot;rw&quot; style=&quot;min-height:52px&quot;&gt;&lt;button class=&quot;cb&quot; aria-label=&quot;לשלוח חשבונית ללקוח: סימון&quot; style=&quot;width:44px;height:44px&quot;&gt;&lt;/button&gt;&lt;p style=&quot;flex:1;font-size:15px;font-weight:500&quot;&gt;לשלוח חשבונית ללקוח&lt;/p&gt;&lt;span style=&quot;display:flex;align-items:center;gap:4px;font-size:12px;color:var(--wr)&quot;&gt;&lt;svg width=&quot;16&quot; height=&quot;16&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;var(--wr)&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M12 2l3 7 7 .6-5.300 4.700 1.600 7.200L12 17.800 5.700 21.500l1.600-7.200L2 9.600 9 9z&quot;/&gt;&lt;/svg&gt;עיקרית&lt;/span&gt;&lt;/div&gt;
+    &lt;div style=&quot;margin-top:6px;border:1px dashed var(--mu);border-radius:6px;min-height:44px;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:13px;color:var(--mu)&quot;&gt;&lt;svg width=&quot;30&quot; height=&quot;16&quot; viewBox=&quot;0 0 30 16&quot; fill=&quot;none&quot; stroke=&quot;var(--mu)&quot; stroke-width=&quot;1.200&quot; stroke-dasharray=&quot;2 2&quot; aria-hidden=&quot;true&quot;&gt;&lt;rect x=&quot;1&quot; y=&quot;1&quot; width=&quot;12&quot; height=&quot;14&quot;/&gt;&lt;rect x=&quot;17&quot; y=&quot;1&quot; width=&quot;12&quot; height=&quot;14&quot;/&gt;&lt;/svg&gt;2 משבצות פנויות · הוספת משימה&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;position:absolute;left:0;right:0;bottom:0;height:68px;display:flex;border-top:1px solid var(--ln);background:var(--sf)&quot;&gt;
+    &lt;button style=&quot;flex:1.7;height:68px;border:0;background:var(--ac);color:var(--onac);display:flex;align-items:center;justify-content:center;gap:10px;font-size:17px;font-weight:600;padding:0&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;var(--onac)&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M6 3l15 9-15 9z&quot;/&gt;&lt;/svg&gt;פוקוס &lt;span class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-weight:500;font-size:15px&quot;&gt;25:00&lt;/span&gt;&lt;/button&gt;
+    &lt;button class=&quot;bi&quot; style=&quot;height:68px&quot; aria-label=&quot;לוח חודשי&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.600&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;rect x=&quot;4&quot; y=&quot;5&quot; width=&quot;16&quot; height=&quot;15&quot;/&gt;&lt;path d=&quot;M4 10h16M8 3v4M16 3v4&quot;/&gt;&lt;/svg&gt;לוח&lt;/button&gt;
+    &lt;button class=&quot;bi&quot; style=&quot;height:68px&quot; aria-label=&quot;ספריית המחקרים&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.600&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M5 4h13v15H7a2 2 0 00-2 2z&quot;/&gt;&lt;path d=&quot;M5 21h13&quot;/&gt;&lt;/svg&gt;ספרייה&lt;/button&gt;
+    &lt;button class=&quot;bi&quot; style=&quot;height:68px&quot; aria-label=&quot;הגדרות&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.600&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/&gt;&lt;path d=&quot;M12 2v3M12 19v3M2 12h3M19 12h3M4.900 4.900l2.100 2.100M17 17l2.100 2.100M19.100 4.900L17 7M7 17l-2.100 2.100&quot;/&gt;&lt;/svg&gt;הגדרות&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe></figure><figure><figcaption>היום, כהה</figcaption><iframe title="היום, כהה" width="390" height="844" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;he&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;&lt;style&gt;
+body{margin:0}
+.r{--bg:#EDF0F3;--sf:#FFFFFF;--tx:#12202E;--mu:#4A5B6B;--ln:#C5CED7;--ac:#0B5CAD;--onac:#FFFFFF;--ok:#0B6B50;--okb:#DDF1EA;--wr:#8F4A00;--wrb:#FBEBD2;--acb:#E0ECF8;font-family:&#x27;IBM Plex Sans Hebrew&#x27;,sans-serif;color:var(--tx);background:var(--bg);position:relative;overflow:hidden;box-sizing:border-box}
+.r.dk{--bg:#0E141B;--sf:#151D26;--tx:#E6EDF3;--mu:#9AABBB;--ln:#2A3744;--ac:#6FB2F5;--onac:#0B1A2A;--ok:#5FD3A6;--okb:#123327;--wr:#F0B35A;--wrb:#3A2A10;--acb:#14283D}
+.r *{box-sizing:border-box}
+.r h1,.r h2,.r h3,.r p{margin:0;font-weight:400}
+.r button{font:inherit;color:inherit;cursor:pointer}
+.m{font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-variant-numeric:tabular-nums}
+.kp{padding:10px 12px;border-inline-start:1px solid var(--ln);min-width:0}
+.kp:first-child{border-inline-start:0}
+.kl{font-size:12px;color:var(--mu)}
+.sc{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mu);margin:14px 0 6px}
+.sc::after{content:&quot;&quot;;flex:1;height:1px;background:var(--ln)}
+.rw{display:flex;align-items:center;gap:10px;background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:8px 10px;min-height:64px;position:relative}
+.nd{position:absolute;right:-20px;top:50%;width:9px;height:9px;margin-top:-4.500px;border:2px solid var(--mu);background:var(--bg);border-radius:50%}
+.nd.on{background:var(--ok);border-color:var(--ok)}
+.cb{width:44px;height:44px;border-radius:6px;border:1.500px solid var(--mu);background:var(--sf);display:flex;align-items:center;justify-content:center;flex:none;padding:0}
+.cb.on{background:var(--ok);border-color:var(--ok)}
+.nm{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mt{font-size:12px;color:var(--mu);margin-top:2px}
+.sq{min-width:38px;border:1.500px solid var(--wr);border-radius:4px;color:var(--wr);text-align:center;padding:2px 4px;line-height:1.1}
+.sq b{display:block;font-size:17px;font-weight:600}
+.sq span{font-size:10px}
+.bi{flex:1;height:64px;border:0;border-inline-start:1px solid var(--ln);background:var(--sf);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;color:var(--mu);padding:0}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;r dk&quot; dir=&quot;rtl&quot; lang=&quot;he&quot; style=&quot;width:390px;height:844px&quot;&gt;
+  &lt;div style=&quot;display:flex;justify-content:space-between;align-items:center;padding:18px 16px 0&quot;&gt;
+    &lt;h1 style=&quot;font-size:24px;font-weight:600&quot;&gt;היום&lt;/h1&gt;
+    &lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:13px;color:var(--mu)&quot;&gt;SUN 11.10.2026 21:05&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;margin:10px 16px 0;background:var(--sf);border:1px solid var(--ln);border-radius:6px;display:grid;grid-template-columns:1.2fr 1fr 1fr&quot;&gt;
+    &lt;div class=&quot;kp&quot; style=&quot;display:flex;align-items:center;gap:10px&quot;&gt;
+      &lt;button aria-label=&quot;33 אחוז מההרגלים, לפתיחת תובנות&quot; style=&quot;border:0;background:none;padding:0;width:48px;height:48px;position:relative;flex:none&quot;&gt;&lt;svg width=&quot;48&quot; height=&quot;48&quot; viewBox=&quot;0 0 48 48&quot; aria-hidden=&quot;true&quot;&gt;&lt;circle cx=&quot;24&quot; cy=&quot;24&quot; r=&quot;19&quot; fill=&quot;none&quot; stroke=&quot;var(--ln)&quot; stroke-width=&quot;5&quot;/&gt;&lt;circle cx=&quot;24&quot; cy=&quot;24&quot; r=&quot;19&quot; fill=&quot;none&quot; stroke=&quot;var(--ac)&quot; stroke-width=&quot;5&quot; stroke-dasharray=&quot;39 120&quot; transform=&quot;rotate(-90 24 24)&quot;/&gt;&lt;/svg&gt;&lt;span class=&quot;m&quot; style=&quot;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600&quot;&gt;33%&lt;/span&gt;&lt;/button&gt;
+      &lt;div&gt;&lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:22px;font-weight:600;line-height:1&quot;&gt;1/3&lt;/p&gt;&lt;p class=&quot;kl&quot;&gt;הרגלים&lt;/p&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;kp&quot;&gt;&lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:22px;font-weight:600;line-height:1.1&quot;&gt;12&lt;/p&gt;&lt;p class=&quot;kl&quot;&gt;ימי רצף מוביל&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&quot;kp&quot;&gt;&lt;div style=&quot;display:flex;align-items:center;gap:6px&quot;&gt;&lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:22px;font-weight:600;line-height:1.1&quot;&gt;2/3&lt;/p&gt;&lt;/div&gt;&lt;p class=&quot;kl&quot;&gt;הקפאות&lt;/p&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;margin:8px 16px 0;background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:8px 12px;display:flex;align-items:center;gap:10px&quot;&gt;
+    &lt;span class=&quot;kl&quot; style=&quot;flex:none&quot;&gt;זמן באפליקציה&lt;/span&gt;
+    &lt;div dir=&quot;ltr&quot; style=&quot;flex:1;height:8px;background:var(--bg);border:1px solid var(--ln);position:relative&quot; role=&quot;img&quot; aria-label=&quot;3 דקות ו-40 שניות מתוך 5&quot;&gt;&lt;i style=&quot;position:absolute;left:0;top:0;bottom:0;width:73%;background:var(--ac)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;position:absolute;right:0;top:-4px;bottom:-4px;width:2px;background:var(--tx)&quot;&gt;&lt;/i&gt;&lt;/div&gt;
+    &lt;span class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:13px;font-weight:500&quot;&gt;3:40 / 5:00&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;padding:0 30px 0 16px;position:relative&quot;&gt;
+    &lt;div style=&quot;position:absolute;right:15px;top:14px;bottom:8px;width:1px;background:var(--ln)&quot;&gt;&lt;/div&gt;
+    &lt;p class=&quot;sc&quot;&gt;בוקר&lt;/p&gt;
+    &lt;div class=&quot;rw&quot; style=&quot;background:var(--okb)&quot;&gt;&lt;i class=&quot;nd on&quot;&gt;&lt;/i&gt;
+      &lt;div style=&quot;flex:1;min-width:0&quot;&gt;&lt;p class=&quot;nm&quot;&gt;מדיטציה&lt;/p&gt;&lt;p class=&quot;mt&quot;&gt;בוצע &lt;span class=&quot;m&quot;&gt;08:10&lt;/span&gt; · הפעם ה-&lt;span class=&quot;m&quot;&gt;47&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;
+      &lt;svg width=&quot;58&quot; height=&quot;24&quot; viewBox=&quot;0 0 58 24&quot; fill=&quot;none&quot; stroke=&quot;var(--mu)&quot; stroke-width=&quot;3&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M2 22V4M6 22V18M10 22V4M14 22V4M18 22V4M22 22V4M26 22V4M30 22V4M34 22V4M38 22V4M42 22V4M46 22V4M50 22V4M54 22V4&quot;/&gt;&lt;/svg&gt;
+      &lt;div class=&quot;sq m&quot;&gt;&lt;b&gt;12&lt;/b&gt;&lt;span&gt;ימים&lt;/span&gt;&lt;/div&gt;
+      &lt;button class=&quot;cb on&quot; aria-label=&quot;מדיטציה: בוצע, לחיצה לביטול&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;var(--onac)&quot; stroke-width=&quot;3&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M5 12.500l4.500 4.500L19 7.500&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;p class=&quot;sc&quot;&gt;צהריים&lt;/p&gt;
+    &lt;div class=&quot;rw&quot;&gt;&lt;i class=&quot;nd&quot;&gt;&lt;/i&gt;
+      &lt;div style=&quot;flex:1;min-width:0&quot;&gt;&lt;p class=&quot;nm&quot;&gt;8 כוסות מים&lt;/p&gt;&lt;div dir=&quot;ltr&quot; style=&quot;display:flex;gap:2px;margin-top:6px&quot; role=&quot;img&quot; aria-label=&quot;5 מתוך 8&quot;&gt;&lt;i style=&quot;flex:1;height:8px;background:var(--ac)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;flex:1;height:8px;background:var(--ac)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;flex:1;height:8px;background:var(--ac)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;flex:1;height:8px;background:var(--ac)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;flex:1;height:8px;background:var(--ac)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;flex:1;height:8px;border:1px solid var(--mu)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;flex:1;height:8px;border:1px solid var(--mu)&quot;&gt;&lt;/i&gt;&lt;i style=&quot;flex:1;height:8px;border:1px solid var(--mu)&quot;&gt;&lt;/i&gt;&lt;/div&gt;&lt;/div&gt;
+      &lt;svg width=&quot;58&quot; height=&quot;24&quot; viewBox=&quot;0 0 58 24&quot; fill=&quot;none&quot; stroke=&quot;var(--mu)&quot; stroke-width=&quot;3&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M2 22V4M6 22V10M10 22V4M14 22V18M18 22V4M22 22V4M26 22V10M30 22V18M34 22V4M38 22V4M42 22V4M46 22V4M50 22V4M54 22V10&quot;/&gt;&lt;/svg&gt;
+      &lt;div class=&quot;sq m&quot;&gt;&lt;b&gt;5&lt;/b&gt;&lt;span&gt;ימים&lt;/span&gt;&lt;/div&gt;
+      &lt;button class=&quot;cb&quot; aria-label=&quot;מים: להוסיף כוס, כרגע 5 מתוך 8&quot; style=&quot;font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-size:15px;font-weight:600;color:var(--ac);border-color:var(--ac)&quot;&gt;+1&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;p class=&quot;sc&quot;&gt;ערב&lt;/p&gt;
+    &lt;div class=&quot;rw&quot; style=&quot;flex-wrap:wrap;row-gap:8px;padding:10px&quot;&gt;&lt;i class=&quot;nd&quot; style=&quot;top:34px&quot;&gt;&lt;/i&gt;
+      &lt;div style=&quot;flex:1;min-width:0&quot;&gt;&lt;p class=&quot;nm&quot;&gt;בלי גלילה ברשתות&lt;/p&gt;&lt;p class=&quot;mt&quot;&gt;אחרי ארוחה ← לשטוף פנים&lt;/p&gt;&lt;p class=&quot;mt&quot;&gt;נחסכו &lt;span class=&quot;m&quot;&gt;444&lt;/span&gt; ₪ · &lt;span class=&quot;m&quot;&gt;6&lt;/span&gt; שעות&lt;/p&gt;&lt;/div&gt;
+      &lt;div class=&quot;sq m&quot;&gt;&lt;b&gt;9&lt;/b&gt;&lt;span&gt;נקיים&lt;/span&gt;&lt;/div&gt;
+      &lt;button class=&quot;cb&quot; aria-label=&quot;סימון: היום בלי&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;var(--mu)&quot; stroke-width=&quot;3&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M5 12.500l4.500 4.500L19 7.500&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+      &lt;button style=&quot;width:100%;height:44px;border-radius:4px;border:1.500px solid var(--wr);background:var(--wrb);color:var(--wr);font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px&quot;&gt;&lt;svg width=&quot;20&quot; height=&quot;20&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;7&quot;/&gt;&lt;path d=&quot;M12 2v6M12 16v6M2 12h6M16 12h6&quot;/&gt;&lt;/svg&gt;בא לי עכשיו&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;padding:0 16px&quot;&gt;
+    &lt;p class=&quot;sc&quot; style=&quot;margin-top:14px&quot;&gt;3 של היום · &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt; פתוחה&lt;/p&gt;
+    &lt;div class=&quot;rw&quot; style=&quot;min-height:52px&quot;&gt;&lt;button class=&quot;cb&quot; aria-label=&quot;לשלוח חשבונית ללקוח: סימון&quot; style=&quot;width:44px;height:44px&quot;&gt;&lt;/button&gt;&lt;p style=&quot;flex:1;font-size:15px;font-weight:500&quot;&gt;לשלוח חשבונית ללקוח&lt;/p&gt;&lt;span style=&quot;display:flex;align-items:center;gap:4px;font-size:12px;color:var(--wr)&quot;&gt;&lt;svg width=&quot;16&quot; height=&quot;16&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;var(--wr)&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M12 2l3 7 7 .6-5.300 4.700 1.600 7.200L12 17.800 5.700 21.500l1.600-7.200L2 9.600 9 9z&quot;/&gt;&lt;/svg&gt;עיקרית&lt;/span&gt;&lt;/div&gt;
+    &lt;div style=&quot;margin-top:6px;border:1px dashed var(--mu);border-radius:6px;min-height:44px;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:13px;color:var(--mu)&quot;&gt;&lt;svg width=&quot;30&quot; height=&quot;16&quot; viewBox=&quot;0 0 30 16&quot; fill=&quot;none&quot; stroke=&quot;var(--mu)&quot; stroke-width=&quot;1.200&quot; stroke-dasharray=&quot;2 2&quot; aria-hidden=&quot;true&quot;&gt;&lt;rect x=&quot;1&quot; y=&quot;1&quot; width=&quot;12&quot; height=&quot;14&quot;/&gt;&lt;rect x=&quot;17&quot; y=&quot;1&quot; width=&quot;12&quot; height=&quot;14&quot;/&gt;&lt;/svg&gt;2 משבצות פנויות · הוספת משימה&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;position:absolute;left:0;right:0;bottom:0;height:68px;display:flex;border-top:1px solid var(--ln);background:var(--sf)&quot;&gt;
+    &lt;button style=&quot;flex:1.7;height:68px;border:0;background:var(--ac);color:var(--onac);display:flex;align-items:center;justify-content:center;gap:10px;font-size:17px;font-weight:600;padding:0&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;var(--onac)&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M6 3l15 9-15 9z&quot;/&gt;&lt;/svg&gt;פוקוס &lt;span class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-weight:500;font-size:15px&quot;&gt;25:00&lt;/span&gt;&lt;/button&gt;
+    &lt;button class=&quot;bi&quot; style=&quot;height:68px&quot; aria-label=&quot;לוח חודשי&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.600&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;rect x=&quot;4&quot; y=&quot;5&quot; width=&quot;16&quot; height=&quot;15&quot;/&gt;&lt;path d=&quot;M4 10h16M8 3v4M16 3v4&quot;/&gt;&lt;/svg&gt;לוח&lt;/button&gt;
+    &lt;button class=&quot;bi&quot; style=&quot;height:68px&quot; aria-label=&quot;ספריית המחקרים&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.600&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M5 4h13v15H7a2 2 0 00-2 2z&quot;/&gt;&lt;path d=&quot;M5 21h13&quot;/&gt;&lt;/svg&gt;ספרייה&lt;/button&gt;
+    &lt;button class=&quot;bi&quot; style=&quot;height:68px&quot; aria-label=&quot;הגדרות&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.600&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/&gt;&lt;path d=&quot;M12 2v3M12 19v3M2 12h3M19 12h3M4.900 4.900l2.100 2.100M17 17l2.100 2.100M19.100 4.900L17 7M7 17l-2.100 2.100&quot;/&gt;&lt;/svg&gt;הגדרות&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe></figure><figure><figcaption>פוקוס</figcaption><iframe title="פוקוס" width="390" height="844" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;he&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;&lt;style&gt;
+body{margin:0}
+.r{--bg:#0B1118;--sf:#131C26;--tx:#E6EDF3;--mu:#9AABBB;--ln:#2A3744;--ac:#6FB2F5;--onac:#0B1A2A;--wr:#F0B35A;font-family:&#x27;IBM Plex Sans Hebrew&#x27;,sans-serif;color:var(--tx);background:var(--bg);position:relative;overflow:hidden;box-sizing:border-box}
+.r *{box-sizing:border-box}
+.r h1,.r h2,.r h3,.r p{margin:0;font-weight:400}
+.r button{font:inherit;color:inherit;cursor:pointer}
+.m{font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-variant-numeric:tabular-nums}
+.ce{padding:10px 12px;border:1px solid var(--ln);margin:-1px 0 0 -1px;min-width:0}
+.kl{font-size:12px;color:var(--mu)}
+.kv{font-size:15px;font-weight:600;margin-top:2px}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;r&quot; dir=&quot;rtl&quot; lang=&quot;he&quot; style=&quot;width:390px;height:844px&quot;&gt;
+  &lt;div style=&quot;display:flex;align-items:center;justify-content:space-between;padding:16px 16px 0&quot;&gt;
+    &lt;button aria-label=&quot;סגירה&quot; style=&quot;width:48px;height:48px;border:1px solid var(--ln);border-radius:4px;background:var(--sf);display:flex;align-items:center;justify-content:center&quot;&gt;&lt;svg width=&quot;20&quot; height=&quot;20&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.800&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M6 6l12 12M18 6L6 18&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+    &lt;div style=&quot;text-align:center&quot;&gt;&lt;p style=&quot;font-size:17px;font-weight:600&quot;&gt;פוקוס&lt;/p&gt;&lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:12px;color:var(--mu)&quot;&gt;SESSION 1/4 · 25/5&lt;/p&gt;&lt;/div&gt;
+    &lt;button aria-label=&quot;נא לא להפריע&quot; style=&quot;width:48px;height:48px;border:1px solid var(--ln);border-radius:4px;background:var(--sf);display:flex;align-items:center;justify-content:center&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.600&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;9&quot;/&gt;&lt;path d=&quot;M7 12h10&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;position:relative;width:310px;height:310px;margin:22px auto 0&quot; role=&quot;img&quot; aria-label=&quot;עברו 6 דקות ו-18 שניות מתוך 25, נשארו 18 דקות ו-42 שניות&quot;&gt;
+    &lt;svg width=&quot;310&quot; height=&quot;310&quot; viewBox=&quot;0 0 310 310&quot; style=&quot;position:absolute;inset:0&quot; aria-hidden=&quot;true&quot;&gt;&lt;circle cx=&quot;155&quot; cy=&quot;155&quot; r=&quot;146&quot; fill=&quot;none&quot; stroke=&quot;#6B7C8C&quot; stroke-width=&quot;9&quot; stroke-dasharray=&quot;1.800 13.200&quot; transform=&quot;rotate(-90 155 155)&quot;/&gt;&lt;circle cx=&quot;155&quot; cy=&quot;155&quot; r=&quot;126&quot; fill=&quot;none&quot; stroke=&quot;var(--ln)&quot; stroke-width=&quot;6&quot;/&gt;&lt;circle cx=&quot;155&quot; cy=&quot;155&quot; r=&quot;126&quot; fill=&quot;none&quot; stroke=&quot;var(--ac)&quot; stroke-width=&quot;6&quot; stroke-dasharray=&quot;199.500 592.200&quot; transform=&quot;rotate(-90 155 155)&quot;/&gt;&lt;path d=&quot;M155 12l-6 -10h12z&quot; fill=&quot;var(--wr)&quot;/&gt;&lt;circle cx=&quot;155&quot; cy=&quot;155&quot; r=&quot;104&quot; fill=&quot;none&quot; stroke=&quot;var(--ln)&quot; stroke-width=&quot;1&quot; stroke-dasharray=&quot;2 4&quot;/&gt;&lt;/svg&gt;
+    &lt;div style=&quot;position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center&quot;&gt;
+      &lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:66px;font-weight:500;line-height:1;letter-spacing:-2px&quot;&gt;18:42&lt;/p&gt;
+      &lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:13px;color:var(--mu);margin-top:8px&quot;&gt;ELAPSED 06:18 / 25:00&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;margin:22px 16px 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding-left:1px;padding-top:1px&quot;&gt;
+    &lt;div class=&quot;ce&quot;&gt;&lt;p class=&quot;kl&quot;&gt;קשור להרגל&lt;/p&gt;&lt;p class=&quot;kv&quot;&gt;מדיטציה&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&quot;ce&quot;&gt;&lt;p class=&quot;kl&quot;&gt;סבב&lt;/p&gt;&lt;p class=&quot;kv&quot;&gt;&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt; מתוך &lt;span class=&quot;m&quot;&gt;4&lt;/span&gt; · פומודורו&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&quot;ce&quot;&gt;&lt;p class=&quot;kl&quot;&gt;סאונד&lt;/p&gt;&lt;p class=&quot;kv&quot;&gt;גשם &lt;span class=&quot;m&quot; style=&quot;font-weight:400&quot;&gt;· 40%&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&quot;ce&quot;&gt;&lt;p class=&quot;kl&quot;&gt;נא לא להפריע&lt;/p&gt;&lt;p class=&quot;kv&quot;&gt;קיצור להגדרות&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&quot;ce&quot; style=&quot;grid-column:1 / -1&quot;&gt;&lt;p class=&quot;kl&quot;&gt;למה&lt;/p&gt;&lt;p class=&quot;kv&quot; style=&quot;font-weight:400&quot;&gt;להתחיל את היום ברוגע&lt;/p&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;position:absolute;left:16px;right:16px;bottom:24px;display:flex;gap:8px&quot;&gt;
+    &lt;button style=&quot;flex:1;height:56px;border:0;border-radius:4px;background:var(--ac);color:var(--onac);font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;var(--onac)&quot; aria-hidden=&quot;true&quot;&gt;&lt;rect x=&quot;5&quot; y=&quot;4&quot; width=&quot;5&quot; height=&quot;16&quot;/&gt;&lt;rect x=&quot;14&quot; y=&quot;4&quot; width=&quot;5&quot; height=&quot;16&quot;/&gt;&lt;/svg&gt;השהיה&lt;/button&gt;
+    &lt;button style=&quot;width:110px;height:56px;border:1px solid var(--mu);border-radius:4px;background:var(--sf);font-size:16px;font-weight:500&quot;&gt;סיום&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe></figure><figure><figcaption>תובנות</figcaption><iframe title="תובנות" width="390" height="844" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;he&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;&lt;style&gt;
+body{margin:0}
+.r{--bg:#EDF0F3;--sf:#FFFFFF;--tx:#12202E;--mu:#4A5B6B;--ln:#C5CED7;--ac:#0B5CAD;--ok:#0B6B50;--wr:#8F4A00;font-family:&#x27;IBM Plex Sans Hebrew&#x27;,sans-serif;color:var(--tx);background:var(--bg);position:relative;overflow:hidden;box-sizing:border-box}
+.r *{box-sizing:border-box}
+.r h1,.r h2,.r h3,.r p{margin:0;font-weight:400}
+.r button{font:inherit;color:inherit;cursor:pointer}
+.m{font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-variant-numeric:tabular-nums}
+.pn{background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:12px}
+.ph{display:flex;justify-content:space-between;align-items:baseline}
+.ph h2{font-size:15px;font-weight:600}
+.ph span{font-size:12px;color:var(--mu)}
+.tr{display:grid;grid-template-columns:1.6fr 1fr 70px;align-items:center;gap:8px;min-height:36px;border-top:1px solid var(--ln);font-size:14px}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;r&quot; dir=&quot;rtl&quot; lang=&quot;he&quot; style=&quot;width:390px;height:844px&quot;&gt;
+  &lt;div style=&quot;display:flex;align-items:center;justify-content:space-between;padding:16px 16px 0&quot;&gt;
+    &lt;h1 style=&quot;font-size:24px;font-weight:600&quot;&gt;תובנות&lt;/h1&gt;
+    &lt;div style=&quot;display:flex;gap:8px&quot;&gt;
+      &lt;button aria-label=&quot;לוח חודשי&quot; style=&quot;width:48px;height:48px;border:1px solid var(--ln);border-radius:4px;background:var(--sf);display:flex;align-items:center;justify-content:center&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.600&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;rect x=&quot;4&quot; y=&quot;5&quot; width=&quot;16&quot; height=&quot;15&quot;/&gt;&lt;path d=&quot;M4 10h16M8 3v4M16 3v4&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+      &lt;button aria-label=&quot;סגירה&quot; style=&quot;width:48px;height:48px;border:1px solid var(--ln);border-radius:4px;background:var(--sf);display:flex;align-items:center;justify-content:center&quot;&gt;&lt;svg width=&quot;20&quot; height=&quot;20&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.800&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M6 6l12 12M18 6L6 18&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;padding:10px 16px 0;display:flex;flex-direction:column;gap:10px&quot;&gt;
+    &lt;div class=&quot;pn&quot;&gt;
+      &lt;div class=&quot;ph&quot;&gt;&lt;h2&gt;הרגלים שהושלמו ביום · 14 ימים&lt;/h2&gt;&lt;span class=&quot;m&quot; dir=&quot;ltr&quot;&gt;0–3&lt;/span&gt;&lt;/div&gt;
+      &lt;svg dir=&quot;ltr&quot; width=&quot;334&quot; height=&quot;190&quot; viewBox=&quot;0 0 370 200&quot; style=&quot;display:block;margin-top:6px;max-width:100%&quot; role=&quot;img&quot; aria-label=&quot;גרף קווי: בשבוע שעבר 3, 2, 2, 3, 3, 2, 3 הרגלים ביום, ובשבוע הנוכחי 3, 3, 2, 3, 1, 2, 1&quot;&gt;
+        &lt;g stroke=&quot;#C5CED7&quot; stroke-width=&quot;1&quot;&gt;&lt;path d=&quot;M40 20H356M40 70H356M40 120H356M40 170H356&quot;/&gt;&lt;/g&gt;
+        &lt;g class=&quot;m&quot; font-family=&quot;IBM Plex Mono&quot; font-size=&quot;11&quot; fill=&quot;#4A5B6B&quot; text-anchor=&quot;end&quot;&gt;&lt;text x=&quot;30&quot; y=&quot;24&quot;&gt;3&lt;/text&gt;&lt;text x=&quot;30&quot; y=&quot;74&quot;&gt;2&lt;/text&gt;&lt;text x=&quot;30&quot; y=&quot;124&quot;&gt;1&lt;/text&gt;&lt;text x=&quot;30&quot; y=&quot;174&quot;&gt;0&lt;/text&gt;&lt;/g&gt;
+        &lt;rect x=&quot;213&quot; y=&quot;14&quot; width=&quot;143&quot; height=&quot;162&quot; fill=&quot;#E0ECF8&quot; opacity=&quot;.6&quot;/&gt;
+        &lt;polyline points=&quot;40,20 63.800,70 87.700,70 111.500,20 135.400,20 159.200,70 183.100,20 207,20 230.800,20 254.600,70 278.500,20 302.300,120 326.200,70 350,120&quot; fill=&quot;none&quot; stroke=&quot;#0B5CAD&quot; stroke-width=&quot;2.200&quot; stroke-linejoin=&quot;miter&quot;/&gt;
+        &lt;g fill=&quot;#0B5CAD&quot;&gt;&lt;rect x=&quot;37&quot; y=&quot;17&quot; width=&quot;6&quot; height=&quot;6&quot;/&gt;&lt;rect x=&quot;60.800&quot; y=&quot;67&quot; width=&quot;6&quot; height=&quot;6&quot;/&gt;&lt;rect x=&quot;84.700&quot; y=&quot;67&quot; width=&quot;6&quot; height=&quot;6&quot;/&gt;&lt;rect x=&quot;108.500&quot; y=&quot;17&quot; width=&quot;6&quot; height=&quot;6&quot;/&gt;&lt;rect x=&quot;132.400&quot; y=&quot;17&quot; width=&quot;6&quot; height=&quot;6&quot;/&gt;&lt;rect x=&quot;156.200&quot; y=&quot;67&quot; width=&quot;6&quot; height=&quot;6&quot;/&gt;&lt;rect x=&quot;180.100&quot; y=&quot;17&quot; width=&quot;6&quot; height=&quot;6&quot;/&gt;&lt;rect x=&quot;204&quot; y=&quot;17&quot; width=&quot;6&quot; height=&quot;6&quot;/&gt;&lt;rect x=&quot;227.800&quot; y=&quot;17&quot; width=&quot;6&quot; height=&quot;6&quot;/&gt;&lt;rect x=&quot;251.600&quot; y=&quot;67&quot; width=&quot;6&quot; height=&quot;6&quot;/&gt;&lt;rect x=&quot;275.500&quot; y=&quot;17&quot; width=&quot;6&quot; height=&quot;6&quot;/&gt;&lt;rect x=&quot;299.300&quot; y=&quot;117&quot; width=&quot;6&quot; height=&quot;6&quot;/&gt;&lt;rect x=&quot;323.200&quot; y=&quot;67&quot; width=&quot;6&quot; height=&quot;6&quot;/&gt;&lt;/g&gt;
+        &lt;rect x=&quot;345.500&quot; y=&quot;115.500&quot; width=&quot;9&quot; height=&quot;9&quot; fill=&quot;#fff&quot; stroke=&quot;#0B5CAD&quot; stroke-width=&quot;2&quot;/&gt;
+        &lt;g font-family=&quot;IBM Plex Mono&quot; font-size=&quot;11&quot; fill=&quot;#4A5B6B&quot; text-anchor=&quot;middle&quot;&gt;&lt;text x=&quot;40&quot; y=&quot;192&quot;&gt;28.9&lt;/text&gt;&lt;text x=&quot;207&quot; y=&quot;192&quot;&gt;5.10&lt;/text&gt;&lt;text x=&quot;350&quot; y=&quot;192&quot;&gt;11.10&lt;/text&gt;&lt;/g&gt;
+        &lt;text x=&quot;284&quot; y=&quot;10&quot; font-family=&quot;IBM Plex Sans Hebrew&quot; font-size=&quot;11&quot; fill=&quot;#4A5B6B&quot; text-anchor=&quot;middle&quot;&gt;7 ימים אחרונים&lt;/text&gt;
+      &lt;/svg&gt;
+      &lt;div style=&quot;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--ln);margin-top:4px;padding-top:8px;gap:8px&quot;&gt;
+        &lt;div&gt;&lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:19px;font-weight:600&quot;&gt;2.1&lt;/p&gt;&lt;p style=&quot;font-size:12px;color:var(--mu)&quot;&gt;ממוצע 7 ימים&lt;/p&gt;&lt;/div&gt;
+        &lt;div&gt;&lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:19px;font-weight:600&quot;&gt;2.6&lt;/p&gt;&lt;p style=&quot;font-size:12px;color:var(--mu)&quot;&gt;שבוע קודם&lt;/p&gt;&lt;/div&gt;
+        &lt;div&gt;&lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:19px;font-weight:600&quot;&gt;47&lt;/p&gt;&lt;p style=&quot;font-size:12px;color:var(--mu)&quot;&gt;הדרך שלך: בחירות קטנות&lt;/p&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;pn&quot;&gt;
+      &lt;div class=&quot;ph&quot;&gt;&lt;h2&gt;זמן באפליקציה מול יעד&lt;/h2&gt;&lt;span class=&quot;m&quot; dir=&quot;ltr&quot;&gt;MIN/DAY&lt;/span&gt;&lt;/div&gt;
+      &lt;svg dir=&quot;ltr&quot; width=&quot;334&quot; height=&quot;104&quot; viewBox=&quot;0 0 370 112&quot; style=&quot;display:block;margin-top:6px;max-width:100%&quot; role=&quot;img&quot; aria-label=&quot;זמן שימוש ב-7 ימים: 3.5, 4.0, 4.9, 3.2, 2.9, 3.6, 3.9 דקות, מול יעד 5&quot;&gt;
+        &lt;path d=&quot;M40 96H356M40 13H356&quot; stroke=&quot;#C5CED7&quot;/&gt;
+        &lt;path d=&quot;M40 13H356&quot; stroke=&quot;#12202E&quot; stroke-width=&quot;1.500&quot; stroke-dasharray=&quot;5 3&quot;/&gt;
+        &lt;text x=&quot;30&quot; y=&quot;17&quot; font-family=&quot;IBM Plex Mono&quot; font-size=&quot;11&quot; fill=&quot;#4A5B6B&quot; text-anchor=&quot;end&quot;&gt;5&lt;/text&gt;&lt;text x=&quot;30&quot; y=&quot;100&quot; font-family=&quot;IBM Plex Mono&quot; font-size=&quot;11&quot; fill=&quot;#4A5B6B&quot; text-anchor=&quot;end&quot;&gt;0&lt;/text&gt;
+        &lt;g fill=&quot;#0B5CAD&quot;&gt;&lt;rect x=&quot;52&quot; y=&quot;38&quot; width=&quot;30&quot; height=&quot;58&quot;/&gt;&lt;rect x=&quot;95&quot; y=&quot;29&quot; width=&quot;30&quot; height=&quot;67&quot;/&gt;&lt;rect x=&quot;138&quot; y=&quot;14&quot; width=&quot;30&quot; height=&quot;82&quot;/&gt;&lt;rect x=&quot;181&quot; y=&quot;43&quot; width=&quot;30&quot; height=&quot;53&quot;/&gt;&lt;rect x=&quot;224&quot; y=&quot;48&quot; width=&quot;30&quot; height=&quot;48&quot;/&gt;&lt;rect x=&quot;267&quot; y=&quot;36&quot; width=&quot;30&quot; height=&quot;60&quot;/&gt;&lt;rect x=&quot;310&quot; y=&quot;31&quot; width=&quot;30&quot; height=&quot;65&quot;/&gt;&lt;/g&gt;
+        &lt;g font-family=&quot;IBM Plex Mono&quot; font-size=&quot;11&quot; fill=&quot;#4A5B6B&quot; text-anchor=&quot;middle&quot;&gt;&lt;text x=&quot;67&quot; y=&quot;109&quot;&gt;5.10&lt;/text&gt;&lt;text x=&quot;110&quot; y=&quot;109&quot;&gt;6.10&lt;/text&gt;&lt;text x=&quot;153&quot; y=&quot;109&quot;&gt;7.10&lt;/text&gt;&lt;text x=&quot;196&quot; y=&quot;109&quot;&gt;8.10&lt;/text&gt;&lt;text x=&quot;239&quot; y=&quot;109&quot;&gt;9.10&lt;/text&gt;&lt;text x=&quot;282&quot; y=&quot;109&quot;&gt;10.10&lt;/text&gt;&lt;text x=&quot;325&quot; y=&quot;109&quot;&gt;11.10&lt;/text&gt;&lt;/g&gt;
+      &lt;/svg&gt;
+      &lt;p style=&quot;font-size:13px;margin-top:6px&quot;&gt;&lt;span class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-weight:600&quot;&gt;3:43&lt;/span&gt; דקות ממוצע · יעד &lt;span class=&quot;m&quot;&gt;5:00&lt;/span&gt; (הקו המקווקו)&lt;/p&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;pn&quot; style=&quot;padding-bottom:4px&quot;&gt;
+      &lt;div class=&quot;ph&quot;&gt;&lt;h2&gt;רצפים&lt;/h2&gt;&lt;span&gt;14 ימים אחרונים&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;tr&quot; style=&quot;margin-top:8px&quot;&gt;&lt;span style=&quot;font-weight:500&quot;&gt;מדיטציה&lt;/span&gt;&lt;svg width=&quot;58&quot; height=&quot;24&quot; viewBox=&quot;0 0 58 24&quot; fill=&quot;none&quot; stroke=&quot;#4A5B6B&quot; stroke-width=&quot;3&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M2 22V4M6 22V18M10 22V4M14 22V4M18 22V4M22 22V4M26 22V4M30 22V4M34 22V4M38 22V4M42 22V4M46 22V4M50 22V4M54 22V4&quot;/&gt;&lt;/svg&gt;&lt;span class=&quot;m&quot; style=&quot;font-weight:600;color:var(--wr)&quot;&gt;12 ימים&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;tr&quot;&gt;&lt;span style=&quot;font-weight:500&quot;&gt;8 כוסות מים&lt;/span&gt;&lt;svg width=&quot;58&quot; height=&quot;24&quot; viewBox=&quot;0 0 58 24&quot; fill=&quot;none&quot; stroke=&quot;#4A5B6B&quot; stroke-width=&quot;3&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M2 22V4M6 22V10M10 22V4M14 22V18M18 22V4M22 22V4M26 22V10M30 22V18M34 22V4M38 22V4M42 22V4M46 22V4M50 22V4M54 22V10&quot;/&gt;&lt;/svg&gt;&lt;span class=&quot;m&quot; style=&quot;font-weight:600;color:var(--wr)&quot;&gt;5 ימים&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;tr&quot;&gt;&lt;span style=&quot;font-weight:500&quot;&gt;בלי גלילה ברשתות&lt;/span&gt;&lt;svg width=&quot;58&quot; height=&quot;24&quot; viewBox=&quot;0 0 58 24&quot; fill=&quot;none&quot; stroke=&quot;#4A5B6B&quot; stroke-width=&quot;3&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M2 22V4M6 22V4M10 22V4M14 22V18M18 22V18M22 22V4M26 22V4M30 22V4M34 22V4M38 22V4M42 22V4M46 22V4M50 22V4M54 22V4&quot;/&gt;&lt;/svg&gt;&lt;span class=&quot;m&quot; style=&quot;font-weight:600;color:var(--wr)&quot;&gt;9 נקיים&lt;/span&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe></figure><figure><figcaption>יום בלוח</figcaption><iframe title="יום בלוח" width="390" height="844" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;he&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;link href=&quot;https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;&lt;style&gt;
+body{margin:0}
+.r{--bg:#EDF0F3;--sf:#FFFFFF;--tx:#12202E;--mu:#4A5B6B;--ln:#C5CED7;--ac:#0B5CAD;--ok:#0B6B50;--okb:#DDF1EA;--wr:#8F4A00;font-family:&#x27;IBM Plex Sans Hebrew&#x27;,sans-serif;color:var(--tx);background:var(--bg);position:relative;overflow:hidden;box-sizing:border-box}
+.r *{box-sizing:border-box}
+.r h1,.r h2,.r h3,.r p{margin:0;font-weight:400}
+.r button{font:inherit;color:inherit;cursor:pointer}
+.m{font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-variant-numeric:tabular-nums}
+.sc{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mu);margin:12px 0 6px}
+.sc::after{content:&quot;&quot;;flex:1;height:1px;background:var(--ln)}
+.rw{display:flex;align-items:center;gap:10px;background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:6px 10px;min-height:56px;position:relative}
+.nd{position:absolute;right:-20px;top:50%;width:9px;height:9px;margin-top:-4.500px;border:2px solid var(--mu);background:var(--bg);border-radius:50%}
+.nd.on{background:var(--ok);border-color:var(--ok)}
+.bx{width:44px;height:44px;border-radius:6px;border:1.500px solid var(--mu);background:var(--sf);display:flex;align-items:center;justify-content:center;flex:none;padding:0}
+.bx.on{background:var(--ok);border-color:var(--ok)}
+.nm{font-size:15px;font-weight:600}
+.mt{font-size:12px;color:var(--mu);margin-top:1px}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--ln);font-size:14px}
+.kv:first-child{border-top:0}
+.kv span:first-child{color:var(--mu)}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div class=&quot;r&quot; dir=&quot;rtl&quot; lang=&quot;he&quot; style=&quot;width:390px;height:844px&quot;&gt;
+  &lt;div style=&quot;position:absolute;left:0;right:0;top:0;height:60px;background:rgba(18,32,46,.35)&quot;&gt;&lt;/div&gt;
+  &lt;div style=&quot;position:absolute;left:0;right:0;top:60px;bottom:0;background:var(--bg);border-top:1px solid var(--tx);border-radius:10px 10px 0 0;overflow:hidden&quot;&gt;
+    &lt;div style=&quot;display:flex;align-items:center;justify-content:space-between;padding:10px 16px 0&quot;&gt;
+      &lt;div&gt;&lt;h1 style=&quot;font-size:22px;font-weight:600&quot;&gt;יום שלישי&lt;/h1&gt;&lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:13px;color:var(--mu);text-align:right&quot;&gt;06.10.2026&lt;/p&gt;&lt;/div&gt;
+      &lt;button aria-label=&quot;סגירה&quot; style=&quot;width:48px;height:48px;border:1px solid var(--ln);border-radius:4px;background:var(--sf);display:flex;align-items:center;justify-content:center&quot;&gt;&lt;svg width=&quot;20&quot; height=&quot;20&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.800&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M6 6l12 12M18 6L6 18&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div style=&quot;margin:10px 16px 0;background:var(--sf);border:1px solid var(--ln);border-radius:6px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))&quot;&gt;
+      &lt;div style=&quot;padding:8px 10px&quot;&gt;&lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:18px;font-weight:600&quot;&gt;2/3&lt;/p&gt;&lt;p style=&quot;font-size:11px;color:var(--mu)&quot;&gt;הרגלים&lt;/p&gt;&lt;/div&gt;
+      &lt;div style=&quot;padding:8px 10px;border-inline-start:1px solid var(--ln)&quot;&gt;&lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:18px;font-weight:600&quot;&gt;1/1&lt;/p&gt;&lt;p style=&quot;font-size:11px;color:var(--mu)&quot;&gt;משימות&lt;/p&gt;&lt;/div&gt;
+      &lt;div style=&quot;padding:8px 10px;border-inline-start:1px solid var(--ln)&quot;&gt;&lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:18px;font-weight:600&quot;&gt;50&lt;/p&gt;&lt;p style=&quot;font-size:11px;color:var(--mu)&quot;&gt;דק׳ פוקוס&lt;/p&gt;&lt;/div&gt;
+      &lt;div style=&quot;padding:8px 10px;border-inline-start:1px solid var(--ln)&quot;&gt;&lt;p class=&quot;m&quot; dir=&quot;ltr&quot; style=&quot;font-size:18px;font-weight:600&quot;&gt;4/5&lt;/p&gt;&lt;p style=&quot;font-size:11px;color:var(--mu)&quot;&gt;מצב רוח&lt;/p&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div style=&quot;padding:0 30px 0 16px;position:relative&quot;&gt;
+      &lt;div style=&quot;position:absolute;right:15px;top:12px;bottom:6px;width:1px;background:var(--ln)&quot;&gt;&lt;/div&gt;
+      &lt;p class=&quot;sc&quot;&gt;בוקר&lt;/p&gt;
+      &lt;div class=&quot;rw&quot; style=&quot;background:var(--okb)&quot;&gt;&lt;i class=&quot;nd on&quot;&gt;&lt;/i&gt;&lt;div style=&quot;flex:1&quot;&gt;&lt;p class=&quot;nm&quot;&gt;מדיטציה&lt;/p&gt;&lt;p class=&quot;mt&quot;&gt;בוצע&lt;/p&gt;&lt;/div&gt;
+        &lt;button class=&quot;bx on&quot; aria-label=&quot;מדיטציה: בוצע, לחיצה לביטול&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#fff&quot; stroke-width=&quot;3&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M5 12.500l4.500 4.500L19 7.500&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+        &lt;button class=&quot;bx&quot; aria-label=&quot;עוד פעולות&quot; style=&quot;border-color:var(--ln)&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.800&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M4 20l1-4L16 5l3 3L8 19z&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;&lt;/div&gt;
+      &lt;p class=&quot;sc&quot;&gt;צהריים&lt;/p&gt;
+      &lt;div class=&quot;rw&quot;&gt;&lt;i class=&quot;nd&quot;&gt;&lt;/i&gt;&lt;div style=&quot;flex:1&quot;&gt;&lt;p class=&quot;nm&quot;&gt;8 כוסות מים&lt;/p&gt;&lt;p class=&quot;mt&quot;&gt;חלקי · &lt;span class=&quot;m&quot;&gt;5&lt;/span&gt; מתוך &lt;span class=&quot;m&quot;&gt;8&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;
+        &lt;button class=&quot;bx&quot; aria-label=&quot;מים: חלקי&quot; style=&quot;font-family:&#x27;IBM Plex Mono&#x27;,monospace;font-weight:600;font-size:13px;color:var(--ac);border-color:var(--ac)&quot;&gt;5/8&lt;/button&gt;
+        &lt;button class=&quot;bx&quot; aria-label=&quot;עוד פעולות&quot; style=&quot;border-color:var(--ln)&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.800&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M4 20l1-4L16 5l3 3L8 19z&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;&lt;/div&gt;
+      &lt;p class=&quot;sc&quot;&gt;ערב&lt;/p&gt;
+      &lt;div class=&quot;rw&quot; style=&quot;background:var(--okb)&quot;&gt;&lt;i class=&quot;nd on&quot;&gt;&lt;/i&gt;&lt;div style=&quot;flex:1&quot;&gt;&lt;p class=&quot;nm&quot;&gt;בלי גלילה ברשתות&lt;/p&gt;&lt;p class=&quot;mt&quot;&gt;היום בלי&lt;/p&gt;&lt;/div&gt;
+        &lt;button class=&quot;bx on&quot; aria-label=&quot;בלי גלילה: היום בלי, לחיצה לביטול&quot;&gt;&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#fff&quot; stroke-width=&quot;3&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M5 12.500l4.500 4.500L19 7.500&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;
+        &lt;button class=&quot;bx&quot; aria-label=&quot;עוד פעולות&quot; style=&quot;border-color:var(--ln)&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.800&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M4 20l1-4L16 5l3 3L8 19z&quot;/&gt;&lt;/svg&gt;&lt;/button&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div style=&quot;padding:0 16px&quot;&gt;
+      &lt;p class=&quot;sc&quot;&gt;משימות&lt;/p&gt;
+      &lt;div class=&quot;rw&quot; style=&quot;min-height:48px&quot;&gt;&lt;span class=&quot;bx on&quot; style=&quot;width:28px;height:28px&quot;&gt;&lt;svg width=&quot;16&quot; height=&quot;16&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#fff&quot; stroke-width=&quot;3.500&quot; stroke-linecap=&quot;square&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M5 12.500l4.500 4.500L19 7.500&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;&lt;p style=&quot;flex:1;font-size:15px&quot;&gt;להזמין תור לרופא&lt;/p&gt;&lt;span style=&quot;font-size:12px;color:var(--mu)&quot;&gt;בוצע&lt;/span&gt;&lt;/div&gt;
+      &lt;p class=&quot;sc&quot;&gt;רפלקציה&lt;/p&gt;
+      &lt;div style=&quot;background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:2px 12px&quot;&gt;
+        &lt;div class=&quot;kv&quot;&gt;&lt;span&gt;מצב רוח&lt;/span&gt;&lt;span class=&quot;m&quot; style=&quot;font-weight:600&quot;&gt;4 / 5&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;kv&quot;&gt;&lt;span&gt;שינה&lt;/span&gt;&lt;span class=&quot;m&quot; style=&quot;font-weight:600&quot;&gt;7.5 שעות&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;kv&quot;&gt;&lt;span&gt;תודה&lt;/span&gt;&lt;span&gt;ארוחת ערב עם המשפחה&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;kv&quot;&gt;&lt;span&gt;לקח&lt;/span&gt;&lt;span&gt;צעד קטן מספיק&lt;/span&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe></figure></div>
+</body></html>
