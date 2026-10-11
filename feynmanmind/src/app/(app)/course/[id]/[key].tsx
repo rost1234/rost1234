@@ -11,6 +11,7 @@ import { AskButton } from '@/features/lesson/AskSheet';
 import { CheckQuiz } from '@/features/lesson/CheckQuiz';
 import { LessonCard } from '@/features/lesson/LessonCard';
 import { LessonView } from '@/features/lesson/LessonView';
+import { SelfCheckStation } from '@/features/lesson/SelfCheck';
 import { useAiConfigured } from '@/lib/env';
 import { errorMessage } from '@/lib/errors';
 import { haptics } from '@/lib/haptics';
@@ -98,6 +99,21 @@ export default function StationScreen() {
           </View>
         </Screen>
       </>
+    );
+  }
+
+  if (station.reference) {
+    return (
+      <SelfCheckStation
+        courseId={course.id}
+        courseTitle={course.title}
+        station={{ ...station, reference: station.reference }}
+        index={ref.index}
+        total={total}
+        levelKey={level.key}
+        next={next}
+        progress={p}
+      />
     );
   }
 

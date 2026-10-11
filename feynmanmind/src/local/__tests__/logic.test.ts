@@ -1,6 +1,14 @@
 import {
   addCards,
+  addSelfCheck,
   addSession,
+  cardsOf,
+  courseProgress,
+  IMPORTED_COURSE_ID,
+  importLessons,
+  lessonFor,
+  sessionsOf,
+  startStation,
   computeStats,
   dayKey,
   deleteSubject,
@@ -535,5 +543,48 @@ describe('learning on paper', () => {
     expect(dueDay('inertia')).toEqual(new Set([25]));
     expect(db.printKits.k1.applied_at).toBe(NOW.toISOString());
     expect(() => L.applyPaperResults(db, 'nope', [], find, newId, NOW)).toThrow();
+  });
+});
+
+describe('imported lessons', () => {
+  const texts = { title: 'Imported', description: 'd', cardPrompt: (c: string) => `Explain: ${c}` };
+  const lesson = (topic: string, concept: string, keyPoints?: string[]) => ({ topic, concept, reference: `ref ${concept}`, ...(keyPoints ? { keyPoints } : {}) });
+  const stations = (db: LocalDB) => db.courses[IMPORTED_COURSE_ID]!.levels[0]!.stations;
+
+  it('creates the course, keeps topics together and skips duplicate concepts', () => {
+    let db = emptyDB();
+    let r;
+    [db, r] = importLessons(db, [lesson('BOF', 'ROP', ['NX', 'ret']), lesson('Web', 'XSS'), lesson('BOF', 'rop ')], texts, NOW);
+    expect(r).toEqual({ added: 2, skipped: 1 });
+    [db, r] = importLessons(db, [lesson('BOF', 'Canary'), lesson('Web', 'XSS'), lesson('Crypto', 'AES')], texts, NOW);
+    expect(r).toEqual({ added: 2, skipped: 1 });
+    expect(stations(db).map((s) => `${s.unit}/${s.title}`)).toEqual(['BOF/ROP', 'BOF/Canary', 'Web/XSS', 'Crypto/AES']);
+    expect(new Set(stations(db).map((s) => s.key)).size).toBe(4);
+    expect(stations(db)[0]).toMatchObject({ reference: 'ref ROP', keyPoints: ['NX', 'ret'], cards: [{ question: 'Explain: ROP', answer: 'ref ROP\n• NX\n• ret' }] });
+    const [same, none] = importLessons(db, [lesson('BOF', 'ROP')], texts, NOW);
+    expect(none).toEqual({ added: 0, skipped: 1 });
+    expect(same).toBe(db);
+  });
+
+  it('keys depend only on the concept, so progress survives deleting and re-importing', () => {
+    const [a] = importLessons(emptyDB(), [lesson('x', 'ROP'), lesson('x', 'XSS')], texts, NOW);
+    const [b] = importLessons(emptyDB(), [lesson('y', 'XSS'), lesson('y', 'ROP')], texts, NOW);
+    expect(stations(a).map((s) => s.key).sort()).toEqual(stations(b).map((s) => s.key).sort());
+  });
+
+  it('keeps existing courses and progress, starts like any station and saves a self-rating', () => {
+    const { db: seeded, conceptId } = seed();
+    let [db] = importLessons(seeded, [lesson('BOF', 'ROP', ['NX'])], texts, NOW);
+    expect(db.concepts[conceptId]).toEqual(seeded.concepts[conceptId]);
+    const course = db.courses[IMPORTED_COURSE_ID]!;
+    const key = stations(db)[0]!.key;
+    expect(lessonFor(db, course, stations(db)[0]!)?.explanation).toBe('ref ROP\n\n• NX');
+    let id: string;
+    [db, id] = startStation(db, course, key, newId, NOW);
+    expect(cardsOf(db, id)).toHaveLength(1);
+    [db] = addSelfCheck(db, id, 'my words', 4, newId, NOW);
+    expect(db.concepts[id]!.mastery_level).toBe(80);
+    expect(courseProgress(db, course).stations[0]!.status).toBe('mastered');
+    expect(sessionsOf(db, id)[0]!.user_explanation).toBe('my words');
   });
 });

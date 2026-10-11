@@ -29,6 +29,7 @@ export default function AppLayout() {
       <Stack.Screen name="study" options={{ title: t('nav.study'), presentation: 'fullScreenModal', gestureEnabled: false }} />
       <Stack.Screen name="print/index" options={{ title: t('print.title') }} />
       <Stack.Screen name="print/results" options={{ title: t('print.resultsNav') }} />
+      <Stack.Screen name="import" options={{ title: t('import.nav'), presentation: 'modal' }} />
       <Stack.Screen name="new-course" options={{ title: t('quick.course'), presentation: 'modal' }} />
       <Stack.Screen name="how-it-works" options={{ headerShown: false, presentation: 'modal' }} />
     </Stack>

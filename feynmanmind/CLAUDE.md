@@ -43,7 +43,11 @@ after a score of 71+ or three attempts); "I didn't understand the question" goes
 (`print/index.tsx`, from the Review tab): `src/print/plan.ts` lays out a month (lesson days, reviews at
 +1/+3/+7/+14), `src/print/html.ts` draws A4-landscape pages in four paper modes (full/saver/max/track),
 colour or black and white; `expo-print` prints or saves a PDF; `print/results.tsx` brings the paper
-results back (`applyPaperResults`). Everything else
+results back (`applyPaperResults`). Importing lessons (`import.tsx`, from Learn and the "+" menu): pasted JSON
+`[{topic, concept, reference, keyPoints?}]` is parsed by `src/content/import.ts` (`parseLessonImport`, `ImportError`)
+and added by `importLessons` to one on-device course `imported` (topic = unit, duplicates by concept skipped, station
+keys hashed from the concept). Stations with a `reference` run as `features/lesson/SelfCheck.tsx`: explain → reveal
+the reference and key points → rate 1–5 (`addSelfCheck`, mastery = rating × 20). Everything else
 (course maps, stations, concept pages, the review session) is a stack screen in `src/app/(app)/`.
 Review limits and accessibility live in `src/state/prefsStore.ts`; the theme reads text size and
 contrast from it (`useTheme().textScale`), `useReduceMotion()` covers animations.

@@ -43,6 +43,13 @@ export interface CourseConcept {
   /** The lesson in its structured form (preferred over `explanation`; see lesson.ts). */
   parts?: LessonParts;
   cards?: { question: string; answer: string }[];
+  /**
+   * Imported lessons (see import.ts): the reference explanation to compare your
+   * own against, and the points it should include. Such stations run as
+   * explain → compare → rate yourself instead of read → check.
+   */
+  reference?: string;
+  keyPoints?: string[];
 }
 
 export interface QuizQuestion {

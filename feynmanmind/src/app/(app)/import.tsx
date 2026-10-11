@@ -1,0 +1,98 @@
+import { useState } from 'react';
+import { Platform, Text } from 'react-native';
+import { router } from 'expo-router';
+import { Button, Card, InlineError, Screen, TextField } from '@/components/ui';
+import { useImportLessons } from '@/data/imports';
+import { useT } from '@/i18n';
+import { errorMessage } from '@/lib/errors';
+import { haptics } from '@/lib/haptics';
+import { KeyboardInsetView } from '@/lib/keyboard';
+import { makeStyles, spacing, useTheme } from '@/theme';
+
+const EXAMPLE = `[
+  {
+    "topic": "Buffer Overflow",
+    "concept": "ROP (Return-Oriented Programming)",
+    "reference": "כשהגנת NX חוסמת הרצת shellcode על המחסנית, בונים שרשרת מתוך gadgets — קטעי קוד קצרים שכבר קיימים בזיכרון ומסתיימים ב-ret — ומשרשרים אותם כדי להשיג ביצוע שרירותי בלי להזריק קוד חדש.",
+    "keyPoints": ["NX חוסם הרצה על המחסנית", "gadget מסתיים ב-ret", "לא מזריקים קוד חדש, משתמשים בקיים"]
+  }
+]`;
+
+/**
+ * Paste lessons as JSON (topic, concept, reference, optional keyPoints). They
+ * join the "Imported lessons" course without touching anything already there;
+ * concepts that already exist are skipped.
+ */
+export default function ImportScreen() {
+  const t = useT();
+  const styles = useStyles();
+  const { colors, typography } = useTheme();
+  const importLessons = useImportLessons();
+  const [text, setText] = useState('');
+
+  const submit = () =>
+    importLessons.mutate(
+      {
+        text,
+        texts: {
+          title: t('import.courseTitle'),
+          description: t('import.courseDescription'),
+          cardPrompt: (concept) => t('import.cardPrompt', { concept }),
+        },
+      },
+      {
+        onSuccess: ({ added }) => {
+          if (added) {
+            haptics.success();
+            setText('');
+          }
+        },
+        onError: () => haptics.warning(),
+      },
+    );
+
+  const result = importLessons.data;
+  return (
+    <KeyboardInsetView safeBottom={false}>
+      <Screen>
+        <Text style={typography.body}>{t('import.intro')}</Text>
+        <TextField
+          value={text}
+          onChangeText={(v) => {
+            setText(v);
+            if (importLessons.error) importLessons.reset();
+          }}
+          placeholder={t('import.placeholder')}
+          accessibilityLabel={t('import.field')}
+          multiline
+          autoCapitalize="none"
+          autoCorrect={false}
+          spellCheck={false}
+          style={styles.json}
+          testID="import-json"
+        />
+        <InlineError message={importLessons.error ? errorMessage(importLessons.error, t) : null} />
+        <Button label={t('import.run')} icon="download-outline" onPress={submit} disabled={!text.trim() || importLessons.isPending} />
+        {!text ? <Button label={t('import.example')} variant="ghost" icon="document-text-outline" onPress={() => setText(EXAMPLE)} /> : null}
+        {result ? (
+          <Card style={{ gap: spacing.xs, borderColor: result.added ? colors.success : colors.border }}>
+            <Text style={typography.subheading}>{result.added ? `✓ ${t('import.added', { added: result.added })}` : t('import.nothing', { n: result.skipped })}</Text>
+            {result.added && result.skipped ? <Text style={typography.caption}>{t('import.skipped', { n: result.skipped })}</Text> : null}
+            <Button label={t('import.openCourse')} icon="map-outline" variant={result.added ? 'primary' : 'secondary'} onPress={() => router.replace(`/course/${result.courseId}`)} />
+          </Card>
+        ) : null}
+      </Screen>
+    </KeyboardInsetView>
+  );
+}
+
+const useStyles = makeStyles(() => ({
+  json: {
+    minHeight: 220,
+    maxHeight: 420,
+    textAlign: 'left',
+    writingDirection: 'ltr',
+    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
+    fontSize: 13,
+  },
+}));

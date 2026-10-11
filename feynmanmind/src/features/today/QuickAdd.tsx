@@ -45,6 +45,7 @@ export function QuickAdd() {
             },
           },
           { label: t('quick.course'), icon: 'sparkles-outline', onPress: () => router.push('/new-course') },
+          { label: t('quick.import'), icon: 'download-outline', onPress: () => router.push('/import') },
           { label: t('quick.review'), icon: 'albums-outline', onPress: () => router.push('/study') },
         ]}
       />

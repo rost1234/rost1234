@@ -7,6 +7,7 @@ import type { FeynmanEvaluation } from '@/api/functions';
 import { findStation, stationsOf, type Course, type CourseConcept, type LevelKey } from '@/content/types';
 import { DuplicateError, LessonMissingError, NotFoundError, type Concept, type Flashcard, type Lesson, type LocalDB, type Placement, type PrintKit, type QaTurn, type TutorTurn } from './types';
 import { lessonPlainText } from '@/content/lesson';
+import { conceptKey, type ImportedLesson } from '@/content/import';
 
 type NewId = () => string;
 
@@ -587,6 +588,8 @@ export const lessonKey = (courseId: string, stationKey: string) => `${courseId}/
 export function lessonFor(db: LocalDB, course: Course, station: CourseConcept): Lesson | null {
   if (station.parts && station.cards?.length) return { explanation: lessonPlainText(station.parts), cards: station.cards, parts: station.parts };
   if (station.explanation && station.cards?.length) return { explanation: station.explanation, cards: station.cards };
+  if (station.reference && station.cards?.length)
+    return { explanation: [station.reference, ...(station.keyPoints ?? []).map((p) => `• ${p}`)].join('\n\n'), cards: station.cards };
   return db.lessons[lessonKey(course.id, station.key)] ?? null;
 }
 
@@ -696,6 +699,96 @@ export function deleteCustomCourse(db: LocalDB, id: string): LocalDB {
     lessons: Object.fromEntries(Object.entries(db.lessons).filter(([k]) => !k.startsWith(`${id}/`))),
     placements: Object.fromEntries(Object.entries(db.placements).filter(([k]) => k !== id)),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Imported lessons
+// ---------------------------------------------------------------------------
+
+/** All pasted-in lessons live in one course on the device, one unit per topic. */
+export const IMPORTED_COURSE_ID = 'imported';
+
+/** A station key that depends only on the concept, so re-importing finds the same saved progress. */
+function importedKey(concept: string, taken: Set<string>): string {
+  let h = 5381;
+  for (const ch of conceptKey(concept)) h = ((h * 33) ^ ch.codePointAt(0)!) >>> 0;
+  const base = `imp-${h.toString(36)}`;
+  let key = base;
+  for (let n = 2; taken.has(key); n++) key = `${base}-${n}`;
+  return key;
+}
+
+export interface ImportTexts {
+  /** Course title and description, used when the course is created. */
+  title: string;
+  description: string;
+  /** The flashcard's question, e.g. "Explain in your own words: {concept}". */
+  cardPrompt: (concept: string) => string;
+}
+
+/**
+ * Adds pasted-in lessons to the imported course (created on first import).
+ * Existing lessons and progress are kept; a concept that is already there, or
+ * appears twice in the paste, is skipped. New stations join the unit of their
+ * topic (or start a new one at the end), so topics stay together on the map.
+ * Each station gets one flashcard: explain the concept, answer = the reference.
+ */
+export function importLessons(db: LocalDB, items: ImportedLesson[], texts: ImportTexts, now: Date): [LocalDB, { added: number; skipped: number }] {
+  const existing = db.courses[IMPORTED_COURSE_ID];
+  const course: Course = existing ?? {
+    id: IMPORTED_COURSE_ID,
+    title: texts.title,
+    description: texts.description,
+    icon: 'download-outline',
+    builtIn: false,
+    created_at: now.toISOString(),
+    levels: [{ key: 'foundations', stations: [], quiz: [] }],
+  };
+  const stations = [...(course.levels[0]?.stations ?? [])];
+  const seen = new Set(stations.map((s) => conceptKey(s.title)));
+  const keys = new Set(stations.map((s) => s.key));
+  let added = 0;
+  for (const item of items) {
+    const ck = conceptKey(item.concept);
+    if (seen.has(ck)) continue;
+    seen.add(ck);
+    const key = importedKey(item.concept, keys);
+    keys.add(key);
+    const points = item.keyPoints ?? [];
+    const station: CourseConcept = {
+      key,
+      title: item.concept,
+      summary: item.topic,
+      unit: item.topic,
+      reference: item.reference,
+      ...(points.length ? { keyPoints: points } : {}),
+      cards: [{ question: texts.cardPrompt(item.concept), answer: [item.reference, ...points.map((p) => `• ${p}`)].join('\n') }],
+    };
+    const lastOfTopic = stations.map((s) => s.unit).lastIndexOf(item.topic);
+    if (lastOfTopic < 0) stations.push(station);
+    else stations.splice(lastOfTopic + 1, 0, station);
+    added++;
+  }
+  if (!added) return [db, { added, skipped: items.length }];
+  const levels = course.levels.length ? course.levels.map((l, i) => (i === 0 ? { ...l, stations } : l)) : [{ key: 'foundations' as const, stations, quiz: [] }];
+  return [saveCustomCourse(db, { ...course, levels }), { added, skipped: items.length - added }];
+}
+
+/**
+ * Self-check on an imported lesson: the learner explained it, compared with the
+ * reference and rated themselves 1–5. Saved like a tutor session (no AI): the
+ * concept's mastery becomes rating × 20, so 4 or 5 counts as mastered.
+ */
+export function addSelfCheck(db: LocalDB, conceptId: string, explanation: string, rating: number, newId: NewId, now: Date): [LocalDB, string] {
+  const score = Math.max(1, Math.min(5, Math.round(rating))) * 20;
+  return addSession(
+    db,
+    conceptId,
+    explanation,
+    { comprehension_score: score, mastery_verdict: score >= MASTERED_AT ? 'mastered' : 'developing', jargon_detected: [], misconceptions: [], primary_gap: '', socratic_question: '', encouragement: '' },
+    newId,
+    now,
+  );
 }
 
 // ---------------------------------------------------------------------------

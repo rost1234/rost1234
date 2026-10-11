@@ -340,6 +340,54 @@ const coursePlan = {
       if (after !== "/learn") failures.push(`swipe went from ${before} to ${after}, expected /learn`);
       else console.log(`swipe: ${before} → ${after}`);
     }
+    if (scheme === 'light') {
+      // Import lessons from JSON: a bad paste shows an error, a good one adds lessons (a duplicate is skipped),
+      // and an imported station runs explain → reveal the reference → rate yourself.
+      await page.goto(`${APP}/import`);
+      await page.waitForTimeout(1000);
+      const field = page.getByTestId('import-json');
+      await field.fill('[{"topic": "x",}]');
+      await page.getByRole('button', { name: 'ייבוא', exact: true }).click();
+      await page.waitForTimeout(400);
+      await expectText('זה לא JSON תקין', 'invalid JSON error');
+      await field.fill(JSON.stringify([{ topic: 'x', concept: 'y' }]));
+      await page.getByRole('button', { name: 'ייבוא', exact: true }).click();
+      await page.waitForTimeout(400);
+      await expectText('בשיעור 1 חסר השדה "reference"', 'missing field error');
+      const rop = {
+        topic: 'Buffer Overflow',
+        concept: 'ROP (Return-Oriented Programming)',
+        reference: 'כשהגנת NX חוסמת הרצת shellcode על המחסנית, בונים שרשרת מתוך gadgets ומשרשרים אותם.',
+        keyPoints: ['NX חוסם הרצה על המחסנית', 'gadget מסתיים ב-ret', 'לא מזריקים קוד חדש'],
+      };
+      await field.fill(JSON.stringify([rop, { topic: 'Web', concept: 'XSS', reference: 'הזרקת סקריפט לדף של אתר אחר.' }, { ...rop, concept: 'rop (return-oriented programming)' }]));
+      await page.getByRole('button', { name: 'ייבוא', exact: true }).click();
+      await page.waitForTimeout(600);
+      await expectText('נוספו 2 שיעורים', 'import result');
+      await expectText('1 כבר היו קיימים ודולגו', 'duplicate skipped');
+      await shot('15a-import');
+      await page.getByRole('button', { name: 'לפתוח את הקורס' }).click();
+      await page.waitForTimeout(1000);
+      await expectText('Buffer Overflow', 'imported unit on the map');
+      await shot('15b-imported-map');
+      await page.reload();
+      await page.waitForTimeout(1200);
+      await expectText('ROP (Return-Oriented Programming)', 'imported lessons survive a reload');
+      await page.goto(`${APP}/course/imported/${await page.evaluate(() => JSON.parse(localStorage.getItem('feynmanmind.db')).state.db.courses.imported.levels[0].stations[0].key)}`);
+      await page.waitForTimeout(1000);
+      if ((await page.getByTestId('self-reference').count()) !== 0) failures.push('reference visible before explaining');
+      await page.getByTestId('self-explanation').fill('משתמשים בקטעי קוד שכבר קיימים בזיכרון במקום להזריק קוד.');
+      await page.getByRole('button', { name: 'לחשוף את הסבר הייחוס' }).click();
+      await page.waitForTimeout(700);
+      await expectText('gadgets ומשרשרים', 'reference revealed');
+      await page.getByRole('checkbox', { name: /gadget מסתיים/ }).click();
+      await expectText('1 מתוך 3 נקודות מפתח', 'key points ticked');
+      await page.getByRole('button', { name: '4 מתוך 5 כוכבים' }).click();
+      await page.getByRole('button', { name: 'לשמור דירוג' }).click();
+      await page.waitForTimeout(600);
+      await expectText('נשמר: 80/100', 'self rating saved');
+      await shot('15c-self-check');
+    }
     await ctx.close();
   }
 
