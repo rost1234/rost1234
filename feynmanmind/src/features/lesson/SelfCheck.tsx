@@ -5,13 +5,16 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Button, Card, InlineError, LoadingState, Screen, TextField } from '@/components/ui';
 import type { CourseConcept, LevelKey } from '@/content/types';
 import { useStartStation } from '@/data/courses';
-import { useSelfCheck } from '@/data/imports';
+import { useSelfCheck, useUpgradeImported } from '@/data/imports';
+import { CheckQuiz } from '@/features/lesson/CheckQuiz';
+import { LessonView } from '@/features/lesson/LessonView';
 import { useT } from '@/i18n';
 import { useAiConfigured } from '@/lib/env';
 import { errorMessage } from '@/lib/errors';
 import { haptics } from '@/lib/haptics';
 import { KeyboardInsetView } from '@/lib/keyboard';
 import type { StationProgress } from '@/local/logic';
+import type { Lesson } from '@/local/types';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
 interface Props {
@@ -23,23 +26,37 @@ interface Props {
   levelKey: LevelKey;
   next: CourseConcept | null;
   progress: StationProgress;
+  lesson: Lesson | null;
 }
+
+type Phase = 'write' | 'compare' | 'lesson';
+const PHASES: { phase: Phase; label: 'self.step.explain' | 'self.step.compare' | 'self.step.lesson' }[] = [
+  { phase: 'write', label: 'self.step.explain' },
+  { phase: 'compare', label: 'self.step.compare' },
+  { phase: 'lesson', label: 'self.step.lesson' },
+];
 
 /**
  * An imported lesson: the concept's name only, explain it in your own words,
  * then the reference (and its key points) is revealed to compare against and
  * you rate yourself 1–5. The rating becomes the concept's mastery; the AI
- * tutor is optional, with the reference as its ground truth.
+ * tutor is optional, with the reference as its ground truth. The third step
+ * is the full lesson (from the file, or written by the AI from the reference)
+ * with its check questions.
  */
-export function SelfCheckStation({ courseId, courseTitle, station, index, total, next, progress: p }: Props) {
+export function SelfCheckStation({ courseId, courseTitle, station, index, total, next, progress: p, lesson }: Props) {
   const t = useT();
   const styles = useStyles();
   const { colors, typography } = useTheme();
   const aiReady = useAiConfigured();
   const start = useStartStation();
   const save = useSelfCheck();
+  const upgrade = useUpgradeImported();
   const [text, setText] = useState('');
-  const [revealed, setRevealed] = useState(false);
+  const [phase, setPhase] = useState<Phase>('write');
+  const revealed = phase !== 'write';
+  const setRevealed = (on: boolean) => setPhase(on ? 'compare' : 'write');
+  const parts = lesson?.parts;
   const [covered, setCovered] = useState<boolean[]>([]);
   const [rating, setRating] = useState(0);
   const [saved, setSaved] = useState<number | null>(null);
@@ -83,23 +100,69 @@ export function SelfCheckStation({ courseId, courseTitle, station, index, total,
             </Text>
             <Text style={typography.title}>{station.title}</Text>
           </View>
-          <View style={styles.steps}>
-            {(['self.step.explain', 'self.step.compare'] as const).map((k, i) => {
-              const on = i === (revealed ? 1 : 0);
-              const done = i === 0 && revealed;
+          <View style={styles.steps} accessibilityRole="tablist">
+            {PHASES.map(({ phase: ph, label }, i) => {
+              const current = PHASES.findIndex((x) => x.phase === phase);
+              const on = i === current;
+              const done = i < current;
+              // Later steps open only after the reference has been revealed.
+              const reachable = i === 0 || revealed;
               return (
-                <View key={k} style={styles.stepItem}>
+                <Pressable
+                  key={ph}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: on, disabled: !reachable }}
+                  aria-selected={on}
+                  disabled={!reachable}
+                  onPress={() => setPhase(ph)}
+                  style={styles.stepItem}
+                  hitSlop={4}
+                >
                   <View style={[styles.stepBar, { backgroundColor: done ? colors.success : on ? colors.primary : colors.surfaceMuted }]} />
                   <Text style={[styles.stepText, { color: on ? colors.primary : colors.textMuted }]}>
                     {done ? '✓ ' : ''}
-                    {t(k)}
+                    {t(label)}
                   </Text>
-                </View>
+                </Pressable>
               );
             })}
           </View>
 
-          {!revealed ? (
+          {phase === 'lesson' ? (
+            <>
+              {parts ? (
+                <>
+                  <LessonView title={station.title} explanation={lesson!.explanation} parts={parts} keyPoints={lesson!.cards.slice(1)} />
+                  {parts.check.length ? <CheckQuiz questions={parts.check} /> : null}
+                  {conceptId ? (
+                    <Button
+                      label={t('self.practice', { n: lesson!.cards.length })}
+                      icon="albums-outline"
+                      variant="secondary"
+                      onPress={() => router.push({ pathname: '/study', params: { conceptId } })}
+                    />
+                  ) : null}
+                </>
+              ) : (
+                <View style={styles.reference}>
+                  <Text style={typography.subheading}>✨ {t('self.upgradeTitle')}</Text>
+                  <Text style={typography.body}>{t('self.upgradeBody')}</Text>
+                  {upgrade.isPending ? (
+                    <LoadingState label={t('lesson.writing')} />
+                  ) : (
+                    <Button
+                      label={t('self.upgrade')}
+                      icon="sparkles-outline"
+                      disabled={!aiReady}
+                      onPress={() => upgrade.mutate({ key: station.key }, { onSuccess: () => haptics.success() })}
+                    />
+                  )}
+                  <InlineError message={!aiReady ? t('error.aiNotConfigured') : upgrade.error ? errorMessage(upgrade.error, t) : null} />
+                </View>
+              )}
+              <Button label={next ? t('lesson.nextStation') : t('course.backToMap')} icon={next ? 'flag-outline' : 'map-outline'} variant={parts ? 'primary' : 'ghost'} onPress={goNext} />
+            </>
+          ) : !revealed ? (
             <>
               <Text style={typography.body}>{t('self.prompt', { title: station.title })}</Text>
               {p.mastery > 0 ? <Text style={typography.caption}>{t('self.last', { score: p.mastery })}</Text> : null}
@@ -168,8 +231,9 @@ export function SelfCheckStation({ courseId, courseTitle, station, index, total,
               ) : (
                 <Card style={{ gap: spacing.sm, borderColor: saved >= 80 ? colors.success : colors.border }}>
                   <Text style={typography.subheading}>✓ {t('self.saved', { score: saved })}</Text>
-                  <Button label={next ? t('lesson.nextStation') : t('course.backToMap')} icon={next ? 'flag-outline' : 'map-outline'} onPress={goNext} />
-                  <Button label={t('self.again')} icon="refresh-outline" variant="secondary" onPress={again} />
+                  <Button label={parts ? t('self.toLesson') : t('self.toLessonAi')} icon="book-outline" onPress={() => setPhase('lesson')} />
+                  <Button label={next ? t('lesson.nextStation') : t('course.backToMap')} icon={next ? 'flag-outline' : 'map-outline'} variant="secondary" onPress={goNext} />
+                  <Button label={t('self.again')} icon="refresh-outline" variant="ghost" onPress={again} />
                 </Card>
               )}
               {aiReady && conceptId ? (

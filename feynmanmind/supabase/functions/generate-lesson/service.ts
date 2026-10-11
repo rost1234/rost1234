@@ -21,6 +21,9 @@ export interface LessonInput {
   summary: string;
   unit: string;
   previousTitles: string[];
+  /** The learner's own material (imported lessons): the lesson must teach exactly this. */
+  reference?: string;
+  keyPoints?: string[];
 }
 
 export function parseLessonInput(body: Record<string, unknown>): LessonInput {
@@ -35,6 +38,8 @@ export function parseLessonInput(body: Record<string, unknown>): LessonInput {
     summary: typeof body.summary === 'string' ? body.summary.trim().slice(0, 500) : '',
     unit: typeof body.unit === 'string' ? body.unit.trim().slice(0, 120) : '',
     previousTitles: stringList(body.previous_titles, 'previous_titles', 40, 200),
+    reference: typeof body.reference === 'string' && body.reference.trim() ? body.reference.trim().slice(0, 8000) : undefined,
+    keyPoints: body.key_points === undefined ? undefined : stringList(body.key_points, 'key_points', 20, 300),
   };
 }
 

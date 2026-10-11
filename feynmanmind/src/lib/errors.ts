@@ -29,6 +29,10 @@ export function errorMessage(error: unknown, t: Translator): string {
         return t('import.error.missingField', { n: p.item, field: p.field });
       case 'bad_key_points':
         return t('import.error.keyPoints', { n: p.item });
+      case 'bad_lesson':
+        return t('import.error.lesson', { n: p.item, detail: p.detail });
+      case 'bad_cards':
+        return t('import.error.cards', { n: p.item });
       case 'not_array':
         return t('import.error.notArray');
       default:

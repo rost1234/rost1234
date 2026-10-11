@@ -47,7 +47,11 @@ results back (`applyPaperResults`). Importing lessons (`import.tsx`, from Learn 
 `[{topic, concept, reference, keyPoints?}]` is parsed by `src/content/import.ts` (`parseLessonImport`, `ImportError`)
 and added by `importLessons` to one on-device course `imported` (topic = unit, duplicates by concept skipped, station
 keys hashed from the concept). Stations with a `reference` run as `features/lesson/SelfCheck.tsx`: explain → reveal
-the reference and key points → rate 1–5 (`addSelfCheck`, mastery = rating × 20). Everything else
+the reference and key points → rate 1–5 (`addSelfCheck`, mastery = rating × 20) → full lesson. The full lesson
+comes from the file (optional `hook`/`sections`/`example`/`misconception`/`connection`/`check`/`cards`, validated with
+`lessonProblems`; `RICH_FORMAT_PROMPT` is the copyable AI instruction) or from `generate-lesson` with `reference` +
+`key_points` as the source of truth (`useUpgradeImported`, `UpgradeImported` on the map, saved by
+`saveImportedLesson`). Everything else
 (course maps, stations, concept pages, the review session) is a stack screen in `src/app/(app)/`.
 Review limits and accessibility live in `src/state/prefsStore.ts`; the theme reads text size and
 contrast from it (`useTheme().textScale`), `useReduceMotion()` covers animations.

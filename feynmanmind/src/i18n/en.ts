@@ -647,6 +647,23 @@ export const en = {
   'import.orPaste': "or paste the content",
   'import.fileError': "Couldn't read the file. Try again, or paste its content.",
   'import.addedOne': "Added 1 lesson",
+  'import.error.lesson': "Lesson {n} has an incomplete full lesson ({detail}). Fix it, or remove the hook/sections/check fields.",
+  'import.error.cards': "In lesson {n}, \"cards\" must be a list of {question, answer}.",
+  'import.richTitle': "Full lessons right from the file",
+  'import.richBody': "Besides the reference, each lesson can include a full lesson like the built-in ones: hook, sections, example, misconception, check questions and cards. Copy these instructions, give them to an AI chat with your material, and import the JSON it returns.",
+  'import.copyPrompt': "Copy instructions for an AI",
+  'import.promptCopied': "Copied",
+  'self.step.lesson': "Full lesson",
+  'self.toLesson': "To the full lesson",
+  'self.toLessonAi': "Full lesson (AI)",
+  'self.practice': "Practice the cards ({n})",
+  'self.upgradeTitle': "No full lesson yet",
+  'self.upgradeBody': "The AI will write a full lesson like the built-in ones (hook, step-by-step sections, an example, a common misconception, check questions and cards) based on your reference and key points, without contradicting them.",
+  'self.upgrade': "Write a full lesson with AI",
+  'self.upgradeAllTitle': "{n} lessons are only a reference",
+  'self.upgradeAllBody': "The AI can turn each one into a full lesson like the built-in ones, based on your reference and key points. Your explain-first flow stays; the full lesson is the third step.",
+  'self.upgradeAll': "Upgrade all with AI",
+  'self.upgradeResume': "The ones already written are saved; press again to continue.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

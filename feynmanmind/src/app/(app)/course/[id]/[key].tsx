@@ -113,6 +113,7 @@ export default function StationScreen() {
         levelKey={level.key}
         next={next}
         progress={p}
+        lesson={lesson}
       />
     );
   }

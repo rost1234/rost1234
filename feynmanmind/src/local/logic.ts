@@ -586,10 +586,18 @@ export const lessonKey = (courseId: string, stationKey: string) => `${courseId}/
 
 /** The station's lesson: built in, or previously written by the AI and saved. */
 export function lessonFor(db: LocalDB, course: Course, station: CourseConcept): Lesson | null {
-  if (station.parts && station.cards?.length) return { explanation: lessonPlainText(station.parts), cards: station.cards, parts: station.parts };
+  if (!station.reference && station.parts && station.cards?.length) return { explanation: lessonPlainText(station.parts), cards: station.cards, parts: station.parts };
   if (station.explanation && station.cards?.length) return { explanation: station.explanation, cards: station.cards };
-  if (station.reference && station.cards?.length)
-    return { explanation: [station.reference, ...(station.keyPoints ?? []).map((p) => `• ${p}`)].join('\n\n'), cards: station.cards };
+  if (station.reference && station.cards?.length) {
+    // Imported: the reference is the explanation; a full lesson comes from the file or an AI upgrade.
+    const upgraded = db.lessons[lessonKey(course.id, station.key)];
+    const parts = station.parts ?? upgraded?.parts;
+    return {
+      explanation: [station.reference, ...(station.keyPoints ?? []).map((p) => `• ${p}`)].join('\n\n'),
+      cards: [...station.cards, ...(upgraded?.cards ?? [])],
+      ...(parts ? { parts } : {}),
+    };
+  }
   return db.lessons[lessonKey(course.id, station.key)] ?? null;
 }
 
@@ -762,7 +770,8 @@ export function importLessons(db: LocalDB, items: ImportedLesson[], texts: Impor
       unit: item.topic,
       reference: item.reference,
       ...(points.length ? { keyPoints: points } : {}),
-      cards: [{ question: texts.cardPrompt(item.concept), answer: [item.reference, ...points.map((p) => `• ${p}`)].join('\n') }],
+      ...(item.parts ? { parts: item.parts } : {}),
+      cards: [{ question: texts.cardPrompt(item.concept), answer: [item.reference, ...points.map((p) => `• ${p}`)].join('\n') }, ...(item.cards ?? [])],
     };
     const lastOfTopic = stations.map((s) => s.unit).lastIndexOf(item.topic);
     if (lastOfTopic < 0) stations.push(station);
@@ -772,6 +781,27 @@ export function importLessons(db: LocalDB, items: ImportedLesson[], texts: Impor
   if (!added) return [db, { added, skipped: items.length }];
   const levels = course.levels.length ? course.levels.map((l, i) => (i === 0 ? { ...l, stations } : l)) : [{ key: 'foundations' as const, stations, quiz: [] }];
   return [saveCustomCourse(db, { ...course, levels }), { added, skipped: items.length - added }];
+}
+
+/** Imported stations that have no full lesson yet (neither from the file nor from an AI upgrade). */
+export function importedWithoutLesson(db: LocalDB): CourseConcept[] {
+  const course = db.courses[IMPORTED_COURSE_ID];
+  if (!course) return [];
+  return stationsOf(course)
+    .map((r) => r.station)
+    .filter((s) => s.reference && !s.parts && !db.lessons[lessonKey(course.id, s.key)]?.parts);
+}
+
+/**
+ * Saves the full lesson the AI wrote for an imported station. If the station
+ * was already started, its new flashcards join the concept's reviews.
+ */
+export function saveImportedLesson(db: LocalDB, key: string, lesson: Lesson, newId: NewId, now: Date): LocalDB {
+  let next = saveLesson(db, IMPORTED_COURSE_ID, key, lesson);
+  const subject = courseSubject(next, IMPORTED_COURSE_ID);
+  const concept = subject && Object.values(next.concepts).find((c) => c.subject_id === subject.id && c.course_key === key);
+  if (concept) [next] = addCards(next, concept.id, lesson.cards, newId, now);
+  return next;
 }
 
 /**

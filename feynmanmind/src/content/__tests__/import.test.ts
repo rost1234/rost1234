@@ -46,3 +46,28 @@ describe('parseLessonImport', () => {
     expect(problem(JSON.stringify([{ ...ROP, keyPoints: [1] }]))).toEqual({ code: 'bad_key_points', item: 1 });
   });
 });
+
+describe('full lessons in the file', () => {
+  const full = {
+    ...ROP,
+    hook: 'איך מריצים קוד כשאסור להריץ קוד?',
+    sections: [{ heading: 'הרעיון', body: 'משתמשים בקוד שכבר קיים.' }],
+    example: { title: 'דוגמה: שרשרת', body: 'pop rdi; ret ואז system.' },
+    misconception: { myth: 'NX עוצר הכול.', truth: 'NX עוצר רק הרצה של קוד מוזרק.' },
+    check: [{ question: 'במה gadget מסתיים?', options: ['ret', 'jmp', 'call', 'nop'], correct: 0, why: 'כך משרשרים.' }],
+    cards: [{ question: 'מה זה gadget?', answer: 'קטע קוד קצר שמסתיים ב-ret.' }, { question: '', answer: 'x' }],
+  };
+
+  it('parses the lesson parts and extra cards', () => {
+    const [lesson] = parseLessonImport(JSON.stringify([full]));
+    expect(lesson!.parts).toMatchObject({ hook: full.hook, sections: full.sections, example: full.example, check: full.check });
+    expect(lesson!.cards).toEqual([full.cards[0]]);
+  });
+
+  it('rejects an incomplete lesson or bad cards, with the item number', () => {
+    expect(problem(JSON.stringify([ROP, { ...full, hook: '' }]))).toEqual({ code: 'bad_lesson', item: 2, detail: 'hook' });
+    expect(problem(JSON.stringify([{ ...full, sections: [] }]))).toMatchObject({ code: 'bad_lesson', item: 1 });
+    expect(problem(JSON.stringify([{ ...full, check: [{ ...full.check[0], options: ['a', 'a', 'b', 'c'] }] }]))).toMatchObject({ code: 'bad_lesson', detail: 'check 1 needs 4 distinct options' });
+    expect(problem(JSON.stringify([{ ...ROP, cards: 'x' }]))).toEqual({ code: 'bad_cards', item: 1 });
+  });
+});

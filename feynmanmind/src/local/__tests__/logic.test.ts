@@ -5,8 +5,10 @@ import {
   cardsOf,
   courseProgress,
   IMPORTED_COURSE_ID,
+  importedWithoutLesson,
   importLessons,
   lessonFor,
+  saveImportedLesson,
   sessionsOf,
   startStation,
   computeStats,
@@ -586,5 +588,22 @@ describe('imported lessons', () => {
     expect(db.concepts[id]!.mastery_level).toBe(80);
     expect(courseProgress(db, course).stations[0]!.status).toBe('mastered');
     expect(sessionsOf(db, id)[0]!.user_explanation).toBe('my words');
+  });
+
+  it('a full lesson from the file or the AI becomes the third step, and its cards join the reviews', () => {
+    const parts = { hook: 'h', sections: [{ heading: 'a', body: 'b' }], check: [] };
+    let [db] = importLessons(emptyDB(), [{ ...lesson('BOF', 'ROP'), parts, cards: [{ question: 'q?', answer: 'a' }] }, lesson('BOF', 'Canary')], texts, NOW);
+    const course = db.courses[IMPORTED_COURSE_ID]!;
+    const [rop, canary] = stations(db);
+    expect(lessonFor(db, course, rop!)).toMatchObject({ explanation: 'ref ROP', parts, cards: [{ question: 'Explain: ROP' }, { question: 'q?' }] });
+    expect(importedWithoutLesson(db).map((s) => s.title)).toEqual(['Canary']);
+
+    let id: string;
+    [db, id] = startStation(db, course, canary!.key, newId, NOW);
+    const written = { explanation: 'x', parts, cards: [{ question: 'AI card?', answer: 'yes' }] };
+    db = saveImportedLesson(db, canary!.key, written, newId, NOW);
+    expect(importedWithoutLesson(db)).toEqual([]);
+    expect(lessonFor(db, course, canary!)).toMatchObject({ explanation: 'ref Canary', parts, cards: [{ question: 'Explain: Canary' }, { question: 'AI card?' }] });
+    expect(cardsOf(db, id).map((c) => c.question).sort()).toEqual(['AI card?', 'Explain: Canary']);
   });
 });

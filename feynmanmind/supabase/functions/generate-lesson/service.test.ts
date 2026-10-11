@@ -71,3 +71,21 @@ Deno.test('an unteachable concept becomes 422', async () => {
   const err = await assertRejects(() => writeLesson(llm, parseLessonInput({ concept_title: 'asdfgh' })), HttpError);
   assertEquals(err.code, 'invalid_topic');
 });
+
+Deno.test('an imported lesson passes its reference and key points as the source of truth', async () => {
+  const input = parseLessonInput({ concept_title: 'ROP', reference: ' NX blocks the stack; chain gadgets ending in ret. ', key_points: ['NX', 'ret', 3] });
+  assertEquals(input.reference, 'NX blocks the stack; chain gadgets ending in ret.');
+  assertEquals(input.keyPoints, ['NX', 'ret']);
+  assertEquals(parseLessonInput({ concept_title: 'x' }).reference, undefined);
+  let system = '';
+  let user = '';
+  const llm: StructuredLlm = async (req) => {
+    system = req.system;
+    user = req.user;
+    return req.parse(full);
+  };
+  await writeLesson(llm, input);
+  assertStringIncludes(system, 'source of truth');
+  assertStringIncludes(user, '<reference>\nNX blocks the stack; chain gadgets ending in ret.\n</reference>');
+  assertStringIncludes(user, '<key_points>\n- NX\n- ret\n</key_points>');
+});

@@ -9,7 +9,8 @@ import { useT } from '@/i18n';
 import { confirmAsync } from '@/lib/dialogs';
 import { errorMessage } from '@/lib/errors';
 import { useReduceMotion } from '@/lib/motion';
-import type { StationProgress } from '@/local/logic';
+import { UpgradeImported } from '@/features/learn/UpgradeImported';
+import { IMPORTED_COURSE_ID, type StationProgress } from '@/local/logic';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
 /** One color per level (foundations → master), with a darker "lip" for the raised-button look. */
@@ -188,6 +189,8 @@ export default function CourseMapScreen() {
             </Card>
           )
         ) : null}
+
+        {course.id === IMPORTED_COURSE_ID ? <UpgradeImported /> : null}
 
         {progress.nextKey ? (
           <Button

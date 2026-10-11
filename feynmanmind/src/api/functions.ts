@@ -126,6 +126,9 @@ export interface LessonRequest {
   level: LevelKey | 'standalone';
   previous_titles?: string[];
   language: 'he' | 'en';
+  /** Imported lessons: the learner's material, which the lesson must teach (and never contradict). */
+  reference?: string;
+  key_points?: string[];
 }
 
 export function generateLesson(request: LessonRequest) {

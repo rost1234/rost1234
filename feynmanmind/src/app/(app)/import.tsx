@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Platform, Text } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { Button, Card, InlineError, Screen, TextField } from '@/components/ui';
+import { RICH_FORMAT_PROMPT } from '@/content/import';
 import { useImportLessons } from '@/data/imports';
 import { useT } from '@/i18n';
 import { errorMessage } from '@/lib/errors';
@@ -32,6 +34,7 @@ export default function ImportScreen() {
   const [text, setText] = useState('');
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileError, setFileError] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const submit = (source = text) =>
     importLessons.mutate(
@@ -101,6 +104,16 @@ export default function ImportScreen() {
             <Button label={t('import.openCourse')} icon="map-outline" variant={result.added ? 'primary' : 'secondary'} onPress={() => router.replace(`/course/${result.courseId}`)} />
           </Card>
         ) : null}
+        <Card style={{ gap: spacing.sm }}>
+          <Text style={typography.subheading}>✨ {t('import.richTitle')}</Text>
+          <Text style={typography.caption}>{t('import.richBody')}</Text>
+          <Button
+            label={copied ? t('import.promptCopied') : t('import.copyPrompt')}
+            icon={copied ? 'checkmark' : 'copy-outline'}
+            variant="secondary"
+            onPress={() => void Clipboard.setStringAsync(RICH_FORMAT_PROMPT).then(() => setCopied(true))}
+          />
+        </Card>
       </Screen>
     </KeyboardInsetView>
   );

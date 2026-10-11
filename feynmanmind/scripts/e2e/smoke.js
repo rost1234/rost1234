@@ -395,6 +395,24 @@ const coursePlan = {
       await page.waitForTimeout(600);
       await expectText('נשמר: 80/100', 'self rating saved');
       await shot('15c-self-check');
+      // Third step: no full lesson yet → the (mocked) AI writes one from the reference and key points.
+      await page.getByRole('button', { name: 'שיעור מלא (AI)' }).click();
+      await page.waitForTimeout(400);
+      await page.getByRole('button', { name: 'לכתוב שיעור מלא עם AI' }).click();
+      await page.waitForTimeout(1200);
+      const up = requests['/functions/v1/generate-lesson']?.at(-1);
+      if (!up?.reference?.includes('gadgets') || up?.key_points?.length !== 3) failures.push(`upgrade request lacks the reference: ${JSON.stringify(up)}`);
+      await expectText('למה ROP (Return-Oriented Programming) חשוב בכלל?', 'upgraded lesson hook');
+      await expectText('שאלת בדיקה 1?', 'upgraded lesson check questions');
+      await shot('15d-full-lesson');
+      // The map offers to upgrade the rest (XSS, CSRF).
+      await page.goto(`${APP}/course/imported`);
+      await page.waitForTimeout(1000);
+      await expectText('2 שיעורים הם רק הסבר ייחוס', 'upgrade-all card');
+      await page.getByRole('button', { name: 'לשדרג את כולם עם AI' }).click();
+      await page.waitForTimeout(2000);
+      if ((await page.getByText('הם רק הסבר ייחוס').count()) !== 0) failures.push('upgrade-all card still shown after upgrading');
+      await shot('15e-upgraded-map');
     }
     await ctx.close();
   }
