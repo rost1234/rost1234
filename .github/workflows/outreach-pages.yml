@@ -1,0 +1,53 @@
+name: Outreach site
+
+on:
+  push:
+    branches: [main]
+    paths: ['outreach/**', '.github/workflows/outreach-pages.yml']
+  pull_request:
+    paths: ['outreach/**', '.github/workflows/outreach-pages.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Unit tests
+        working-directory: outreach
+        run: npm test
+
+  deploy:
+    # Publishes outreach/site to https://rost1234.github.io/rost1234/.
+    # Needs Settings → Pages → Source: "GitHub Actions" (one-time, see outreach/README.md).
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: outreach/site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
