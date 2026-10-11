@@ -7,6 +7,7 @@ import { useT } from '@/i18n';
 import { errorMessage } from '@/lib/errors';
 import { haptics } from '@/lib/haptics';
 import { KeyboardInsetView } from '@/lib/keyboard';
+import { pickLessonsFile } from '@/services/importFile';
 import { makeStyles, spacing, useTheme } from '@/theme';
 
 const EXAMPLE = `[
@@ -29,11 +30,13 @@ export default function ImportScreen() {
   const { colors, typography } = useTheme();
   const importLessons = useImportLessons();
   const [text, setText] = useState('');
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [fileError, setFileError] = useState(false);
 
-  const submit = () =>
+  const submit = (source = text) =>
     importLessons.mutate(
       {
-        text,
+        text: source,
         texts: {
           title: t('import.courseTitle'),
           description: t('import.courseDescription'),
@@ -44,22 +47,39 @@ export default function ImportScreen() {
         onSuccess: ({ added }) => {
           if (added) {
             haptics.success();
-            setText('');
+            if (source === text) setText('');
           }
         },
         onError: () => haptics.warning(),
       },
     );
 
+  const pickFile = async () => {
+    setFileError(false);
+    importLessons.reset();
+    try {
+      const file = await pickLessonsFile();
+      if (!file) return;
+      setFileName(file.name);
+      submit(file.text);
+    } catch {
+      setFileError(true);
+    }
+  };
+
   const result = importLessons.data;
   return (
     <KeyboardInsetView safeBottom={false}>
       <Screen>
         <Text style={typography.body}>{t('import.intro')}</Text>
+        <Button label={t('import.pickFile')} icon="folder-open-outline" onPress={() => void pickFile()} disabled={importLessons.isPending} />
+        {fileName ? <Text style={typography.caption}>📄 {fileName}</Text> : null}
+        <Text style={[typography.caption, { textAlign: 'center' }]}>{t('import.orPaste')}</Text>
         <TextField
           value={text}
           onChangeText={(v) => {
             setText(v);
+            setFileName(null);
             if (importLessons.error) importLessons.reset();
           }}
           placeholder={t('import.placeholder')}
@@ -71,12 +91,12 @@ export default function ImportScreen() {
           style={styles.json}
           testID="import-json"
         />
-        <InlineError message={importLessons.error ? errorMessage(importLessons.error, t) : null} />
-        <Button label={t('import.run')} icon="download-outline" onPress={submit} disabled={!text.trim() || importLessons.isPending} />
+        <InlineError message={fileError ? t('import.fileError') : importLessons.error ? errorMessage(importLessons.error, t) : null} />
+        <Button label={t('import.run')} icon="clipboard-outline" variant="secondary" onPress={() => submit()} disabled={!text.trim() || importLessons.isPending} />
         {!text ? <Button label={t('import.example')} variant="ghost" icon="document-text-outline" onPress={() => setText(EXAMPLE)} /> : null}
         {result ? (
           <Card style={{ gap: spacing.xs, borderColor: result.added ? colors.success : colors.border }}>
-            <Text style={typography.subheading}>{result.added ? `✓ ${t('import.added', { added: result.added })}` : t('import.nothing', { n: result.skipped })}</Text>
+            <Text style={typography.subheading}>{result.added ? `✓ ${(result.added === 1 ? t('import.addedOne') : t('import.added', { added: result.added }))}` : t('import.nothing', { n: result.skipped })}</Text>
             {result.added && result.skipped ? <Text style={typography.caption}>{t('import.skipped', { n: result.skipped })}</Text> : null}
             <Button label={t('import.openCourse')} icon="map-outline" variant={result.added ? 'primary' : 'secondary'} onPress={() => router.replace(`/course/${result.courseId}`)} />
           </Card>

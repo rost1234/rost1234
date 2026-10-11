@@ -347,11 +347,11 @@ const coursePlan = {
       await page.waitForTimeout(1000);
       const field = page.getByTestId('import-json');
       await field.fill('[{"topic": "x",}]');
-      await page.getByRole('button', { name: 'ייבוא', exact: true }).click();
+      await page.getByRole('button', { name: 'לייבא את הטקסט' }).click();
       await page.waitForTimeout(400);
       await expectText('זה לא JSON תקין', 'invalid JSON error');
       await field.fill(JSON.stringify([{ topic: 'x', concept: 'y' }]));
-      await page.getByRole('button', { name: 'ייבוא', exact: true }).click();
+      await page.getByRole('button', { name: 'לייבא את הטקסט' }).click();
       await page.waitForTimeout(400);
       await expectText('בשיעור 1 חסר השדה "reference"', 'missing field error');
       const rop = {
@@ -361,11 +361,19 @@ const coursePlan = {
         keyPoints: ['NX חוסם הרצה על המחסנית', 'gadget מסתיים ב-ret', 'לא מזריקים קוד חדש'],
       };
       await field.fill(JSON.stringify([rop, { topic: 'Web', concept: 'XSS', reference: 'הזרקת סקריפט לדף של אתר אחר.' }, { ...rop, concept: 'rop (return-oriented programming)' }]));
-      await page.getByRole('button', { name: 'ייבוא', exact: true }).click();
+      await page.getByRole('button', { name: 'לייבא את הטקסט' }).click();
       await page.waitForTimeout(600);
       await expectText('נוספו 2 שיעורים', 'import result');
       await expectText('1 כבר היו קיימים ודולגו', 'duplicate skipped');
       await shot('15a-import');
+      // The same from a file: one new lesson, the rest skipped.
+      const chooser = page.waitForEvent('filechooser');
+      await page.getByRole('button', { name: 'לבחור קובץ JSON' }).click();
+      await (await chooser).setFiles({ name: 'security.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify([rop, { topic: 'Web', concept: 'CSRF', reference: 'בקשה מזויפת בשם משתמש מחובר.' }])) });
+      await page.waitForTimeout(800);
+      await expectText('security.json', 'picked file name');
+      await expectText('נוסף שיעור אחד', 'import from file');
+      await shot('15a2-import-file');
       await page.getByRole('button', { name: 'לפתוח את הקורס' }).click();
       await page.waitForTimeout(1000);
       await expectText('Buffer Overflow', 'imported unit on the map');

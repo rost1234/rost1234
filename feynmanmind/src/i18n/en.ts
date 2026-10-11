@@ -605,10 +605,10 @@ export const en = {
   'import.cardTitle': "Import lessons",
   'import.cardBody': "Paste lessons as JSON, such as a course you prepared elsewhere. They're added to the \"Imported lessons\" course.",
   'import.open': "Paste JSON",
-  'import.intro': "Paste a JSON array. Each item is a lesson: the concept to explain, its topic, and the reference explanation you'll compare yourself with. keyPoints is optional.",
+  'import.intro': "Choose a JSON file or paste a JSON array. Each item is a lesson: the concept to explain, its topic, and the reference explanation you'll compare yourself with. keyPoints is optional.",
   'import.placeholder': "[ { \"topic\": \"…\", \"concept\": \"…\", \"reference\": \"…\", \"keyPoints\": [\"…\"] } ]",
   'import.field': "Lessons JSON",
-  'import.run': "Import",
+  'import.run': "Import pasted text",
   'import.example': "Show an example",
   'import.added': "Added {added} lessons",
   'import.skipped': "{n} were already there and were skipped.",
@@ -643,6 +643,10 @@ export const en = {
   'self.tutor': "Discuss with the AI tutor",
   'self.last': "Last time: {score}/100",
   'self.edit': "Edit my explanation",
+  'import.pickFile': "Choose a JSON file",
+  'import.orPaste': "or paste the content",
+  'import.fileError': "Couldn't read the file. Try again, or paste its content.",
+  'import.addedOne': "Added 1 lesson",
 } as const;
 
 export type TranslationKey = keyof typeof en;
