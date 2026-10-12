@@ -20,6 +20,12 @@ const TIPS = [
   { icon: 'compass-outline', text: 'coach.home' },
 ] as const satisfies readonly { icon: string; text: TranslationKey }[];
 
+/** The Garden look moves Focus into the long-press menu and the doors into the bottom bar. */
+const GARDEN_TIPS: Partial<Record<TranslationKey, TranslationKey>> = {
+  'coach.home': 'coach.homeGarden',
+  'coach.longPress': 'coach.longPressGarden',
+};
+
 /** Three one-time tips on first use. Remembered per device. */
 export function CoachMarks() {
   const t = useT();
@@ -53,7 +59,7 @@ export function CoachMarks() {
   return (
     <View style={styles.card} accessibilityRole="alert">
       <Ionicons name={tip.icon} size={22} color={colors.primary} />
-      <Text style={[typography.body, { flex: 1 }]}>{t(tip.text === 'coach.home' && look === 'garden' ? 'coach.homeGarden' : tip.text)}</Text>
+      <Text style={[typography.body, { flex: 1 }]}>{t(look === 'garden' ? (GARDEN_TIPS[tip.text] ?? tip.text) : tip.text)}</Text>
       <View style={styles.actions}>
         <Text style={typography.caption}>
           {step + 1}/{TIPS.length}

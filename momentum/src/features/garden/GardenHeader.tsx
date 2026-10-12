@@ -96,7 +96,8 @@ export function GardenHeader({ today, hour, percent, doneCount, totalCount, free
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={t('home.openInsights')}
+              accessibilityLabel={t('garden.insights')}
+              accessibilityHint={t('home.openInsights')}
               onPress={() => router.push('/analytics')}
               hitSlop={6}
               style={({ pressed }) => [styles.pill, { backgroundColor: colors.surface }, pressed && { opacity: 0.8 }]}
@@ -109,7 +110,9 @@ export function GardenHeader({ today, hour, percent, doneCount, totalCount, free
         {/* The sprout grows with every habit done; the ring around it is today. */}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t('garden.headerA11y', { stage: stageName, percent })}
+          accessibilityLabel={
+            totalCount === 0 ? t('garden.headerA11yQuiet', { stage: stageName, quiet: t('today.quietDay') }) : t('garden.headerA11y', { stage: stageName, percent })
+          }
           accessibilityHint={t('garden.headerHint')}
           onPress={() => router.push('/garden')}
           hitSlop={6}

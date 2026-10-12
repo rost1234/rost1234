@@ -272,7 +272,7 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Bottom dock: Settings, Month, a big yellow ▶ Focus, Library; while a focus session runs it shows the time left; the last card and the Undo toast are not hidden behind it
 - [ ] Habit cards: a small pot per habit (a habit done often has a bigger plant), the big circle on the far side marks done (one tap), +1 on counted habits, drops for counts up to 12, a flower with "N days in a row"; long press offers "Focus on this habit"; a quit habit keeps "Urge now" as a wide pill
 - [ ] Small phone (360 wide) and the largest font size: habit names and the header text aren't cut badly; nothing overlaps the ring
-- [ ] Tap the sprout → "Your sprout": big sprout, the count, "N more to <next stage>" with a bar, all 9 stages (reached ✓, now, still to come), a pot per habit, and "Switch back to the regular look" opens Appearance
+- [ ] Tap the sprout → "Your sprout": big sprout, the count, "N more to <next stage>" with a bar, all 9 stages (reached ✓, now, still to come), a pot per habit, and "Back to the regular look" switches back at once and closes the sheet
 - [ ] Mark a habit that crosses a stage (e.g. the 7th habit-day ever) → "Your sprout grew!" once; undo and mark again → no second celebration
 - [ ] Streak milestone celebrations in Garden show the sprout instead of an emoji and are readable (dark text on a light card)
 - [ ] Focus (Garden): night-blue screen, green ring, yellow Start; a small plant inside the ring grows from a sprout to a flower as the session runs; paused → sleepy face

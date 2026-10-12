@@ -15,6 +15,7 @@ import { useLocalDate } from '@/hooks/useLocalDate';
 import { useNow } from '@/hooks/useNow';
 import { useT } from '@/i18n';
 import { useHabitStore } from '@/state/habitStore';
+import { usePrefsStore } from '@/state/prefsStore';
 import { Sprout } from './Sprout';
 import { stageKey, useGardenGrowth, useHabitChoices } from './useGarden';
 
@@ -71,14 +72,14 @@ function HabitPot({ habit }: { habit: Habit }) {
   const choices = useHabitChoices(habit.id);
   const stage = habitPotStage(choices);
   return (
-    <View style={styles.potTile} accessible accessibilityLabel={`${habit.title}: ${t(stageKey(stage))}, ${t.plural('garden.times', choices)}`}>
+    <View style={styles.potTile} accessible accessibilityLabel={`${habit.title}: ${t(stageKey(stage))}${choices > 0 ? `, ${t.plural('garden.times', choices)}` : ''}`}>
       <View style={[styles.potArt, { backgroundColor: colors.surfaceMuted }]}>
         <Sprout stage={stage} size={64} face={false} />
       </View>
       <Text style={[typography.label, styles.potTitle]} numberOfLines={2}>
         {habit.title}
       </Text>
-      <Text style={typography.caption}>{t.plural('garden.times', choices)}</Text>
+      <Text style={typography.caption}>{choices === 0 ? t(stageKey(stage)) : t.plural('garden.times', choices)}</Text>
     </View>
   );
 }
@@ -141,9 +142,15 @@ export function GardenScreen() {
           </>
         ) : null}
 
+        {/* One tap back to the regular look; Settings → Appearance switches either way. */}
         <Pressable
           accessibilityRole="button"
-          onPress={() => router.push('/settings/appearance')}
+          accessibilityHint={t('app.lookNote')}
+          onPress={() => {
+            usePrefsStore.getState().setLook('calm');
+            if (router.canGoBack()) router.back();
+            else router.replace('/');
+          }}
           hitSlop={8}
           style={styles.switchBack}
         >

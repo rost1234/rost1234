@@ -14,13 +14,24 @@ import { useT } from '@/i18n';
 /** Height of the dock and the gap under it, so lists and toasts can leave room. */
 export const DOCK_CLEARANCE = 88;
 
-function DockButton({ icon, label, onPress }: { icon: ComponentProps<typeof Ionicons>['name']; label: string; onPress: () => void }) {
+function DockButton({
+  icon,
+  label,
+  a11yLabel,
+  onPress,
+}: {
+  icon: ComponentProps<typeof Ionicons>['name'];
+  label: string;
+  /** When the short visible word needs more for a screen reader. */
+  a11yLabel?: string;
+  onPress: () => void;
+}) {
   const { colors } = useTheme();
   const styles = useStyles();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={a11yLabel ?? label}
       onPress={onPress}
       style={({ pressed }) => [styles.item, pressed && { opacity: 0.7 }]}
     >
@@ -54,7 +65,7 @@ export function GardenDock() {
   return (
     <View style={[styles.dock, { bottom: bottomInset + spacing.md }]}>
       <DockButton icon="settings-outline" label={t('garden.dockSettings')} onPress={() => router.push('/settings')} />
-      <DockButton icon="calendar-outline" label={t('garden.dockMonth')} onPress={() => router.push('/calendar')} />
+      <DockButton icon="calendar-outline" label={t('garden.dockMonth')} a11yLabel={t('cal.title')} onPress={() => router.push('/calendar')} />
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={focusLabel}
