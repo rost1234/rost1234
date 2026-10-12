@@ -1,3 +1,4 @@
-import { DashboardScreen } from '@/features/dashboard/DashboardScreen';
+import { MainPager } from '@/features/pager/MainPager';
 
-export default DashboardScreen;
+/** Home: Today, the month, insights and the library as swipeable pages with a tab bar. */
+export default MainPager;

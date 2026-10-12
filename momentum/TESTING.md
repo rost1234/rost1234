@@ -321,3 +321,15 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Garden: no insight card on Home; the sprout says it has something interesting, and a speech bubble under it shows today's finding (stat if any); tap → what to do + caveat; Source works; "Thanks, got it" hides it until tomorrow (and the sprout goes back to its usual lines)
 - [ ] Regular look: the insight card is unchanged; a fresh-start day still shows the fresh-start card in both looks
 
+## Swipe between main screens (build 39)
+- [ ] Home has a tab bar at the bottom: Today · Month · Insights · Library (Garden: the rounded dock, current tab yellow; regular: a slim floating bar, current tab tinted)
+- [ ] Hebrew: swipe right-to-left... the finger moves to the right → the next page (Month) comes in from the left; English the other way. A short or vertical move doesn't turn the page; a quick flick does
+- [ ] Scrolling Today, the month or the library up and down never turns the page; the month's and library's chip rows still scroll sideways
+- [ ] Each page has its title but no ✕ (nothing to close); Insights → "Calendar" link switches to the Month tab; the ring (regular) / Insights pill (Garden) switches to Insights
+- [ ] Android back on Month/Insights/Library goes to Today; on Today it leaves the app as before
+- [ ] Settings and Focus: regular look ⚙️ ⏱ at the top of Today; Garden two round buttons at the top of the hill. During a focus session a timer button floats above the tab bar on every page
+- [ ] The Undo toast and the last card on each page aren't hidden behind the tab bar; the tab bar hides while typing
+- [ ] Calendar → tap a day → the day sheet opens over everything; Print still opens
+- [ ] TalkBack: the tab bar reads as tabs with the selected one; only the visible page is read
+- [ ] "Remove animations" on: tabs switch without sliding
+

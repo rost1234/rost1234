@@ -7,6 +7,7 @@ import { ProgressRing } from '@/components/ProgressRing';
 import { heroGradient, makeStyles, radius, spacing } from '@/components/theme';
 import { formatFriendlyDate, type LocalDateString } from '@/core/localDate';
 import type { TranslationKey } from '@/i18n';
+import { openMain } from '@/features/pager/pager';
 import { useT } from '@/i18n';
 
 interface DashboardHeaderProps {
@@ -73,7 +74,7 @@ export function DashboardHeader({ today, hour, percent, doneCount, totalCount, f
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`${t('today.percentA11y', { percent })}. ${t('home.openInsights')}`}
-        onPress={() => router.push('/analytics')}
+        onPress={() => openMain('insights')}
         hitSlop={8}
       >
         <ProgressRing value={percent / 100} size={92} stroke={9} track="rgba(255,255,255,0.22)" from="#FFFFFF" to="#D6E8F5">

@@ -1,4 +1,6 @@
+import { useContext } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { PagerContext } from '@/features/pager/pager';
 
 /** Empty space after the last item, so the end of a list never hides under the nav bar or a floating button. */
 export const BOTTOM_BUFFER = 96;
@@ -8,5 +10,7 @@ export const DOCK_CLEARANCE = 88;
 
 /** Bottom padding for scrolling screens: system navigation inset + buffer (+ `extra` for floating controls). */
 export function useBottomSpace(extra = 0): number {
-  return useSafeAreaInsets().bottom + BOTTOM_BUFFER + extra;
+  // Inside the main pager the tab bar floats at the bottom too.
+  const { bottomBar } = useContext(PagerContext);
+  return useSafeAreaInsets().bottom + BOTTOM_BUFFER + Math.max(extra, bottomBar);
 }

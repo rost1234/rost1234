@@ -3,9 +3,10 @@ import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { runDetached } from '@/core/errors';
 import { SheetHeader } from '@/components/SheetHeader';
+import { openMain } from '@/features/pager/pager';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { Banner, Card, Chip, SectionTitle } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
@@ -63,7 +64,7 @@ export function AnalyticsScreen() {
         </View>
         <Pressable
           accessibilityRole="button"
-          onPress={() => router.push('/calendar')}
+          onPress={() => openMain('calendar')}
           style={({ pressed }) => [styles.calendarLink, pressed && { opacity: 0.85 }]}
         >
           <Ionicons name="calendar-outline" size={20} color={colors.primary} />

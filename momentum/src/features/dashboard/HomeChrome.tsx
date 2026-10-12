@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
+import { DOCK_CLEARANCE } from '@/components/useBottomSpace';
 import { haptics } from '@/core/haptics';
 import { computeSnapshot } from '@/domain/focusTimer';
 import { useNow } from '@/hooks/useNow';
@@ -21,7 +22,7 @@ function IconButton({ icon, label, onPress }: { icon: ComponentProps<typeof Ioni
   );
 }
 
-/** The doors out of Home that aren't about today: settings, the month and the research library. */
+/** Settings and Focus (the month, insights and the library are tabs: swipe or use the tab bar). */
 export function HomeTopBar() {
   const t = useT();
   const styles = useStyles();
@@ -30,8 +31,6 @@ export function HomeTopBar() {
       <IconButton icon="settings-outline" label={t('home.settings')} onPress={() => router.push('/settings')} />
       <View style={{ flex: 1 }} />
       <IconButton icon="timer-outline" label={t('home.focus')} onPress={() => router.push('/focus')} />
-      <IconButton icon="calendar-outline" label={t('cal.title')} onPress={() => router.push('/calendar')} />
-      <IconButton icon="library-outline" label={t('home.library')} onPress={() => router.push('/library')} />
     </View>
   );
 }
@@ -58,7 +57,8 @@ export function FocusFab() {
 
   if (!snapshot) return null;
   return (
-    <View pointerEvents="box-none" style={[styles.fabWrap, { bottom: bottomInset + spacing.lg }]}>
+    // Above the tab bar.
+    <View pointerEvents="box-none" style={[styles.fabWrap, { bottom: bottomInset + DOCK_CLEARANCE + spacing.xs }]}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label}

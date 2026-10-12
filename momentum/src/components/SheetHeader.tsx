@@ -3,6 +3,7 @@ import { Text } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { makeStyles, radius, spacing, useTheme } from './theme';
+import { usePagerFrame } from '@/features/pager/pager';
 import { useT } from '@/i18n';
 
 /** Title row for screens that open on top of Home: a grab bar, the title and a close button. */
@@ -10,6 +11,17 @@ export function SheetHeader({ title }: { title: string }) {
   const t = useT();
   const { colors, typography } = useTheme();
   const styles = useStyles();
+  // As a page of the main pager there's nothing to close: a swipe or the tab bar moves on.
+  const { embedded } = usePagerFrame();
+  if (embedded) {
+    return (
+      <View style={styles.wrap}>
+        <Text style={[typography.title, styles.title]} accessibilityRole="header">
+          {title}
+        </Text>
+      </View>
+    );
+  }
   return (
     <View style={styles.wrap}>
       <View style={styles.grab} />

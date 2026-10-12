@@ -10,6 +10,7 @@ import { haptics } from '@/core/haptics';
 import { isNight, sproutMood } from '@/domain/garden';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { useT, type TranslationKey } from '@/i18n';
+import { openMain } from '@/features/pager/pager';
 import { useHabitStore } from '@/state/habitStore';
 import type { Insight } from '@/content/insightSchema';
 import { useSproutTipStore } from '@/state/sproutTipStore';
@@ -191,6 +192,27 @@ export function GardenHeader({
   return (
     <View style={[styles.hill, { backgroundColor: scenery.hill }]}>
       <Sky night={isNight(hour)} />
+      {/* Settings and Focus (the month, insights and library are tabs below). */}
+      <View style={styles.corner}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('home.settings')}
+          onPress={() => router.push('/settings')}
+          hitSlop={6}
+          style={({ pressed }) => [styles.cornerButton, { backgroundColor: colors.surface }, pressed && { opacity: 0.8 }]}
+        >
+          <Ionicons name="settings-outline" size={20} color={colors.text} />
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('home.focus')}
+          onPress={() => router.push('/focus')}
+          hitSlop={6}
+          style={({ pressed }) => [styles.cornerButton, { backgroundColor: colors.surface }, pressed && { opacity: 0.8 }]}
+        >
+          <Ionicons name="timer-outline" size={20} color={colors.text} />
+        </Pressable>
+      </View>
       <View style={styles.top}>
         {dayOffLabel ? (
           <View style={[styles.pill, { backgroundColor: colors.surface }]} accessible accessibilityLabel={dayOffName ?? dayOffLabel}>
@@ -253,7 +275,7 @@ export function GardenHeader({
           accessibilityRole="button"
           accessibilityLabel={t('garden.insights')}
           accessibilityHint={t('home.openInsights')}
-          onPress={() => router.push('/analytics')}
+          onPress={() => openMain('insights')}
           hitSlop={6}
           style={({ pressed }) => [styles.pill, { backgroundColor: colors.surface }, pressed && { opacity: 0.8 }]}
         >
@@ -294,6 +316,8 @@ const useStyles = makeStyles(({ colors }) => ({
   cloud: { position: 'absolute', top: 20, end: 130, width: 64, height: 20, borderRadius: 10 },
   star: { position: 'absolute', width: 4, height: 4, borderRadius: 2 },
   top: { gap: 2, marginTop: spacing.sm },
+  corner: { flexDirection: 'row', gap: spacing.sm, alignSelf: 'flex-start' },
+  cornerButton: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   stageRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginTop: spacing.md },
   stacked: { flexDirection: 'column-reverse', alignItems: 'stretch' },
   date: { fontSize: 15, color: colors.textMuted },

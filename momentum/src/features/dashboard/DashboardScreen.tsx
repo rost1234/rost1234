@@ -13,7 +13,6 @@ import { groupForHome, setAsideToday } from '@/domain/habitGroups';
 import { habitsDueOn } from '@/domain/habitSchedule';
 import { orderByTimeOfDay } from '@/domain/rhythm';
 import { orderByStacking } from '@/domain/stacking';
-import { GardenDock } from '@/features/garden/GardenDock';
 import { GardenHeader } from '@/features/garden/GardenHeader';
 import { Sprout } from '@/features/garden/Sprout';
 import { useGardenGrowth } from '@/features/garden/useGarden';
@@ -42,7 +41,7 @@ import { YesterdayCard } from './YesterdayCard';
 import { FoldedSection } from './FoldedSection';
 import { EmptyHabits } from './EmptyHabits';
 import { HardDayBar } from './HardDayBar';
-import { FocusFab, HomeTopBar } from './HomeChrome';
+import { HomeTopBar } from './HomeChrome';
 import { LevelCard } from './LevelCard';
 import { HabitCard } from './HabitCard';
 import { HabitGroupCard } from './HabitGroupCard';
@@ -84,8 +83,9 @@ export function DashboardScreen() {
   // The toast's little sprout only cheers when the change marked a habit done.
   const lastWasDone = useHabitStore((s) => (s.lastChange && s.today ? s.logs[s.lastChange.habitId]?.[s.today]?.status === 'completed' : false));
   // Extra room for the Garden dock, or the floating focus button while a session runs.
+  // The tab bar (and the focus timer button during a session) float at the bottom.
   const focusRunning = useFocusStore((s) => s.timer !== null);
-  const bottomSpace = useBottomSpace(garden ? DOCK_CLEARANCE : focusRunning ? 72 : 0);
+  const bottomSpace = useBottomSpace(DOCK_CLEARANCE + (focusRunning ? 56 : 0));
   // Re-renders (and reloads) automatically when the local date rolls over.
   const today = useLocalDate();
   const status = useHabitStore((s) => s.status);
@@ -276,12 +276,11 @@ export function DashboardScreen() {
           actionLabel={t('common.undo')}
           onAction={undoLast}
           onHide={dismissLastChange}
-          aboveFab={garden || focusRunning}
+          aboveFab
           // Garden: the sprout cheers in the corner of the toast.
           leading={garden && lastWasDone ? <Sprout stage={sproutStage} mood="joy" size={34} /> : undefined}
         />
       ) : null}
-      {garden ? <GardenDock /> : <FocusFab />}
       <Celebration />
     </SafeAreaView>
   );
