@@ -150,9 +150,12 @@ export const useTaskStore = create<TaskState>((set, get) => {
     planTask: async (title, date) => {
       const { today } = get();
       const trimmed = title.trim();
-      if (!today || trimmed.length === 0 || date <= today) return null;
+      // ">= today": a reflection finished after midnight plans "tomorrow", which is now today.
+      if (!today || trimmed.length === 0 || date < today) return null;
       try {
-        return await repositories.tasks.create({ title: trimmed, habitId: null, dueDate: date });
+        const task = await repositories.tasks.create({ title: trimmed, habitId: null, dueDate: date });
+        if (date === today) set({ tasks: [...get().tasks, task] });
+        return task;
       } catch (error) {
         set({ error: `${t('err.addTask')} ${toErrorMessage(error)}` });
         return null;

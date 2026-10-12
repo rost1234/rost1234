@@ -10,7 +10,20 @@ import { useT } from '@/i18n';
  * A section shown as one line ("📋 3 for today · 1 open") until tapped. Used on
  * days off, so work waits quietly instead of leading the screen.
  */
-export function FoldedSection({ icon, title, summary, children }: { icon: string; title: string; summary: string; children: ReactNode }) {
+export function FoldedSection({
+  icon,
+  title,
+  summary,
+  hint,
+  children,
+}: {
+  icon: string;
+  title: string;
+  summary: string;
+  /** What opening it shows (for screen readers); the day-off tasks hint by default. */
+  hint?: string;
+  children: ReactNode;
+}) {
   const t = useT();
   const { colors, typography } = useTheme();
   const styles = useStyles();
@@ -27,7 +40,7 @@ export function FoldedSection({ icon, title, summary, children }: { icon: string
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${title}, ${summary}`}
-      accessibilityHint={t('dayoff.openHint')}
+      accessibilityHint={hint ?? t('dayoff.openHint')}
       accessibilityState={{ expanded: false }}
       onPress={() => setOpen(true)}
       style={({ pressed }) => [styles.row, pressed && { opacity: 0.8 }]}

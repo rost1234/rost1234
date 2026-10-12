@@ -19,7 +19,7 @@ function openTaskMenu(task: Task, isMain: boolean) {
       : []),
     ...(today && !task.isCompleted
       ? [
-          { label: t('tasks.moveTomorrow'), icon: 'arrow-forward-circle-outline' as const, run: () => useTaskStore.getState().moveToDate(task.id, addDays(today, 1)) },
+          { label: t('tasks.moveTomorrow'), icon: (currentLanguage() === 'he' ? 'arrow-back-circle-outline' : 'arrow-forward-circle-outline') as 'arrow-back-circle-outline', run: () => useTaskStore.getState().moveToDate(task.id, addDays(today, 1)) },
           { label: t('tasks.moveDay'), icon: 'calendar-outline' as const, run: () => openDayPicker(task) },
         ]
       : []),

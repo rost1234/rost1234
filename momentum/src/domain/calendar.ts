@@ -176,6 +176,7 @@ export function applyDayEdit(
     case 'skip':
       return { currentCount: current.currentCount, status: 'skipped' };
     case 'unskip':
-      return { currentCount: current.currentCount, status: 'in_progress' };
+      // A yes/no habit comes back not done (a count of 1 would read as "done in part").
+      return { currentCount: habit.isQuantitative ? current.currentCount : 0, status: 'in_progress' };
   }
 }

@@ -53,15 +53,16 @@ function openHabitMenu(habit: Habit) {
   if (isDone || partial || (habit.isQuantitative && progress.currentCount > 0)) {
     actions.push({ label: t('habit.resetToday'), icon: 'refresh-outline', run: () => setTodayProgress(habit.id, { currentCount: 0, status: 'in_progress' }) });
   }
-  actions.push(
-    isSkipped
-      ? { label: t('habit.unskipToday'), icon: 'arrow-undo-outline', run: () => skipHabit(habit.id) }
-      : { label: t('mark.skip'), icon: 'play-skip-forward-outline', run: () => skipHabit(habit.id) },
-  );
+  if (isSkipped) actions.push({ label: t('habit.unskipToday'), icon: 'arrow-undo-outline', run: () => skipHabit(habit.id) });
+  else if (!isDone) actions.push({ label: t('mark.skip'), icon: 'play-skip-forward-outline', run: () => skipHabit(habit.id) });
   if (today && !isDone && !isSkipped) {
     actions.push(
       closed
-        ? { label: t('mark.reopen'), icon: 'return-up-back-outline', run: () => useDayCloseStore.getState().reopen(habit.id, today) }
+        ? {
+            label: t('mark.reopen'),
+            icon: currentLanguage() === 'he' ? 'return-up-forward-outline' : 'return-up-back-outline',
+            run: () => useDayCloseStore.getState().reopen(habit.id, today),
+          }
         : { label: habit.isQuit ? t('mark.quitMissed') : t('mark.missed'), icon: 'moon-outline', run: () => useDayCloseStore.getState().close(habit.id, today) },
     );
   }
@@ -243,7 +244,7 @@ function HabitCardComponent({ habit, passed = false }: HabitCardProps) {
             onLongPress={openMenu}
             delayLongPress={350}
             accessibilityRole={habit.isQuantitative ? 'adjustable' : 'checkbox'}
-            accessibilityState={habit.isQuantitative ? undefined : { checked: isDone }}
+            accessibilityState={habit.isQuantitative ? undefined : { checked: partial ? 'mixed' : isDone }}
             accessibilityLabel={a11yLabel}
             accessibilityHint={habit.isQuantitative ? t('habit.hintCount') : t('habit.hintBinary')}
             style={({ pressed }) => [styles.main, pressed && { opacity: 0.8 }]}
@@ -361,7 +362,7 @@ function HabitCardComponent({ habit, passed = false }: HabitCardProps) {
         onLongPress={openMenu}
         delayLongPress={350}
         accessibilityRole={habit.isQuantitative ? 'adjustable' : 'checkbox'}
-        accessibilityState={habit.isQuantitative ? undefined : { checked: isDone }}
+        accessibilityState={habit.isQuantitative ? undefined : { checked: partial ? 'mixed' : isDone }}
         accessibilityLabel={a11yLabel}
         accessibilityHint={habit.isQuantitative ? t('habit.hintCount') : t('habit.hintBinary')}
         style={({ pressed }) => [styles.main, pressed && { opacity: 0.75 }]}

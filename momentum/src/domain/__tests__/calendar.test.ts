@@ -187,3 +187,12 @@ describe('editing a day', () => {
     expect(applyDayEdit(water, { currentCount: 2, status: 'skipped' }, 'unskip')).toEqual({ currentCount: 2, status: 'in_progress' });
   });
 });
+
+describe('undoing a skip', () => {
+  it('brings a yes/no habit back not done (never "done in part")', () => {
+    const binary = makeHabit({ id: 'b' });
+    expect(applyDayEdit(binary, { currentCount: 1, status: 'skipped' }, 'unskip')).toEqual({ currentCount: 0, status: 'in_progress' });
+    const counted = makeHabit({ id: 'c', isQuantitative: true, targetCount: 4 });
+    expect(applyDayEdit(counted, { currentCount: 2, status: 'skipped' }, 'unskip')).toEqual({ currentCount: 2, status: 'in_progress' });
+  });
+});

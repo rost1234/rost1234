@@ -36,6 +36,9 @@ export function PlanAhead({ today }: { today: LocalDateString }) {
   const [date, setDate] = useState<LocalDateString>(days[0] ?? addDays(today, 1));
   const [tasks, setTasks] = useState<Task[] | null>(null);
   const [draft, setDraft] = useState('');
+  // Only what was added here can be removed here (a quick fix of a typo, not a way to lose tasks).
+  const [addedIds, setAddedIds] = useState<string[]>([]);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let current = true;
@@ -56,10 +59,17 @@ export function PlanAhead({ today }: { today: LocalDateString }) {
     const title = draft.trim();
     if (!title) return;
     setDraft('');
-    haptics.success();
     runDetached(
       planTask(title, date).then((task) => {
-        if (task) setTasks((list) => [...(list ?? []), task]);
+        if (!task) {
+          setFailed(true);
+          setDraft(title);
+          return;
+        }
+        haptics.success();
+        setFailed(false);
+        setAddedIds((ids) => [...ids, task.id]);
+        setTasks((list) => [...(list ?? []), task]);
       }),
     );
   };
@@ -84,12 +94,15 @@ export function PlanAhead({ today }: { today: LocalDateString }) {
             <Text style={[typography.body, { flex: 1 }]} numberOfLines={2}>
               {task.title}
             </Text>
-            <Pressable accessibilityRole="button" accessibilityLabel={t('plan.removeA11y', { title: task.title })} onPress={() => remove(task)} hitSlop={10}>
-              <Ionicons name="close" size={18} color={colors.textMuted} />
-            </Pressable>
+            {addedIds.includes(task.id) ? (
+              <Pressable accessibilityRole="button" accessibilityLabel={t('plan.removeA11y', { title: task.title })} onPress={() => remove(task)} hitSlop={10}>
+                <Ionicons name="close" size={18} color={colors.textMuted} />
+              </Pressable>
+            ) : null}
           </View>
         ))}
         {tasks !== null && tasks.length === 0 ? <Text style={typography.caption}>{t('plan.empty')}</Text> : null}
+        {failed ? <Text style={[typography.caption, { color: colors.danger }]}>{t('plan.failed')}</Text> : null}
       </View>
       <View style={styles.inputRow}>
         <TextInput

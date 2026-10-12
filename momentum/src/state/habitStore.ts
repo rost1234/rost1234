@@ -232,12 +232,14 @@ export const useHabitStore = create<HabitState>((set, get) => {
     },
 
     skipHabit: (habitId) => {
+      const habit = get().habits.find((h) => h.id === habitId);
       const progress = currentProgress(habitId);
-      if (!progress) return;
+      if (!progress || !habit) return;
       commitProgress(
         habitId,
         progress.status === 'skipped'
-          ? { currentCount: progress.currentCount, status: 'in_progress' }
+          ? // A yes/no habit comes back not done (a count of 1 would read as "done in part").
+            { currentCount: habit.isQuantitative ? progress.currentCount : 0, status: 'in_progress' }
           : { currentCount: progress.currentCount, status: 'skipped' },
         { recordUndo: true },
       );

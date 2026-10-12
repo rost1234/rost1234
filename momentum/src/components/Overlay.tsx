@@ -168,13 +168,14 @@ function Stepper({ stepper, close }: { stepper: SheetStepper; close: (then?: () 
 function Sheet({ request, progress, close }: PartProps<ActionSheetRequest>) {
   const { colors, typography } = useTheme();
   const styles = useStyles();
-  const bottom = useSafeAreaInsets().bottom;
-  // Long menus scroll instead of running off the screen.
-  const maxActions = useWindowDimensions().height * 0.55;
+  const insets = useSafeAreaInsets();
+  const bottom = insets.bottom;
+  // Long menus scroll instead of running off the screen: the whole sheet stays below the status bar.
+  const maxSheet = useWindowDimensions().height - insets.top - spacing.lg;
   const translateY = progress.interpolate({ inputRange: [0, 1], outputRange: [400, 0] });
 
   return (
-    <Animated.View style={[styles.sheet, { paddingBottom: bottom + spacing.lg, transform: [{ translateY }] }]}>
+    <Animated.View style={[styles.sheet, { maxHeight: maxSheet, paddingBottom: bottom + spacing.lg, transform: [{ translateY }] }]}>
       <View style={styles.grabber} />
       <View style={styles.header}>
         <Text style={typography.heading} numberOfLines={2}>
@@ -183,7 +184,7 @@ function Sheet({ request, progress, close }: PartProps<ActionSheetRequest>) {
         {request.message ? <Text style={typography.caption}>{request.message}</Text> : null}
       </View>
       {request.stepper ? <Stepper stepper={request.stepper} close={close} /> : null}
-      <ScrollView style={[styles.actions, { maxHeight: maxActions }]} bounces={false}>
+      <ScrollView style={styles.actions} bounces={false}>
         {request.actions.map((action) => {
           const tint = action.destructive ? colors.danger : colors.text;
           return (
@@ -270,7 +271,7 @@ const useStyles = makeStyles(({ colors, shadow }) => ({
   },
   grabber: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: colors.border, marginBottom: spacing.md },
   header: { gap: spacing.xs, paddingHorizontal: spacing.xs, marginBottom: spacing.md },
-  actions: { borderRadius: radius.lg, backgroundColor: colors.background, overflow: 'hidden', flexGrow: 0 },
+  actions: { borderRadius: radius.lg, backgroundColor: colors.background, overflow: 'hidden', flexGrow: 0, flexShrink: 1 },
   stepper: { gap: spacing.sm, padding: spacing.md, marginBottom: spacing.md, borderRadius: radius.lg, backgroundColor: colors.background },
   stepperRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   stepButton: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primarySoft },

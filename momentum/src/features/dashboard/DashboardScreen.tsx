@@ -234,7 +234,7 @@ export function DashboardScreen() {
               ),
             )}
             {aside.length > 0 ? (
-              <FoldedSection icon="🌙" title={t('aside.title')} summary={t.plural('aside.summary', aside.length)}>
+              <FoldedSection icon="🌙" title={t('aside.title')} summary={t.plural('aside.summary', aside.length)} hint={t('aside.hint')}>
                 {aside.map((habit) => (
                   <HabitCard key={habit.id} habit={habit} passed />
                 ))}
