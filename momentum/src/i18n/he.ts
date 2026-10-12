@@ -292,7 +292,6 @@ export const he: Record<TranslationKey, string> = {
   'home.focusLeft': 'פוקוס · עוד {time}',
   'home.focusPaused': 'פוקוס · מושהה',
   'home.insightsHint': 'תובנות ›',
-  'home.library': 'ספריית המחקרים',
   'home.openInsights': 'פותח את התובנות',
   'home.settings': 'הגדרות',
   'ins.avgCompletion': 'השלמה ממוצעת',

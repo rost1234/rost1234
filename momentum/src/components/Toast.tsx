@@ -17,15 +17,17 @@ interface ToastProps {
   aboveFab?: boolean;
   /** A small picture before the message (the Garden sprout). */
   leading?: ReactNode;
+  /** Exact room to leave at the bottom (overrides `aboveFab`), e.g. a tab bar plus the focus timer. */
+  bottomOffset?: number;
 }
 
 const FAB_CLEARANCE = 64;
 
 /** Small bottom toast with an optional action (e.g. Undo). */
-export function Toast({ id, message, actionLabel, onAction, onHide, durationMs = 4000, aboveFab, leading }: ToastProps) {
+export function Toast({ id, message, actionLabel, onAction, onHide, durationMs = 4000, aboveFab, leading, bottomOffset }: ToastProps) {
   const styles = useStyles();
   const { look } = useTheme();
-  const bottom = useSafeAreaInsets().bottom + spacing.lg + (aboveFab ? (look === 'garden' ? DOCK_CLEARANCE : FAB_CLEARANCE) : 0);
+  const bottom = useSafeAreaInsets().bottom + spacing.lg + (bottomOffset ?? (aboveFab ? (look === 'garden' ? DOCK_CLEARANCE : FAB_CLEARANCE) : 0));
   const [opacity] = useState(() => new Animated.Value(0));
 
   useEffect(() => {

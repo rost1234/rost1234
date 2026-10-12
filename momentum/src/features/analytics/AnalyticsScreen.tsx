@@ -3,10 +3,9 @@ import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
 import { runDetached } from '@/core/errors';
 import { SheetHeader } from '@/components/SheetHeader';
-import { openMain } from '@/features/pager/pager';
+import { openMain, usePageFocusEffect } from '@/features/pager/pager';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { Banner, Card, Chip, SectionTitle } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
@@ -46,8 +45,8 @@ export function AnalyticsScreen() {
 
   const reload = useCallback(() => runDetached(useAnalyticsStore.getState().load(today)), [today]);
 
-  // Refresh whenever the tab gains focus (picks up new logs from the dashboard).
-  useFocusEffect(reload);
+  // Refresh whenever it comes into view (picks up new logs from Today).
+  usePageFocusEffect('insights', reload);
 
   const selectRange = (next: AnalyticsRange) => {
     setRange(next);

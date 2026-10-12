@@ -4,8 +4,9 @@ import { Text } from '@/components/AppText';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import { SheetHeader } from '@/components/SheetHeader';
+import { usePageFocusEffect } from '@/features/pager/pager';
 import { Banner, Button, Card, Chip } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme, type Theme } from '@/components/theme';
 import { useBottomSpace } from '@/components/useBottomSpace';
@@ -627,7 +628,9 @@ export function CalendarScreen() {
       ),
     [month],
   );
-  useFocusEffect(
+  // Refresh whenever it comes into view (picks up what was marked on Today).
+  usePageFocusEffect(
+    'calendar',
     useCallback(() => {
       runDetached(refresh());
     }, [refresh]),

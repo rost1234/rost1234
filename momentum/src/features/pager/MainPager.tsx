@@ -24,12 +24,6 @@ const TURN_SPEED = 0.45;
 
 const FRAME = { embedded: true, bottomBar: TAB_BAR_SPACE };
 
-/**
- * Today, the month, insights and the library side by side: swipe between them (in reading
- * direction, so in Hebrew the next page comes from the left) or use the tab bar. A page is
- * built the first time it's visited and kept, so coming back is instant. Android's back
- * button returns to Today before leaving the app.
- */
 /** Where the strip sits for a page: pages run along the reading direction (leftward in Hebrew). */
 const sign = () => (I18nManager.isRTL ? -1 : 1);
 const targetFor = (page: PageId) => -PAGES.indexOf(page) * Dimensions.get('window').width * sign();

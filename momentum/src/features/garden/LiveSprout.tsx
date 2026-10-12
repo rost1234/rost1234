@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Easing } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import type { GrowthStage, SproutMood } from '@/domain/garden';
+import { usePageShown } from '@/features/pager/pager';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { Sprout } from './Sprout';
 
@@ -31,6 +32,9 @@ const FLAP_MS = 110;
  */
 export function LiveSprout({ stage, mood, size, cheerKey = 0, talkKey = 0, pokeKey = 0, cheerOnMount = false }: LiveSproutProps) {
   const reduce = useReduceMotion();
+  // Still when it's off screen (Today swiped away in the pager).
+  const shown = usePageShown('home');
+  const still = reduce || !shown;
   const [breath] = useState(() => new Animated.Value(0));
   const [hop] = useState(() => new Animated.Value(0));
   const [wiggle] = useState(() => new Animated.Value(0));
@@ -42,7 +46,7 @@ export function LiveSprout({ stage, mood, size, cheerKey = 0, talkKey = 0, pokeK
   // Breathing and swaying while the screen is in front (stopped when it isn't, to save battery).
   useFocusEffect(
     useCallback(() => {
-      if (reduce) return undefined;
+      if (still) return undefined;
       const loop = Animated.loop(
         Animated.sequence([
           Animated.timing(breath, { toValue: 1, duration: 1800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
@@ -51,13 +55,13 @@ export function LiveSprout({ stage, mood, size, cheerKey = 0, talkKey = 0, pokeK
       );
       loop.start();
       return () => loop.stop();
-    }, [breath, reduce]),
+    }, [breath, still]),
   );
 
   // Blinks every few seconds, at random, like a living face.
   useFocusEffect(
     useCallback(() => {
-      if (reduce) return undefined;
+      if (still) return undefined;
       let timer: ReturnType<typeof setTimeout>;
       const next = () => {
         timer = setTimeout(
@@ -76,7 +80,7 @@ export function LiveSprout({ stage, mood, size, cheerKey = 0, talkKey = 0, pokeK
         clearTimeout(timer);
         setBlink(false);
       };
-    }, [reduce]),
+    }, [still]),
   );
 
   // A habit done: hop and beam.

@@ -1,5 +1,5 @@
-import { createContext, useContext } from 'react';
-import { router } from 'expo-router';
+import { createContext, useCallback, useContext, type EffectCallback } from 'react';
+import { router, useFocusEffect } from 'expo-router';
 import { create } from 'zustand';
 
 /** The four main screens, in order: swipe between them like tabs. */
@@ -46,3 +46,19 @@ export interface PagerFrame {
 export const PagerContext = createContext<PagerFrame>({ embedded: false, bottomBar: 0 });
 
 export const usePagerFrame = (): PagerFrame => useContext(PagerContext);
+
+/**
+ * Like `useFocusEffect`, for a screen that's also a pager page: inside the pager all pages share
+ * one route, so it runs when the page comes into view (and on its own when opened as a screen).
+ */
+export function usePageFocusEffect(page: PageId, effect: EffectCallback): void {
+  const { embedded } = usePagerFrame();
+  const shown = usePagerStore((s) => !embedded || s.page === page);
+  useFocusEffect(useCallback(() => (shown ? effect() : undefined), [shown, effect]));
+}
+
+/** Whether a pager page is the one in view (always true outside the pager). */
+export function usePageShown(page: PageId): boolean {
+  const { embedded } = usePagerFrame();
+  return usePagerStore((s) => !embedded || s.page === page);
+}

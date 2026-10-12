@@ -1,7 +1,7 @@
-jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
-
 import { router } from 'expo-router';
 import { openMain, PAGES, usePagerStore } from '../pager';
+
+jest.mock('expo-router', () => ({ router: { push: jest.fn() }, useFocusEffect: jest.fn() }));
 
 describe('main pager', () => {
   beforeEach(() => usePagerStore.setState({ page: 'home', visited: ['home'], active: false }));

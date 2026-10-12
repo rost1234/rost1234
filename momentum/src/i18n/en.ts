@@ -290,7 +290,6 @@ export const en = {
   'home.focusLeft': 'Focus · {time} left',
   'home.focusPaused': 'Focus · paused',
   'home.insightsHint': 'Insights ›',
-  'home.library': 'Research library',
   'home.openInsights': 'Opens insights',
   'home.settings': 'Settings',
   'ins.avgCompletion': 'Avg. completion',

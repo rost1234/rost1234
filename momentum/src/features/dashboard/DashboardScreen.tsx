@@ -82,7 +82,6 @@ export function DashboardScreen() {
   const sproutStage = useGardenGrowth().stage;
   // The toast's little sprout only cheers when the change marked a habit done.
   const lastWasDone = useHabitStore((s) => (s.lastChange && s.today ? s.logs[s.lastChange.habitId]?.[s.today]?.status === 'completed' : false));
-  // Extra room for the Garden dock, or the floating focus button while a session runs.
   // The tab bar (and the focus timer button during a session) float at the bottom.
   const focusRunning = useFocusStore((s) => s.timer !== null);
   const bottomSpace = useBottomSpace(DOCK_CLEARANCE + (focusRunning ? 56 : 0));
@@ -276,7 +275,8 @@ export function DashboardScreen() {
           actionLabel={t('common.undo')}
           onAction={undoLast}
           onHide={dismissLastChange}
-          aboveFab
+          // Above the tab bar, and above the focus timer button during a session.
+          bottomOffset={DOCK_CLEARANCE + (focusRunning ? 60 : 0)}
           // Garden: the sprout cheers in the corner of the toast.
           leading={garden && lastWasDone ? <Sprout stage={sproutStage} mood="joy" size={34} /> : undefined}
         />

@@ -323,7 +323,10 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 
 ## Swipe between main screens (build 39)
 - [ ] Home has a tab bar at the bottom: Today · Month · Insights · Library (Garden: the rounded dock, current tab yellow; regular: a slim floating bar, current tab tinted)
-- [ ] Hebrew: swipe right-to-left... the finger moves to the right → the next page (Month) comes in from the left; English the other way. A short or vertical move doesn't turn the page; a quick flick does
+- [ ] Hebrew: moving the finger to the right brings the next page (Month) in from the left; English the other way. A short or vertical move doesn't turn the page; a quick flick does; past either end it resists
+- [ ] Mark a habit on Today, then go to Month and Insights (opened before): today's cell and the stats are up to date
+- [ ] During a focus session, mark a habit: the Undo toast sits above the timer button, not under it
+- [ ] A slow sideways drag with a little wobble turns the page rather than snapping back (tell me if it feels sticky)
 - [ ] Scrolling Today, the month or the library up and down never turns the page; the month's and library's chip rows still scroll sideways
 - [ ] Each page has its title but no ✕ (nothing to close); Insights → "Calendar" link switches to the Month tab; the ring (regular) / Insights pill (Garden) switches to Insights
 - [ ] Android back on Month/Insights/Library goes to Today; on Today it leaves the app as before
