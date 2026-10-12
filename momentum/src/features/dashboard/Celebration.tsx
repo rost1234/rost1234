@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet } from 'react-native';
 import { Text } from '@/components/AppText';
-import { heroGradient, radius, spacing } from '@/components/theme';
+import { heroGradient, radius, spacing, useTheme } from '@/components/theme';
 import { runDetached } from '@/core/errors';
 import { haptics } from '@/core/haptics';
 import { formatFriendlyDate } from '@/core/localDate';
+import { Sprout } from '@/features/garden/Sprout';
+import { stageKey, useGardenGrowth } from '@/features/garden/useGarden';
 import { unlock } from '@/services/appLock';
 import { useDevicePrefsStore } from '@/state/devicePrefsStore';
 import { useT } from '@/i18n';
@@ -24,6 +26,9 @@ export function Celebration() {
   const [noteOpenFor, setNoteOpenFor] = useState<number | null>(null);
   const noteOpen = celebration !== null && noteOpenFor === celebration.at;
   const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { look, colors } = useTheme();
+  const growth = useGardenGrowth();
+  const garden = look === 'garden';
 
   useEffect(() => {
     if (!celebration) return;
@@ -57,23 +62,39 @@ export function Celebration() {
   return (
     <Animated.View style={[styles.backdrop, { opacity }]} accessibilityLiveRegion="assertive">
       <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} accessibilityRole="button" accessibilityLabel={t('common.done')} />
-      <Animated.View style={[styles.card, { transform: [{ scale }] }]}>
-        <Text style={styles.emoji}>{celebration.kind === 'firstWin' ? '🌱' : (EMOJI[celebration.days] ?? '🎉')}</Text>
-        <Text style={styles.title}>{celebration.kind === 'firstWin' ? t('firstWin.done') : t('milestone.title', { days: celebration.days })}</Text>
-        <Text style={styles.body}>
-          {celebration.kind === 'firstWin' ? t('firstWin.doneBody', { title: celebration.habitTitle }) : t('milestone.body', { title: celebration.habitTitle })}
+      <Animated.View
+        style={[styles.card, garden && { backgroundColor: colors.surface, borderWidth: 2, borderColor: colors.border }, { transform: [{ scale }] }]}
+      >
+        {garden ? (
+          <Sprout stage={celebration.stage ?? growth.stage} mood="joy" size={130} />
+        ) : (
+          <Text style={styles.emoji}>{celebration.kind === 'firstWin' ? '🌱' : (EMOJI[celebration.days] ?? '🎉')}</Text>
+        )}
+        <Text style={[styles.title, garden && { color: colors.text }]}>
+          {celebration.kind === 'growth'
+            ? t('garden.grewTitle')
+            : celebration.kind === 'firstWin'
+              ? t('firstWin.done')
+              : t('milestone.title', { days: celebration.days })}
         </Text>
-        {celebration.kind !== 'firstWin' && celebration.choices > 1 ? (
-          <Text style={styles.path}>{t('path.choices', { count: celebration.choices })}</Text>
+        <Text style={[styles.body, garden && { color: colors.text }]}>
+          {celebration.kind === 'growth'
+            ? t('garden.grewBody', { stage: t(stageKey(celebration.stage ?? growth.stage)) })
+            : celebration.kind === 'firstWin'
+              ? t('firstWin.doneBody', { title: celebration.habitTitle })
+              : t('milestone.body', { title: celebration.habitTitle })}
+        </Text>
+        {celebration.kind === 'milestone' && celebration.choices > 1 ? (
+          <Text style={[styles.path, garden && { color: colors.textMuted }]}>{t('path.choices', { count: celebration.choices })}</Text>
         ) : null}
         {celebration.dayOneNote ? (
           noteOpen ? (
-            <Text style={styles.note}>
+            <Text style={[styles.note, garden && { color: colors.text }]}>
               {formatFriendlyDate(celebration.dayOneNote.date, t.locale)}: “{celebration.dayOneNote.text}”
             </Text>
           ) : (
-            <Pressable accessibilityRole="button" accessibilityLabel={t('milestone.dayOneNote')} onPress={openNote} hitSlop={8} style={styles.noteButton}>
-              <Text style={styles.noteButtonText}>📝 {t('milestone.dayOneNote')} {t.isRTL ? '◂' : '▸'}</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('milestone.dayOneNote')} onPress={openNote} hitSlop={8} style={[styles.noteButton, garden && { backgroundColor: colors.primarySoft }]}>
+              <Text style={[styles.noteButtonText, garden && { color: colors.primary }]}>📝 {t('milestone.dayOneNote')} {t.isRTL ? '◂' : '▸'}</Text>
             </Pressable>
           )
         ) : null}

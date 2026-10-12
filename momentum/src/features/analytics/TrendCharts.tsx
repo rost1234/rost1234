@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, View, type LayoutChangeEvent } from 'react-native';
 import { Text } from '@/components/AppText';
-import Svg, { Circle, Line, Polyline, Rect } from 'react-native-svg';
+import Svg, { Circle, G, Line, Polyline, Rect } from 'react-native-svg';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { formatFriendlyDate } from '@/core/localDate';
 import type { TrendPoint } from '@/domain/analytics';
@@ -17,8 +17,10 @@ const PAD = 6;
  */
 export function TrendCharts({ points }: { points: readonly TrendPoint[] }) {
   const t = useT();
-  const { colors, typography } = useTheme();
+  const { colors, typography, look, scenery } = useTheme();
   const styles = useStyles();
+  // Garden: each day is a stem; a full day ends in a flower, a partial one in a bud.
+  const garden = look === 'garden';
   const [width, setWidth] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);
@@ -78,6 +80,25 @@ export function TrendCharts({ points }: { points: readonly TrendPoint[] }) {
           {points.map((p, i) => {
             if (p.completionPercent === null) return null;
             const h = Math.max(2, (p.completionPercent / 100) * (CHART_HEIGHT - PAD));
+            if (garden) {
+              const dim = selected === null || selected === i ? 1 : 0.45;
+              const head = Math.max(3, Math.min(7, barWidth / 2 + 2));
+              const top = Math.max(head + 1, CHART_HEIGHT - h);
+              if (p.completionPercent === 0) return <Circle key={p.date} cx={xAt(i)} cy={CHART_HEIGHT - 3} r={2.5} fill={colors.textMuted} opacity={dim} />;
+              return (
+                <G key={p.date} opacity={dim}>
+                  <Rect x={xAt(i) - Math.max(1.5, barWidth / 5)} y={top} width={Math.max(3, (barWidth * 2) / 5)} height={CHART_HEIGHT - top} rx={1.5} fill={colors.success} />
+                  {p.completionPercent >= 100 ? (
+                    <>
+                      <Circle cx={xAt(i)} cy={top} r={head} fill={scenery.sun} />
+                      <Circle cx={xAt(i)} cy={top} r={head * 0.45} fill={scenery.coral} />
+                    </>
+                  ) : (
+                    <Circle cx={xAt(i)} cy={top} r={head * 0.6} fill={scenery.coral} />
+                  )}
+                </G>
+              );
+            }
             return (
               <Rect
                 key={p.date}
@@ -92,6 +113,7 @@ export function TrendCharts({ points }: { points: readonly TrendPoint[] }) {
             );
           })}
         </Svg>
+        {garden ? <Text style={[typography.caption, { marginTop: spacing.xs }]}>{t('garden.chartKey')}</Text> : null}
       </Pressable>
     </View>
   );

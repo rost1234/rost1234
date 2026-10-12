@@ -5,6 +5,8 @@ import type { Weekday } from '@/core/localDate';
 
 export type ThemePref = 'system' | 'light' | 'dark';
 export type LanguagePref = 'auto' | 'en' | 'he';
+/** "calm" is the regular look; "garden" has a sprout that grows with every habit done. */
+export type LookPref = 'calm' | 'garden';
 
 const KEY = 'momentum.prefs.v1';
 
@@ -20,14 +22,17 @@ export interface DayOffSettings {
 interface PrefsState extends DayOffSettings {
   theme: ThemePref;
   language: LanguagePref;
+  look: LookPref;
   isHydrated: boolean;
   setDayOff: (changes: Partial<DayOffSettings>) => void;
   hydrate: () => Promise<void>;
   setTheme: (theme: ThemePref) => void;
   setLanguage: (language: LanguagePref) => void;
+  setLook: (look: LookPref) => void;
 }
 
 const isTheme = (v: unknown): v is ThemePref => v === 'system' || v === 'light' || v === 'dark';
+const isLook = (v: unknown): v is LookPref => v === 'calm' || v === 'garden';
 const isLanguage = (v: unknown): v is LanguagePref => v === 'auto' || v === 'en' || v === 'he';
 const isWeekdays = (v: unknown): v is Weekday[] =>
   Array.isArray(v) && v.every((d) => Number.isInteger(d) && (d as number) >= 0 && (d as number) <= 6);
@@ -35,12 +40,13 @@ const isWeekdays = (v: unknown): v is Weekday[] =>
 /** Appearance preferences (per device, not part of the habit data). */
 export const usePrefsStore = create<PrefsState>((set, get) => {
   const persist = () => {
-    const { theme, language, dayOffMode, weekendDays, holidays } = get();
-    runDetached(AsyncStorage.setItem(KEY, JSON.stringify({ theme, language, dayOffMode, weekendDays, holidays })));
+    const { theme, language, look, dayOffMode, weekendDays, holidays } = get();
+    runDetached(AsyncStorage.setItem(KEY, JSON.stringify({ theme, language, look, dayOffMode, weekendDays, holidays })));
   };
   return {
     theme: 'system',
     language: 'auto',
+    look: 'calm',
     dayOffMode: true,
     weekendDays: null,
     holidays: null,
@@ -51,10 +57,11 @@ export const usePrefsStore = create<PrefsState>((set, get) => {
         const raw = await AsyncStorage.getItem(KEY);
         const parsed: unknown = raw ? JSON.parse(raw) : null;
         if (parsed && typeof parsed === 'object') {
-          const { theme, language, dayOffMode, weekendDays, holidays } = parsed as Record<string, unknown>;
+          const { theme, language, look, dayOffMode, weekendDays, holidays } = parsed as Record<string, unknown>;
           set({
             theme: isTheme(theme) ? theme : 'system',
             language: isLanguage(language) ? language : 'auto',
+            look: isLook(look) ? look : 'calm',
             dayOffMode: typeof dayOffMode === 'boolean' ? dayOffMode : true,
             weekendDays: isWeekdays(weekendDays) ? weekendDays : null,
             holidays: typeof holidays === 'boolean' ? holidays : null,
@@ -74,6 +81,11 @@ export const usePrefsStore = create<PrefsState>((set, get) => {
 
     setLanguage: (language) => {
       set({ language });
+      persist();
+    },
+
+    setLook: (look) => {
+      set({ look });
       persist();
     },
 

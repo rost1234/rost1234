@@ -7,11 +7,13 @@ import { runDetached } from '@/core/errors';
 import { DashboardSkeleton } from '@/components/Skeleton';
 import { Toast } from '@/components/Toast';
 import { Banner, Button, SectionTitle } from '@/components/ui';
-import { makeStyles, spacing } from '@/components/theme';
+import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { dailyProgressPercent, progressOf } from '@/domain/habitProgress';
 import { habitsDueOn } from '@/domain/habitSchedule';
 import { orderByTimeOfDay } from '@/domain/rhythm';
 import { orderByStacking } from '@/domain/stacking';
+import { DOCK_CLEARANCE, GardenDock } from '@/features/garden/GardenDock';
+import { GardenHeader } from '@/features/garden/GardenHeader';
 import { InsightCard } from '@/features/insights/InsightCard';
 import { LetterDueCard } from '@/features/letters/LetterDueCard';
 import { shouldShowWeeklySummary } from '@/features/weekly/weeklyPrompt';
@@ -65,8 +67,10 @@ function useDashboardData(today: string, hour: number) {
 export function DashboardScreen() {
   const t = useT();
   const styles = useStyles();
-  // Extra room for the floating focus button.
-  const bottomSpace = useBottomSpace(72);
+  const { look, scenery } = useTheme();
+  const garden = look === 'garden';
+  // Extra room for the floating focus button (or the Garden dock).
+  const bottomSpace = useBottomSpace(garden ? DOCK_CLEARANCE : 72);
   // Re-renders (and reloads) automatically when the local date rolls over.
   const today = useLocalDate();
   const status = useHabitStore((s) => s.status);
@@ -133,24 +137,34 @@ export function DashboardScreen() {
     );
   }
 
+  const headerProps = {
+    today,
+    hour,
+    percent,
+    doneCount,
+    totalCount: dueToday.length,
+    freezes,
+    dayOffLabel: dayOff?.label ?? null,
+    dayOffName: dayOff?.name ?? null,
+  };
+
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    // In the Garden look the hill reaches up under the status bar.
+    <SafeAreaView style={[styles.safe, garden && { backgroundColor: scenery.hill }]} edges={['top']}>
       <ScrollView
+        style={styles.scroll}
         contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}
         refreshControl={<RefreshControl refreshing={false} onRefresh={reload} />}
         keyboardShouldPersistTaps="handled"
       >
-        <HomeTopBar />
-        <DashboardHeader
-          today={today}
-          hour={hour}
-          percent={percent}
-          doneCount={doneCount}
-          totalCount={dueToday.length}
-          freezes={freezes}
-          dayOffLabel={dayOff?.label ?? null}
-          dayOffName={dayOff?.name ?? null}
-        />
+        {garden ? (
+          <GardenHeader {...headerProps} />
+        ) : (
+          <>
+            <HomeTopBar />
+            <DashboardHeader {...headerProps} />
+          </>
+        )}
 
         {showWelcomeBack ? <WelcomeBackCard onClose={welcomeBack.close} /> : null}
         <HardDayBar today={today} />
@@ -225,7 +239,7 @@ export function DashboardScreen() {
           aboveFab
         />
       ) : null}
-      <FocusFab />
+      {garden ? <GardenDock /> : <FocusFab />}
       <Celebration />
     </SafeAreaView>
   );
@@ -233,6 +247,7 @@ export function DashboardScreen() {
 
 const useStyles = makeStyles(({ colors, typography }) => ({
   safe: { flex: 1, backgroundColor: colors.background },
+  scroll: { backgroundColor: colors.background },
   content: { padding: spacing.lg },
   link: { ...typography.label, color: colors.primary },
 }));

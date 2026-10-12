@@ -10,10 +10,13 @@ import { haptics } from '@/core/haptics';
 import { formatShortDate } from '@/core/localDate';
 import { completionRatio, progressOf } from '@/domain/habitProgress';
 import type { Habit } from '@/domain/models';
+import { habitPotStage } from '@/domain/garden';
 import { consistency, showConsistency } from '@/domain/motivation';
 import { isPaused } from '@/domain/pauses';
 import { hasCompletionBefore } from '@/domain/streaks';
 import { quitSavings } from '@/domain/urges';
+import { Sprout } from '@/features/garden/Sprout';
+import { useHabitChoices } from '@/features/garden/useGarden';
 import { quitPlanText, savingsText } from '@/features/urge/quitText';
 import { useUrgeStore } from '@/features/urge/urgeStore';
 import { useHabitStore } from '@/state/habitStore';
@@ -24,10 +27,14 @@ interface HabitCardProps {
   habit: Habit;
 }
 
-function openHabitMenu(habit: Habit, isSkipped: boolean) {
+/** `withFocus`: the Garden card has no play button, so the menu offers Focus instead. */
+function openHabitMenu(habit: Habit, isSkipped: boolean, withFocus = false) {
   const { skipHabit, archiveHabit, undoHabitStep, completedBefore, today, logs } = useHabitStore.getState();
   const choices = (completedBefore[habit.id] ?? 0) + (today && logs[habit.id]?.[today]?.status === 'completed' ? 1 : 0);
   const actions: SheetAction[] = [
+    ...(withFocus && !habit.isQuit
+      ? [{ label: t('habit.focusMenu'), icon: 'play-circle-outline', run: () => router.push({ pathname: '/focus', params: { habitId: habit.id } }) } satisfies SheetAction]
+      : []),
     isSkipped
       ? { label: t('habit.unskipToday'), icon: 'arrow-undo-outline', run: () => skipHabit(habit.id) }
       : { label: t('habit.skipToday'), icon: 'play-skip-forward-outline', run: () => skipHabit(habit.id) },
@@ -63,8 +70,11 @@ function useDonePop(isDone: boolean): Animated.Value {
 
 function HabitCardComponent({ habit }: HabitCardProps) {
   const t = useT();
-  const { colors, typography } = useTheme();
+  const { colors, typography, look, scenery } = useTheme();
   const styles = useStyles();
+  const garden = look === 'garden';
+  // Garden: the habit's own pot grows with every day it was done.
+  const choices = useHabitChoices(habit.id);
   // Each card subscribes only to its own slice, so a tap re-renders one card.
   const log = useHabitStore((s) => (s.today ? s.logs[habit.id]?.[s.today] : undefined));
   const streak = useHabitStore((s) => s.streaks[habit.id] ?? 0);
@@ -118,21 +128,161 @@ function HabitCardComponent({ habit }: HabitCardProps) {
     tapHabit(habit.id);
   };
 
+  const subtitle = isSkipped
+    ? t('habit.skipped')
+    : habit.isQuit
+      ? habit.cue && habit.microStep
+        ? quitPlanText(habit, t)
+        : habit.microStep
+          ? t('habit.instead', { step: habit.microStep })
+          : countLabel
+      : anchorTitle
+        ? `${t('habit.after', { anchor: anchorTitle })}${habit.microStep ? ` · ${habit.microStep}` : ''}`
+        : habit.cue
+          ? `${habit.cue}${habit.microStep ? ` · ${habit.microStep}` : ''}`
+          : habit.microStep
+            ? habit.microStep
+            : countLabel;
+  const a11yLabel = `${habit.title}, ${countLabel}${
+    pausedUntil ? `, ${t('habit.pausedA11y', { date: formatShortDate(pausedUntil) })}` : streak > 0 ? t('habit.streakA11y', { count: streak }) : ''
+  }`;
+  const openMenu = () => {
+    haptics.select();
+    openHabitMenu(habit, isSkipped, garden);
+  };
+
+  if (garden) {
+    // Small counts show as drops (5 of 8), bigger ones as a bar.
+    const drops = habit.isQuantitative && habit.targetCount <= 12;
+    return (
+      <View style={[styles.card, styles.gCard, isDone && styles.gCardDone, isSkipped && styles.cardSkipped]}>
+        <View style={styles.row}>
+          <Pressable
+            onPress={onTap}
+            onLongPress={openMenu}
+            delayLongPress={350}
+            accessibilityRole={habit.isQuantitative ? 'adjustable' : 'checkbox'}
+            accessibilityState={habit.isQuantitative ? undefined : { checked: isDone }}
+            accessibilityLabel={a11yLabel}
+            accessibilityHint={habit.isQuantitative ? t('habit.hintCount') : t('habit.hintBinary')}
+            style={({ pressed }) => [styles.main, pressed && { opacity: 0.8 }]}
+          >
+            <View style={[styles.pot, { backgroundColor: isDone ? colors.surface : habit.isQuit ? scenery.coralSoft : colors.surfaceMuted }]}>
+              <Sprout stage={habitPotStage(choices)} size={50} face={false} />
+            </View>
+            <View style={styles.body}>
+              <Text style={[styles.gTitle, isSkipped && styles.strike]} numberOfLines={1}>
+                {habit.title}
+              </Text>
+              <Text style={typography.caption} numberOfLines={1}>
+                {subtitle}
+              </Text>
+              {drops ? (
+                <View style={styles.drops}>
+                  {Array.from({ length: habit.targetCount }, (_, i) => (
+                    <View
+                      key={i}
+                      style={[styles.drop, { borderColor: scenery.skyText }, i < progress.currentCount && { backgroundColor: scenery.skyText }]}
+                    />
+                  ))}
+                  <Text style={styles.count}>{countLabel}</Text>
+                </View>
+              ) : habit.isQuantitative ? (
+                <View style={styles.progressRow}>
+                  <View style={{ flex: 1 }}>
+                    <ProgressBar value={ratio} color={colors.primary} height={8} />
+                  </View>
+                  <Text style={styles.count}>{countLabel}</Text>
+                </View>
+              ) : null}
+              {pausedUntil && !isDone ? (
+                <View style={styles.gLine}>
+                  <Ionicons name="pause" size={13} color={colors.freeze} />
+                  <Text style={[styles.gLineText, { color: colors.freeze }]} numberOfLines={1}>
+                    {t('habit.pausedUntil', { date: formatShortDate(pausedUntil) })}
+                  </Text>
+                </View>
+              ) : streak > 0 ? (
+                <View style={styles.gLine}>
+                  <Ionicons name="flower" size={15} color={scenery.sun} />
+                  <Text style={[styles.gLineText, { color: scenery.coral }]} numberOfLines={1}>
+                    {habit.isQuit ? t.plural('garden.cleanStreak', streak) : t.plural('garden.streak', streak)}
+                    {consistencyText ? ` · ${t('habit.consistency', { value: consistencyText })}` : ''}
+                  </Text>
+                </View>
+              ) : isComeback && !isDone ? (
+                <View style={styles.gLine}>
+                  <Ionicons name="leaf" size={13} color={colors.success} />
+                  <Text style={[styles.gLineText, { color: colors.success }]}>{t('habit.freshStart')}</Text>
+                </View>
+              ) : null}
+              {savings ? (
+                <Text style={styles.savings} numberOfLines={1}>
+                  {t('quit.saved', { amount: savingsText(savings, t) })}
+                </Text>
+              ) : null}
+            </View>
+          </Pressable>
+          {habit.isQuantitative && progress.currentCount > 0 ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('habit.undoOne', { unit: habit.unit || t('habit.step'), title: habit.title })}
+              hitSlop={8}
+              onPress={() => {
+                haptics.tap();
+                undoHabitStep(habit.id);
+              }}
+              style={styles.iconButton}
+            >
+              <Ionicons name="remove" size={18} color={colors.textMuted} />
+            </Pressable>
+          ) : null}
+          {/* The big circle does what tapping the card does; screen readers use the card itself. */}
+          <Pressable
+            onPress={onTap}
+            onLongPress={openMenu}
+            delayLongPress={350}
+            importantForAccessibility="no-hide-descendants"
+            accessibilityElementsHidden
+            style={({ pressed }) => pressed && { opacity: 0.8 }}
+          >
+            <Animated.View style={[styles.gCheck, isDone && styles.gCheckDone, { transform: [{ scale: pop }] }]}>
+              {isDone ? (
+                <Ionicons name={habit.isQuit ? 'shield-checkmark' : 'checkmark'} size={28} color={colors.onPrimary} />
+              ) : habit.isQuantitative ? (
+                <Text style={styles.plusOne}>+1</Text>
+              ) : null}
+            </Animated.View>
+          </Pressable>
+        </View>
+        {habit.isQuit && !isSkipped ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('urge.openA11y', { title: habit.title })}
+            onPress={() => {
+              haptics.tap();
+              openUrge(habit.id);
+            }}
+            style={({ pressed }) => [styles.gUrge, { borderColor: scenery.coral, backgroundColor: scenery.coralSoft }, pressed && { opacity: 0.8 }]}
+          >
+            <Ionicons name="water-outline" size={20} color={scenery.coral} />
+            <Text style={[styles.gUrgeLabel, { color: scenery.coral }]}>{t('urge.open')}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.card, isDone && styles.cardDone, isSkipped && styles.cardSkipped]}>
       <View style={styles.row}>
       <Pressable
         onPress={onTap}
-        onLongPress={() => {
-          haptics.select();
-          openHabitMenu(habit, isSkipped);
-        }}
+        onLongPress={openMenu}
         delayLongPress={350}
         accessibilityRole={habit.isQuantitative ? 'adjustable' : 'checkbox'}
         accessibilityState={habit.isQuantitative ? undefined : { checked: isDone }}
-        accessibilityLabel={`${habit.title}, ${countLabel}${
-          pausedUntil ? `, ${t('habit.pausedA11y', { date: formatShortDate(pausedUntil) })}` : streak > 0 ? t('habit.streakA11y', { count: streak }) : ''
-        }`}
+        accessibilityLabel={a11yLabel}
         accessibilityHint={habit.isQuantitative ? t('habit.hintCount') : t('habit.hintBinary')}
         style={({ pressed }) => [styles.main, pressed && { opacity: 0.75 }]}
       >
@@ -174,21 +324,7 @@ function HabitCardComponent({ habit }: HabitCardProps) {
             ) : null}
           </View>
           <Text style={typography.caption} numberOfLines={1}>
-            {isSkipped
-              ? t('habit.skipped')
-              : habit.isQuit
-                ? habit.cue && habit.microStep
-                  ? quitPlanText(habit, t)
-                  : habit.microStep
-                    ? t('habit.instead', { step: habit.microStep })
-                    : countLabel
-              : anchorTitle
-                ? `${t('habit.after', { anchor: anchorTitle })}${habit.microStep ? ` · ${habit.microStep}` : ''}`
-                : habit.cue
-                  ? `${habit.cue}${habit.microStep ? ` · ${habit.microStep}` : ''}`
-                  : habit.microStep
-                    ? habit.microStep
-                    : countLabel}
+            {subtitle}
           </Text>
           {savings ? (
             <View style={styles.savingsRow} accessible accessibilityLabel={t('quit.saved', { amount: savingsText(savings, t) })}>
@@ -321,4 +457,45 @@ const useStyles = makeStyles(({ colors, typography, flat }) => ({
     justifyContent: 'center',
   },
   focusButton: { backgroundColor: colors.primarySoft },
+  // Garden look
+  gCard: { paddingVertical: spacing.md, paddingHorizontal: spacing.md, borderRadius: radius.xl },
+  gCardDone: { backgroundColor: colors.doneCard, borderColor: 'transparent' },
+  pot: {
+    width: 54,
+    height: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 31,
+    borderBottomLeftRadius: 31,
+    borderBottomRightRadius: 24,
+  },
+  gTitle: { fontSize: 18, color: colors.text },
+  gLine: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  gLineText: { fontSize: 14, flexShrink: 1 },
+  drops: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 4, marginTop: 4 },
+  drop: { width: 11, height: 11, borderWidth: 2, borderTopLeftRadius: 6, borderTopRightRadius: 1, borderBottomLeftRadius: 6, borderBottomRightRadius: 6, transform: [{ rotate: '-45deg' }] },
+  gCheck: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 3,
+    borderColor: colors.primary,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginStart: spacing.sm,
+  },
+  gCheckDone: { backgroundColor: colors.primary },
+  plusOne: { fontSize: 19, fontWeight: '800', color: colors.primary },
+  gUrge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    minHeight: 48,
+    borderRadius: radius.pill,
+    borderWidth: 2,
+  },
+  gUrgeLabel: { fontSize: 16, fontWeight: '800' },
 }));

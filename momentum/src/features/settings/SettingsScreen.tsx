@@ -74,6 +74,7 @@ export function SettingsScreen() {
   const bottomSpace = useBottomSpace();
   const today = useLocalDate();
   const theme = usePrefsStore((s) => s.theme);
+  const look = usePrefsStore((s) => s.look);
   const language = usePrefsStore((s) => s.language);
   const dailyLimit = useNotificationPrefsStore((s) => s.dailyLimit);
   const quietStart = useNotificationPrefsStore((s) => s.quietStart);
@@ -110,7 +111,7 @@ export function SettingsScreen() {
             icon="color-palette-outline"
             tint={[colors.primarySoft, colors.primary]}
             title={t('set.sec.appearance')}
-            status={`${t(THEME_LABEL[theme])} · ${t(LANGUAGE_LABEL[language])}`}
+            status={`${t(look === 'garden' ? 'app.lookGarden' : 'app.lookCalm')} · ${t(THEME_LABEL[theme])} · ${t(LANGUAGE_LABEL[language])}`}
             href="/settings/appearance"
           />
           <Row

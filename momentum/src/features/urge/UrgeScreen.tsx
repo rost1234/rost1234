@@ -8,6 +8,8 @@ import { ProgressRing } from '@/components/ProgressRing';
 import { Banner, Button, Card, Chip } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { useBottomSpace } from '@/components/useBottomSpace';
+import { Sprout } from '@/features/garden/Sprout';
+import { useGardenGrowth } from '@/features/garden/useGarden';
 import { haptics } from '@/core/haptics';
 import { runDetached, toErrorMessage } from '@/core/errors';
 import { addDays, localDateFromIso } from '@/core/localDate';
@@ -111,7 +113,9 @@ interface Result {
  */
 export function UrgeScreen() {
   const t = useT();
-  const { colors, typography } = useTheme();
+  const { colors, typography, look } = useTheme();
+  // Garden: the sprout waits out the wave with you.
+  const sproutStage = useGardenGrowth().stage;
   const styles = useStyles();
   const bottomSpace = useBottomSpace();
   const today = useLocalDate();
@@ -231,8 +235,9 @@ export function UrgeScreen() {
             <Text style={[typography.caption, styles.center]}>{t('urge.timerTitle', { title: habit.title })}</Text>
             <View style={styles.timer}>
               <ProgressRing value={1 - remainingSeconds / total} size={240} stroke={12} track={colors.primarySoft} from={colors.primary} to={colors.primary}>
+                {look === 'garden' ? <Sprout stage={sproutStage} mood="calm" size={100} /> : null}
                 <Text
-                  style={styles.clock}
+                  style={[styles.clock, look === 'garden' && styles.gardenClock]}
                   maxFontSizeMultiplier={1.2}
                   accessibilityRole="timer"
                   accessibilityLabel={`${formatClock(remainingSeconds)} ${t('timer.remaining')}`}
@@ -326,6 +331,7 @@ const useStyles = makeStyles(({ colors }) => ({
   modeHint: { fontSize: 13 },
   timer: { alignItems: 'center', marginVertical: spacing.md },
   clock: { fontSize: 52, fontWeight: '300', color: colors.text, fontVariant: ['tabular-nums'] },
+  gardenClock: { fontSize: 40 },
   meanwhile: { gap: spacing.xs },
   resultCard: { borderRadius: radius.lg, padding: spacing.lg, marginTop: spacing.xl },
   resultText: { fontSize: 18, fontWeight: '700', color: colors.text, lineHeight: 26 },

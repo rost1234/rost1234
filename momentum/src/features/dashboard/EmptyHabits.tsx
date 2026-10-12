@@ -7,13 +7,14 @@ import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { runDetached } from '@/core/errors';
 import { haptics } from '@/core/haptics';
 import { starterSuggestions } from '@/domain/presets';
+import { Sprout } from '@/features/garden/Sprout';
 import { useHabitStore } from '@/state/habitStore';
 import { useT } from '@/i18n';
 
 /** Instead of "nothing here": three one-tap starters and a way to browse more. */
 export function EmptyHabits({ hasAnyHabits }: { hasAnyHabits: boolean }) {
   const t = useT();
-  const { colors, typography } = useTheme();
+  const { colors, typography, look } = useTheme();
   const styles = useStyles();
   const addHabit = useHabitStore((s) => s.addHabit);
   const [added, setAdded] = useState<string[]>([]);
@@ -21,6 +22,12 @@ export function EmptyHabits({ hasAnyHabits }: { hasAnyHabits: boolean }) {
 
   return (
     <View style={styles.container}>
+      {look === 'garden' && !hasAnyHabits ? (
+        <View style={styles.seed}>
+          <Sprout stage={0} mood="happy" size={110} />
+          <Text style={[typography.caption, styles.seedText]}>{t('garden.emptySeed')}</Text>
+        </View>
+      ) : null}
       <Text style={typography.body}>
         {hasAnyHabits ? t('empty.rest') : t('empty.start')}
       </Text>
@@ -57,6 +64,8 @@ export function EmptyHabits({ hasAnyHabits }: { hasAnyHabits: boolean }) {
 
 const useStyles = makeStyles(({ colors, typography, flat }) => ({
   container: { gap: spacing.sm },
+  seed: { alignItems: 'center', gap: spacing.xs, paddingVertical: spacing.sm },
+  seedText: { textAlign: 'center' },
   suggestion: {
     flexDirection: 'row',
     alignItems: 'center',

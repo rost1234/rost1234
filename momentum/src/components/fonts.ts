@@ -5,9 +5,17 @@ import { Assistant_500Medium } from '@expo-google-fonts/assistant/500Medium';
 import { Assistant_600SemiBold } from '@expo-google-fonts/assistant/600SemiBold';
 import { Assistant_700Bold } from '@expo-google-fonts/assistant/700Bold';
 import { Assistant_800ExtraBold } from '@expo-google-fonts/assistant/800ExtraBold';
+import { SecularOne_400Regular } from '@expo-google-fonts/secular-one/400Regular';
+import { VarelaRound_400Regular } from '@expo-google-fonts/varela-round/400Regular';
+import type { LookPref } from '@/state/prefsStore';
 
-/** Assistant covers Hebrew and Latin. React Native picks a font file per weight, so each weight is its own family. */
+/**
+ * Assistant covers Hebrew and Latin. React Native picks a font file per weight, so each weight is its own family.
+ * The Garden look uses Varela Round for text and Secular One for bold text (both have Hebrew, one weight each).
+ */
 export const FONT_FILES = {
+  SecularOne_400Regular,
+  VarelaRound_400Regular,
   Assistant_200ExtraLight,
   Assistant_300Light,
   Assistant_400Regular,
@@ -20,7 +28,11 @@ export const FONT_FILES = {
 type FontFamily = keyof typeof FONT_FILES;
 
 /** The font family for a CSS-style `fontWeight` value (anything unknown is regular). */
-export function fontFamilyFor(weight: string | number | undefined): FontFamily {
+export function fontFamilyFor(weight: string | number | undefined, look: LookPref = 'calm'): FontFamily {
+  if (look === 'garden') {
+    const w = String(weight ?? '400');
+    return w === '700' || w === '800' || w === '900' || w === 'bold' ? 'SecularOne_400Regular' : 'VarelaRound_400Regular';
+  }
   switch (String(weight ?? '400')) {
     case '100':
     case '200':

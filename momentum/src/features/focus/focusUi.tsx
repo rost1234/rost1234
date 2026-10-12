@@ -17,7 +17,7 @@ export function FocusChip({ label, selected, onPress }: { label: string; selecte
         haptics.select();
         onPress();
       }}
-      style={[styles.chip, selected && styles.chipSelected]}
+      style={[styles.chip, selected && [styles.chipSelected, { backgroundColor: focusColors.surfaceActive, borderColor: focusColors.ringStart }]]}
     >
       <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]} numberOfLines={1}>
         {label}
@@ -42,7 +42,8 @@ export function FocusButton({
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
 }) {
-  const color = variant === 'primary' ? '#0B1517' : variant === 'ghost' ? focusColors.textMuted : focusColors.text;
+  // Colors are read while rendering: they follow the look (calm or garden).
+  const color = variant === 'primary' ? focusColors.onButton : variant === 'ghost' ? focusColors.textMuted : focusColors.text;
   return (
     <Pressable
       accessibilityRole="button"
@@ -51,7 +52,7 @@ export function FocusButton({
         haptics.tap();
         onPress();
       }}
-      style={({ pressed }) => [styles.button, styles[variant], pressed && { opacity: 0.8 }, style]}
+      style={({ pressed }) => [styles.button, styles[variant], variant === 'primary' && { backgroundColor: focusColors.button }, pressed && { opacity: 0.8 }, style]}
     >
       {icon ? <Ionicons name={icon} size={18} color={color} /> : null}
       <Text style={[styles.buttonLabel, { color }]}>{label}</Text>

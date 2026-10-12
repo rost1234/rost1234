@@ -23,7 +23,7 @@ const TIPS = [
 /** Three one-time tips on first use. Remembered per device. */
 export function CoachMarks() {
   const t = useT();
-  const { colors, typography } = useTheme();
+  const { colors, typography, look } = useTheme();
   const styles = useStyles();
   const [step, setStep] = useState<number | null>(null);
 
@@ -53,7 +53,7 @@ export function CoachMarks() {
   return (
     <View style={styles.card} accessibilityRole="alert">
       <Ionicons name={tip.icon} size={22} color={colors.primary} />
-      <Text style={[typography.body, { flex: 1 }]}>{t(tip.text)}</Text>
+      <Text style={[typography.body, { flex: 1 }]}>{t(tip.text === 'coach.home' && look === 'garden' ? 'coach.homeGarden' : tip.text)}</Text>
       <View style={styles.actions}>
         <Text style={typography.caption}>
           {step + 1}/{TIPS.length}

@@ -29,6 +29,7 @@ export default function MainLayout() {
       <Stack.Screen name="streaks" options={sheet} />
       <Stack.Screen name="letters" options={sheet} />
       <Stack.Screen name="print" options={sheet} />
+      <Stack.Screen name="garden" options={sheet} />
     </Stack>
   );
 }
