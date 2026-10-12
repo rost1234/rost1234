@@ -75,6 +75,8 @@ function describeChange(before: LogProgress, after: LogProgress, unit: string, n
   if (binary && after.status === 'in_progress' && after.currentCount > 0) return t('undo.partial');
   if (after.currentCount === before.currentCount + 1) return t('undo.plusOne', { unit }).trim();
   if (after.currentCount > before.currentCount) return t('undo.amount', { count: after.currentCount, unit }).trim();
+  // The amount set lower (but not to zero) with the stepper: say where it is now.
+  if (after.currentCount < before.currentCount && after.currentCount > 0 && !binary) return t('undo.amount', { count: after.currentCount, unit }).trim();
   if (after.currentCount < before.currentCount || before.status === 'completed') return t('undo.undone');
   return t('undo.updated');
 }

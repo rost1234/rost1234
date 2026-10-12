@@ -204,12 +204,22 @@ function HabitCardComponent({ habit, passed = false }: HabitCardProps) {
     tapHabit(habit.id);
   };
 
-  const subtitle = isSkipped
+  // Why a habit is set aside today (a quit habit after a slip just carries on; no "mark it" nudge).
+  const asideReason = isSkipped
     ? t('habit.skipped')
     : closed && !isDone
-      ? t('habit.closedToday')
+      ? habit.isQuit
+        ? t('habit.quitClosed')
+        : t('habit.closedToday')
       : passed && !isDone
-        ? t('habit.timePassed')
+        ? habit.timeOfDay === 'morning'
+          ? t('habit.timePassedMorning')
+          : habit.timeOfDay === 'afternoon'
+            ? t('habit.timePassedAfternoon')
+            : t('habit.timePassed')
+        : null;
+  const subtitle = asideReason
+    ? asideReason
       : partial
         ? t('habit.partial')
     : habit.isQuit
@@ -227,7 +237,7 @@ function HabitCardComponent({ habit, passed = false }: HabitCardProps) {
             : countLabel;
   const a11yLabel = `${habit.title}, ${countLabel}${
     pausedUntil ? `, ${t('habit.pausedA11y', { date: formatShortDate(pausedUntil) })}` : streak > 0 ? t('habit.streakA11y', { count: streak }) : ''
-  }`;
+  }${asideReason ? `, ${asideReason}` : ''}`;
   const openMenu = () => {
     haptics.select();
     openHabitMenu(habit);
