@@ -5,7 +5,9 @@ import {
   cardsOf,
   courseProgress,
   IMPORTED_COURSE_ID,
+  importedCourseId,
   importedWithoutLesson,
+  isImportedCourse,
   importLessons,
   lessonFor,
   saveImportedLesson,
@@ -549,7 +551,7 @@ describe('learning on paper', () => {
 });
 
 describe('imported lessons', () => {
-  const texts = { title: 'Imported', description: 'd', cardPrompt: (c: string) => `Explain: ${c}` };
+  const texts = { name: '', defaultTitle: 'Imported', description: 'd', cardPrompt: (c: string) => `Explain: ${c}` };
   const lesson = (topic: string, concept: string, keyPoints?: string[]) => ({ topic, concept, reference: `ref ${concept}`, ...(keyPoints ? { keyPoints } : {}) });
   const stations = (db: LocalDB) => db.courses[IMPORTED_COURSE_ID]!.levels[0]!.stations;
 
@@ -557,14 +559,14 @@ describe('imported lessons', () => {
     let db = emptyDB();
     let r;
     [db, r] = importLessons(db, [lesson('BOF', 'ROP', ['NX', 'ret']), lesson('Web', 'XSS'), lesson('BOF', 'rop ')], texts, NOW);
-    expect(r).toEqual({ added: 2, skipped: 1 });
+    expect(r).toEqual({ added: 2, skipped: 1, courseId: IMPORTED_COURSE_ID });
     [db, r] = importLessons(db, [lesson('BOF', 'Canary'), lesson('Web', 'XSS'), lesson('Crypto', 'AES')], texts, NOW);
-    expect(r).toEqual({ added: 2, skipped: 1 });
+    expect(r).toEqual({ added: 2, skipped: 1, courseId: IMPORTED_COURSE_ID });
     expect(stations(db).map((s) => `${s.unit}/${s.title}`)).toEqual(['BOF/ROP', 'BOF/Canary', 'Web/XSS', 'Crypto/AES']);
     expect(new Set(stations(db).map((s) => s.key)).size).toBe(4);
     expect(stations(db)[0]).toMatchObject({ reference: 'ref ROP', keyPoints: ['NX', 'ret'], cards: [{ question: 'Explain: ROP', answer: 'ref ROP\n• NX\n• ret' }] });
     const [same, none] = importLessons(db, [lesson('BOF', 'ROP')], texts, NOW);
-    expect(none).toEqual({ added: 0, skipped: 1 });
+    expect(none).toEqual({ added: 0, skipped: 1, courseId: IMPORTED_COURSE_ID });
     expect(same).toBe(db);
   });
 
@@ -596,14 +598,56 @@ describe('imported lessons', () => {
     const course = db.courses[IMPORTED_COURSE_ID]!;
     const [rop, canary] = stations(db);
     expect(lessonFor(db, course, rop!)).toMatchObject({ explanation: 'ref ROP', parts, cards: [{ question: 'Explain: ROP' }, { question: 'q?' }] });
-    expect(importedWithoutLesson(db).map((s) => s.title)).toEqual(['Canary']);
+    expect(importedWithoutLesson(db).map((t) => t.station.title)).toEqual(['Canary']);
 
     let id: string;
     [db, id] = startStation(db, course, canary!.key, newId, NOW);
     const written = { explanation: 'x', parts, cards: [{ question: 'AI card?', answer: 'yes' }] };
-    db = saveImportedLesson(db, canary!.key, written, newId, NOW);
+    db = saveImportedLesson(db, IMPORTED_COURSE_ID, canary!.key, written, newId, NOW);
     expect(importedWithoutLesson(db)).toEqual([]);
     expect(lessonFor(db, course, canary!)).toMatchObject({ explanation: 'ref Canary', parts, cards: [{ question: 'Explain: Canary' }, { question: 'AI card?' }] });
     expect(cardsOf(db, id).map((c) => c.question).sort()).toEqual(['AI card?', 'Explain: Canary']);
+  });
+
+  it('a named import makes its own course; the same name adds to it; names never mix', () => {
+    const sec = { ...texts, name: ' Security ' };
+    let [db, r] = importLessons(emptyDB(), [lesson('BOF', 'ROP')], sec, NOW);
+    const id = r.courseId;
+    expect(id).toBe(importedCourseId('security'));
+    expect(id).not.toBe(IMPORTED_COURSE_ID);
+    expect(db.courses[id]).toMatchObject({ title: 'Security', builtIn: false });
+    [db, r] = importLessons(db, [lesson('BOF', 'ROP'), lesson('Web', 'XSS')], { ...texts, name: 'security' }, NOW);
+    expect(r).toEqual({ added: 1, skipped: 1, courseId: id });
+    [db, r] = importLessons(db, [lesson('BOF', 'ROP')], { ...texts, name: 'Math' }, NOW);
+    expect(r.added).toBe(1);
+    expect(Object.values(db.courses).map((c) => c.title).sort()).toEqual(['Math', 'Security']);
+    [db] = importLessons(db, [lesson('x', 'Default')], texts, NOW);
+    expect(db.courses[IMPORTED_COURSE_ID]!.title).toBe('Imported');
+    expect(importedWithoutLesson(db, id).map((t) => t.station.title).sort()).toEqual(['ROP', 'XSS']);
+    expect(importedWithoutLesson(db)).toHaveLength(4);
+    expect([id, IMPORTED_COURSE_ID, 'physics', 'ai-123'].map(isImportedCourse)).toEqual([true, true, false, false]);
+  });
+
+  it('without automatic cards a lesson has only the cards from the file, and an AI upgrade keeps at most three', () => {
+    const lean = { ...texts, autoCards: false };
+    let [db] = importLessons(emptyDB(), [lesson('BOF', 'ROP'), { ...lesson('BOF', 'Canary'), cards: [{ question: 'mine?', answer: 'a' }] }], lean, NOW);
+    const course = db.courses[IMPORTED_COURSE_ID]!;
+    const [rop, canary] = stations(db);
+    expect(rop).toMatchObject({ lean: true, cards: [] });
+    expect(lessonFor(db, course, rop!)).toMatchObject({ explanation: 'ref ROP', cards: [] });
+    expect(lessonFor(db, course, canary!)!.cards).toEqual([{ question: 'mine?', answer: 'a' }]);
+
+    let id: string;
+    [db, id] = startStation(db, course, rop!.key, newId, NOW);
+    expect(cardsOf(db, id)).toHaveLength(0);
+    const parts = { hook: 'h', sections: [{ heading: 'a', body: 'b' }], check: [] };
+    const cards = [1, 2, 3, 4].map((n) => ({ question: `AI ${n}?`, answer: 'x' }));
+    db = saveImportedLesson(db, IMPORTED_COURSE_ID, rop!.key, { explanation: 'x', parts, cards }, newId, NOW);
+    expect(cardsOf(db, id).map((c) => c.question).sort()).toEqual(['AI 1?', 'AI 2?', 'AI 3?']);
+
+    // A regular import (with automatic cards) keeps all of the AI's cards.
+    const [full] = importLessons(emptyDB(), [lesson('BOF', 'ROP')], texts, NOW);
+    const fullSaved = saveImportedLesson(full, IMPORTED_COURSE_ID, stations(full)[0]!.key, { explanation: 'x', parts, cards }, newId, NOW);
+    expect(fullSaved.lessons[`${IMPORTED_COURSE_ID}/${stations(full)[0]!.key}`]!.cards).toHaveLength(4);
   });
 });

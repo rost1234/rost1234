@@ -16,12 +16,12 @@ import { makeStyles, radius, spacing, useTheme } from '@/theme';
  * the AI can turn each into a full lesson (sections, example, misconception,
  * check questions, cards) that teaches exactly that reference.
  */
-export function UpgradeImported() {
+export function UpgradeImported({ courseId }: { courseId: string }) {
   const t = useT();
   const styles = useStyles();
   const { typography } = useTheme();
   const aiReady = useAiConfigured();
-  const missing = useDBStore((s) => importedWithoutLesson(s.db).length);
+  const missing = useDBStore((s) => importedWithoutLesson(s.db, courseId).length);
   const upgrade = useUpgradeAllImported();
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   if (!missing && !upgrade.isPending) return null;
@@ -40,7 +40,7 @@ export function UpgradeImported() {
           label={t('self.upgradeAll')}
           icon="sparkles-outline"
           disabled={!aiReady}
-          onPress={() => upgrade.mutate({ onProgress: (done, total) => setProgress({ done, total }) }, { onSuccess: () => haptics.success() })}
+          onPress={() => upgrade.mutate({ courseId, onProgress: (done, total) => setProgress({ done, total }) }, { onSuccess: () => haptics.success() })}
         />
       )}
       <InlineError message={!aiReady ? t('error.aiNotConfigured') : upgrade.error ? `${errorMessage(upgrade.error, t)} ${t('self.upgradeResume')}` : null} />

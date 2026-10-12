@@ -2,7 +2,7 @@
   "expo": {
     "name": "FeynmanMind",
     "slug": "feynmanmind",
-    "version": "2.8.0",
+    "version": "2.9.0",
     "scheme": "feynmanmind",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,7 +16,7 @@
     },
     "android": {
       "package": "com.feynmanmind.app",
-      "versionCode": 21,
+      "versionCode": 22,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#4F46E5"

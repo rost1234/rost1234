@@ -420,6 +420,27 @@ const coursePlan = {
       await page.waitForTimeout(2000);
       if ((await page.getByText('הם רק הסבר ייחוס').count()) !== 0) failures.push('upgrade-all card still shown after upgrading');
       await shot('15e-upgraded-map');
+      // A named import: its own course, without automatic cards; the existing course is offered to add to.
+      await page.goto(`${APP}/import`);
+      await page.waitForTimeout(1000);
+      await expectText('שיעורים מיובאים', 'existing imported course offered as a chip');
+      await page.getByTestId('import-name').fill('אבטחת מידע');
+      await expectText('ייווצר קורס חדש בשם הזה', 'new course hint');
+      await page.getByRole('switch', { name: 'כרטיסיות אוטומטיות' }).click();
+      await expectText('בלי כרטיסיות אוטומטיות', 'automatic cards off');
+      await page.getByTestId('import-json').fill(JSON.stringify([{ topic: 'Web', concept: 'CSRF', reference: 'בקשה מזויפת בשם משתמש מחובר.' }]));
+      await page.getByRole('button', { name: 'לייבא את הטקסט' }).click();
+      await page.waitForTimeout(600);
+      await expectText('נוסף שיעור אחד', 'named import result');
+      await shot('15f-named-import');
+      const saved = await page.evaluate(() => Object.values(JSON.parse(localStorage.getItem('feynmanmind.db')).state.db.courses).map((c) => ({ id: c.id, title: c.title, lean: c.levels[0].stations.some((x) => x.lean), cards: c.levels[0].stations.reduce((n, x) => n + (x.cards ?? []).length, 0) })));
+      const named = saved.find((c) => c.title === 'אבטחת מידע');
+      if (!named || !named.id.startsWith('imp-') || !named.lean || named.cards !== 0) failures.push(`named import wrong: ${JSON.stringify(saved)}`);
+      if (!saved.some((c) => c.id === 'imported')) failures.push('default imported course lost');
+      await page.getByRole('button', { name: 'לפתוח את הקורס' }).click();
+      await page.waitForTimeout(1000);
+      await expectText('אבטחת מידע', 'named course on the map');
+      await shot('15g-named-course');
     }
     await ctx.close();
   }

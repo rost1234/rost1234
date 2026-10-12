@@ -588,13 +588,13 @@ export const lessonKey = (courseId: string, stationKey: string) => `${courseId}/
 export function lessonFor(db: LocalDB, course: Course, station: CourseConcept): Lesson | null {
   if (!station.reference && station.parts && station.cards?.length) return { explanation: lessonPlainText(station.parts), cards: station.cards, parts: station.parts };
   if (station.explanation && station.cards?.length) return { explanation: station.explanation, cards: station.cards };
-  if (station.reference && station.cards?.length) {
+  if (station.reference) {
     // Imported: the reference is the explanation; a full lesson comes from the file or an AI upgrade.
     const upgraded = db.lessons[lessonKey(course.id, station.key)];
     const parts = station.parts ?? upgraded?.parts;
     return {
       explanation: [station.reference, ...(station.keyPoints ?? []).map((p) => `• ${p}`)].join('\n\n'),
-      cards: [...station.cards, ...(upgraded?.cards ?? [])],
+      cards: [...(station.cards ?? []), ...(upgraded?.cards ?? [])],
       ...(parts ? { parts } : {}),
     };
   }
@@ -713,39 +713,58 @@ export function deleteCustomCourse(db: LocalDB, id: string): LocalDB {
 // Imported lessons
 // ---------------------------------------------------------------------------
 
-/** All pasted-in lessons live in one course on the device, one unit per topic. */
+/** The course imports go to when no name is given (kept from before imports could be named). */
 export const IMPORTED_COURSE_ID = 'imported';
+
+/** Imported courses: the default one, and one per name (`imp-<hash of the name>`). */
+export const isImportedCourse = (courseId: string) => courseId === IMPORTED_COURSE_ID || courseId.startsWith('imp-');
+
+const hashOf = (text: string) => {
+  let h = 5381;
+  for (const ch of text) h = ((h * 33) ^ ch.codePointAt(0)!) >>> 0;
+  return h.toString(36);
+};
+
+/** The course id for an import name: the same name always gives the same course, so a later import adds to it. */
+export const importedCourseId = (name: string) => (name.trim() ? `imp-${hashOf(conceptKey(name))}` : IMPORTED_COURSE_ID);
 
 /** A station key that depends only on the concept, so re-importing finds the same saved progress. */
 function importedKey(concept: string, taken: Set<string>): string {
-  let h = 5381;
-  for (const ch of conceptKey(concept)) h = ((h * 33) ^ ch.codePointAt(0)!) >>> 0;
-  const base = `imp-${h.toString(36)}`;
+  const base = `imp-${hashOf(conceptKey(concept))}`;
   let key = base;
   for (let n = 2; taken.has(key); n++) key = `${base}-${n}`;
   return key;
 }
 
 export interface ImportTexts {
-  /** Course title and description, used when the course is created. */
-  title: string;
+  /** The course's name as the learner typed it ('' = the default course, named `defaultTitle`). */
+  name: string;
+  defaultTitle: string;
   description: string;
   /** The flashcard's question, e.g. "Explain in your own words: {concept}". */
   cardPrompt: (concept: string) => string;
+  /** Give each lesson an automatic "explain it" card (default). Off: only cards from the file or the AI. */
+  autoCards?: boolean;
 }
 
+/** After the AI writes a full lesson for a lesson imported without automatic cards, how many of its cards are kept. */
+export const LEAN_UPGRADE_CARDS = 3;
+
 /**
- * Adds pasted-in lessons to the imported course (created on first import).
- * Existing lessons and progress are kept; a concept that is already there, or
- * appears twice in the paste, is skipped. New stations join the unit of their
- * topic (or start a new one at the end), so topics stay together on the map.
- * Each station gets one flashcard: explain the concept, answer = the reference.
+ * Adds pasted-in lessons to an imported course: the one named by `texts.name`
+ * (created on first use), or the default one. Existing lessons and progress are
+ * kept; a concept that is already there, or appears twice in the paste, is
+ * skipped. New stations join the unit of their topic (or start a new one at
+ * the end), so topics stay together on the map. Unless `autoCards` is off, each
+ * station gets one flashcard: explain the concept, answer = the reference.
  */
-export function importLessons(db: LocalDB, items: ImportedLesson[], texts: ImportTexts, now: Date): [LocalDB, { added: number; skipped: number }] {
-  const existing = db.courses[IMPORTED_COURSE_ID];
+export function importLessons(db: LocalDB, items: ImportedLesson[], texts: ImportTexts, now: Date): [LocalDB, { added: number; skipped: number; courseId: string }] {
+  const courseId = importedCourseId(texts.name);
+  const autoCards = texts.autoCards !== false;
+  const existing = db.courses[courseId];
   const course: Course = existing ?? {
-    id: IMPORTED_COURSE_ID,
-    title: texts.title,
+    id: courseId,
+    title: texts.name.trim() || texts.defaultTitle,
     description: texts.description,
     icon: 'download-outline',
     builtIn: false,
@@ -763,6 +782,7 @@ export function importLessons(db: LocalDB, items: ImportedLesson[], texts: Impor
     const key = importedKey(item.concept, keys);
     keys.add(key);
     const points = item.keyPoints ?? [];
+    const cards = [...(autoCards ? [{ question: texts.cardPrompt(item.concept), answer: [item.reference, ...points.map((p) => `• ${p}`)].join('\n') }] : []), ...(item.cards ?? [])];
     const station: CourseConcept = {
       key,
       title: item.concept,
@@ -771,36 +791,44 @@ export function importLessons(db: LocalDB, items: ImportedLesson[], texts: Impor
       reference: item.reference,
       ...(points.length ? { keyPoints: points } : {}),
       ...(item.parts ? { parts: item.parts } : {}),
-      cards: [{ question: texts.cardPrompt(item.concept), answer: [item.reference, ...points.map((p) => `• ${p}`)].join('\n') }, ...(item.cards ?? [])],
+      ...(autoCards ? {} : { lean: true }),
+      cards,
     };
     const lastOfTopic = stations.map((s) => s.unit).lastIndexOf(item.topic);
     if (lastOfTopic < 0) stations.push(station);
     else stations.splice(lastOfTopic + 1, 0, station);
     added++;
   }
-  if (!added) return [db, { added, skipped: items.length }];
+  if (!added) return [db, { added, skipped: items.length, courseId }];
   const levels = course.levels.length ? course.levels.map((l, i) => (i === 0 ? { ...l, stations } : l)) : [{ key: 'foundations' as const, stations, quiz: [] }];
-  return [saveCustomCourse(db, { ...course, levels }), { added, skipped: items.length - added }];
+  return [saveCustomCourse(db, { ...course, levels }), { added, skipped: items.length - added, courseId }];
 }
 
-/** Imported stations that have no full lesson yet (neither from the file nor from an AI upgrade). */
-export function importedWithoutLesson(db: LocalDB): CourseConcept[] {
-  const course = db.courses[IMPORTED_COURSE_ID];
-  if (!course) return [];
-  return stationsOf(course)
-    .map((r) => r.station)
-    .filter((s) => s.reference && !s.parts && !db.lessons[lessonKey(course.id, s.key)]?.parts);
+/** Imported stations that have no full lesson yet (neither from the file nor from an AI upgrade), in one imported course or all of them. */
+export function importedWithoutLesson(db: LocalDB, courseId?: string): { courseId: string; station: CourseConcept }[] {
+  return Object.values(db.courses)
+    .filter((c) => isImportedCourse(c.id) && (!courseId || c.id === courseId))
+    .flatMap((course) =>
+      stationsOf(course)
+        .map((r) => r.station)
+        .filter((s) => s.reference && !s.parts && !db.lessons[lessonKey(course.id, s.key)]?.parts)
+        .map((station) => ({ courseId: course.id, station })),
+    );
 }
 
 /**
- * Saves the full lesson the AI wrote for an imported station. If the station
- * was already started, its new flashcards join the concept's reviews.
+ * Saves the full lesson the AI wrote for an imported station (a lesson imported
+ * without automatic cards keeps only the first few of the AI's cards). If the
+ * station was already started, its new flashcards join the concept's reviews.
  */
-export function saveImportedLesson(db: LocalDB, key: string, lesson: Lesson, newId: NewId, now: Date): LocalDB {
-  let next = saveLesson(db, IMPORTED_COURSE_ID, key, lesson);
-  const subject = courseSubject(next, IMPORTED_COURSE_ID);
+export function saveImportedLesson(db: LocalDB, courseId: string, key: string, lesson: Lesson, newId: NewId, now: Date): LocalDB {
+  const course = db.courses[courseId];
+  const station = course && course.levels.flatMap((l) => l.stations).find((s) => s.key === key);
+  const kept = station?.lean ? { ...lesson, cards: lesson.cards.slice(0, LEAN_UPGRADE_CARDS) } : lesson;
+  let next = saveLesson(db, courseId, key, kept);
+  const subject = courseSubject(next, courseId);
   const concept = subject && Object.values(next.concepts).find((c) => c.subject_id === subject.id && c.course_key === key);
-  if (concept) [next] = addCards(next, concept.id, lesson.cards, newId, now);
+  if (concept) [next] = addCards(next, concept.id, kept.cards, newId, now);
   return next;
 }
 

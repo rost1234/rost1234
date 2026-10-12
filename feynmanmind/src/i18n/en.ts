@@ -669,6 +669,15 @@ export const en = {
   'settings.look.notebookBody': "A lab notebook in light mode, a chalkboard in dark mode: paper, chalk and hand-drawn details.",
   'settings.look.classic': "Classic",
   'settings.look.classicBody': "The original clean look: white and indigo, rounded cards and raised map buttons.",
+  'import.name': "Course name",
+  'import.namePlaceholder': "e.g. Information security",
+  'import.nameDefault': "No name: goes to the default course \"Imported lessons\".",
+  'import.nameNew': "A new course with this name.",
+  'import.nameAdds': "A course with this name exists; the lessons are added to it.",
+  'import.existing': "Add to an existing course",
+  'import.autoCards': "Automatic flashcards",
+  'import.autoCardsOn': "Each lesson gets a card: \"explain in your own words\", answer = the reference.",
+  'import.autoCardsOff': "No automatic cards. Only cards from the file, and up to 3 per lesson when the AI writes a full lesson.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

@@ -11,7 +11,7 @@ import { confirmAsync } from '@/lib/dialogs';
 import { errorMessage } from '@/lib/errors';
 import { useReduceMotion } from '@/lib/motion';
 import { UpgradeImported } from '@/features/learn/UpgradeImported';
-import { IMPORTED_COURSE_ID, type StationProgress } from '@/local/logic';
+import { isImportedCourse, type StationProgress } from '@/local/logic';
 import { SketchBorder, SketchCircle, useSeed } from '@/components/sketch';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
@@ -198,7 +198,7 @@ export default function CourseMapScreen() {
           )
         ) : null}
 
-        {course.id === IMPORTED_COURSE_ID ? <UpgradeImported /> : null}
+        {isImportedCourse(course.id) ? <UpgradeImported courseId={course.id} /> : null}
 
         {progress.nextKey ? (
           <Button

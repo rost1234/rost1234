@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { generateLesson } from '@/api/functions';
 import { parseLessonImport } from '@/content/import';
 import { findStation, stationsOf } from '@/content/types';
-import { addSelfCheck, IMPORTED_COURSE_ID, importedWithoutLesson, importLessons, saveImportedLesson, type ImportTexts } from '@/local/logic';
+import { addSelfCheck, importedWithoutLesson, importLessons, isImportedCourse, saveImportedLesson, type ImportTexts } from '@/local/logic';
 import { commit, getDB, newId, useDBStore } from '@/local/store';
 import { NotFoundError } from '@/local/types';
 import { read } from './local';
@@ -13,8 +13,7 @@ export function useImportLessons() {
     mutationFn: ({ text, texts }: { text: string; texts: ImportTexts }) =>
       read(() => {
         const items = parseLessonImport(text);
-        const result = commit((db) => importLessons(db, items, texts, new Date()));
-        return { ...result, courseId: IMPORTED_COURSE_ID };
+        return commit((db) => importLessons(db, items, texts, new Date()));
       }),
   });
 }
@@ -28,9 +27,9 @@ export function useSelfCheck() {
 }
 
 /** Asks the AI for a full lesson (sections, example, misconception, check questions, cards) grounded in the station's reference. */
-async function upgradeOne(key: string): Promise<void> {
-  const course = getDB().courses[IMPORTED_COURSE_ID];
-  const ref = course && findStation(course, key);
+async function upgradeOne(courseId: string, key: string): Promise<void> {
+  const course = getDB().courses[courseId];
+  const ref = course && isImportedCourse(courseId) ? findStation(course, key) : undefined;
   if (!course || !ref?.station.reference) throw new NotFoundError('Station');
   const { station } = ref;
   const { lesson } = await generateLesson({
@@ -48,21 +47,21 @@ async function upgradeOne(key: string): Promise<void> {
     reference: station.reference,
     key_points: station.keyPoints,
   });
-  useDBStore.getState().update((db) => saveImportedLesson(db, key, lesson, newId, new Date()));
+  useDBStore.getState().update((db) => saveImportedLesson(db, courseId, key, lesson, newId, new Date()));
 }
 
 export function useUpgradeImported() {
-  return useMutation({ mutationFn: ({ key }: { key: string }) => upgradeOne(key) });
+  return useMutation({ mutationFn: ({ courseId, key }: { courseId: string; key: string }) => upgradeOne(courseId, key) });
 }
 
-/** Upgrades every imported lesson that has no full lesson yet, one at a time; stops at the first error. */
+/** Upgrades every lesson of an imported course that has no full lesson yet, one at a time; stops at the first error. */
 export function useUpgradeAllImported() {
   return useMutation({
-    mutationFn: async ({ onProgress }: { onProgress: (done: number, total: number) => void }) => {
-      const todo = importedWithoutLesson(getDB()).map((s) => s.key);
+    mutationFn: async ({ courseId, onProgress }: { courseId: string; onProgress: (done: number, total: number) => void }) => {
+      const todo = importedWithoutLesson(getDB(), courseId).map((t) => t.station.key);
       for (let i = 0; i < todo.length; i++) {
         onProgress(i, todo.length);
-        await upgradeOne(todo[i]!);
+        await upgradeOne(courseId, todo[i]!);
       }
       onProgress(todo.length, todo.length);
       return todo.length;

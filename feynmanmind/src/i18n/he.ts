@@ -655,4 +655,13 @@ export const he: Record<TranslationKey, string> = {
   'settings.look.notebookBody': "יומן מעבדה במצב בהיר ולוח גיר במצב כהה: נייר, גיר ופרטים מצוירים ביד.",
   'settings.look.classic': "קלאסי",
   'settings.look.classicBody': "המראה הבסיסי המקורי: לבן וסגול, כרטיסים מעוגלים וכפתורי מפה בולטים.",
+  'import.name': "שם הקורס",
+  'import.namePlaceholder': "למשל: אבטחת מידע",
+  'import.nameDefault': "בלי שם: ייכנס לקורס הרגיל \"שיעורים מיובאים\".",
+  'import.nameNew': "ייווצר קורס חדש בשם הזה.",
+  'import.nameAdds': "כבר יש קורס בשם הזה; השיעורים יתווספו אליו.",
+  'import.existing': "להוסיף לקורס קיים",
+  'import.autoCards': "כרטיסיות אוטומטיות",
+  'import.autoCardsOn': "כל שיעור מקבל כרטיסייה: \"הסבירו במילים שלכם\", והתשובה היא הסבר הייחוס.",
+  'import.autoCardsOff': "בלי כרטיסיות אוטומטיות. רק כרטיסיות מהקובץ, ועד 3 לשיעור כשה-AI כותב שיעור מלא.",
 };

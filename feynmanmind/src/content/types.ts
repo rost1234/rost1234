@@ -50,6 +50,8 @@ export interface CourseConcept {
    */
   reference?: string;
   keyPoints?: string[];
+  /** Imported without the automatic "explain it" card: the AI upgrade adds at most a few cards. */
+  lean?: boolean;
 }
 
 export interface QuizQuestion {

@@ -135,9 +135,9 @@ export function SelfCheckStation({ courseId, courseTitle, station, index, total,
             <>
               {parts ? (
                 <>
-                  <LessonView title={station.title} explanation={lesson!.explanation} parts={parts} keyPoints={lesson!.cards.slice(1)} />
+                  <LessonView title={station.title} explanation={lesson!.explanation} parts={parts} keyPoints={lesson!.cards.slice(station.lean ? 0 : 1)} />
                   {parts.check.length ? <CheckQuiz questions={parts.check} /> : null}
-                  {conceptId ? (
+                  {conceptId && lesson!.cards.length ? (
                     <Button
                       label={t('self.practice', { n: lesson!.cards.length })}
                       icon="albums-outline"
@@ -157,7 +157,7 @@ export function SelfCheckStation({ courseId, courseTitle, station, index, total,
                       label={t('self.upgrade')}
                       icon="sparkles-outline"
                       disabled={!aiReady}
-                      onPress={() => upgrade.mutate({ key: station.key }, { onSuccess: () => haptics.success() })}
+                      onPress={() => upgrade.mutate({ courseId, key: station.key }, { onSuccess: () => haptics.success() })}
                     />
                   )}
                   <InlineError message={!aiReady ? t('error.aiNotConfigured') : upgrade.error ? errorMessage(upgrade.error, t) : null} />

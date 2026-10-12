@@ -45,8 +45,10 @@ after a score of 71+ or three attempts); "I didn't understand the question" goes
 colour or black and white; `expo-print` prints or saves a PDF; `print/results.tsx` brings the paper
 results back (`applyPaperResults`). Importing lessons (`import.tsx`, from Learn and the "+" menu): a picked file (`services/importFile.ts`) or pasted JSON
 `[{topic, concept, reference, keyPoints?}]` is parsed by `src/content/import.ts` (`parseLessonImport`, `ImportError`)
-and added by `importLessons` to one on-device course `imported` (topic = unit, duplicates by concept skipped, station
-keys hashed from the concept). Stations with a `reference` run as `features/lesson/SelfCheck.tsx`: explain → reveal
+and added by `importLessons` to an on-device imported course: one per name the learner types (`imp-<hash of name>`; no name =
+the default course `imported`; `isImportedCourse`), topic = unit, duplicates by concept skipped per course, station keys
+hashed from the concept. With "automatic flashcards" off a station is `lean`: no auto card, and an AI upgrade keeps at most
+`LEAN_UPGRADE_CARDS` (3) of its cards. Stations with a `reference` run as `features/lesson/SelfCheck.tsx`: explain → reveal
 the reference and key points → rate 1–5 (`addSelfCheck`, mastery = rating × 20) → full lesson. The full lesson
 comes from the file (optional `hook`/`sections`/`example`/`misconception`/`connection`/`check`/`cards`, validated with
 `lessonProblems`; `RICH_FORMAT_PROMPT` is the copyable AI instruction) or from `generate-lesson` with `reference` +

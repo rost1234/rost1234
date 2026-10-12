@@ -1,14 +1,17 @@
 import { useState } from 'react';
-import { Platform } from 'react-native';
+import { Platform, Switch, View } from 'react-native';
 import { Text } from '@/components/Text';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
+import { ChoiceChips } from '@/components/ChoiceChips';
 import { Button, Card, InlineError, Screen, TextField } from '@/components/ui';
 import { RICH_FORMAT_PROMPT } from '@/content/import';
 import { useImportLessons } from '@/data/imports';
 import { useT } from '@/i18n';
 import { errorMessage } from '@/lib/errors';
 import { haptics } from '@/lib/haptics';
+import { isImportedCourse } from '@/local/logic';
+import { useDBStore } from '@/local/store';
 import { KeyboardInsetView } from '@/lib/keyboard';
 import { pickLessonsFile } from '@/services/importFile';
 import { makeStyles, spacing, useTheme } from '@/theme';
@@ -23,9 +26,10 @@ const EXAMPLE = `[
 ]`;
 
 /**
- * Paste lessons as JSON (topic, concept, reference, optional keyPoints). They
- * join the "Imported lessons" course without touching anything already there;
- * concepts that already exist are skipped.
+ * Import lessons as JSON (topic, concept, reference, optional keyPoints) from a
+ * file or pasted. They go to a course with the name you give (a new one, or an
+ * existing imported one), without touching anything already there; concepts that
+ * already exist in that course are skipped. Automatic "explain it" cards can be turned off.
  */
 export default function ImportScreen() {
   const t = useT();
@@ -36,15 +40,22 @@ export default function ImportScreen() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileError, setFileError] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [name, setName] = useState('');
+  const [autoCards, setAutoCards] = useState(true);
+  // Imported courses that already exist, to add to one of them with a tap.
+  const courses = useDBStore((s) => s.db.courses);
+  const existing = Object.values(courses).filter((c) => isImportedCourse(c.id)).map((c) => c.title);
 
   const submit = (source = text) =>
     importLessons.mutate(
       {
         text: source,
         texts: {
-          title: t('import.courseTitle'),
+          name,
+          defaultTitle: t('import.courseTitle'),
           description: t('import.courseDescription'),
           cardPrompt: (concept) => t('import.cardPrompt', { concept }),
+          autoCards,
         },
       },
       {
@@ -76,6 +87,26 @@ export default function ImportScreen() {
     <KeyboardInsetView safeBottom={false}>
       <Screen>
         <Text style={typography.body}>{t('import.intro')}</Text>
+        <TextField
+          value={name}
+          onChangeText={(v) => {
+            setName(v);
+            if (importLessons.data) importLessons.reset();
+          }}
+          label={t('import.name')}
+          placeholder={t('import.namePlaceholder')}
+          footer={name.trim() ? (existing.some((c) => c.trim().toLocaleLowerCase() === name.trim().toLocaleLowerCase()) ? t('import.nameAdds') : t('import.nameNew')) : t('import.nameDefault')}
+          maxLength={60}
+          testID="import-name"
+        />
+        {existing.length ? <ChoiceChips<string> label={t('import.existing')} options={existing.map((c) => ({ value: c, label: c }))} onChange={setName} /> : null}
+        <View style={styles.switchRow}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={typography.subheading}>{t('import.autoCards')}</Text>
+            <Text style={typography.caption}>{autoCards ? t('import.autoCardsOn') : t('import.autoCardsOff')}</Text>
+          </View>
+          <Switch value={autoCards} onValueChange={setAutoCards} accessibilityLabel={t('import.autoCards')} />
+        </View>
         <Button label={t('import.pickFile')} icon="folder-open-outline" onPress={() => void pickFile()} disabled={importLessons.isPending} />
         {fileName ? <Text style={typography.caption}>📄 {fileName}</Text> : null}
         <Text style={[typography.caption, { textAlign: 'center' }]}>{t('import.orPaste')}</Text>
@@ -121,6 +152,7 @@ export default function ImportScreen() {
 }
 
 const useStyles = makeStyles(() => ({
+  switchRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   json: {
     minHeight: 220,
     maxHeight: 420,
