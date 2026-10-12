@@ -650,4 +650,9 @@ export const he: Record<TranslationKey, string> = {
   'self.upgradeAllBody': "ה-AI יכול להפוך כל אחד לשיעור מלא כמו המוכנים, על בסיס הסבר הייחוס ונקודות המפתח שלך. הסדר נשאר: קודם מסבירים, ואז משווים; השיעור המלא הוא השלב השלישי.",
   'self.upgradeAll': "לשדרג את כולם עם AI",
   'self.upgradeResume': "מה שכבר נכתב נשמר; לחצו שוב כדי להמשיך.",
+  'settings.look': "סגנון",
+  'settings.look.notebook': "מחברת",
+  'settings.look.notebookBody': "יומן מעבדה במצב בהיר ולוח גיר במצב כהה: נייר, גיר ופרטים מצוירים ביד.",
+  'settings.look.classic': "קלאסי",
+  'settings.look.classicBody': "המראה הבסיסי המקורי: לבן וסגול, כרטיסים מעוגלים וכפתורי מפה בולטים.",
 };

@@ -4,6 +4,7 @@ import { Text } from '@/components/Text';
 import { router, Stack } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { PinnedCard } from '@/components/Pinned';
+import { SketchCheck } from '@/components/sketch';
 import { Button, Card, InlineError, LoadingState, Screen, TextField } from '@/components/ui';
 import type { CourseConcept, LevelKey } from '@/content/types';
 import { useStartStation } from '@/data/courses';
@@ -49,7 +50,7 @@ const PHASES: { phase: Phase; label: 'self.step.explain' | 'self.step.compare' |
 export function SelfCheckStation({ courseId, courseTitle, station, index, total, next, progress: p, lesson }: Props) {
   const t = useT();
   const styles = useStyles();
-  const { colors, typography } = useTheme();
+  const { colors, typography, look } = useTheme();
   const aiReady = useAiConfigured();
   const start = useStartStation();
   const save = useSelfCheck();
@@ -205,7 +206,18 @@ export function SelfCheckStation({ courseId, courseTitle, station, index, total,
                       onPress={() => setCovered((c) => Object.assign([...c], { [i]: !c[i] }))}
                       style={styles.point}
                     >
-                      <Ionicons name={covered[i] ? 'checkmark-circle' : 'ellipse-outline'} size={24} color={covered[i] ? colors.success : colors.border} />
+                      {look === 'classic' ? (
+                        <Ionicons name={covered[i] ? 'checkmark-circle' : 'ellipse-outline'} size={24} color={covered[i] ? colors.success : colors.border} />
+                      ) : (
+                        // A box on the page, ticked by hand.
+                        <View style={[styles.box, { borderColor: look === 'chalk' ? 'rgba(238,240,232,0.8)' : colors.text }]}>
+                          {covered[i] ? (
+                            <View style={{ position: 'absolute', left: 1, bottom: 0 }}>
+                              <SketchCheck size={26} color={look === 'chalk' ? colors.danger : colors.ink} />
+                            </View>
+                          ) : null}
+                        </View>
+                      )}
                       <Text style={[typography.body, { flex: 1 }]}>{point}</Text>
                     </Pressable>
                   ))}
@@ -252,6 +264,7 @@ export function SelfCheckStation({ courseId, courseTitle, station, index, total,
 }
 
 const useStyles = makeStyles(({ colors, textScale }) => ({
+  box: { width: 22, height: 22, borderWidth: 1.5, borderRadius: 3 },
   steps: { flexDirection: 'row', gap: spacing.xs },
   stepItem: { flex: 1, gap: 6 },
   stepBar: { height: 6, borderRadius: 3 },

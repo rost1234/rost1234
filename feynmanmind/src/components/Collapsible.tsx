@@ -58,9 +58,9 @@ export function CollapsibleGroup({ children }: { children: ReactNode }) {
   return <View style={styles.group}>{children}</View>;
 }
 
-const useStyles = makeStyles(({ colors }) => ({
-  box: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, overflow: 'hidden' },
-  group: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, overflow: 'hidden' },
+const useStyles = makeStyles(({ colors, sheet }) => ({
+  box: { ...sheet, overflow: 'hidden' },
+  group: { ...sheet, overflow: 'hidden' },
   grouped: { borderBottomWidth: 1, borderBottomColor: colors.border },
   head: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, minHeight: 60 },
   icon: { width: 36, height: 36, borderRadius: radius.md, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },

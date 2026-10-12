@@ -11,6 +11,7 @@ import { errorMessage } from '@/lib/errors';
 import { haptics } from '@/lib/haptics';
 import { subjectPath, type PathConcept } from '@/local/logic';
 import { useDBStore } from '@/local/store';
+import { SketchBorder, SketchCircle, useSeed } from '@/components/sketch';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
 const WIND = [0, 48, 72, 48, 0, -48, -72, -48];
@@ -24,7 +25,7 @@ export default function SubjectMapScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const t = useT();
   const styles = useStyles();
-  const { colors, typography, map } = useTheme();
+  const { colors, typography, map, look } = useTheme();
   const db = useDBStore((s) => s.db);
   const subject = db.subjects[id];
   const save = useSaveConcept();
@@ -54,8 +55,9 @@ export default function SubjectMapScreen() {
           const unitDone = unit.filter((c) => c.status === 'mastered').length;
           return (
             <View key={u} style={{ gap: spacing.md }}>
-              <View style={[styles.unit, { borderColor: palette.main }]}>
-                <Text style={[styles.unitTitle, { color: palette.main }]}>{t('course.unit', { n: u + 1 })}</Text>
+              <View style={[styles.unit, look === 'classic' ? { backgroundColor: palette.main } : look === 'chalk' ? null : { borderColor: palette.main }]}>
+                {look === 'chalk' ? <SketchBorder color={palette.main} seed={u * 7 + 5} radius={14} /> : null}
+                <Text style={[styles.unitTitle, { color: look === 'classic' ? map.onFill : palette.main }]}>{t('course.unit', { n: u + 1 })}</Text>
                 <Text style={styles.unitSub}>{t('course.unitProgress', { done: unitDone, total: unit.length })}</Text>
               </View>
               {unit.map((c) => (
@@ -64,9 +66,16 @@ export default function SubjectMapScreen() {
                 </View>
               ))}
               <View style={styles.nodeRow}>
-                <View style={[styles.trophy, unitDone === unit.length ? { backgroundColor: map.gold.main, borderBottomColor: map.gold.lip } : null]}>
-                  <Ionicons name="trophy" size={28} color={unitDone === unit.length ? map.gold.ink : colors.textMuted} />
-                </View>
+                {look === 'classic' ? (
+                  <View style={[styles.trophy, unitDone === unit.length ? { backgroundColor: map.gold.main, borderBottomColor: map.gold.lip } : null]}>
+                    <Ionicons name="trophy" size={28} color={unitDone === unit.length ? map.gold.ink : colors.textMuted} />
+                  </View>
+                ) : (
+                  <View style={styles.trophySketch}>
+                    <SketchCircle size={58} color={unitDone === unit.length ? map.gold.main : colors.border} fill={unitDone === unit.length ? map.gold.main : undefined} seed={u * 11 + 2} width={2.4} />
+                    <Ionicons name="trophy" size={26} color={unitDone === unit.length ? map.gold.ink : colors.textMuted} />
+                  </View>
+                )}
               </View>
             </View>
           );
@@ -111,10 +120,12 @@ export default function SubjectMapScreen() {
 function Node({ concept, current, palette }: { concept: PathConcept; current: boolean; palette: { main: string; lip: string } }) {
   const t = useT();
   const styles = useStyles();
-  const { colors, typography, map, isDark } = useTheme();
+  const { colors, typography, map, look } = useTheme();
+  const seed = useSeed();
   const mastered = concept.status === 'mastered';
   const active = current || concept.status === 'started';
   const ring = mastered ? map.gold.main : active ? palette.main : colors.border;
+  const fill = mastered ? map.gold : active ? palette : { main: colors.surfaceMuted, lip: colors.border };
   const icon: IconName = mastered ? 'star' : current ? 'play' : concept.status === 'started' ? 'chatbubbles' : 'bulb';
   return (
     <View style={styles.nodeWrap}>
@@ -130,11 +141,16 @@ function Node({ concept, current, palette }: { concept: PathConcept; current: bo
         style={({ pressed }) => [
           styles.node,
           current && styles.nodeCurrent,
-          { backgroundColor: mastered ? map.gold.main : isDark ? 'transparent' : colors.surface, borderColor: ring, borderStyle: active || mastered ? 'solid' : 'dashed' },
-          pressed && { opacity: 0.7 },
+          look === 'classic' ? [styles.nodeRaised, { backgroundColor: fill.main, borderBottomColor: fill.lip }] : null,
+          pressed && (look === 'classic' ? { borderBottomWidth: 2, transform: [{ translateY: 4 }] } : { opacity: 0.7 }),
         ]}
       >
-        <Ionicons name={icon} size={30} color={mastered ? map.gold.ink : active ? palette.main : colors.textMuted} />
+        {look === 'classic' ? null : <SketchCircle size={current ? 80 : 70} color={ring} fill={mastered ? map.gold.main : undefined} seed={seed} width={active || mastered ? 3.2 : 2} />}
+        <Ionicons
+          name={icon}
+          size={30}
+          color={mastered ? map.gold.ink : look === 'classic' ? (fill === palette ? map.onFill : colors.textMuted) : active ? palette.main : colors.textMuted}
+        />
       </Pressable>
       <Text style={[typography.caption, styles.nodeTitle, current && { color: colors.text, fontWeight: '700' }]} numberOfLines={2}>
         {concept.title}
@@ -143,14 +159,19 @@ function Node({ concept, current, palette }: { concept: PathConcept; current: bo
   );
 }
 
-const useStyles = makeStyles(({ colors, isDark }) => ({
+const useStyles = makeStyles(({ colors, look, map }) => ({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  unit: { borderRadius: isDark ? radius.lg : 3, borderWidth: 2, padding: spacing.md, gap: 2, backgroundColor: isDark ? 'transparent' : colors.surface },
+  unit:
+    look === 'classic'
+      ? { borderRadius: radius.lg, padding: spacing.md, gap: 2 }
+      : { borderRadius: look === 'paper' ? 3 : 14, borderWidth: look === 'paper' ? 2 : 0, padding: spacing.md, gap: 2, backgroundColor: look === 'chalk' ? 'rgba(255,255,255,0.03)' : colors.surface },
   unitTitle: { fontWeight: '800', fontSize: 17 },
-  unitSub: { color: colors.textMuted, fontSize: 13 },
+  unitSub: look === 'classic' ? { color: map.onFill, opacity: 0.9, fontSize: 13 } : { color: colors.textMuted, fontSize: 13 },
+  nodeRaised: { borderBottomWidth: 6, height: 66 },
+  trophySketch: { width: 58, height: 58, alignItems: 'center', justifyContent: 'center' },
   nodeRow: { alignItems: 'center' },
   nodeWrap: { alignItems: 'center', gap: 6, width: 140 },
-  node: { width: 70, height: 70, borderRadius: 35, borderWidth: 3, alignItems: 'center', justifyContent: 'center' },
+  node: { width: 70, height: 70, borderRadius: 35, alignItems: 'center', justifyContent: 'center' },
   nodeCurrent: { width: 80, height: 80, borderRadius: 40 },
   nodeTitle: { textAlign: 'center' },
   bubble: { borderWidth: 2, borderRadius: radius.md, paddingHorizontal: spacing.md, paddingVertical: 4, backgroundColor: colors.surface },

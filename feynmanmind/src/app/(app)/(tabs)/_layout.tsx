@@ -53,9 +53,9 @@ export default function TabsLayout() {
 function BottomBar({ state, navigation }: MaterialTopTabBarProps) {
   const t = useT();
   const styles = useStyles();
-  const { colors, isDark } = useTheme();
-  // The selected tab: red pen on paper, yellow chalk on the board.
-  const active = isDark ? colors.primary : colors.danger;
+  const { colors, look } = useTheme();
+  // The selected tab: red pen on paper, yellow chalk on the board, the primary color in the classic look.
+  const active = look === 'paper' ? colors.danger : colors.primary;
   const bottomInset = useBottomInset();
   const due = useQueueCount();
   return (
@@ -63,6 +63,13 @@ function BottomBar({ state, navigation }: MaterialTopTabBarProps) {
       style={[styles.bar, { paddingBottom: Math.max(bottomInset, spacing.sm) }, Platform.OS === 'web' && t.isRTL && { direction: 'rtl' }]}
       accessibilityRole="tablist"
     >
+      {look === 'chalk' ? (
+        // The board's wooden chalk tray, with a stick of white and one of yellow chalk resting on it.
+        <View style={styles.tray} pointerEvents="none">
+          <View style={[styles.chalkStick, { left: '18%', backgroundColor: '#F4F4EC', transform: [{ rotate: '-3deg' }] }]} />
+          <View style={[styles.chalkStick, { left: '24%', width: 22, backgroundColor: '#FFE27A', transform: [{ rotate: '4deg' }] }]} />
+        </View>
+      ) : null}
       {state.routes.map((route: { key: string; name: string }, index: number) => {
         const tab = TABS[route.name as keyof typeof TABS];
         if (!tab) return null;
@@ -85,7 +92,7 @@ function BottomBar({ state, navigation }: MaterialTopTabBarProps) {
             }}
             style={styles.item}
           >
-            <View style={styles.iconWrap}>
+            <View style={[styles.iconWrap, look === 'classic' && focused && { backgroundColor: colors.primarySoft }]}>
               <Ionicons name={focused ? tab.icon : (`${tab.icon}-outline` as const)} size={22} color={focused ? active : colors.textMuted} />
               {badge > 0 ? <Badge count={badge} colors={colors} /> : null}
             </View>
@@ -108,17 +115,31 @@ function Badge({ count, colors }: { count: number; colors: Palette }) {
   );
 }
 
-const useStyles = makeStyles(({ colors, textScale, isDark, fonts }) => ({
+const useStyles = makeStyles(({ colors, textScale, look, fonts }) => ({
   bar: {
     flexDirection: 'row',
     backgroundColor: colors.chrome,
-    borderTopWidth: isDark ? 2 : 1,
+    borderTopWidth: look === 'chalk' ? 0 : 1,
     borderTopColor: colors.border,
-    paddingTop: spacing.xs,
+    paddingTop: look === 'chalk' ? spacing.md : spacing.xs,
   },
+  tray: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 9,
+    backgroundColor: '#7A5230',
+    borderTopWidth: 2,
+    borderTopColor: '#9A6B40',
+    borderBottomWidth: 1,
+    borderBottomColor: '#4E301A',
+    boxShadow: '0px 3px 6px rgba(0,0,0,0.35)',
+  },
+  chalkStick: { position: 'absolute', top: -4, width: 34, height: 6, borderRadius: 3, boxShadow: '0px 1px 1px rgba(0,0,0,0.3)' },
   item: { flex: 1, alignItems: 'center', gap: 2, minHeight: 52, justifyContent: 'center' },
   iconWrap: { paddingHorizontal: spacing.lg, paddingVertical: 4, borderRadius: radius.pill },
-  label: isDark
+  label: look === 'chalk'
     ? { fontFamily: fonts.hand, fontSize: Math.round(22 * textScale), lineHeight: Math.round(24 * textScale), fontWeight: '700' }
     : { fontSize: Math.round(12 * textScale), fontWeight: '700' },
   badge: {

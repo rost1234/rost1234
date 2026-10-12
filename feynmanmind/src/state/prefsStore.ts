@@ -5,12 +5,15 @@ import { storage } from '@/lib/storage';
 
 export type LanguagePref = 'auto' | 'en' | 'he';
 export type ThemePref = 'auto' | 'light' | 'dark';
+/** The app's style: lab notebook (light) / chalkboard (dark), or the original clean look. */
+export type LookPref = 'notebook' | 'classic';
 export type TextSizePref = 'normal' | 'large' | 'xlarge';
 export type ReviewOrder = 'due' | 'hardest';
 
 interface PrefsState {
   language: LanguagePref;
   theme: ThemePref;
+  look: LookPref;
   onboardingDone: boolean;
   remindersEnabled: boolean;
   /** Local hour (0–23) for the daily review reminder. */
@@ -45,6 +48,7 @@ export const usePrefsStore = create<PrefsState>()(
     (set) => ({
       language: 'auto',
       theme: 'auto',
+      look: 'notebook',
       onboardingDone: false,
       remindersEnabled: false,
       reminderHour: 19,

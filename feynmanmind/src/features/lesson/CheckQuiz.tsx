@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
+import { SketchBorder, SketchCheck, SketchCircle } from '@/components/sketch';
 import { Text } from '@/components/Text';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { CheckQuestion } from '@/content/lesson';
@@ -14,7 +15,7 @@ import { makeStyles, radius, spacing, useTheme } from '@/theme';
 export function CheckQuiz({ questions }: { questions: CheckQuestion[] }) {
   const t = useT();
   const styles = useStyles();
-  const { colors, typography } = useTheme();
+  const { colors, typography, look } = useTheme();
   const [picked, setPicked] = useState<(number | null)[]>(() => questions.map(() => null));
   const answered = picked.filter((p) => p !== null).length;
   const right = picked.filter((p, i) => p === questions[i]!.correct).length;
@@ -26,6 +27,7 @@ export function CheckQuiz({ questions }: { questions: CheckQuestion[] }) {
         const choice = picked[i];
         return (
           <View key={i} style={styles.card}>
+            {look === 'chalk' ? <SketchBorder color="rgba(238,240,232,0.75)" seed={i * 29 + 5} radius={14} /> : null}
             <Text style={typography.subheading}>
               {i + 1}. {q.question}
             </Text>
@@ -45,12 +47,27 @@ export function CheckQuiz({ questions }: { questions: CheckQuestion[] }) {
                   }}
                   style={[
                     styles.option,
-                    reveal && isRight && { borderColor: colors.success, backgroundColor: colors.successSoft },
-                    reveal && isPicked && !isRight && { borderColor: colors.danger, backgroundColor: colors.dangerSoft },
+                    look === 'classic' && reveal && isRight && { borderColor: colors.success, backgroundColor: colors.successSoft },
+                    look === 'classic' && reveal && isPicked && !isRight && { borderColor: colors.danger, backgroundColor: colors.dangerSoft },
                   ]}
                 >
-                  <Text style={[typography.body, { flex: 1 }]}>{option}</Text>
-                  {reveal ? <Ionicons name={isRight ? 'checkmark-circle' : 'close-circle'} size={20} color={isRight ? colors.success : colors.danger} /> : null}
+                  {look === 'classic' ? null : (
+                    <>
+                      {/* A test on paper: the right answer gets circled by hand, a wrong pick is crossed out. */}
+                      {reveal && isRight ? <SketchBorder color={colors.success} seed={i * 7 + j + 1} radius={22} width={look === 'chalk' ? 2.6 : 2} /> : null}
+                      <View style={styles.bullet}>
+                        <SketchCircle size={22} color={isPicked ? colors.ink : colors.textMuted} fill={isPicked ? colors.ink : undefined} seed={j * 13 + i + 2} width={1.6} />
+                      </View>
+                    </>
+                  )}
+                  <Text style={[typography.body, { flex: 1 }, look !== 'classic' && reveal && isPicked && !isRight && styles.wrong]}>{option}</Text>
+                  {reveal ? (
+                    look === 'classic' ? (
+                      <Ionicons name={isRight ? 'checkmark-circle' : 'close-circle'} size={20} color={isRight ? colors.success : colors.danger} />
+                    ) : isRight ? (
+                      <SketchCheck size={22} color={colors.success} />
+                    ) : null
+                  ) : null}
                 </Pressable>
               );
             })}
@@ -75,13 +92,20 @@ export function CheckQuiz({ questions }: { questions: CheckQuestion[] }) {
   );
 }
 
-const useStyles = makeStyles(({ colors }) => ({
-  card: { backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, padding: spacing.lg, gap: spacing.sm },
+const useStyles = makeStyles(({ colors, look }) => ({
+  card:
+    look === 'paper'
+      ? { backgroundColor: colors.surface, borderRadius: 3, borderWidth: 1, borderColor: colors.border, padding: spacing.lg, gap: spacing.sm, boxShadow: '0px 1px 0px #CDB68A' }
+      : look === 'chalk'
+        ? { backgroundColor: 'rgba(255,255,255,0.035)', borderRadius: 14, padding: spacing.lg, gap: spacing.sm }
+        : { backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, padding: spacing.lg, gap: spacing.sm },
+  bullet: { width: 22, height: 22 },
+  wrong: { color: colors.danger, textDecorationLine: 'line-through', textDecorationColor: colors.danger },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    borderWidth: 1.5,
+    borderWidth: look === 'classic' ? 1.5 : 0,
     borderColor: colors.border,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,

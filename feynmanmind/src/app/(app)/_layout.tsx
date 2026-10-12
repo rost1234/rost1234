@@ -4,13 +4,13 @@ import { useTheme } from '@/theme';
 
 export default function AppLayout() {
   const t = useT();
-  const { colors, fonts, isDark } = useTheme();
+  const { colors, fonts, look } = useTheme();
   return (
     <Stack
       screenOptions={{
         headerStyle: { backgroundColor: colors.chrome },
         headerTintColor: colors.primary,
-        headerTitleStyle: { color: colors.text, fontFamily: fonts.heading, fontWeight: '700', fontSize: isDark ? 30 : 19 },
+        headerTitleStyle: { color: colors.text, fontFamily: fonts.heading, fontWeight: '700', fontSize: look === 'chalk' ? 30 : look === 'paper' ? 19 : 17 },
         headerShadowVisible: false,
         contentStyle: { backgroundColor: colors.background },
         headerBackButtonDisplayMode: 'minimal',

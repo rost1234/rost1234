@@ -58,13 +58,19 @@ contrast from it (`useTheme().textScale`), `useReduceMotion()` covers animations
 
 ## Look (`src/theme/`)
 
-Light mode is a **lab notebook**, dark mode a **chalkboard**. `useTheme()` gives `colors` (incl. `button`,
-`ink`, `highlight`, `chrome`), `fonts` (body/heading/hand), `map` (course-map level colors) and `texture`.
-Fonts are bundled per weight (`assets/fonts`, expo-font plugin in app.json, `@font-face` on web via
-`lib/fonts.web.ts`): Frank Ruhl Libre (paper), Rubik (chalk body), Amatic SC (handwriting/chalk headings —
-its Latin letters are all caps). Always use `Text`/`TextInput` from `@/components/Text` (they apply the font).
-`components/Backdrop` draws the ruled paper / chalkboard behind a screen (`Screen` includes it);
-`components/Pinned` is the taped sheet / dashed-chalk card. Don't hard-code colors: use the palette or `theme.map`.
+Three looks (`useTheme().look`): **paper** (lab notebook, light), **chalk** (chalkboard, dark) — together the
+"notebook" style — and **classic** (the original indigo look, light and dark). The style is a pref
+(`prefs.look`: `'notebook' | 'classic'`, picked in Me → Display, `features/settings/LookPicker.tsx`).
+`useTheme()` gives `colors` (incl. `button`, `ink`, `highlight`, `chrome`), `fonts` (body/heading/hand),
+`map` (course-map colors), `look` and `sheet` (a card surface for the current look). Branch on `look`, never
+on `isDark`, for styling (isDark is only light vs dark). Fonts are bundled per weight (`assets/fonts`,
+expo-font plugin in app.json, `@font-face` on web via `lib/fonts.web.ts`): Frank Ruhl Libre (paper), Rubik
+(chalk body, classic), Amatic SC (handwriting/chalk headings — its Latin letters are all caps). Always use
+`Text`/`TextInput` from `@/components/Text`. `components/Backdrop` draws ruled paper with binder holes and
+margin doodles / the chalkboard with faded formulas (nothing in classic); `components/sketch.tsx` has the
+hand-drawn SVG shapes (`SketchBorder`, `SketchCircle`, `Squiggle`, `SketchCheck`, `Stamp`, `useSeed`);
+`components/Pinned` is the taped sheet / chalk frame. Textures are generated images in `assets/textures`.
+Don't hard-code colors: use the palette, `theme.map` or `theme.sheet`.
 
 ## Rules that must not be broken
 

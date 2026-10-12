@@ -308,6 +308,13 @@ const coursePlan = {
       await shot('11-me');
       await page.getByRole('button', { name: /^תצוגה ונגישות/ }).click();
       await page.waitForTimeout(400);
+      // The style switch: classic, then back to the notebook; the choice is saved.
+      await page.getByRole('radio', { name: /^קלאסי/ }).click();
+      await page.waitForTimeout(400);
+      if ((await page.evaluate(() => JSON.parse(localStorage.getItem('feynmanmind.prefs')).state.look)) !== 'classic') failures.push('look switch to classic not saved');
+      await shot('11b-look-classic');
+      await page.getByRole('radio', { name: /^מחברת/ }).click();
+      await page.waitForTimeout(400);
       // Larger text applies app-wide.
       await page.getByRole('tab', { name: 'גדול מאוד' }).click();
       await page.waitForTimeout(500);

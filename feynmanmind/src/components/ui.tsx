@@ -1,12 +1,13 @@
 import type { ComponentProps, ReactNode, Ref } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
 import { Backdrop } from '@/components/Backdrop';
+import { SketchBorder, Squiggle, useSeed } from '@/components/sketch';
 import { Text, TextInput } from '@/components/Text';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useT } from '@/i18n';
 import { haptics } from '@/lib/haptics';
-import { makeStyles, radius, spacing, useTheme, type Palette } from '@/theme';
+import { makeStyles, radius, spacing, useTheme, type Look, type Palette } from '@/theme';
 import { useBottomInset } from '@/lib/safeArea';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -64,29 +65,66 @@ export function Card({ children, style, onPress, accessibilityLabel }: {
   accessibilityLabel?: string;
 }) {
   const styles = useStyles();
-  if (!onPress) return <View style={[styles.card, style]}>{children}</View>;
+  const { look } = useTheme();
+  const seed = useSeed();
+  // On the chalkboard the outline is drawn by hand (in the card's border color, if it sets one).
+  const outline = look === 'chalk' ? <SketchBorder color={chalkOutline(style)} seed={seed} radius={14} /> : null;
+  if (!onPress)
+    return (
+      <View style={[styles.card, style, look === 'chalk' && styles.noBorder]}>
+        {outline}
+        {children}
+      </View>
+    );
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
-      style={({ pressed }) => [styles.card, style, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.card, style, look === 'chalk' && styles.noBorder, pressed && styles.pressed]}
     >
+      {outline}
       {children}
     </Pressable>
   );
 }
 
+const CHALK_LINE = 'rgba(238,240,232,0.78)';
+/** The chalk outline's color: the border color a card's style asks for, or white chalk. */
+function chalkOutline(style: StyleProp<ViewStyle>): string {
+  const color = StyleSheet.flatten(style)?.borderColor;
+  return typeof color === 'string' ? color : CHALK_LINE;
+}
+
 export function SectionHeader({ title, action }: { title: string; action?: ReactNode }) {
   const styles = useStyles();
-  const { typography, isDark } = useTheme();
+  const { typography, look, colors } = useTheme();
+  if (look === 'classic')
+    return (
+      <View style={styles.sectionHeader}>
+        <Text accessibilityRole="header" style={typography.label}>
+          {title.toLocaleUpperCase()}
+        </Text>
+        {action}
+      </View>
+    );
   return (
     <View style={styles.sectionHeader}>
-      <Text accessibilityRole="header" style={typography.label}>
-        {title}
-      </Text>
+      {look === 'chalk' ? (
+        // A chalk heading underlined with a quick wavy stroke.
+        <View style={{ alignSelf: 'flex-start' }}>
+          <Text accessibilityRole="header" style={typography.label}>
+            {title}
+          </Text>
+          <Squiggle color={colors.ink} height={7} style={{ marginTop: -2, opacity: 0.8 }} />
+        </View>
+      ) : (
+        <Text accessibilityRole="header" style={typography.label}>
+          {title}
+        </Text>
+      )}
       {/* On paper, a section heading sits on a thin red rule, like a ruled notebook heading. */}
-      {isDark ? null : <View style={styles.sectionRule} />}
+      {look === 'paper' ? <View style={styles.sectionRule} /> : <View style={{ flex: 1 }} />}
       {action}
     </View>
   );
@@ -98,12 +136,12 @@ export function SectionHeader({ title, action }: { title: string; action?: React
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
-function buttonColors(variant: ButtonVariant, colors: Palette) {
+function buttonColors(variant: ButtonVariant, colors: Palette, look: Look) {
   switch (variant) {
     case 'primary':
       return { bg: colors.button, fg: colors.onButton };
     case 'secondary':
-      return { bg: 'transparent', fg: colors.text };
+      return look === 'classic' ? { bg: colors.primarySoft, fg: colors.primary } : { bg: 'transparent', fg: colors.text };
     case 'ghost':
       return { bg: 'transparent', fg: colors.primary };
     case 'danger':
@@ -123,8 +161,8 @@ interface ButtonProps {
 
 export function Button({ label, onPress, variant = 'primary', icon, disabled, loading, style }: ButtonProps) {
   const styles = useStyles();
-  const { colors } = useTheme();
-  const palette = buttonColors(variant, colors);
+  const { colors, look } = useTheme();
+  const palette = buttonColors(variant, colors, look);
   const inactive = disabled === true || loading === true;
   return (
     <Pressable
@@ -305,9 +343,11 @@ export function Chip({ label, tone = 'neutral' }: { label: string; tone?: 'neutr
 
 export function StatTile({ label, value, icon }: { label: string; value: string | number; icon?: IconName }) {
   const styles = useStyles();
-  const { colors, typography } = useTheme();
+  const { colors, typography, look } = useTheme();
+  const seed = useSeed();
   return (
-    <View style={styles.statTile} accessible accessibilityLabel={`${label}: ${value}`}>
+    <View style={[styles.statTile, look === 'chalk' && styles.noBorder]} accessible accessibilityLabel={`${label}: ${value}`}>
+      {look === 'chalk' ? <SketchBorder color={CHALK_LINE} seed={seed} radius={14} /> : null}
       {icon ? <Ionicons name={icon} size={18} color={colors.primary} /> : null}
       <Text style={typography.heading}>{value}</Text>
       <Text style={typography.caption} numberOfLines={1}>
@@ -368,25 +408,27 @@ export function InlineError({ message }: { message: string | null | undefined })
   );
 }
 
-/** Hand-drawn corners: the chalk outlines are a little uneven. */
-const chalkCorners = { borderTopLeftRadius: 20, borderTopRightRadius: 8, borderBottomRightRadius: 22, borderBottomLeftRadius: 10 };
-
-const useStyles = makeStyles(({ colors, isDark, fonts }) => ({
+const useStyles = makeStyles(({ colors, look, fonts }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: colors.background },
   screenContent: { padding: spacing.lg, gap: spacing.lg },
-  card: isDark
-    ? { backgroundColor: 'rgba(255,255,255,0.04)', ...chalkCorners, padding: spacing.lg, gap: spacing.sm, borderWidth: 2, borderColor: colors.border }
-    : {
-        // A sheet of paper laid on the page.
-        backgroundColor: colors.surface,
-        borderRadius: 3,
-        padding: spacing.lg,
-        gap: spacing.sm,
-        borderWidth: 1,
-        borderColor: colors.border,
-        boxShadow: '0px 1px 0px #CDB68A, 0px 6px 14px rgba(90,60,20,0.10)',
-      },
+  card:
+    look === 'paper'
+      ? {
+          // A sheet of paper laid on the page.
+          backgroundColor: colors.surface,
+          borderRadius: 3,
+          padding: spacing.lg,
+          gap: spacing.sm,
+          borderWidth: 1,
+          borderColor: colors.border,
+          boxShadow: '0px 1px 0px #CDB68A, 0px 6px 14px rgba(90,60,20,0.10)',
+        }
+      : look === 'chalk'
+        ? { backgroundColor: 'rgba(255,255,255,0.035)', borderRadius: 14, padding: spacing.lg, gap: spacing.sm, borderWidth: 0 }
+        : { backgroundColor: colors.surface, borderRadius: radius.lg, padding: spacing.lg, gap: spacing.sm, borderWidth: 1, borderColor: colors.border },
+  // The chalk outline is an SVG drawn inside; drop the box border (a style may have set one for its color).
+  noBorder: { borderWidth: 0 },
   pressed: { opacity: 0.85 },
   sectionHeader: {
     flexDirection: 'row',
@@ -398,8 +440,8 @@ const useStyles = makeStyles(({ colors, isDark, fonts }) => ({
   sectionRule: { flex: 1, height: 1, backgroundColor: 'rgba(163,48,31,0.35)' },
   button: {
     minHeight: 48,
-    borderRadius: isDark ? 0 : 3,
-    ...(isDark ? { borderTopLeftRadius: 26, borderTopRightRadius: 12, borderBottomRightRadius: 24, borderBottomLeftRadius: 14 } : {}),
+    borderRadius: look === 'paper' ? 3 : look === 'chalk' ? 0 : radius.md,
+    ...(look === 'chalk' ? { borderTopLeftRadius: 26, borderTopRightRadius: 12, borderBottomRightRadius: 24, borderBottomLeftRadius: 14 } : {}),
     paddingHorizontal: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
@@ -407,17 +449,18 @@ const useStyles = makeStyles(({ colors, isDark, fonts }) => ({
     gap: spacing.sm,
   },
   // Paper: dark ink with a red offset, like a stamped label. Chalk: a stick of yellow chalk.
-  buttonPrimary: isDark ? {} : { boxShadow: '3px 3px 0px #A3301F' },
-  buttonPressed: isDark ? {} : { boxShadow: '1px 1px 0px #A3301F', transform: [{ translateX: 1 }, { translateY: 1 }] },
-  buttonSecondary: { borderWidth: isDark ? 2 : 1.5, borderColor: isDark ? 'rgba(238,240,232,0.7)' : colors.text, borderStyle: isDark ? 'dashed' : 'solid' },
-  buttonLabel: isDark ? { fontSize: 26, lineHeight: 30, fontWeight: '700', fontFamily: fonts.hand } : { fontSize: 16, fontWeight: '700' },
+  buttonPrimary: look === 'paper' ? { boxShadow: '3px 3px 0px #A3301F' } : {},
+  buttonPressed: look === 'paper' ? { boxShadow: '1px 1px 0px #A3301F', transform: [{ translateX: 1 }, { translateY: 1 }] } : {},
+  buttonSecondary:
+    look === 'classic' ? {} : { borderWidth: look === 'chalk' ? 2 : 1.5, borderColor: look === 'chalk' ? 'rgba(238,240,232,0.7)' : colors.text, borderStyle: look === 'chalk' ? 'dashed' : 'solid' },
+  buttonLabel: look === 'chalk' ? { fontSize: 26, lineHeight: 30, fontWeight: '700', fontFamily: fonts.hand } : { fontSize: 16, fontWeight: '700' },
   field: { gap: spacing.xs },
   input: {
     minHeight: 48,
-    borderRadius: isDark ? radius.md : 3,
-    borderWidth: isDark ? 2 : 1,
+    borderRadius: look === 'paper' ? 3 : radius.md,
+    borderWidth: look === 'chalk' ? 2 : 1,
     borderColor: colors.border,
-    backgroundColor: isDark ? 'rgba(0,0,0,0.14)' : colors.surface,
+    backgroundColor: look === 'chalk' ? 'rgba(0,0,0,0.14)' : colors.surface,
     color: colors.text,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -439,9 +482,9 @@ const useStyles = makeStyles(({ colors, isDark, fonts }) => ({
   chipLabel: { fontSize: 12, fontWeight: '700' },
   statTile: {
     flex: 1,
-    backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : colors.surface,
-    borderRadius: isDark ? radius.lg : 3,
-    borderWidth: isDark ? 2 : 1,
+    backgroundColor: look === 'chalk' ? 'rgba(255,255,255,0.035)' : colors.surface,
+    borderRadius: look === 'paper' ? 3 : radius.lg,
+    borderWidth: 1,
     borderColor: colors.border,
     padding: spacing.md,
     gap: 2,

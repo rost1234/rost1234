@@ -14,6 +14,7 @@ import { confirmAsync } from '@/lib/dialogs';
 import { formatHour } from '@/lib/format';
 import { useDBStore } from '@/local/store';
 import { AiConnection } from './AiConnection';
+import { LookPicker } from './LookPicker';
 import { emptyDB } from '@/local/types';
 import { exportBackup, pickBackup } from '@/services/backup';
 import { ensureNotificationPermission, remindersSupported } from '@/services/reminders';
@@ -88,7 +89,7 @@ export function SettingsContent() {
     });
 
   const textSizeLabel = t(prefs.textSize === 'normal' ? 'a11y.textNormal' : prefs.textSize === 'large' ? 'a11y.textLarge' : 'a11y.textXLarge');
-  const themeLabel = t(`settings.theme.${prefs.theme}`);
+  const themeLabel = `${t(`settings.look.${prefs.look ?? 'notebook'}`)} · ${t(`settings.theme.${prefs.theme}`)}`;
   const row = {
     flexDirection: 'row',
     alignItems: 'center',
@@ -157,6 +158,8 @@ export function SettingsContent() {
           ]}
         />
         {languageChanged ? <Text style={typography.caption}>{t('settings.langRestart')}</Text> : null}
+        <Text style={typography.subheading}>{t('settings.look')}</Text>
+        <LookPicker />
         <Text style={typography.subheading}>{t('settings.theme')}</Text>
         <Segmented<ThemePref>
           value={prefs.theme}

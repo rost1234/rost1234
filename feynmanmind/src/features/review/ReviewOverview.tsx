@@ -158,8 +158,8 @@ export function Forecast() {
   );
 }
 
-const useStyles = makeStyles(({ colors, textScale }) => ({
-  hero: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, padding: spacing.lg, gap: spacing.md },
+const useStyles = makeStyles(({ colors, textScale, sheet }) => ({
+  hero: { ...sheet, padding: spacing.lg, gap: spacing.md },
   heroTop: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   big: { fontSize: Math.round(52 * textScale), fontWeight: '800', lineHeight: Math.round(58 * textScale) },
   link: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 32 },
@@ -176,5 +176,5 @@ const useStyles = makeStyles(({ colors, textScale }) => ({
   },
   dayNum: { color: colors.text, fontSize: Math.round(16 * textScale), fontWeight: '800' },
   dayDue: { fontSize: Math.round(12 * textScale), fontWeight: '800' },
-  card: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, padding: spacing.md },
+  card: { ...sheet, padding: spacing.md },
 }));

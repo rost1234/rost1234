@@ -664,6 +664,11 @@ export const en = {
   'self.upgradeAllBody': "The AI can turn each one into a full lesson like the built-in ones, based on your reference and key points. Your explain-first flow stays; the full lesson is the third step.",
   'self.upgradeAll': "Upgrade all with AI",
   'self.upgradeResume': "The ones already written are saved; press again to continue.",
+  'settings.look': "Style",
+  'settings.look.notebook': "Notebook",
+  'settings.look.notebookBody': "A lab notebook in light mode, a chalkboard in dark mode: paper, chalk and hand-drawn details.",
+  'settings.look.classic': "Classic",
+  'settings.look.classicBody': "The original clean look: white and indigo, rounded cards and raised map buttons.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

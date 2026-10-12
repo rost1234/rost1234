@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { StyleSheet, useColorScheme, type TextStyle } from 'react-native';
-import { usePrefsStore, type TextSizePref } from '@/state/prefsStore';
+import { StyleSheet, useColorScheme, type TextStyle, type ViewStyle } from 'react-native';
+import { usePrefsStore, type LookPref, type TextSizePref } from '@/state/prefsStore';
 import { FONTS } from './fonts';
 
 export { FONTS };
@@ -86,6 +86,57 @@ export const darkColors: Palette = {
   chrome: '#1D3128',
 };
 
+/** The classic look (before the notebook): clean indigo on white, and a deep navy night mode. */
+export const classicLightColors: Palette = {
+  background: '#F6F6FB',
+  surface: '#FFFFFF',
+  surfaceMuted: '#EEEEF6',
+  border: '#E2E2EE',
+  text: '#15152B',
+  textMuted: '#62637D',
+  primary: '#4F46E5',
+  primarySoft: '#E8E7FD',
+  onPrimary: '#FFFFFF',
+  accent: '#D97706',
+  accentSoft: '#FEF3C7',
+  success: '#15803D',
+  successSoft: '#DCFCE7',
+  warning: '#B45309',
+  warningSoft: '#FEF3C7',
+  danger: '#DC2626',
+  dangerSoft: '#FEE2E2',
+  button: '#4F46E5',
+  onButton: '#FFFFFF',
+  ink: '#4F46E5',
+  highlight: '#E8E7FD',
+  chrome: '#FFFFFF',
+};
+
+export const classicDarkColors: Palette = {
+  background: '#0F0F1E',
+  surface: '#1A1A2F',
+  surfaceMuted: '#24243D',
+  border: '#303050',
+  text: '#ECECF8',
+  textMuted: '#A0A1BD',
+  primary: '#8B87FF',
+  primarySoft: '#2A2A55',
+  onPrimary: '#0F0F1E',
+  accent: '#FBBF24',
+  accentSoft: '#3A2D10',
+  success: '#4ADE80',
+  successSoft: '#143322',
+  warning: '#FBBF24',
+  warningSoft: '#3A2D10',
+  danger: '#F87171',
+  dangerSoft: '#3D1719',
+  button: '#8B87FF',
+  onButton: '#0F0F1E',
+  ink: '#8B87FF',
+  highlight: '#2A2A55',
+  chrome: '#1A1A2F',
+};
+
 /** Colors of the course map's levels and nodes, per mode. */
 export interface MapColors {
   levels: { main: string; lip: string }[];
@@ -102,6 +153,17 @@ const lightMap: MapColors = {
   ],
   gold: { main: '#D9B23A', lip: '#A8861F', ink: '#3A2C05' },
   onFill: '#FFFDF6',
+};
+/** The classic map: bright raised buttons, one color per level. */
+const classicMap: MapColors = {
+  levels: [
+    { main: '#2FA84F', lip: '#23843C' },
+    { main: '#1A8FE3', lip: '#146FB3' },
+    { main: '#9B59E0', lip: '#7A41B8' },
+    { main: '#F07B12', lip: '#C0600A' },
+  ],
+  gold: { main: '#FFC800', lip: '#E0A800', ink: '#6B4A00' },
+  onFill: '#FFFFFF',
 };
 const darkMap: MapColors = {
   levels: [
@@ -127,11 +189,26 @@ export interface ThemeFonts {
 }
 const labFonts: ThemeFonts = { body: FONTS.serif, heading: FONTS.serif, hand: FONTS.hand };
 const chalkFonts: ThemeFonts = { body: FONTS.rubik, heading: FONTS.hand, hand: FONTS.hand };
+const classicFonts: ThemeFonts = { body: FONTS.rubik, heading: FONTS.rubik, hand: FONTS.rubik };
 
-function makeTypography(colors: Palette, fonts: ThemeFonts, dark: boolean, scale = 1) {
+/** Which of the three styles is being drawn: notebook paper, chalkboard, or the classic look. */
+export type Look = 'paper' | 'chalk' | 'classic';
+
+function makeTypography(colors: Palette, fonts: ThemeFonts, look: Look, scale = 1) {
   const base: TextStyle = { color: colors.text, fontFamily: fonts.body };
   const s = (n: number) => Math.round(n * scale);
-  if (dark) {
+  if (look === 'classic') {
+    return {
+      title: { ...base, fontSize: s(28), fontWeight: '800', letterSpacing: -0.3 },
+      heading: { ...base, fontSize: s(20), fontWeight: '700' },
+      subheading: { ...base, fontSize: s(16), fontWeight: '600' },
+      body: { ...base, fontSize: s(16), lineHeight: s(23) },
+      caption: { ...base, fontSize: s(13), lineHeight: s(18), color: colors.textMuted },
+      label: { ...base, fontSize: s(12), fontWeight: '700', letterSpacing: 0.6, color: colors.textMuted },
+      hand: { ...base, fontSize: s(16), fontWeight: '700', color: colors.primary },
+    } satisfies Record<string, TextStyle>;
+  }
+  if (look === 'chalk') {
     // Chalkboard: headings in chalk handwriting (tall and narrow, so larger), body in a clean sans.
     const chalk: TextStyle = { ...base, fontFamily: fonts.heading, fontWeight: '700' };
     return {
@@ -159,6 +236,8 @@ function makeTypography(colors: Palette, fonts: ThemeFonts, dark: boolean, scale
 /** Stronger secondary text and borders for the high-contrast setting. */
 const highContrastLight: Partial<Palette> = { textMuted: '#3A2E20', border: '#8C7652', text: '#000000' };
 const highContrastDark: Partial<Palette> = { textMuted: '#DDE6DF', border: 'rgba(255,255,255,0.8)', text: '#FFFFFF' };
+const classicHighContrastLight: Partial<Palette> = { textMuted: '#34354A', border: '#8E8FAA', text: '#000000' };
+const classicHighContrastDark: Partial<Palette> = { textMuted: '#DADBEE', border: '#7A7AA0', text: '#FFFFFF' };
 
 export interface Theme {
   colors: Palette;
@@ -168,27 +247,39 @@ export interface Theme {
   typography: ReturnType<typeof makeTypography>;
   fonts: ThemeFonts;
   map: MapColors;
-  /** The background texture drawn by components/Backdrop. */
-  texture: 'paper' | 'chalk';
+  /** The style being drawn (backgrounds, cards, buttons, maps differ per look). */
+  look: Look;
+  /** A plain card surface in the current look, for screens that style their own boxes. */
+  sheet: ViewStyle;
+}
+
+function sheetFor(look: Look, colors: Palette): ViewStyle {
+  if (look === 'paper') return { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 3, boxShadow: '0px 1px 0px #CDB68A, 0px 6px 14px rgba(90,60,20,0.10)' };
+  if (look === 'chalk') return { backgroundColor: 'rgba(255,255,255,0.035)', borderWidth: 1.5, borderColor: 'rgba(238,240,232,0.5)', borderRadius: 14 };
+  return { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg };
 }
 
 // One shared object per combination, so style caches keyed by theme keep working.
 const themes = new Map<string, Theme>();
-function buildTheme(dark: boolean, highContrast: boolean, textSize: TextSizePref): Theme {
-  const key = `${dark}-${highContrast}-${textSize}`;
+function buildTheme(dark: boolean, highContrast: boolean, textSize: TextSizePref, lookPref: LookPref): Theme {
+  const key = `${dark}-${highContrast}-${textSize}-${lookPref}`;
   let theme = themes.get(key);
   if (!theme) {
-    const colors = { ...(dark ? darkColors : lightColors), ...(highContrast ? (dark ? highContrastDark : highContrastLight) : {}) };
+    const look: Look = lookPref === 'classic' ? 'classic' : dark ? 'chalk' : 'paper';
+    const base = look === 'classic' ? (dark ? classicDarkColors : classicLightColors) : dark ? darkColors : lightColors;
+    const contrast = look === 'classic' ? (dark ? classicHighContrastDark : classicHighContrastLight) : dark ? highContrastDark : highContrastLight;
+    const colors = { ...base, ...(highContrast ? contrast : {}) };
     const textScale = TEXT_SCALE[textSize];
-    const fonts = dark ? chalkFonts : labFonts;
+    const fonts = look === 'classic' ? classicFonts : look === 'chalk' ? chalkFonts : labFonts;
     theme = {
       colors,
       isDark: dark,
       textScale,
-      typography: makeTypography(colors, fonts, dark, textScale),
+      typography: makeTypography(colors, fonts, look, textScale),
       fonts,
-      map: dark ? darkMap : lightMap,
-      texture: dark ? 'chalk' : 'paper',
+      map: look === 'classic' ? classicMap : dark ? darkMap : lightMap,
+      look,
+      sheet: sheetFor(look, colors),
     };
     themes.set(key, theme);
   }
@@ -198,10 +289,11 @@ function buildTheme(dark: boolean, highContrast: boolean, textSize: TextSizePref
 export function useTheme(): Theme {
   const system = useColorScheme();
   const pref = usePrefsStore((s) => s.theme);
+  const look = usePrefsStore((s) => s.look);
   const highContrast = usePrefsStore((s) => s.highContrast);
   const textSize = usePrefsStore((s) => s.textSize);
   const dark = pref === 'dark' || (pref === 'auto' && system === 'dark');
-  return buildTheme(dark, highContrast, textSize);
+  return buildTheme(dark, highContrast, textSize, look ?? 'notebook');
 }
 
 /** Theme-aware StyleSheet factory: `const useStyles = makeStyles(({ colors }) => ({ ... }))`. */
