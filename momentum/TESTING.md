@@ -264,3 +264,21 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] With no habits: a clear message instead of an empty sheet
 - [ ] Hebrew RTL and English LTR both print correctly
 
+## Garden look (build 36)
+- [ ] After the update the app opens in the regular look as before; habits, streaks and history load as usual
+- [ ] Settings → Appearance → Look: two cards (Regular, Garden); pick Garden → the whole app turns cream and green with rounder corners and the Varela Round / Secular One fonts; pick Regular → back to exactly the old look. The choice survives closing the app
+- [ ] Home (Garden): green hill header reaching under the status bar, date, greeting, "X of Y habits", freezes and Insights pills; the sprout sits inside today's ring with its stage name underneath; sun by day, moon and stars after 19:00
+- [ ] The sprout's face: calm before anything is done, smiling after one habit, beaming with sparkles when all are done, sleepy after 22:00
+- [ ] Bottom dock: Settings, Month, a big yellow ▶ Focus, Library; while a focus session runs it shows the time left; the last card and the Undo toast are not hidden behind it
+- [ ] Habit cards: a small pot per habit (a habit done often has a bigger plant), the big circle on the far side marks done (one tap), +1 on counted habits, drops for counts up to 12, a flower with "N days in a row"; long press offers "Focus on this habit"; a quit habit keeps "Urge now" as a wide pill
+- [ ] Small phone (360 wide) and the largest font size: habit names and the header text aren't cut badly; nothing overlaps the ring
+- [ ] Tap the sprout → "Your sprout": big sprout, the count, "N more to <next stage>" with a bar, all 9 stages (reached ✓, now, still to come), a pot per habit, and "Switch back to the regular look" opens Appearance
+- [ ] Mark a habit that crosses a stage (e.g. the 7th habit-day ever) → "Your sprout grew!" once; undo and mark again → no second celebration
+- [ ] Streak milestone celebrations in Garden show the sprout instead of an emoji and are readable (dark text on a light card)
+- [ ] Focus (Garden): night-blue screen, green ring, yellow Start; a small plant inside the ring grows from a sprout to a flower as the session runs; paused → sleepy face
+- [ ] Urge now (Garden): the sprout sits inside the countdown ring
+- [ ] Insights → habits chart (Garden): stems with flowers on full days and buds on partial days, with a one-line key
+- [ ] No habits yet (Garden): a pot with a seed above the starter suggestions
+- [ ] Dark mode + Garden: dark green "garden at night"; all text readable
+- [ ] TalkBack: the habit card is read once (title, status, streak); the big circle is not read separately; the sprout ring reads "Your sprout: <stage>. N percent…"
+

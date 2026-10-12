@@ -224,3 +224,25 @@ Diff for `lightColors`: `textMuted #6B6E85 -> #626579`, `primary #5B5BD6 -> #525
 | partial/surface (graphic 3:1) | 3.80 | 3 | pass |
 | primary/surface graphic 3:1 | 7.51 | 3 | pass |
 | success/surface graphic 3:1 | 8.38 | 3 | pass |
+
+## Garden (גן), light and dark (build 36)
+
+Text pairs checked with the WCAG formula. Borders are decorative (same as Calm).
+
+| Pair | Light | Ratio | Dark | Ratio |
+|---|---|---|---|---|
+| text / background | #3A281E / #FFF4E2 | 12.84 | #F6EEDD / #18241D | 13.90 |
+| text / hill | #3A281E / #CDEBC6 | 10.85 | #F6EEDD / #22382A | 10.91 |
+| textMuted / background | #6E4F3F / #FFF4E2 | 6.76 | #BCC9B8 / #18241D | 9.31 |
+| textMuted / hill | #6E4F3F / #CDEBC6 | 5.71 | #BCC9B8 / #22382A | 7.31 |
+| textMuted / surfaceMuted | #6E4F3F / #F8EAD3 | 6.20 | #BCC9B8 / #2B3D31 | 6.72 |
+| primary / surface | #25703F / #FFFFFF | 6.06 | #8EDB97 / #223128 | 8.28 |
+| primary / doneCard | #25703F / #E5F5E2 | 5.33 | #8EDB97 / #28432F | 6.58 |
+| onPrimary / primary | #FFFFFF / #25703F | 6.06 | #12301B / #8EDB97 | 8.69 |
+| coral (streak) / surface | #A8431A / #FFFFFF | 6.03 | #FFA477 / #223128 | 7.04 |
+| coral / coralSoft (urge pill) | #A8431A / #FFE3D3 | 4.93 | #FFA477 / #47291F | 6.75 |
+| skyText / sky (freeze pill) | #1D5C86 / #D8EEFB | 5.99 | #9FD3F2 / #233B4B | 7.27 |
+| onSun / sun (Focus button) | #3A281E / #F7B731 | 7.84 | #3A281E / #F7C95B | 8.96 |
+
+Focus screen (both modes): text #F6EEDD and muted #B9C4CF on #22344A → 10.97 and 7.15; dark text on the yellow button #F7C95B → 8.96.
+

@@ -64,9 +64,10 @@ export function GardenDock() {
         }}
         style={({ pressed }) => [styles.focus, { backgroundColor: scenery.sun }, pressed && { opacity: 0.88 }]}
       >
-        <Ionicons name={snapshot ? 'timer-outline' : 'play'} size={20} color={scenery.onSun} />
-        <Text style={[styles.focusLabel, { color: scenery.onSun }]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
-          {focusLabel}
+        <Ionicons name={snapshot ? (snapshot.isPaused ? 'pause' : 'timer-outline') : 'play'} size={20} color={scenery.onSun} />
+        {/* While a session runs the button shows just the time; the full words are in the label. */}
+        <Text style={[styles.focusLabel, { color: scenery.onSun }, snapshot && styles.clock]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
+          {snapshot ? formatClock(snapshot.remainingSeconds) : focusLabel}
         </Text>
       </Pressable>
       <DockButton icon="library-outline" label={t('garden.dockLibrary')} onPress={() => router.push('/library')} />
@@ -106,4 +107,5 @@ const useStyles = makeStyles(({ colors, shadow }) => ({
     paddingHorizontal: spacing.md,
   },
   focusLabel: { fontSize: 18, fontWeight: '800' },
+  clock: { fontVariant: ['tabular-nums'] },
 }));
