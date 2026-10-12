@@ -120,6 +120,20 @@ describe('habits and logs', () => {
     expect(statuses).toEqual({ '2026-09-21': 'forgiven', '2026-09-22': 'forgiven', '2026-09-23': 'completed' });
   });
 
+  it('counts days with a habit completed, once per day (the Garden sprout)', async () => {
+    const r = repos(createTestDatabase().executor);
+    const a = await r.habits.create(newHabit);
+    const b = await r.habits.create({ ...newHabit, title: 'B' });
+    await r.logs.upsert({ habitId: a.id, logDate: '2026-09-20', currentCount: 1, status: 'completed' });
+    await r.logs.upsert({ habitId: b.id, logDate: '2026-09-20', currentCount: 1, status: 'completed' });
+    await r.logs.upsert({ habitId: a.id, logDate: '2026-09-21', currentCount: 0, status: 'skipped' });
+    await r.logs.upsert({ habitId: b.id, logDate: '2026-09-22', currentCount: 1, status: 'completed' });
+    await r.logs.upsert({ habitId: a.id, logDate: '2026-09-23', currentCount: 1, status: 'completed' });
+    // Two habits on the 20th count once; the skipped 21st doesn't count; the 23rd is "today".
+    expect(await r.logs.countCompletedDaysBefore('2026-09-23')).toBe(2);
+    expect(await r.logs.countCompletedDaysBefore('2026-09-01')).toBe(0);
+  });
+
   it('cascades logs when a habit is deleted', async () => {
     const r = repos(createTestDatabase().executor);
     const habit = await r.habits.create(newHabit);

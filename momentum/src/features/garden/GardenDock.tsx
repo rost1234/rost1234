@@ -1,5 +1,5 @@
-import type { ComponentProps } from 'react';
-import { Pressable, View } from 'react-native';
+import { useEffect, useState, type ComponentProps } from 'react';
+import { Keyboard, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,8 +11,6 @@ import { useNow } from '@/hooks/useNow';
 import { useFocusStore } from '@/state/focusStore';
 import { useT } from '@/i18n';
 
-/** Height of the dock and the gap under it, so lists and toasts can leave room. */
-export const DOCK_CLEARANCE = 88;
 
 function DockButton({
   icon,
@@ -43,6 +41,20 @@ function DockButton({
   );
 }
 
+/** True while the on-screen keyboard is up (the dock would ride up with it and cover the field). */
+function useKeyboardOpen(): boolean {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', () => setOpen(true));
+    const hide = Keyboard.addListener('keyboardDidHide', () => setOpen(false));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+  return open;
+}
+
 /**
  * Garden's floating dock: settings, the month, a big sun-yellow Focus button, and the library.
  * While a session runs, Focus shows the time left and reopens it.
@@ -56,12 +68,14 @@ export function GardenDock() {
   const running = timer !== null && timer.pausedAt === null;
   const now = useNow(running, 1000);
   const snapshot = timer ? computeSnapshot(timer, now) : null;
+  const keyboardOpen = useKeyboardOpen();
   const focusLabel = snapshot
     ? snapshot.isPaused
       ? t('home.focusPaused')
       : t('home.focusLeft', { time: formatClock(snapshot.remainingSeconds) })
     : t('home.focus');
 
+  if (keyboardOpen) return null;
   return (
     <View style={[styles.dock, { bottom: bottomInset + spacing.md }]}>
       <DockButton icon="settings-outline" label={t('garden.dockSettings')} onPress={() => router.push('/settings')} />
@@ -118,5 +132,6 @@ const useStyles = makeStyles(({ colors, shadow }) => ({
     paddingHorizontal: spacing.md,
   },
   focusLabel: { fontSize: 18, fontWeight: '800' },
-  clock: { fontVariant: ['tabular-nums'] },
+  // Regular weight: Varela Round's digits are all the same width, so the time doesn't wobble.
+  clock: { fontWeight: '400', fontVariant: ['tabular-nums'] },
 }));

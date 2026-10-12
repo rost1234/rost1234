@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Linking, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, Platform, Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { showConfirm } from '@/components/Overlay';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,7 +8,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { setStatusBarStyle } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Banner } from '@/components/ui';
-import { currentTheme, focusColors, radius, spacing } from '@/components/theme';
+import { currentTheme, focusColors, radius, spacing, makeStyles } from '@/components/theme';
 import { runDetached } from '@/core/errors';
 import { computeSnapshot } from '@/domain/focusTimer';
 import { CLASSIC_POMODORO } from '@/domain/pomodoro';
@@ -32,6 +32,7 @@ function useLinkLabel(link: FocusLink): { title: string | null; why: string | nu
 }
 
 function ActiveTimer() {
+  const styles = useStyles();
   const t = useT();
   const timer = useFocusStore((s) => s.timer);
   const { pause, resume, finish, cancel, onPhaseElapsed } = useFocusStore.getState();
@@ -92,6 +93,7 @@ function ActiveTimer() {
 }
 
 function TimerSetup({ initialHabitId }: { initialHabitId: string | null }) {
+  const styles = useStyles();
   const t = useT();
   const habits = useHabitStore((s) => s.habits);
   const tasks = useTaskStore((s) => s.tasks);
@@ -166,6 +168,7 @@ function TimerSetup({ initialHabitId }: { initialHabitId: string | null }) {
 
 /** Android can't toggle Do Not Disturb without a special permission, so we open its settings. */
 function DndHint() {
+  const styles = useStyles();
   const t = useT();
   if (Platform.OS !== 'android') return null;
   return (
@@ -183,6 +186,7 @@ function DndHint() {
 }
 
 export function FocusScreen() {
+  const styles = useStyles();
   const t = useT();
   const bottomSpace = useBottomSpace();
   // Deep link from a habit card's "Start Focus" button; keyed so a new habit re-seeds the form.
@@ -231,7 +235,8 @@ export function FocusScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+// Rebuilt per look (calm or garden), so the focus colors and corners follow it.
+const useStyles = makeStyles(() => ({
   flex: { flex: 1 },
   content: { padding: spacing.lg, gap: spacing.lg },
   title: { color: focusColors.text, fontSize: 28, fontWeight: '800', letterSpacing: -0.3 },
@@ -271,4 +276,4 @@ const styles = StyleSheet.create({
   fullWidth: { alignSelf: 'stretch' },
   dnd: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   dndText: { color: focusColors.textMuted, fontSize: 13, textDecorationLine: 'underline' },
-});
+}));

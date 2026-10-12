@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet } from 'react-native';
 import { Text } from '@/components/AppText';
-import { heroGradient, radius, spacing, useTheme } from '@/components/theme';
+import { heroGradient, radius, spacing, useTheme, makeStyles } from '@/components/theme';
 import { runDetached } from '@/core/errors';
 import { haptics } from '@/core/haptics';
 import { formatFriendlyDate } from '@/core/localDate';
@@ -16,6 +16,7 @@ const EMOJI: Record<number, string> = { 7: '🔥', 30: '🌟', 100: '🏆', 365:
 
 /** A short, quiet celebration for streak milestones — no points, no badges. */
 export function Celebration() {
+  const styles = useStyles();
   const t = useT();
   const celebration = useCelebrationStore((s) => s.celebration);
   const dismiss = useCelebrationStore((s) => s.dismiss);
@@ -103,7 +104,8 @@ export function Celebration() {
   );
 }
 
-const styles = StyleSheet.create({
+// Rebuilt per look (calm or garden), so the focus colors and corners follow it.
+const useStyles = makeStyles(() => ({
   backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(10,10,30,0.45)' },
   card: {
     alignItems: 'center',
@@ -121,4 +123,4 @@ const styles = StyleSheet.create({
   noteButton: { marginTop: spacing.xs, paddingHorizontal: spacing.md, paddingVertical: 6, borderRadius: radius.pill, backgroundColor: 'rgba(255,255,255,0.18)' },
   noteButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   note: { color: '#FFFFFF', fontSize: 14, fontStyle: 'italic', textAlign: 'center', marginTop: spacing.xs },
-});
+}));

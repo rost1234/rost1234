@@ -272,8 +272,14 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Bottom dock: Settings, Month, a big yellow ▶ Focus, Library; while a focus session runs it shows the time left; the last card and the Undo toast are not hidden behind it
 - [ ] Habit cards: a small pot per habit (a habit done often has a bigger plant), the big circle on the far side marks done (one tap), +1 on counted habits, drops for counts up to 12, a flower with "N days in a row"; long press offers "Focus on this habit"; a quit habit keeps "Urge now" as a wide pill
 - [ ] Small phone (360 wide) and the largest font size: habit names and the header text aren't cut badly; nothing overlaps the ring
-- [ ] Tap the sprout → "Your sprout": big sprout, the count, "N more to <next stage>" with a bar, all 9 stages (reached ✓, now, still to come), a pot per habit, and "Back to the regular look" switches back at once and closes the sheet
-- [ ] Mark a habit that crosses a stage (e.g. the 7th habit-day ever) → "Your sprout grew!" once; undo and mark again → no second celebration
+- [ ] Tap the sprout → "Your sprout": big sprout, "N days of watering so far", "N more days to <next stage>" with a bar, all 9 stages (reached ✓, now, still to come), a pot per habit, and "Back to the regular look" switches back at once and closes the sheet
+- [ ] The sprout counts days with at least one habit done (not habits): marking a second habit today doesn't add a day. A user with ~a week of history sees "Seedling" (7 days)
+- [ ] Mark the first habit on a day that crosses a stage (e.g. the 3rd or 7th day ever) → "Your sprout grew!" once; undo → the sprout keeps its stage (it never shrinks); mark again → no second celebration
+- [ ] Reopen the app the next morning → no celebration for yesterday's stage
+- [ ] Open the keyboard (add a task) → the dock hides and comes back when the keyboard closes
+- [ ] Switch Regular ↔ Garden without restarting, then open Focus: chips, sound tiles, the summary card and the Start button follow the look
+- [ ] A count habit in Hebrew: the drops point up
+- [ ] Largest font size: the Garden header puts the sprout above the words
 - [ ] Streak milestone celebrations in Garden show the sprout instead of an emoji and are readable (dark text on a light card)
 - [ ] Focus (Garden): night-blue screen, green ring, yellow Start; a small plant inside the ring grows from a sprout to a flower as the session runs; paused → sleepy face
 - [ ] Urge now (Garden): the sprout sits inside the countdown ring

@@ -1,8 +1,8 @@
 import type { ComponentProps } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
-import { focusColors, radius, spacing } from '@/components/theme';
+import { focusColors, radius, spacing, makeStyles } from '@/components/theme';
 import { runDetached } from '@/core/errors';
 import { haptics } from '@/core/haptics';
 import { playFocusMix, setFocusSoundVolume } from '@/services/focusSoundPlayer';
@@ -31,6 +31,7 @@ function SoundTile({
   badge?: string;
   onPress: () => void;
 }) {
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityRole="radio"
@@ -51,6 +52,7 @@ function SoundTile({
 }
 
 function VolumeRow({ volume, label, onChange }: { volume: number; label: string; onChange: (value: number) => void }) {
+  const styles = useStyles();
   const t = useT();
   return (
     <View style={styles.volumeRow} accessibilityRole="radiogroup" accessibilityLabel={label}>
@@ -77,6 +79,7 @@ function VolumeRow({ volume, label, onChange }: { volume: number; label: string;
 
 /** Optional background sound for focus sessions, with an optional second layer. */
 export function SoundPicker({ isPlaying }: SoundPickerProps) {
+  const styles = useStyles();
   const t = useT();
   const layers = useFocusSoundStore((s) => s.layers);
   const setSound = useFocusSoundStore((s) => s.setSound);
@@ -161,7 +164,8 @@ export function SoundPicker({ isPlaying }: SoundPickerProps) {
   );
 }
 
-const styles = StyleSheet.create({
+// Rebuilt per look (calm or garden), so the focus colors and corners follow it.
+const useStyles = makeStyles(() => ({
   container: { gap: spacing.md, alignSelf: 'stretch' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   tile: {
@@ -210,4 +214,4 @@ const styles = StyleSheet.create({
   },
   chipSelected: { backgroundColor: focusColors.surfaceActive, borderColor: focusColors.ringStart },
   chipText: { color: focusColors.textMuted, fontSize: 12, fontWeight: '600' },
-});
+}));

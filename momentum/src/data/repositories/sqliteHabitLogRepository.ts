@@ -28,6 +28,17 @@ export class SqliteHabitLogRepository implements HabitLogRepository {
     });
   }
 
+  countCompletedDaysBefore(date: LocalDateString): Promise<number> {
+    return guardDb('habitLogs.countCompletedDaysBefore', async () => {
+      const db = await this.db();
+      const row = await db.getFirstAsync<{ total: number }>(
+        "SELECT COUNT(DISTINCT log_date) AS total FROM habit_logs WHERE status = 'completed' AND log_date < ?",
+        [date],
+      );
+      return Number(row?.total ?? 0);
+    });
+  }
+
   getInRange(start: LocalDateString, end: LocalDateString): Promise<HabitLog[]> {
     return guardDb('habitLogs.getInRange', async () => {
       const db = await this.db();

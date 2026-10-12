@@ -17,7 +17,7 @@ import { useT } from '@/i18n';
 import { useHabitStore } from '@/state/habitStore';
 import { usePrefsStore } from '@/state/prefsStore';
 import { Sprout } from './Sprout';
-import { stageKey, useGardenGrowth, useHabitChoices } from './useGarden';
+import { stageKey, useGardenGrowth, useHabitDays } from './useGarden';
 
 /** Today's mood for the big sprout, the same as on Home. */
 function useTodayMood() {
@@ -30,7 +30,7 @@ function useTodayMood() {
   return sproutMood(percent, hour, due.length);
 }
 
-function StageRow({ stage, current, choices }: { stage: GrowthStage; current: GrowthStage; choices: number }) {
+function StageRow({ stage, current, days }: { stage: GrowthStage; current: GrowthStage; days: number }) {
   const t = useT();
   const { colors, typography } = useTheme();
   const styles = useStyles();
@@ -38,8 +38,8 @@ function StageRow({ stage, current, choices }: { stage: GrowthStage; current: Gr
   const isNow = stage === current;
   const at = GROWTH_STAGES[stage].at;
   const name = t(stageKey(stage));
-  const when = at === 0 ? t('garden.atStart') : t.plural('garden.atChoices', at);
-  const status = isNow ? t('garden.now') : reached ? t('garden.reached') : t.plural('garden.inChoices', at - choices);
+  const when = at === 0 ? t('garden.atStart') : t.plural('garden.atDays', at);
+  const status = isNow ? t('garden.now') : reached ? t('garden.reached') : t.plural('garden.inDays', Math.max(1, at - days));
   return (
     <View
       style={[styles.stageRow, isNow && { backgroundColor: colors.primarySoft, borderColor: colors.primary }]}
@@ -69,17 +69,18 @@ function HabitPot({ habit }: { habit: Habit }) {
   const t = useT();
   const { colors, typography } = useTheme();
   const styles = useStyles();
-  const choices = useHabitChoices(habit.id);
-  const stage = habitPotStage(choices);
+  const days = useHabitDays(habit.id);
+  const stage = habitPotStage(days);
+  const count = days === 0 ? t(stageKey(stage)) : t.plural(habit.isQuit ? 'garden.potClean' : 'garden.potDays', days);
   return (
-    <View style={styles.potTile} accessible accessibilityLabel={`${habit.title}: ${t(stageKey(stage))}${choices > 0 ? `, ${t.plural('garden.times', choices)}` : ''}`}>
+    <View style={styles.potTile} accessible accessibilityLabel={`${habit.title}: ${t(stageKey(stage))}${days > 0 ? `, ${count}` : ''}`}>
       <View style={[styles.potArt, { backgroundColor: colors.surfaceMuted }]}>
         <Sprout stage={stage} size={64} face={false} />
       </View>
       <Text style={[typography.label, styles.potTitle]} numberOfLines={2}>
         {habit.title}
       </Text>
-      <Text style={typography.caption}>{choices === 0 ? t(stageKey(stage)) : t.plural('garden.times', choices)}</Text>
+      <Text style={typography.caption}>{count}</Text>
     </View>
   );
 }
@@ -107,7 +108,7 @@ export function GardenScreen() {
             {stageName}
           </Text>
           <Text style={[typography.body, styles.center]}>
-            {growth.choices === 0 ? t('garden.choicesZero') : t.plural('garden.choices', growth.choices)}
+            {growth.days === 0 ? t('garden.daysZero') : t.plural('garden.days', growth.days)}
           </Text>
         </View>
 
@@ -126,7 +127,7 @@ export function GardenScreen() {
         <SectionTitle>{t('garden.path')}</SectionTitle>
         <View style={styles.stages}>
           {GROWTH_STAGES.map((_, i) => (
-            <StageRow key={i} stage={i as GrowthStage} current={growth.stage} choices={growth.choices} />
+            <StageRow key={i} stage={i as GrowthStage} current={growth.stage} days={growth.days} />
           ))}
         </View>
 

@@ -1,8 +1,8 @@
-import { I18nManager, Pressable, StyleSheet, View } from 'react-native';
+import { I18nManager, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/AppText';
 import { Card, Chip } from '@/components/ui';
-import { radius, spacing, useTheme } from '@/components/theme';
+import { radius, spacing, useTheme, makeStyles } from '@/components/theme';
 import { haptics } from '@/core/haptics';
 import { Sprout } from '@/features/garden/Sprout';
 import { resolveLanguage, useT } from '@/i18n';
@@ -22,6 +22,7 @@ const LANGUAGES: { id: LanguagePref; key: 'app.auto' | 'app.english' | 'app.hebr
 
 /** One look to pick: a small picture of it, its name and one line. */
 function LookOption({ look, selected, onPress }: { look: LookPref; selected: boolean; onPress: () => void }) {
+  const styles = useStyles();
   const t = useT();
   const { colors, typography, scenery } = useTheme();
   const name = look === 'garden' ? t('app.lookGarden') : t('app.lookCalm');
@@ -58,6 +59,7 @@ function LookOption({ look, selected, onPress }: { look: LookPref; selected: boo
 
 /** Theme and language. Direction (RTL/LTR) changes need an app restart on Android. */
 export function AppearanceSetting() {
+  const styles = useStyles();
   const t = useT();
   const { typography, colors } = useTheme();
   const theme = usePrefsStore((s) => s.theme);
@@ -105,7 +107,8 @@ export function AppearanceSetting() {
   );
 }
 
-const styles = StyleSheet.create({
+// Rebuilt per look (calm or garden), so the focus colors and corners follow it.
+const useStyles = makeStyles(() => ({
   card: { gap: spacing.md },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   looks: { gap: spacing.sm },
@@ -113,4 +116,4 @@ const styles = StyleSheet.create({
   lookArt: { width: 64, height: 64, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   lookText: { flex: 1, gap: 2 },
   calmRing: { width: 40, height: 40, borderRadius: 20, borderWidth: 4, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
-});
+}));

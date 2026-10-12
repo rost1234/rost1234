@@ -29,6 +29,8 @@ interface HabitState {
   streaks: Record<string, number>;
   /** habitId → days completed before today (all history); today's log adds the rest. */
   completedBefore: Record<string, number>;
+  /** Days before today with at least one habit completed (the Garden sprout grows with these). */
+  completedDaysBefore: number;
   status: LoadStatus;
   /** Transient, user-facing error (e.g. a failed write that was rolled back). */
   error: string | null;
@@ -157,6 +159,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
     logs: {},
     streaks: {},
     completedBefore: {},
+    completedDaysBefore: 0,
     status: 'idle',
     error: null,
     lastForgivenDays: 0,
@@ -171,9 +174,10 @@ export const useHabitStore = create<HabitState>((set, get) => {
         await usePlanningStore.getState().load(today);
         const reconcile = await reconcileStreakFreezes(habits, today);
         useSettingsStore.getState().setFreezesAvailable(reconcile.freezesRemaining);
-        const [logs, completedBefore] = await Promise.all([
+        const [logs, completedBefore, completedDaysBefore] = await Promise.all([
           repositories.habitLogs.getInRange(historyStart(today), today).then(indexLogs),
           repositories.habitLogs.countCompletedBefore(today).catch(() => ({})),
+          repositories.habitLogs.countCompletedDaysBefore(today).catch(() => 0),
         ]);
         if (get().today !== today) return; // a newer load superseded this one
         set({
@@ -181,6 +185,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
           logs,
           streaks: allStreaks(habits, logs, today),
           completedBefore,
+          completedDaysBefore,
           status: 'ready',
           error: null,
           lastForgivenDays: reconcile.forgivenDays,

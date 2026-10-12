@@ -3,6 +3,7 @@ import { Animated, Pressable } from 'react-native';
 import { Text } from '@/components/AppText';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { makeStyles, radius, spacing, useTheme } from './theme';
+import { DOCK_CLEARANCE } from './useBottomSpace';
 
 interface ToastProps {
   /** Changing this restarts the toast. */
@@ -17,8 +18,6 @@ interface ToastProps {
 }
 
 const FAB_CLEARANCE = 64;
-/** The Garden look's dock is taller than the Focus button. */
-const DOCK_CLEARANCE = 88;
 
 /** Small bottom toast with an optional action (e.g. Undo). */
 export function Toast({ id, message, actionLabel, onAction, onHide, durationMs = 4000, aboveFab }: ToastProps) {

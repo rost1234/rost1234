@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, View } from 'react-native';
+import { Animated, I18nManager, Pressable, useWindowDimensions, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -16,7 +16,7 @@ import { isPaused } from '@/domain/pauses';
 import { hasCompletionBefore } from '@/domain/streaks';
 import { quitSavings } from '@/domain/urges';
 import { Sprout } from '@/features/garden/Sprout';
-import { useHabitChoices } from '@/features/garden/useGarden';
+import { useHabitDays } from '@/features/garden/useGarden';
 import { quitPlanText, savingsText } from '@/features/urge/quitText';
 import { useUrgeStore } from '@/features/urge/urgeStore';
 import { useHabitStore } from '@/state/habitStore';
@@ -74,7 +74,9 @@ function HabitCardComponent({ habit }: HabitCardProps) {
   const styles = useStyles();
   const garden = look === 'garden';
   // Garden: the habit's own pot grows with every day it was done.
-  const choices = useHabitChoices(habit.id);
+  const potDays = useHabitDays(habit.id);
+  // Narrow phones: a smaller pot leaves room for the habit's name.
+  const narrow = useWindowDimensions().width < 380;
   // Each card subscribes only to its own slice, so a tap re-renders one card.
   const log = useHabitStore((s) => (s.today ? s.logs[habit.id]?.[s.today] : undefined));
   const streak = useHabitStore((s) => s.streaks[habit.id] ?? 0);
@@ -167,11 +169,17 @@ function HabitCardComponent({ habit }: HabitCardProps) {
             accessibilityHint={habit.isQuantitative ? t('habit.hintCount') : t('habit.hintBinary')}
             style={({ pressed }) => [styles.main, pressed && { opacity: 0.8 }]}
           >
-            <View style={[styles.pot, { backgroundColor: isDone ? colors.surface : habit.isQuit ? scenery.coralSoft : colors.surfaceMuted }]}>
-              <Sprout stage={habitPotStage(choices)} size={50} face={false} />
+            <View
+              style={[
+                styles.pot,
+                narrow && styles.potNarrow,
+                { backgroundColor: isDone ? colors.surface : habit.isQuit ? scenery.coralSoft : colors.surfaceMuted },
+              ]}
+            >
+              <Sprout stage={habitPotStage(potDays)} size={narrow ? 40 : 50} face={false} />
             </View>
             <View style={styles.body}>
-              <Text style={[styles.gTitle, isSkipped && styles.strike]} numberOfLines={1}>
+              <Text style={[styles.gTitle, isSkipped && styles.strike]} numberOfLines={2}>
                 {habit.title}
               </Text>
               <Text style={typography.caption} numberOfLines={1}>
@@ -182,7 +190,12 @@ function HabitCardComponent({ habit }: HabitCardProps) {
                   {Array.from({ length: habit.targetCount }, (_, i) => (
                     <View
                       key={i}
-                      style={[styles.drop, { borderColor: scenery.skyText }, i < progress.currentCount && { backgroundColor: scenery.skyText }]}
+                      style={[
+                        styles.drop,
+                        // The sharp corner is top-right in LTR; Android mirrors corners in RTL, so turn the other way.
+                        { borderColor: scenery.skyText, transform: [{ rotate: I18nManager.isRTL ? '45deg' : '-45deg' }] },
+                        i < progress.currentCount && { backgroundColor: scenery.skyText },
+                      ]}
                     />
                   ))}
                   <Text style={styles.count}>{countLabel}</Text>
@@ -470,11 +483,12 @@ const useStyles = makeStyles(({ colors, typography, flat }) => ({
     borderBottomLeftRadius: 31,
     borderBottomRightRadius: 24,
   },
+  potNarrow: { width: 44, height: 44, borderTopLeftRadius: 21, borderTopRightRadius: 25, borderBottomLeftRadius: 25, borderBottomRightRadius: 19 },
   gTitle: { fontSize: 18, color: colors.text },
   gLine: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
   gLineText: { fontSize: 14, flexShrink: 1 },
   drops: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 4, marginTop: 4 },
-  drop: { width: 11, height: 11, borderWidth: 2, borderTopLeftRadius: 6, borderTopRightRadius: 1, borderBottomLeftRadius: 6, borderBottomRightRadius: 6, transform: [{ rotate: '-45deg' }] },
+  drop: { width: 11, height: 11, borderWidth: 2, borderTopLeftRadius: 6, borderTopRightRadius: 1, borderBottomLeftRadius: 6, borderBottomRightRadius: 6 },
   gCheck: {
     width: 52,
     height: 52,

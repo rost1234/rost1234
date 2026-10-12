@@ -8,19 +8,19 @@ import {
   isNight,
   LAST_STAGE,
   sproutMood,
-  totalChoices,
+  gardenDays,
 } from '../garden';
 import { sproutShapes } from '@/features/garden/sproutArt';
 
 describe('garden growth', () => {
-  it('starts as a seed and grows at each threshold', () => {
+  it('starts as a seed and grows at each threshold (in days with a habit done)', () => {
     expect(growthStage(0)).toBe(0);
     expect(growthStage(1)).toBe(1);
-    expect(growthStage(6)).toBe(1);
-    expect(growthStage(7)).toBe(2);
-    expect(growthStage(99)).toBe(4);
-    expect(growthStage(100)).toBe(5);
-    expect(growthStage(500)).toBe(LAST_STAGE);
+    expect(growthStage(2)).toBe(1);
+    expect(growthStage(3)).toBe(2);
+    expect(growthStage(29)).toBe(4);
+    expect(growthStage(30)).toBe(5);
+    expect(growthStage(180)).toBe(LAST_STAGE);
     expect(growthStage(100_000)).toBe(LAST_STAGE);
   });
 
@@ -31,33 +31,42 @@ describe('garden growth', () => {
   });
 
   it('tells how far it is to the next stage', () => {
-    expect(growthProgress(10)).toEqual({ stage: 2, next: 3, toNext: 11, ratio: 3 / 14 });
+    expect(growthProgress(10)).toEqual({ stage: 3, next: 4, toNext: 4, ratio: 3 / 7 });
     expect(growthProgress(0)).toEqual({ stage: 0, next: 1, toNext: 1, ratio: 0 });
     expect(growthProgress(600)).toEqual({ stage: 8, next: null, toNext: 0, ratio: 1 });
   });
 
-  it('reports growth only when a stage is crossed', () => {
-    expect(grewTo(6, 7)).toBe(2);
-    expect(grewTo(7, 8)).toBeNull();
-    // Undo never "shrinks" into a celebration.
-    expect(grewTo(7, 6)).toBeNull();
+  it('never shrinks: a stage once reached stays even if a mark is cleared', () => {
+    // Reached "plant" (14 days), then a day was cleared: still a plant, 0% of the way to a bud.
+    expect(growthProgress(13, 4)).toEqual({ stage: 4, next: 5, toNext: 17, ratio: 0 });
+    // History says more than the record: history wins.
+    expect(growthProgress(30, 2).stage).toBe(5);
+    // Garbage records are clamped.
+    expect(growthProgress(0, 99).stage).toBe(LAST_STAGE);
   });
 
-  it('counts every completed habit-day, today included', () => {
+  it('reports growth only when a stage is crossed', () => {
+    expect(grewTo(2, 3)).toBe(2);
+    expect(grewTo(3, 4)).toBeNull();
+    // Undo never "shrinks" into a celebration.
+    expect(grewTo(3, 2)).toBeNull();
+  });
+
+  it('counts days with a habit done, not habits: today adds at most one', () => {
     const logs = {
       a: { '2026-10-12': { status: 'completed' as const }, '2026-10-11': { status: 'completed' as const } },
-      b: { '2026-10-12': { status: 'in_progress' as const } },
+      b: { '2026-10-12': { status: 'completed' as const } },
       c: { '2026-10-12': { status: 'skipped' as const } },
     };
-    // Days before today come from completedBefore; only today's logs are added on top.
-    expect(totalChoices({ a: 5, b: 2 }, logs, '2026-10-12')).toBe(8);
-    expect(totalChoices({}, {}, null)).toBe(0);
+    expect(gardenDays(5, logs, '2026-10-12')).toBe(6);
+    expect(gardenDays(5, { c: logs.c }, '2026-10-12')).toBe(5);
+    expect(gardenDays(4, {}, null)).toBe(4);
   });
 
-  it('a single habit pot grows faster than the main sprout', () => {
+  it("a habit's own pot uses the same scale", () => {
     expect(habitPotStage(0)).toBe(0);
-    expect(habitPotStage(4)).toBe(2);
-    expect(habitPotStage(50)).toBe(5);
+    expect(habitPotStage(3)).toBe(2);
+    expect(habitPotStage(30)).toBe(5);
   });
 });
 

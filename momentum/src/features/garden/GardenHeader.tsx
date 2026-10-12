@@ -1,4 +1,5 @@
-import { Pressable, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Pressable, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Text } from '@/components/AppText';
@@ -6,6 +7,7 @@ import { ProgressRing } from '@/components/ProgressRing';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { formatFriendlyDate, type LocalDateString } from '@/core/localDate';
 import { isNight, sproutMood } from '@/domain/garden';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { useT, type TranslationKey } from '@/i18n';
 import { Sprout } from './Sprout';
 import { stageKey, useGardenGrowth } from './useGarden';
@@ -36,7 +38,7 @@ function Sky({ night }: { night: boolean }) {
     return (
       <View pointerEvents="none" style={styles.sky}>
         <View style={[styles.sun, { backgroundColor: scenery.sun }]} />
-        <View style={styles.cloud} />
+        <View style={[styles.cloud, { backgroundColor: scenery.cloud }]} />
       </View>
     );
   }
@@ -52,12 +54,32 @@ function Sky({ night }: { night: boolean }) {
   );
 }
 
+/** A small hop of the sprout each time another habit is done today (skipped with reduced motion). */
+function useHop(doneCount: number): Animated.Value {
+  const [y] = useState(() => new Animated.Value(0));
+  const last = useRef(doneCount);
+  const reduce = useReduceMotion();
+  useEffect(() => {
+    if (doneCount > last.current && !reduce) {
+      Animated.sequence([
+        Animated.timing(y, { toValue: -10, duration: 140, useNativeDriver: true }),
+        Animated.spring(y, { toValue: 0, friction: 4, tension: 140, useNativeDriver: true }),
+      ]).start();
+    }
+    last.current = doneCount;
+  }, [doneCount, reduce, y]);
+  return y;
+}
+
 /** Today in the Garden look: the date and the day's progress, with the sprout inside the day's ring. */
 export function GardenHeader({ today, hour, percent, doneCount, totalCount, freezes, dayOffLabel, dayOffName }: GardenHeaderProps) {
   const t = useT();
   const { colors, scenery } = useTheme();
   const styles = useStyles();
   const growth = useGardenGrowth();
+  const hop = useHop(doneCount);
+  // With very large text, the ring goes above the words instead of squeezing them.
+  const stacked = useWindowDimensions().fontScale > 1.3;
   const mood = sproutMood(percent, hour, totalCount);
   const stageName = t(stageKey(growth.stage));
   const message =
@@ -70,8 +92,8 @@ export function GardenHeader({ today, hour, percent, doneCount, totalCount, free
   return (
     <View style={[styles.hill, { backgroundColor: scenery.hill }]}>
       <Sky night={isNight(hour)} />
-      <View style={styles.row}>
-        <View style={styles.text}>
+      <View style={[styles.row, stacked && styles.stacked]}>
+        <View style={[styles.text, stacked && styles.textStacked]}>
           {dayOffLabel ? (
             <View style={[styles.pill, { backgroundColor: colors.surface }]} accessible accessibilityLabel={dayOffName ?? dayOffLabel}>
               <Text style={[styles.pillText, { color: colors.text }]}>{dayOffLabel}</Text>
@@ -80,7 +102,9 @@ export function GardenHeader({ today, hour, percent, doneCount, totalCount, free
           <Text style={styles.date} accessibilityRole="header">
             {formatFriendlyDate(today, t.locale)}
           </Text>
-          <Text style={styles.greeting}>{t(greetingKey(hour))}</Text>
+          <Text style={styles.greeting} maxFontSizeMultiplier={1.5}>
+            {t(greetingKey(hour))}
+          </Text>
           <Text style={styles.message}>{message}</Text>
           <View style={styles.pills}>
             <Pressable
@@ -107,7 +131,7 @@ export function GardenHeader({ today, hour, percent, doneCount, totalCount, free
             </Pressable>
           </View>
         </View>
-        {/* The sprout grows with every habit done; the ring around it is today. */}
+        {/* The sprout grows with every day a habit is done; the ring around it is today. */}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={
@@ -116,11 +140,13 @@ export function GardenHeader({ today, hour, percent, doneCount, totalCount, free
           accessibilityHint={t('garden.headerHint')}
           onPress={() => router.push('/garden')}
           hitSlop={6}
-          style={({ pressed }) => [styles.ringWrap, pressed && { transform: [{ scale: 0.97 }] }]}
+          style={({ pressed }) => [styles.ringWrap, stacked && { alignSelf: 'center' }, pressed && { transform: [{ scale: 0.97 }] }]}
         >
           <ProgressRing value={percent / 100} size={124} stroke={9} track={colors.border} from={colors.primary} to={colors.primary}>
             <View style={[styles.ringInner, { backgroundColor: colors.surface }]}>
-              <Sprout stage={growth.stage} mood={mood} size={86} />
+              <Animated.View style={{ transform: [{ translateY: hop }] }}>
+                <Sprout stage={growth.stage} mood={mood} size={86} />
+              </Animated.View>
             </View>
           </ProgressRing>
           <Text style={styles.stage} numberOfLines={1}>
@@ -147,10 +173,12 @@ const useStyles = makeStyles(({ colors }) => ({
   sky: { position: 'absolute', top: 0, start: 0, end: 0, height: 70 },
   sun: { position: 'absolute', top: 12, end: 20, width: 30, height: 30, borderRadius: 15, overflow: 'hidden' },
   moonBite: { position: 'absolute', top: -6, end: -8, width: 28, height: 28, borderRadius: 14 },
-  cloud: { position: 'absolute', top: 20, end: 130, width: 64, height: 20, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.7)' },
+  cloud: { position: 'absolute', top: 20, end: 130, width: 64, height: 20, borderRadius: 10 },
   star: { position: 'absolute', width: 4, height: 4, borderRadius: 2 },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginTop: spacing.md },
+  stacked: { flexDirection: 'column-reverse', alignItems: 'stretch' },
   text: { flex: 1, gap: 2 },
+  textStacked: { flex: 0 },
   date: { fontSize: 15, color: colors.textMuted },
   greeting: { fontSize: 30, lineHeight: 38, fontWeight: '800', color: colors.text },
   message: { fontSize: 16, color: colors.text, marginTop: 2 },

@@ -3,16 +3,15 @@ import { create } from 'zustand';
 import { runDetached } from '@/core/errors';
 import { addDays } from '@/core/localDate';
 import { repositories } from '@/data/repositories';
-import { grewTo, totalChoices, type GrowthStage } from '@/domain/garden';
+import { gardenDays, grewTo, growthStage, type GrowthStage } from '@/domain/garden';
 import { habitStartDate } from '@/domain/habitSchedule';
 import type { Habit } from '@/domain/models';
 import { crossedMilestone } from '@/domain/rhythm';
 import { useHabitStore } from './habitStore';
+import { useGardenStore } from './gardenStore';
 import { usePrefsStore } from './prefsStore';
 
 const MILESTONES_KEY = 'momentum.milestones.v1';
-/** The highest Garden stage already celebrated, so undo and redo don't celebrate twice. */
-const GARDEN_KEY = 'momentum.garden.v1';
 
 export interface Celebration {
   /** A streak milestone, the very first completion after setup, or the Garden sprout growing. */
@@ -68,22 +67,16 @@ async function celebrateOnce(habit: Habit, days: number, choices: number): Promi
   useCelebrationStore.setState({ celebration: { kind: 'milestone', habitTitle: habit.title, days, choices, dayOneNote, at: Date.now() } });
 }
 
-let gardenStage: number | null = null;
-
-async function celebrateGrowth(stage: GrowthStage): Promise<void> {
-  if (gardenStage === null) {
-    try {
-      const raw = await AsyncStorage.getItem(GARDEN_KEY);
-      const parsed: unknown = raw ? JSON.parse(raw) : null;
-      gardenStage = parsed && typeof parsed === 'object' && typeof (parsed as { stage?: unknown }).stage === 'number' ? (parsed as { stage: number }).stage : -1;
-    } catch {
-      gardenStage = -1;
-    }
-  }
-  if (stage <= gardenStage) return;
-  gardenStage = stage;
-  runDetached(AsyncStorage.setItem(GARDEN_KEY, JSON.stringify({ stage })));
-  // A streak milestone on the same tap keeps the stage; the grown sprout is on Home anyway.
+/**
+ * Keeps the sprout's highest stage (in either look, so it never shrinks) and, in the Garden look,
+ * celebrates a new stage reached by a habit marked done just now. A stage is celebrated once:
+ * undo and redo don't repeat it.
+ */
+async function recordGrowth(days: number, grewNow: boolean): Promise<void> {
+  const stage = growthStage(days);
+  const raised = await useGardenStore.getState().raise(stage);
+  if (!raised || !grewNow || usePrefsStore.getState().look !== 'garden') return;
+  // A streak milestone on the same tap keeps the screen; the grown sprout is on Home anyway.
   if (useCelebrationStore.getState().celebration) return;
   useCelebrationStore.setState({ celebration: { kind: 'growth', stage, habitTitle: '', days: 0, choices: 0, at: Date.now() } });
 }
@@ -111,10 +104,12 @@ export function startHabitEffects(): void {
       }
     }
 
-    // Garden: a habit marked done today grew the sprout to its next stage.
-    if (state.today === prev.today && state.status === 'ready' && prev.status === 'ready' && usePrefsStore.getState().look === 'garden') {
-      const stage = grewTo(totalChoices(prev.completedBefore, prev.logs, today), totalChoices(state.completedBefore, state.logs, today));
-      if (stage !== null) runDetached(celebrateGrowth(stage));
+    // Garden: remember how far the sprout grew; celebrate when a tap just now grew it.
+    if (state.status === 'ready') {
+      const days = gardenDays(state.completedDaysBefore, state.logs, today);
+      const tapped = state.today === prev.today && prev.status === 'ready';
+      const grewNow = tapped && grewTo(gardenDays(prev.completedDaysBefore, prev.logs, today), days) !== null;
+      runDetached(recordGrowth(days, grewNow));
     }
   });
 }

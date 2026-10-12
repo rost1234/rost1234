@@ -12,7 +12,7 @@ import { dailyProgressPercent, progressOf } from '@/domain/habitProgress';
 import { habitsDueOn } from '@/domain/habitSchedule';
 import { orderByTimeOfDay } from '@/domain/rhythm';
 import { orderByStacking } from '@/domain/stacking';
-import { DOCK_CLEARANCE, GardenDock } from '@/features/garden/GardenDock';
+import { GardenDock } from '@/features/garden/GardenDock';
 import { GardenHeader } from '@/features/garden/GardenHeader';
 import { InsightCard } from '@/features/insights/InsightCard';
 import { LetterDueCard } from '@/features/letters/LetterDueCard';
@@ -44,7 +44,7 @@ import { MoreSection } from './MoreSection';
 import { ReflectionPrompt } from './ReflectionPrompt';
 import { TaskList } from './TaskList';
 import { useT } from '@/i18n';
-import { useBottomSpace } from '@/components/useBottomSpace';
+import { DOCK_CLEARANCE, useBottomSpace } from '@/components/useBottomSpace';
 
 const EVENING_HOUR = 17;
 

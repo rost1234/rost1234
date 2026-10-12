@@ -1,14 +1,15 @@
 import type { ComponentProps, ReactNode } from 'react';
-import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, type StyleProp, type ViewStyle } from 'react-native';
 import { Text } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
-import { focusColors, radius, spacing } from '@/components/theme';
+import { focusColors, radius, spacing, makeStyles } from '@/components/theme';
 import { haptics } from '@/core/haptics';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
 /** Pill chip for the dark focus screen. */
 export function FocusChip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityRole="button"
@@ -17,7 +18,7 @@ export function FocusChip({ label, selected, onPress }: { label: string; selecte
         haptics.select();
         onPress();
       }}
-      style={[styles.chip, selected && [styles.chipSelected, { backgroundColor: focusColors.surfaceActive, borderColor: focusColors.ringStart }]]}
+      style={[styles.chip, selected && styles.chipSelected]}
     >
       <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]} numberOfLines={1}>
         {label}
@@ -42,7 +43,7 @@ export function FocusButton({
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
 }) {
-  // Colors are read while rendering: they follow the look (calm or garden).
+  const styles = useStyles();
   const color = variant === 'primary' ? focusColors.onButton : variant === 'ghost' ? focusColors.textMuted : focusColors.text;
   return (
     <Pressable
@@ -52,7 +53,7 @@ export function FocusButton({
         haptics.tap();
         onPress();
       }}
-      style={({ pressed }) => [styles.button, styles[variant], variant === 'primary' && { backgroundColor: focusColors.button }, pressed && { opacity: 0.8 }, style]}
+      style={({ pressed }) => [styles.button, styles[variant], pressed && { opacity: 0.8 }, style]}
     >
       {icon ? <Ionicons name={icon} size={18} color={color} /> : null}
       <Text style={[styles.buttonLabel, { color }]}>{label}</Text>
@@ -61,10 +62,12 @@ export function FocusButton({
 }
 
 export function FocusLabel({ children }: { children: ReactNode }) {
+  const styles = useStyles();
   return <Text style={styles.label}>{children}</Text>;
 }
 
-const styles = StyleSheet.create({
+// Rebuilt per look (calm or garden), so the focus colors and corners follow it.
+const useStyles = makeStyles(() => ({
   chip: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm + 2,
@@ -86,9 +89,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     borderRadius: radius.pill,
   },
-  primary: { backgroundColor: '#E4EEEE' },
+  primary: { backgroundColor: focusColors.button },
   secondary: { backgroundColor: focusColors.surface, borderWidth: 1, borderColor: focusColors.border },
   ghost: { backgroundColor: 'transparent' },
   buttonLabel: { fontSize: 16, fontWeight: '700' },
   label: { color: focusColors.textMuted, fontSize: 12, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' },
-});
+}));

@@ -135,6 +135,7 @@ export interface Scenery {
   skyText: string;
   coral: string;
   coralSoft: string;
+  cloud: string;
 }
 
 const GARDEN_LIGHT_SCENERY: Scenery = {
@@ -145,6 +146,7 @@ const GARDEN_LIGHT_SCENERY: Scenery = {
   skyText: '#1D5C86',
   coral: '#A8431A',
   coralSoft: '#FFE3D3',
+  cloud: 'rgba(255,255,255,0.7)',
 };
 
 const GARDEN_DARK_SCENERY: Scenery = {
@@ -155,6 +157,7 @@ const GARDEN_DARK_SCENERY: Scenery = {
   skyText: '#9FD3F2',
   coral: '#FFA477',
   coralSoft: '#47291F',
+  cloud: 'rgba(255,255,255,0.10)',
 };
 
 type FocusPalette = {
