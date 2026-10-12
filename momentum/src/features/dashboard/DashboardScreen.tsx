@@ -65,7 +65,12 @@ function useDashboardData(today: string, hour: number) {
     () => dueToday.filter((habit) => progressOf(logs[habit.id]?.[today]).status === 'completed').length,
     [dueToday, logs, today],
   );
-  return { dueToday, percent, doneCount, restCount: habits.length - dueToday.length };
+  // Skipped habits don't count toward "all done" (the ring ignores them too).
+  const countedCount = useMemo(
+    () => dueToday.filter((habit) => progressOf(logs[habit.id]?.[today]).status !== 'skipped').length,
+    [dueToday, logs, today],
+  );
+  return { dueToday, percent, doneCount, countedCount, restCount: habits.length - dueToday.length };
 }
 
 export function DashboardScreen() {
@@ -74,6 +79,8 @@ export function DashboardScreen() {
   const { look, scenery } = useTheme();
   const garden = look === 'garden';
   const sproutStage = useGardenGrowth().stage;
+  // The toast's little sprout only cheers when the change marked a habit done.
+  const lastWasDone = useHabitStore((s) => (s.lastChange && s.today ? s.logs[s.lastChange.habitId]?.[s.today]?.status === 'completed' : false));
   // Extra room for the floating focus button (or the Garden dock).
   const bottomSpace = useBottomSpace(garden ? DOCK_CLEARANCE : 72);
   // Re-renders (and reloads) automatically when the local date rolls over.
@@ -93,7 +100,7 @@ export function DashboardScreen() {
   const isEvening = hour >= EVENING_HOUR;
   const freezes = useSettingsStore((s) => s.settings?.streakFreezesAvailable ?? 0);
   const reflection = useReflectionStore((s) => s.byDate[today]);
-  const { dueToday, percent, doneCount, restCount } = useDashboardData(today, hour);
+  const { dueToday, percent, doneCount, countedCount, restCount } = useDashboardData(today, hour);
   const dayOff = useDayOff(today);
   const welcomeBack = useWelcomeBack(today);
   const showWelcomeBack = useHomePromptSlot('welcomeBack', welcomeBack.show);
@@ -163,7 +170,7 @@ export function DashboardScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {garden ? (
-          <GardenHeader {...headerProps} comeback={welcomeBack.show} />
+          <GardenHeader {...headerProps} countedCount={countedCount} comeback={welcomeBack.show} />
         ) : (
           <>
             <HomeTopBar />
@@ -249,7 +256,7 @@ export function DashboardScreen() {
           onHide={dismissLastChange}
           aboveFab
           // Garden: the sprout cheers in the corner of the toast.
-          leading={garden ? <Sprout stage={sproutStage} mood="joy" size={34} /> : undefined}
+          leading={garden && lastWasDone ? <Sprout stage={sproutStage} mood="joy" size={34} /> : undefined}
         />
       ) : null}
       {garden ? <GardenDock /> : <FocusFab />}

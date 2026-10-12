@@ -5,7 +5,7 @@ describe('habit groups on Home', () => {
   const read = makeHabit({ id: 'read', title: 'Read' });
   const run = makeHabit({ id: 'run', title: 'Run', groupName: 'Fitness' });
   const water = makeHabit({ id: 'water', title: 'Water' });
-  const push = makeHabit({ id: 'push', title: 'Push-ups', groupName: 'Fitness ' });
+  const push = makeHabit({ id: 'push', title: 'Push-ups', groupName: 'fitness ' });
   const stretch = makeHabit({ id: 'stretch', title: 'Stretch', groupName: 'Fitness' });
 
   it('folds a group into one item where its first habit is, keeping the order', () => {

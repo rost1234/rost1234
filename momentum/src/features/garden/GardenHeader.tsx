@@ -26,6 +26,8 @@ interface GardenHeaderProps {
   dayOffName: string | null;
   /** Back after a break: the sprout says it missed you. */
   comeback?: boolean;
+  /** Habits due today that weren't skipped (what "all done" means). */
+  countedCount?: number;
 }
 
 function greetingKey(hour: number): TranslationKey {
@@ -60,7 +62,7 @@ function Sky({ night }: { night: boolean }) {
 }
 
 /** The sprout's speech bubble; a new line pops in gently. Screen readers hear each new line. */
-function Bubble({ text, id, stacked }: { text: string; id: number | string; stacked: boolean }) {
+function Bubble({ text, id, stacked, live }: { text: string; id: number | string; stacked: boolean; live: boolean }) {
   const { colors } = useTheme();
   const styles = useStyles();
   const reduce = useReduceMotion();
@@ -73,8 +75,9 @@ function Bubble({ text, id, stacked }: { text: string; id: number | string; stac
   const scale = pop.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] });
   return (
     <Animated.View
-      style={[styles.bubble, { backgroundColor: colors.surface, opacity: pop, transform: [{ scale }] }]}
-      accessibilityLiveRegion="polite"
+      style={[styles.bubble, stacked && styles.bubbleStacked, { backgroundColor: colors.surface, opacity: pop, transform: [{ scale }] }]}
+      // Only reactions are read out; the everyday line coming back isn't repeated.
+      accessibilityLiveRegion={live ? 'polite' : 'none'}
     >
       <View style={[styles.tail, stacked ? styles.tailUp : styles.tailSide, { backgroundColor: colors.surface }]} />
       <Text style={styles.bubbleText}>{text}</Text>
@@ -93,7 +96,18 @@ const EVENT_MS = 9000;
  * (greets, thanks you for each habit, cheers a full day, is glad when you're back), hops when a
  * habit is done and reacts when tapped. Long-press (or "Your sprout") opens every stage.
  */
-export function GardenHeader({ today, hour, percent, doneCount, totalCount, freezes, dayOffLabel, dayOffName, comeback = false }: GardenHeaderProps) {
+export function GardenHeader({
+  today,
+  hour,
+  percent,
+  doneCount,
+  totalCount,
+  freezes,
+  dayOffLabel,
+  dayOffName,
+  comeback = false,
+  countedCount = totalCount,
+}: GardenHeaderProps) {
   const t = useT();
   const { colors, scenery } = useTheme();
   const styles = useStyles();
@@ -107,7 +121,7 @@ export function GardenHeader({ today, hour, percent, doneCount, totalCount, free
   const seed = daySeed(today);
   const ctx: TalkContext = {
     hour,
-    dueCount: totalCount,
+    dueCount: countedCount,
     doneCount,
     noHabits,
     comeback,
@@ -183,7 +197,7 @@ export function GardenHeader({ today, hour, percent, doneCount, totalCount, free
       </View>
 
       <View style={[styles.stageRow, stacked && styles.stacked]}>
-        <Bubble text={said} id={lineId} stacked={stacked} />
+        <Bubble text={said} id={lineId} stacked={stacked} live={event !== null} />
         {/* The sprout grows with every day a habit is done; the ring around it is today. */}
         <Pressable
           accessibilityRole="button"
@@ -281,6 +295,7 @@ const useStyles = makeStyles(({ colors }) => ({
     paddingVertical: spacing.sm + 2,
     borderRadius: 20,
   },
+  bubbleStacked: { flex: 0 },
   bubbleText: { fontSize: 16, lineHeight: 23, color: colors.text },
   tail: { position: 'absolute', width: 16, height: 16, transform: [{ rotate: '45deg' }] },
   tailSide: { end: -6, top: '50%', marginTop: -8 },

@@ -7,21 +7,23 @@ export type HomeItem = { kind: 'habit'; habit: Habit } | { kind: 'group'; name: 
  * A group with only one habit due today shows as that habit on its own.
  */
 export function groupForHome(habits: readonly Habit[]): HomeItem[] {
+  // "Fitness" and "fitness " are the same group; it shows with the first habit's spelling.
+  const keyOf = (habit: Habit) => habit.groupName.trim().toLocaleLowerCase();
   const byGroup = new Map<string, Habit[]>();
   for (const habit of habits) {
-    const name = habit.groupName.trim();
-    if (name) byGroup.set(name, [...(byGroup.get(name) ?? []), habit]);
+    const key = keyOf(habit);
+    if (key) byGroup.set(key, [...(byGroup.get(key) ?? []), habit]);
   }
   const items: HomeItem[] = [];
   const placed = new Set<string>();
   for (const habit of habits) {
-    const name = habit.groupName.trim();
-    const members = name ? byGroup.get(name) : undefined;
+    const key = keyOf(habit);
+    const members = key ? byGroup.get(key) : undefined;
     if (!members || members.length < 2) {
       items.push({ kind: 'habit', habit });
-    } else if (!placed.has(name)) {
-      placed.add(name);
-      items.push({ kind: 'group', name, habits: members });
+    } else if (!placed.has(key)) {
+      placed.add(key);
+      items.push({ kind: 'group', name: habit.groupName.trim(), habits: members });
     }
   }
   return items;

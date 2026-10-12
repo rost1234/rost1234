@@ -15,6 +15,8 @@ interface LiveSproutProps {
   talkKey?: number | string;
   /** Changes when the sprout was tapped: a little wiggle. */
   pokeKey?: number;
+  /** Hop once as soon as it appears (celebrations). */
+  cheerOnMount?: boolean;
 }
 
 const BLINK_MS = 130;
@@ -27,7 +29,7 @@ const FLAP_MS = 110;
  * moves its mouth when it speaks, hops when a habit is done and wiggles when poked.
  * With "reduce motion" on, it stays still (the face still changes).
  */
-export function LiveSprout({ stage, mood, size, cheerKey = 0, talkKey = 0, pokeKey = 0 }: LiveSproutProps) {
+export function LiveSprout({ stage, mood, size, cheerKey = 0, talkKey = 0, pokeKey = 0, cheerOnMount = false }: LiveSproutProps) {
   const reduce = useReduceMotion();
   const [breath] = useState(() => new Animated.Value(0));
   const [hop] = useState(() => new Animated.Value(0));
@@ -35,7 +37,7 @@ export function LiveSprout({ stage, mood, size, cheerKey = 0, talkKey = 0, pokeK
   const [blink, setBlink] = useState(false);
   const [mouthOpen, setMouthOpen] = useState(false);
   const [cheering, setCheering] = useState(false);
-  const first = useRef({ cheer: cheerKey, talk: talkKey, poke: pokeKey });
+  const first = useRef({ cheer: cheerOnMount ? Number.NaN : cheerKey, talk: talkKey, poke: pokeKey });
 
   // Breathing and swaying while the screen is in front (stopped when it isn't, to save battery).
   useFocusEffect(

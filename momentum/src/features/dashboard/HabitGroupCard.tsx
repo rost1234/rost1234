@@ -23,7 +23,7 @@ function MemberPill({ habit }: { habit: Habit }) {
   const progress = progressOf(log);
   const isDone = progress.status === 'completed';
   const isSkipped = progress.status === 'skipped';
-  const count = habit.isQuantitative ? `${progress.currentCount}/${habit.targetCount}` : null;
+  const count = habit.isQuantitative ? `${progress.currentCount}/${habit.targetCount}${habit.unit ? ` ${habit.unit}` : ''}` : null;
   const mark = () => {
     const willComplete = habit.isQuantitative ? progress.currentCount + 1 >= habit.targetCount && !isDone : !isDone;
     if (willComplete) haptics.success();
@@ -70,16 +70,20 @@ export function HabitGroupCard({ name, habits }: { name: string; habits: readonl
   const open = useGroupFoldStore((s) => s.open[name] === true);
   const toggle = useGroupFoldStore((s) => s.toggle);
   const done = useHabitStore((s) => habits.filter((h) => s.today && s.logs[h.id]?.[s.today]?.status === 'completed').length);
-  // Garden: the group's pot shows its most grown habit.
-  const potDays = useHabitStore((s) => Math.max(0, ...habits.map((h) => s.completedBefore[h.id] ?? 0)));
-  const allDone = done === habits.length;
+  // A habit skipped today doesn't count against "all done".
+  const total = useHabitStore((s) => habits.filter((h) => !(s.today && s.logs[h.id]?.[s.today]?.status === 'skipped')).length);
+  // Garden: the group's pot shows its most grown habit (today included).
+  const potDays = useHabitStore((s) =>
+    Math.max(0, ...habits.map((h) => (s.completedBefore[h.id] ?? 0) + (s.today && s.logs[h.id]?.[s.today]?.status === 'completed' ? 1 : 0))),
+  );
+  const allDone = total > 0 && done >= total;
 
   return (
     <View style={[styles.card, allDone && styles.cardDone]}>
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
-        accessibilityLabel={t('group.a11y', { name, done, total: habits.length })}
+        accessibilityLabel={t('group.a11y', { name, done, total })}
         accessibilityHint={open ? t('group.fold') : t('group.unfold')}
         onPress={() => {
           haptics.select();
@@ -100,11 +104,11 @@ export function HabitGroupCard({ name, habits }: { name: string; habits: readonl
           <Text style={[typography.label, styles.name]} numberOfLines={1}>
             {name}
           </Text>
-          <Text style={typography.caption}>{allDone ? t('group.allDone') : t('group.doneOf', { done, total: habits.length })}</Text>
+          <Text style={typography.caption}>{allDone ? t('group.allDone') : t('group.doneOf', { done, total })}</Text>
         </View>
         <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={20} color={colors.textMuted} />
       </Pressable>
-      <ProgressBar value={done / habits.length} color={colors.success} height={6} />
+      <ProgressBar value={total > 0 ? done / total : 0} color={colors.success} height={6} />
       {open ? (
         <View style={styles.members}>
           {habits.map((habit) => (

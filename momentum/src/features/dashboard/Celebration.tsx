@@ -67,7 +67,7 @@ export function Celebration() {
         style={[styles.card, garden && { backgroundColor: colors.surface, borderWidth: 2, borderColor: colors.border }, { transform: [{ scale }] }]}
       >
         {garden ? (
-          <LiveSprout stage={celebration.stage ?? growth.stage} mood="joy" size={130} cheerKey={celebration.at} />
+          <LiveSprout stage={celebration.stage ?? growth.stage} mood="joy" size={130} cheerKey={celebration.at} cheerOnMount />
         ) : (
           <Text style={styles.emoji}>{celebration.kind === 'firstWin' ? '🌱' : (EMOJI[celebration.days] ?? '🎉')}</Text>
         )}
