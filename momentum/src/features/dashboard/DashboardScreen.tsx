@@ -17,7 +17,7 @@ import { GardenDock } from '@/features/garden/GardenDock';
 import { GardenHeader } from '@/features/garden/GardenHeader';
 import { Sprout } from '@/features/garden/Sprout';
 import { useGardenGrowth } from '@/features/garden/useGarden';
-import { InsightCard } from '@/features/insights/InsightCard';
+import { InsightCard, useDailyInsight } from '@/features/insights/InsightCard';
 import { LetterDueCard } from '@/features/letters/LetterDueCard';
 import { shouldShowWeeklySummary } from '@/features/weekly/weeklyPrompt';
 import { openEndedUrge, useUrgeStore } from '@/features/urge/urgeStore';
@@ -104,6 +104,8 @@ export function DashboardScreen() {
   const freezes = useSettingsStore((s) => s.settings?.streakFreezesAvailable ?? 0);
   const reflection = useReflectionStore((s) => s.byDate[today]);
   const { dueToday, percent, doneCount, countedCount, restCount } = useDashboardData(today, hour);
+  // One insight a day: a card, or in the Garden look the sprout tells it.
+  const daily = useDailyInsight(today);
   // Skipped, "not today" and morning-only habits after the morning wait in a folded section.
   const logs = useHabitStore((s) => s.logs);
   const closedDate = useDayCloseStore((s) => s.date);
@@ -181,7 +183,7 @@ export function DashboardScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {garden ? (
-          <GardenHeader {...headerProps} countedCount={countedCount} comeback={welcomeBack.show} />
+          <GardenHeader {...headerProps} countedCount={countedCount} comeback={welcomeBack.show} tip={daily.insight} />
         ) : (
           <>
             <HomeTopBar />
@@ -196,7 +198,7 @@ export function DashboardScreen() {
         <YesterdayCard today={today} hour={hour} />
         <LetterDueCard today={today} />
         <LevelCard today={today} />
-        <InsightCard today={today} />
+        <InsightCard daily={daily} hideInsight={garden} />
         <AutomaticCard today={today} />
         {error ? <Banner message={error} onDismiss={clearError} /> : null}
         {taskError ? <Banner message={taskError} onDismiss={clearTaskError} /> : null}

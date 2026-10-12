@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Linking, Pressable, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
@@ -48,9 +48,17 @@ async function loadPickContext(today: LocalDateString): Promise<{ shown: Record<
   return { shown, context: contextTriggers(reflections, sessions, today) };
 }
 
-/** "One insight a day": research-backed, sourced, and one small action. */
-export function InsightCard({ today }: { today: LocalDateString }) {
-  const t = useT();
+export interface DailyInsight {
+  insight: Insight | null;
+  freshStart: ReturnType<typeof useFreshStart>;
+  habitsReady: boolean;
+}
+
+/**
+ * "One insight a day": research-backed, sourced, and one small action. Picked once per day and
+ * remembered, so Home (the card, or the Garden sprout) shows the same one all day.
+ */
+export function useDailyInsight(today: LocalDateString): DailyInsight {
   const goal = useSettingsStore((s) => s.settings?.goal ?? null);
   const habitTriggers = useActiveTriggers(today);
   // The first pick of the day is saved and kept all day, so wait until everything about *this*
@@ -82,13 +90,33 @@ export function InsightCard({ today }: { today: LocalDateString }) {
     }
   }, [insight, shown, today]);
 
-  if (freshStart && habitsReady) return <FreshStartCard {...freshStart} />;
-  if (!insight) return null;
-  return <InsightView insight={insight} title={t('insight.title')} />;
+  return { insight, freshStart, habitsReady };
+}
+
+/** Home's daily insight card (or the fresh-start card on those days). `hideInsight`: the Garden sprout tells it instead. */
+export function InsightCard({ daily, hideInsight = false }: { daily: DailyInsight; hideInsight?: boolean }) {
+  const t = useT();
+  if (daily.freshStart && daily.habitsReady) return <FreshStartCard {...daily.freshStart} />;
+  if (!daily.insight || hideInsight) return null;
+  return <InsightView insight={daily.insight} title={t('insight.title')} />;
 }
 
 /** One insight card: finding (and stat) up front; action and caveat on tap; source behind its own button. */
-export function InsightView({ insight, title, defaultOpen = false }: { insight: Insight; title: string; defaultOpen?: boolean }) {
+export function InsightView({
+  insight,
+  title,
+  defaultOpen = false,
+  bare = false,
+  icon,
+}: {
+  insight: Insight;
+  title: string;
+  defaultOpen?: boolean;
+  /** No card of its own (the Garden sprout's speech bubble wraps it). */
+  bare?: boolean;
+  /** Replaces the bulb before the title. */
+  icon?: ReactNode;
+}) {
   const t = useT();
   const { colors, typography } = useTheme();
   const styles = useStyles();
@@ -101,9 +129,9 @@ export function InsightView({ insight, title, defaultOpen = false }: { insight: 
   const caveat = he ? insight.he.caveat : insight.caveat;
 
   return (
-    <View style={styles.card}>
+    <View style={bare ? styles.bare : styles.card}>
       <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} onPress={() => setOpen((v) => !v)} style={styles.header}>
-        <Ionicons name="bulb-outline" size={20} color={colors.accent} />
+        {icon ?? <Ionicons name="bulb-outline" size={20} color={colors.accent} />}
         <Text style={[typography.overline, { flex: 1, color: colors.accent }]}>{title}</Text>
         <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textMuted} />
       </Pressable>
@@ -151,6 +179,7 @@ export function InsightView({ insight, title, defaultOpen = false }: { insight: 
 
 const useStyles = makeStyles(({ colors, flat }) => ({
   card: { gap: spacing.sm, padding: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.surface, marginBottom: spacing.md, ...flat },
+  bare: { gap: spacing.sm },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   statRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   stat: { fontSize: 30, fontWeight: '800', color: colors.accent },

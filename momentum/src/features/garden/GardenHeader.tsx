@@ -11,7 +11,10 @@ import { isNight, sproutMood } from '@/domain/garden';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { useT, type TranslationKey } from '@/i18n';
 import { useHabitStore } from '@/state/habitStore';
+import type { Insight } from '@/content/insightSchema';
+import { useSproutTipStore } from '@/state/sproutTipStore';
 import { LiveSprout } from './LiveSprout';
+import { SproutTip } from './SproutTip';
 import { ambientLine, doneLine, tapLine, type TalkContext, type TalkLine } from './sproutTalk';
 import { stageKey, useGardenGrowth } from './useGarden';
 
@@ -28,6 +31,8 @@ interface GardenHeaderProps {
   comeback?: boolean;
   /** Habits due today that weren't skipped (what "all done" means). */
   countedCount?: number;
+  /** Today's research insight, told by the sprout (null when there's none). */
+  tip?: Insight | null;
 }
 
 function greetingKey(hour: number): TranslationKey {
@@ -107,6 +112,7 @@ export function GardenHeader({
   dayOffName,
   comeback = false,
   countedCount = totalCount,
+  tip = null,
 }: GardenHeaderProps) {
   const t = useT();
   const { colors, scenery } = useTheme();
@@ -119,6 +125,8 @@ export function GardenHeader({
   const mood = sproutMood(percent, hour, totalCount);
   const stageName = t(stageKey(growth.stage));
   const seed = daySeed(today);
+  const tipDismissedOn = useSproutTipStore((s) => s.dismissedOn);
+  const showTip = tip !== null && tipDismissedOn !== today;
   const ctx: TalkContext = {
     hour,
     dueCount: countedCount,
@@ -132,6 +140,7 @@ export function GardenHeader({
     nextName: growth.next === null ? null : t(stageKey(growth.next)),
     toNext: growth.toNext,
     days: growth.days,
+    hasTip: showTip,
   };
 
   // A reaction (a habit done, a tap) shows for a while, then the everyday line comes back.
@@ -224,6 +233,8 @@ export function GardenHeader({
           </Text>
         </Pressable>
       </View>
+
+      {showTip && tip ? <SproutTip insight={tip} today={today} stage={growth.stage} /> : null}
 
       <Text style={styles.message}>{message}</Text>
       <View style={styles.pills}>

@@ -15,6 +15,7 @@ export const TALK = {
   quiet: 2,
   seed: 1,
   comeback: 2,
+  tip: 2,
   tap: 3,
 } as const;
 
@@ -46,6 +47,8 @@ export interface TalkContext {
   nextName: string | null;
   toNext: number;
   days: number;
+  /** Today's insight is waiting in the sprout's tip bubble. */
+  hasTip?: boolean;
 }
 
 const line = (pool: TalkPool, seed: number): TalkLine => ({ key: `talk.${pool}.${(Math.abs(Math.trunc(seed)) % TALK[pool]) + 1}` });
@@ -57,7 +60,8 @@ export function ambientLine(c: TalkContext, seed: number): TalkLine {
   if (c.comeback) return line('comeback', seed);
   if (c.dueCount > 0 && c.doneCount >= c.dueCount) return line('allDone', seed);
   if (c.hour >= 22 || c.hour < 5) return line('night', seed);
-  if (c.dueCount === 0 || c.dayOff) return line('quiet', seed);
+  if (c.dueCount === 0 || c.dayOff) return c.hasTip ? line('tip', seed) : line('quiet', seed);
+  if (c.hasTip) return line('tip', seed);
   // Every few days, a word about the streak instead of the time of day.
   if (c.bestStreak >= 3 && seed % 3 === 0) return { key: 'talk.streak', params: { count: c.bestStreak } };
   if (c.hour < 12) return line('morning', seed);
