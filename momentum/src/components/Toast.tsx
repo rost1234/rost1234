@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Animated, Pressable } from 'react-native';
 import { Text } from '@/components/AppText';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,12 +15,14 @@ interface ToastProps {
   durationMs?: number;
   /** Sit above Home's floating Focus button instead of covering it. */
   aboveFab?: boolean;
+  /** A small picture before the message (the Garden sprout). */
+  leading?: ReactNode;
 }
 
 const FAB_CLEARANCE = 64;
 
 /** Small bottom toast with an optional action (e.g. Undo). */
-export function Toast({ id, message, actionLabel, onAction, onHide, durationMs = 4000, aboveFab }: ToastProps) {
+export function Toast({ id, message, actionLabel, onAction, onHide, durationMs = 4000, aboveFab, leading }: ToastProps) {
   const styles = useStyles();
   const { look } = useTheme();
   const bottom = useSafeAreaInsets().bottom + spacing.lg + (aboveFab ? (look === 'garden' ? DOCK_CLEARANCE : FAB_CLEARANCE) : 0);
@@ -37,6 +39,7 @@ export function Toast({ id, message, actionLabel, onAction, onHide, durationMs =
 
   return (
     <Animated.View style={[styles.toast, { opacity, bottom }]} accessibilityLiveRegion="polite">
+      {leading}
       <Text style={styles.message} numberOfLines={2}>
         {message}
       </Text>

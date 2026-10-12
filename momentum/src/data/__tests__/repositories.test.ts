@@ -301,6 +301,21 @@ describe('v11: quit cost and urge logs', () => {
     expect(await repos(executor).habits.getById('q')).toMatchObject({ isQuit: true, quitCost: null, quitMinutes: null });
   });
 
+  it('upgrades v11 to v12: old habits have no group; groups are stored, trimmed and cleared', async () => {
+    const { db, executor } = createTestDatabase({ upToVersion: 11 });
+    db.exec(
+      "INSERT INTO habits (id, title, micro_step, is_quantitative, target_count, unit, target_frequency, target_days, created_at, is_archived) VALUES ('h', 'Run', '', 0, 1, '', 'daily', '', '2026-09-01T08:00:00', 0)",
+    );
+    applyRemainingMigrations(db, 11);
+    const r = repos(executor);
+    expect(await r.habits.getById('h')).toMatchObject({ groupName: '' });
+    const made = await r.habits.create({ ...newHabit, groupName: '  Fitness ' });
+    expect(made.groupName).toBe('Fitness');
+    expect(await r.habits.getById(made.id)).toMatchObject({ groupName: 'Fitness' });
+    await r.habits.update(made.id, { groupName: '' });
+    expect(await r.habits.getById(made.id)).toMatchObject({ groupName: '' });
+  });
+
   it('stores the cost, logs urges and tags a trigger later', async () => {
     const { executor } = createTestDatabase();
     const r = repos(executor);

@@ -73,6 +73,9 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
   const [days, setDays] = useState<Weekday[]>(
     habit?.targetFrequency === 'specific_days' ? habit.targetDays : [1, 2, 3, 4, 5],
   );
+  const [groupName, setGroupName] = useState(habit?.groupName ?? '');
+  // Groups other habits already use, offered as one-tap chips.
+  const groups = [...new Set(allHabits.map((h) => h.groupName).filter((g) => g.length > 0))];
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -117,6 +120,7 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
       isQuit,
       quitCost: isQuit ? positiveInt(costText) : null,
       quitMinutes: isQuit ? positiveInt(minutesText) : null,
+      groupName: groupName.trim(),
     };
     setIsSaving(true);
     try {
@@ -240,6 +244,25 @@ export function HabitFormScreen({ habit }: { habit?: Habit }) {
               ))}
             </View>
           ) : null}
+        </Field>
+
+        <Field label={t('form.group')}>
+          {groups.length > 0 ? (
+            <View style={styles.chips}>
+              {groups.map((g) => (
+                <Chip key={g} label={g} selected={groupName.trim() === g} onPress={() => setGroupName(groupName.trim() === g ? '' : g)} />
+              ))}
+            </View>
+          ) : null}
+          <TextInput
+            value={groupName}
+            onChangeText={setGroupName}
+            placeholder={t('form.groupPh')}
+            accessibilityLabel={t('form.group')}
+            style={styles.input}
+            maxLength={24}
+          />
+          <Text style={typography.caption}>{t('form.groupHint')}</Text>
         </Field>
 
         <RhythmFields timeOfDay={timeOfDay} reminder={reminder} onTimeOfDay={setTimeOfDay} onReminder={setReminder} hideReminder={isQuit} />

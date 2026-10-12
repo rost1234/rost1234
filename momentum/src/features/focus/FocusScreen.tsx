@@ -8,7 +8,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { setStatusBarStyle } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Banner } from '@/components/ui';
-import { currentTheme, focusColors, radius, spacing, makeStyles } from '@/components/theme';
+import { currentTheme, focusColors, radius, spacing, makeStyles, useTheme } from '@/components/theme';
 import { runDetached } from '@/core/errors';
 import { computeSnapshot } from '@/domain/focusTimer';
 import { CLASSIC_POMODORO } from '@/domain/pomodoro';
@@ -16,6 +16,7 @@ import { useNow } from '@/hooks/useNow';
 import { useFocusStore, type FocusLink } from '@/state/focusStore';
 import { useHabitStore } from '@/state/habitStore';
 import { useTaskStore } from '@/state/taskStore';
+import { Sprout } from '@/features/garden/Sprout';
 import { CircularTimer } from './CircularTimer';
 import { FocusButton, FocusChip, FocusLabel } from './focusUi';
 import { LinkSelector } from './LinkSelector';
@@ -94,6 +95,7 @@ function ActiveTimer() {
 
 function TimerSetup({ initialHabitId }: { initialHabitId: string | null }) {
   const styles = useStyles();
+  const { look } = useTheme();
   const t = useT();
   const habits = useHabitStore((s) => s.habits);
   const tasks = useTaskStore((s) => s.tasks);
@@ -108,6 +110,8 @@ function TimerSetup({ initialHabitId }: { initialHabitId: string | null }) {
     <View style={styles.setup}>
       {lastSummary ? (
         <View style={styles.summary}>
+          {/* Garden: the sprout is glad about the time you gave it. */}
+          {look === 'garden' && lastSummary.minutes > 0 ? <Sprout stage={6} mood="joy" size={72} /> : null}
           <Text style={styles.summaryTitle}>{lastSummary.minutes > 0 ? t('focus.logged') : t('focus.ended')}</Text>
           <Text style={styles.summaryText}>
             {lastSummary.minutes > 0

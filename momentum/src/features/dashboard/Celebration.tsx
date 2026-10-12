@@ -5,7 +5,7 @@ import { heroGradient, radius, spacing, useTheme, makeStyles } from '@/component
 import { runDetached } from '@/core/errors';
 import { haptics } from '@/core/haptics';
 import { formatFriendlyDate } from '@/core/localDate';
-import { Sprout } from '@/features/garden/Sprout';
+import { LiveSprout } from '@/features/garden/LiveSprout';
 import { stageKey, useGardenGrowth } from '@/features/garden/useGarden';
 import { unlock } from '@/services/appLock';
 import { useDevicePrefsStore } from '@/state/devicePrefsStore';
@@ -67,7 +67,7 @@ export function Celebration() {
         style={[styles.card, garden && { backgroundColor: colors.surface, borderWidth: 2, borderColor: colors.border }, { transform: [{ scale }] }]}
       >
         {garden ? (
-          <Sprout stage={celebration.stage ?? growth.stage} mood="joy" size={130} />
+          <LiveSprout stage={celebration.stage ?? growth.stage} mood="joy" size={130} cheerKey={celebration.at} />
         ) : (
           <Text style={styles.emoji}>{celebration.kind === 'firstWin' ? '🌱' : (EMOJI[celebration.days] ?? '🎉')}</Text>
         )}

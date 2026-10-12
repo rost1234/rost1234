@@ -96,6 +96,7 @@ export const mapHabit = (row: HabitRow): Habit => ({
   isQuit: row.is_quit === null || row.is_quit === undefined ? false : fromSqlBoolean(row.is_quit),
   quitCost: typeof row.quit_cost === 'number' && row.quit_cost > 0 ? row.quit_cost : null,
   quitMinutes: typeof row.quit_minutes === 'number' && row.quit_minutes > 0 ? row.quit_minutes : null,
+  groupName: row.group_name?.trim() ?? '',
 });
 
 export const mapPause = (row: PauseRow): Pause => ({

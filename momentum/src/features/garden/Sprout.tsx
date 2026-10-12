@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import Svg, { Circle, Ellipse, Path, Rect } from 'react-native-svg';
 import type { GrowthStage, SproutMood } from '@/domain/garden';
-import { sproutShapes } from './sproutArt';
+import { sproutShapes, type FaceState } from './sproutArt';
 
 interface SproutProps {
   stage: GrowthStage;
@@ -9,13 +9,17 @@ interface SproutProps {
   size: number;
   /** Small pots on habit cards have no face. */
   face?: boolean;
+  /** Eyes shut mid-blink, mouth open mid-word (see `LiveSprout`). */
+  blink?: boolean;
+  mouthOpen?: boolean;
 }
 
 /** The Garden look's sprout. Decorative: the screen around it says the same thing in words. */
-function SproutComponent({ stage, mood = 'calm', size, face = true }: SproutProps) {
+function SproutComponent({ stage, mood = 'calm', size, face = true, blink = false, mouthOpen = false }: SproutProps) {
+  const state: FaceState = { blink, mouthOpen };
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100" accessible={false} importantForAccessibility="no-hide-descendants">
-      {sproutShapes(stage, mood, face).map((s, i) => {
+      {sproutShapes(stage, mood, face, state).map((s, i) => {
         switch (s.kind) {
           case 'path':
             return (

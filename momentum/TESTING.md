@@ -288,3 +288,20 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Dark mode + Garden: dark green "garden at night"; all text readable
 - [ ] TalkBack: the habit card is read once (title, status, streak); the big circle is not read separately; the sprout ring reads "Your sprout: <stage>. N percent…"
 
+## Talking sprout and habit groups (build 37)
+- [ ] After the update (DB v12) all habits, streaks and history load as before; no habit is in a group
+- [ ] Garden Home: the sprout sits big in the ring with a speech bubble beside it; the line fits the time of day (morning / afternoon / evening / night), a rest day, or "I missed you" after a break
+- [ ] It's alive: breathes and sways a little, blinks every few seconds, moves its mouth when a new line appears; with "Remove animations" on in Android it stays still
+- [ ] Mark a habit → the sprout hops, beams, and says thanks (the first of the day has its own line; the last one says the day is full); after ~9 s it goes back to its everyday line; undo → back to the everyday line
+- [ ] Tap the sprout → it wiggles and says something; tapping again cycles (a reaction, its stage and days to the next, its days of watering); long-press → "Your sprout"; the new "Your sprout" pill opens it too
+- [ ] The Undo toast has a small happy sprout (Garden only); the focus summary shows a flower (Garden)
+- [ ] TalkBack: the bubble's new line is read; the sprout button reads its stage and today's progress with the hint "tap … long-press …"
+- [ ] Largest font size: the sprout goes above the bubble, the bubble's tail points up
+- [ ] Hebrew wording: the sprout speaks as itself, never commands, never guilts; English too
+- [ ] Habit form → "Group (optional)": type "Fitness" for Strength, Running and Stretching (each its own target / growing level). Existing groups appear as chips
+- [ ] Home: one "Fitness" card (folded) with a pill per habit; tapping a pill marks it (or +1 for counts); "1 of 3 done" and a bar; tap the header → the full cards; the open/closed state survives a restart
+- [ ] A group with only one habit due today shows that habit as a normal card
+- [ ] Remove a habit from the group (clear the field) → it shows on its own again
+- [ ] Regular look: the group card has a stack icon instead of a pot; everything else works the same
+- [ ] Backup and restore keep the groups
+

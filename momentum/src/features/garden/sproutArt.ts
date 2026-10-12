@@ -25,6 +25,7 @@ export const ART = {
   center: '#A8431A',
   bud: '#E9825A',
   wing: '#9FD3F2',
+  shine: '#FFF8EE',
 } as const;
 
 const n = (v: number) => Math.round(v * 10) / 10;
@@ -133,40 +134,53 @@ function plant(stage: GrowthStage): Shape[] {
   }
 }
 
-function face(mood: SproutMood): Shape[] {
+/** Living details: eyes shut for a blink, the mouth open mid-word. */
+export interface FaceState {
+  blink?: boolean;
+  mouthOpen?: boolean;
+}
+
+function face(mood: SproutMood, state: FaceState = {}): Shape[] {
   const line = (d: string, w = 2.8): Shape => ({ kind: 'path', d, stroke: ART.ink, strokeWidth: w, fill: 'none' });
   const cheeks: Shape[] = [
     { kind: 'circle', cx: 35, cy: 79, r: 4, fill: ART.cheek },
     { kind: 'circle', cx: 65, cy: 79, r: 4, fill: ART.cheek },
   ];
-  const dots: Shape[] = [
+  const openEyes: Shape[] = [
     { kind: 'circle', cx: 41, cy: 73, r: 3.4, fill: ART.ink },
     { kind: 'circle', cx: 59, cy: 73, r: 3.4, fill: ART.ink },
+    // A tiny shine makes the eyes look alive.
+    { kind: 'circle', cx: 42.2, cy: 71.8, r: 1.1, fill: ART.shine },
+    { kind: 'circle', cx: 60.2, cy: 71.8, r: 1.1, fill: ART.shine },
   ];
+  const shut: Shape[] = [line('M37.5 73.5H44.5', 2.6), line('M55.5 73.5H62.5', 2.6)];
+  const eyes = state.blink ? shut : openEyes;
+  // Talking: a small round open mouth instead of the smile.
+  const talking: Shape = { kind: 'ellipse', cx: 50, cy: 82, rx: 4.2, ry: 3.6, fill: ART.ink };
   switch (mood) {
     case 'calm':
-      return [...dots, line('M45 81Q50 85 55 81')];
+      return [...eyes, state.mouthOpen ? talking : line('M45 81Q50 85 55 81')];
     case 'happy':
-      return [...cheeks, ...dots, line('M42 80Q50 88 58 80')];
+      return [...cheeks, ...eyes, state.mouthOpen ? talking : line('M42 80Q50 88 58 80')];
     case 'joy':
       return [
         ...cheeks,
         line('M36.5 74.5Q41 68.5 45.5 74.5', 3),
         line('M54.5 74.5Q59 68.5 63.5 74.5', 3),
-        { kind: 'path', d: 'M42.5 79.5Q50 92 57.5 79.5Z', fill: ART.ink },
+        state.mouthOpen ? { ...talking, ry: 5 } : { kind: 'path', d: 'M42.5 79.5Q50 92 57.5 79.5Z', fill: ART.ink },
       ];
     case 'sleepy':
-      return [...cheeks, line('M37 72Q41 76 45 72'), line('M55 72Q59 76 63 72'), line('M46 82Q50 84.5 54 82', 2.4)];
+      return [...cheeks, line('M37 72Q41 76 45 72'), line('M55 72Q59 76 63 72'), state.mouthOpen ? { ...talking, rx: 3, ry: 2.6 } : line('M46 82Q50 84.5 54 82', 2.4)];
   }
 }
 
 /** Every shape of the sprout, back to front. */
-export function sproutShapes(stage: GrowthStage, mood: SproutMood, withFace = true): Shape[] {
+export function sproutShapes(stage: GrowthStage, mood: SproutMood, withFace = true, state: FaceState = {}): Shape[] {
   const pot: Shape[] = [
     { kind: 'path', d: 'M24 56H76L70 90Q69 94 64 94H36Q31 94 30 90Z', fill: ART.pot },
     { kind: 'rect', x: 20, y: 50, width: 60, height: 12, rx: 6, fill: ART.potRim },
     { kind: 'ellipse', cx: 50, cy: 51.5, rx: 25, ry: 2.6, fill: ART.soil },
   ];
   const sparkles = withFace && mood === 'joy' ? [sparkle(13, 30, 5), sparkle(88, 40, 4), sparkle(16, 60, 3.2)] : [];
-  return [...pot, ...plant(stage), ...(withFace ? face(mood) : []), ...sparkles];
+  return [...pot, ...plant(stage), ...(withFace ? face(mood, state) : []), ...sparkles];
 }

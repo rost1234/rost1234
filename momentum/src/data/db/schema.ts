@@ -191,6 +191,11 @@ CREATE TABLE IF NOT EXISTS urge_logs (
 CREATE INDEX IF NOT EXISTS idx_urge_logs_date ON urge_logs(log_date);
 `;
 
+/** v12: habits can share a group ("Fitness": strength, running, stretching), shown as one folding card. */
+const MIGRATION_12 = `
+ALTER TABLE habits ADD COLUMN group_name TEXT NULL;
+`;
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, statements: MIGRATION_1 },
   { version: 2, statements: MIGRATION_2 },
@@ -203,6 +208,7 @@ export const MIGRATIONS: readonly Migration[] = [
   { version: 9, statements: MIGRATION_9 },
   { version: 10, statements: MIGRATION_10 },
   { version: 11, statements: MIGRATION_11 },
+  { version: 12, statements: MIGRATION_12 },
 ];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS.reduce((max, m) => Math.max(max, m.version), 0);
@@ -265,6 +271,7 @@ export const TABLE_COLUMNS: Readonly<Record<TableName, Readonly<Record<string, C
     is_quit: 'nullable_integer',
     quit_cost: 'nullable_integer',
     quit_minutes: 'nullable_integer',
+    group_name: 'nullable_text',
   },
   habit_logs: {
     id: 'text',

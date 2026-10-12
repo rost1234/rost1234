@@ -33,6 +33,7 @@ function toColumns(changes: Partial<NewHabit>): [string, ColumnValue][] {
   if (changes.isQuit !== undefined) columns.push(['is_quit', toSqlBoolean(changes.isQuit)]);
   if (changes.quitCost !== undefined) columns.push(['quit_cost', positiveOrNull(changes.quitCost)]);
   if (changes.quitMinutes !== undefined) columns.push(['quit_minutes', positiveOrNull(changes.quitMinutes)]);
+  if (changes.groupName !== undefined) columns.push(['group_name', changes.groupName.trim() || null]);
   return columns;
 }
 
@@ -51,6 +52,7 @@ async function insertHabit(db: SqlExecutor, input: NewHabit): Promise<Habit> {
     isQuit: false,
     quitCost: null,
     quitMinutes: null,
+    groupName: '',
     ...input,
     title: input.title.trim(),
     microStep: input.microStep.trim(),
@@ -90,12 +92,13 @@ async function insertHabit(db: SqlExecutor, input: NewHabit): Promise<Habit> {
     isQuit: habit.isQuit,
     quitCost: habit.quitCost,
     quitMinutes: habit.quitMinutes,
+    groupName: habit.groupName,
   });
   await db.runAsync(`UPDATE habits SET ${extras.map(([c]) => `${c} = ?`).join(', ')} WHERE id = ?`, [
     ...extras.map(([, v]) => v),
     habit.id,
   ]);
-  return { ...habit, why: habit.why.trim(), cue: habit.cue.trim(), pairing: habit.pairing.trim() };
+  return { ...habit, why: habit.why.trim(), cue: habit.cue.trim(), pairing: habit.pairing.trim(), groupName: habit.groupName.trim() };
 }
 
 export class SqliteHabitRepository implements HabitRepository {

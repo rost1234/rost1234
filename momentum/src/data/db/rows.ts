@@ -36,6 +36,7 @@ export interface HabitRow {
   is_quit: SqlBoolean | null;
   quit_cost: number | null;
   quit_minutes: number | null;
+  group_name?: string | null;
 }
 
 export interface HabitLogRow {

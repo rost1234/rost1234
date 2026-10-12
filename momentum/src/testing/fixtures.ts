@@ -26,6 +26,7 @@ export function makeHabit(overrides: Partial<Habit> = {}): Habit {
     isQuit: false,
     quitCost: null,
     quitMinutes: null,
+    groupName: '',
     ...overrides,
   };
 }

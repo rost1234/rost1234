@@ -16,6 +16,7 @@ import { useNow } from '@/hooks/useNow';
 import { useT } from '@/i18n';
 import { useHabitStore } from '@/state/habitStore';
 import { usePrefsStore } from '@/state/prefsStore';
+import { LiveSprout } from './LiveSprout';
 import { Sprout } from './Sprout';
 import { stageKey, useGardenGrowth, useHabitDays } from './useGarden';
 
@@ -103,7 +104,7 @@ export function GardenScreen() {
         <SheetHeader title={t('garden.title')} />
 
         <View style={[styles.hero, { backgroundColor: scenery.hill }]}>
-          <Sprout stage={growth.stage} mood={mood} size={190} />
+          <LiveSprout stage={growth.stage} mood={mood} size={190} />
           <Text style={styles.stageName} accessibilityRole="header">
             {stageName}
           </Text>

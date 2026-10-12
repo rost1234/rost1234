@@ -56,6 +56,8 @@ export interface Habit {
   quitCost: number | null;
   /** Quit habits: minutes a day the habit took; null = not set. */
   quitMinutes: number | null;
+  /** Habits with the same group ("Fitness") show together on one folding card. Empty = no group. */
+  groupName: string;
 }
 
 export type TimeOfDay = 'any' | 'morning' | 'afternoon' | 'evening';
@@ -77,7 +79,8 @@ type OptionalHabitFields =
   | 'reminder'
   | 'isQuit'
   | 'quitCost'
-  | 'quitMinutes';
+  | 'quitMinutes'
+  | 'groupName';
 
 export type NewHabit = Omit<Habit, 'id' | 'createdAt' | 'isArchived' | OptionalHabitFields> &
   Partial<Pick<Habit, OptionalHabitFields>>;

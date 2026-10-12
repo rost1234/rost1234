@@ -9,11 +9,14 @@ import { Toast } from '@/components/Toast';
 import { Banner, Button, SectionTitle } from '@/components/ui';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { dailyProgressPercent, progressOf } from '@/domain/habitProgress';
+import { groupForHome } from '@/domain/habitGroups';
 import { habitsDueOn } from '@/domain/habitSchedule';
 import { orderByTimeOfDay } from '@/domain/rhythm';
 import { orderByStacking } from '@/domain/stacking';
 import { GardenDock } from '@/features/garden/GardenDock';
 import { GardenHeader } from '@/features/garden/GardenHeader';
+import { Sprout } from '@/features/garden/Sprout';
+import { useGardenGrowth } from '@/features/garden/useGarden';
 import { InsightCard } from '@/features/insights/InsightCard';
 import { LetterDueCard } from '@/features/letters/LetterDueCard';
 import { shouldShowWeeklySummary } from '@/features/weekly/weeklyPrompt';
@@ -40,6 +43,7 @@ import { HardDayBar } from './HardDayBar';
 import { FocusFab, HomeTopBar } from './HomeChrome';
 import { LevelCard } from './LevelCard';
 import { HabitCard } from './HabitCard';
+import { HabitGroupCard } from './HabitGroupCard';
 import { MoreSection } from './MoreSection';
 import { ReflectionPrompt } from './ReflectionPrompt';
 import { TaskList } from './TaskList';
@@ -69,6 +73,7 @@ export function DashboardScreen() {
   const styles = useStyles();
   const { look, scenery } = useTheme();
   const garden = look === 'garden';
+  const sproutStage = useGardenGrowth().stage;
   // Extra room for the floating focus button (or the Garden dock).
   const bottomSpace = useBottomSpace(garden ? DOCK_CLEARANCE : 72);
   // Re-renders (and reloads) automatically when the local date rolls over.
@@ -158,7 +163,7 @@ export function DashboardScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {garden ? (
-          <GardenHeader {...headerProps} />
+          <GardenHeader {...headerProps} comeback={welcomeBack.show} />
         ) : (
           <>
             <HomeTopBar />
@@ -200,7 +205,13 @@ export function DashboardScreen() {
         ) : dueToday.length === 0 ? (
           <EmptyHabits hasAnyHabits={restCount > 0} />
         ) : (
-          dueToday.map((habit) => <HabitCard key={habit.id} habit={habit} />)
+          groupForHome(dueToday).map((item) =>
+            item.kind === 'group' ? (
+              <HabitGroupCard key={`group:${item.name}`} name={item.name} habits={item.habits} />
+            ) : (
+              <HabitCard key={item.habit.id} habit={item.habit} />
+            ),
+          )
         )}
 
         {dayOff ? (
@@ -237,6 +248,8 @@ export function DashboardScreen() {
           onAction={undoLast}
           onHide={dismissLastChange}
           aboveFab
+          // Garden: the sprout cheers in the corner of the toast.
+          leading={garden ? <Sprout stage={sproutStage} mood="joy" size={34} /> : undefined}
         />
       ) : null}
       {garden ? <GardenDock /> : <FocusFab />}

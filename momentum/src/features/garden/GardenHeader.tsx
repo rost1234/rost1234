@@ -6,10 +6,13 @@ import { Text } from '@/components/AppText';
 import { ProgressRing } from '@/components/ProgressRing';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { formatFriendlyDate, type LocalDateString } from '@/core/localDate';
+import { haptics } from '@/core/haptics';
 import { isNight, sproutMood } from '@/domain/garden';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { useT, type TranslationKey } from '@/i18n';
-import { Sprout } from './Sprout';
+import { useHabitStore } from '@/state/habitStore';
+import { LiveSprout } from './LiveSprout';
+import { ambientLine, doneLine, tapLine, type TalkContext, type TalkLine } from './sproutTalk';
 import { stageKey, useGardenGrowth } from './useGarden';
 
 interface GardenHeaderProps {
@@ -21,6 +24,8 @@ interface GardenHeaderProps {
   freezes: number;
   dayOffLabel: string | null;
   dayOffName: string | null;
+  /** Back after a break: the sprout says it missed you. */
+  comeback?: boolean;
 }
 
 function greetingKey(hour: number): TranslationKey {
@@ -54,34 +59,99 @@ function Sky({ night }: { night: boolean }) {
   );
 }
 
-/** A small hop of the sprout each time another habit is done today (skipped with reduced motion). */
-function useHop(doneCount: number): Animated.Value {
-  const [y] = useState(() => new Animated.Value(0));
-  const last = useRef(doneCount);
+/** The sprout's speech bubble; a new line pops in gently. Screen readers hear each new line. */
+function Bubble({ text, id, stacked }: { text: string; id: number | string; stacked: boolean }) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const reduce = useReduceMotion();
+  const [pop] = useState(() => new Animated.Value(1));
   useEffect(() => {
-    if (doneCount > last.current && !reduce) {
-      Animated.sequence([
-        Animated.timing(y, { toValue: -10, duration: 140, useNativeDriver: true }),
-        Animated.spring(y, { toValue: 0, friction: 4, tension: 140, useNativeDriver: true }),
-      ]).start();
-    }
-    last.current = doneCount;
-  }, [doneCount, reduce, y]);
-  return y;
+    if (reduce) return;
+    pop.setValue(0);
+    Animated.spring(pop, { toValue: 1, friction: 6, tension: 140, useNativeDriver: true }).start();
+  }, [id, pop, reduce]);
+  const scale = pop.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] });
+  return (
+    <Animated.View
+      style={[styles.bubble, { backgroundColor: colors.surface, opacity: pop, transform: [{ scale }] }]}
+      accessibilityLiveRegion="polite"
+    >
+      <View style={[styles.tail, stacked ? styles.tailUp : styles.tailSide, { backgroundColor: colors.surface }]} />
+      <Text style={styles.bubbleText}>{text}</Text>
+    </Animated.View>
+  );
 }
 
-/** Today in the Garden look: the date and the day's progress, with the sprout inside the day's ring. */
-export function GardenHeader({ today, hour, percent, doneCount, totalCount, freezes, dayOffLabel, dayOffName }: GardenHeaderProps) {
+/** The day of the year-ish number that varies the sprout's lines from day to day. */
+const daySeed = (today: LocalDateString) => Number(today.replace(/-/g, '')) || 0;
+
+/** Seconds a reaction stays before the sprout goes back to its everyday line. */
+const EVENT_MS = 9000;
+
+/**
+ * Today in the Garden look, built around the sprout: it sits in the day's ring, talks in a bubble
+ * (greets, thanks you for each habit, cheers a full day, is glad when you're back), hops when a
+ * habit is done and reacts when tapped. Long-press (or "Your sprout") opens every stage.
+ */
+export function GardenHeader({ today, hour, percent, doneCount, totalCount, freezes, dayOffLabel, dayOffName, comeback = false }: GardenHeaderProps) {
   const t = useT();
   const { colors, scenery } = useTheme();
   const styles = useStyles();
   const growth = useGardenGrowth();
-  const hop = useHop(doneCount);
-  // With very large text, the ring goes above the words instead of squeezing them.
+  const noHabits = useHabitStore((s) => s.habits.length === 0);
+  const bestStreak = useHabitStore((s) => Math.max(0, ...Object.values(s.streaks)));
+  // With very large text, the sprout goes above the bubble instead of squeezing it.
   const stacked = useWindowDimensions().fontScale > 1.3;
   const mood = sproutMood(percent, hour, totalCount);
   const stageName = t(stageKey(growth.stage));
+  const seed = daySeed(today);
+  const ctx: TalkContext = {
+    hour,
+    dueCount: totalCount,
+    doneCount,
+    noHabits,
+    comeback,
+    dayOff: dayOffLabel !== null,
+    bestStreak,
+    stage: growth.stage,
+    stageName,
+    nextName: growth.next === null ? null : t(stageKey(growth.next)),
+    toNext: growth.toNext,
+    days: growth.days,
+  };
+
+  // A reaction (a habit done, a tap) shows for a while, then the everyday line comes back.
+  const [event, setEvent] = useState<{ kind: 'done' | 'tap'; n: number; id: number } | null>(null);
+  const [cheerKey, setCheerKey] = useState(0);
+  const [pokeKey, setPokeKey] = useState(0);
+  const seq = useRef(0);
+  const lastDone = useRef(doneCount);
+  useEffect(() => {
+    if (doneCount > lastDone.current) {
+      seq.current += 1;
+      setCheerKey((k) => k + 1);
+      setEvent({ kind: 'done', n: doneCount, id: seq.current });
+    } else if (doneCount < lastDone.current) {
+      setEvent(null);
+    }
+    lastDone.current = doneCount;
+  }, [doneCount]);
+  useEffect(() => {
+    if (!event) return;
+    const timer = setTimeout(() => setEvent(null), EVENT_MS);
+    return () => clearTimeout(timer);
+  }, [event]);
+
+  const poke = () => {
+    haptics.tap();
+    seq.current += 1;
+    setPokeKey((k) => k + 1);
+    setEvent({ kind: 'tap', n: pokeKey + 1, id: seq.current });
+  };
+
+  const line: TalkLine = !event ? ambientLine(ctx, seed) : event.kind === 'done' ? doneLine(ctx, seed + event.n) : tapLine(ctx, event.n);
+  const lineId = event ? event.id : line.key;
+  const said = line.plural !== undefined ? t.plural(line.key, line.plural, line.params) : t(line.key as TranslationKey, line.params);
   const message =
     totalCount === 0
       ? t('today.quietDay')
@@ -92,66 +162,83 @@ export function GardenHeader({ today, hour, percent, doneCount, totalCount, free
   return (
     <View style={[styles.hill, { backgroundColor: scenery.hill }]}>
       <Sky night={isNight(hour)} />
-      <View style={[styles.row, stacked && styles.stacked]}>
-        <View style={[styles.text, stacked && styles.textStacked]}>
-          {dayOffLabel ? (
-            <View style={[styles.pill, { backgroundColor: colors.surface }]} accessible accessibilityLabel={dayOffName ?? dayOffLabel}>
-              <Text style={[styles.pillText, { color: colors.text }]}>{dayOffLabel}</Text>
-            </View>
-          ) : null}
-          <Text style={styles.date} accessibilityRole="header">
-            {formatFriendlyDate(today, t.locale)}
-          </Text>
-          <Text style={styles.greeting} maxFontSizeMultiplier={1.5}>
-            {t(greetingKey(hour))}
-          </Text>
-          <Text style={styles.message}>{message}</Text>
-          <View style={styles.pills}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('today.freezesA11y', { count: freezes })}
-              accessibilityHint={t('protect.title')}
-              onPress={() => router.push('/streaks')}
-              hitSlop={6}
-              style={({ pressed }) => [styles.pill, { backgroundColor: scenery.sky }, pressed && { opacity: 0.8 }]}
-            >
-              <Ionicons name="snow" size={14} color={scenery.skyText} />
-              <Text style={[styles.pillText, { color: scenery.skyText }]}>{t.plural('today.freezes', freezes)}</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('garden.insights')}
-              accessibilityHint={t('home.openInsights')}
-              onPress={() => router.push('/analytics')}
-              hitSlop={6}
-              style={({ pressed }) => [styles.pill, { backgroundColor: colors.surface }, pressed && { opacity: 0.8 }]}
-            >
-              <Ionicons name="bar-chart-outline" size={14} color={colors.text} />
-              <Text style={[styles.pillText, { color: colors.text }]}>{t('garden.insights')}</Text>
-            </Pressable>
+      <View style={styles.top}>
+        {dayOffLabel ? (
+          <View style={[styles.pill, { backgroundColor: colors.surface }]} accessible accessibilityLabel={dayOffName ?? dayOffLabel}>
+            <Text style={[styles.pillText, { color: colors.text }]}>{dayOffLabel}</Text>
           </View>
-        </View>
+        ) : null}
+        <Text style={styles.date} accessibilityRole="header">
+          {formatFriendlyDate(today, t.locale)}
+        </Text>
+        <Text style={styles.greeting} maxFontSizeMultiplier={1.5}>
+          {t(greetingKey(hour))}
+        </Text>
+      </View>
+
+      <View style={[styles.stageRow, stacked && styles.stacked]}>
+        <Bubble text={said} id={lineId} stacked={stacked} />
         {/* The sprout grows with every day a habit is done; the ring around it is today. */}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={
             totalCount === 0 ? t('garden.headerA11yQuiet', { stage: stageName, quiet: t('today.quietDay') }) : t('garden.headerA11y', { stage: stageName, percent })
           }
-          accessibilityHint={t('garden.headerHint')}
-          onPress={() => router.push('/garden')}
+          accessibilityHint={t('garden.sproutHint')}
+          onPress={poke}
+          onLongPress={() => {
+            haptics.select();
+            router.push('/garden');
+          }}
+          delayLongPress={400}
           hitSlop={6}
-          style={({ pressed }) => [styles.ringWrap, stacked && { alignSelf: 'center' }, pressed && { transform: [{ scale: 0.97 }] }]}
+          style={[styles.ringWrap, stacked && { alignSelf: 'center' }]}
         >
-          <ProgressRing value={percent / 100} size={124} stroke={9} track={colors.border} from={colors.primary} to={colors.primary}>
+          <ProgressRing value={percent / 100} size={148} stroke={10} track={colors.border} from={colors.primary} to={colors.primary}>
             <View style={[styles.ringInner, { backgroundColor: colors.surface }]}>
-              <Animated.View style={{ transform: [{ translateY: hop }] }}>
-                <Sprout stage={growth.stage} mood={mood} size={86} />
-              </Animated.View>
+              <LiveSprout stage={growth.stage} mood={mood} size={104} cheerKey={cheerKey} talkKey={lineId} pokeKey={pokeKey} />
             </View>
           </ProgressRing>
           <Text style={styles.stage} numberOfLines={1}>
             {stageName}
           </Text>
+        </Pressable>
+      </View>
+
+      <Text style={styles.message}>{message}</Text>
+      <View style={styles.pills}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('today.freezesA11y', { count: freezes })}
+          accessibilityHint={t('protect.title')}
+          onPress={() => router.push('/streaks')}
+          hitSlop={6}
+          style={({ pressed }) => [styles.pill, { backgroundColor: scenery.sky }, pressed && { opacity: 0.8 }]}
+        >
+          <Ionicons name="snow" size={14} color={scenery.skyText} />
+          <Text style={[styles.pillText, { color: scenery.skyText }]}>{t.plural('today.freezes', freezes)}</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('garden.insights')}
+          accessibilityHint={t('home.openInsights')}
+          onPress={() => router.push('/analytics')}
+          hitSlop={6}
+          style={({ pressed }) => [styles.pill, { backgroundColor: colors.surface }, pressed && { opacity: 0.8 }]}
+        >
+          <Ionicons name="bar-chart-outline" size={14} color={colors.text} />
+          <Text style={[styles.pillText, { color: colors.text }]}>{t('garden.insights')}</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('garden.yourSprout')}
+          accessibilityHint={t('garden.headerHint')}
+          onPress={() => router.push('/garden')}
+          hitSlop={6}
+          style={({ pressed }) => [styles.pill, { backgroundColor: colors.surface }, pressed && { opacity: 0.8 }]}
+        >
+          <Ionicons name="leaf-outline" size={14} color={colors.text} />
+          <Text style={[styles.pillText, { color: colors.text }]}>{t('garden.yourSprout')}</Text>
         </Pressable>
       </View>
     </View>
@@ -175,13 +262,24 @@ const useStyles = makeStyles(({ colors }) => ({
   moonBite: { position: 'absolute', top: -6, end: -8, width: 28, height: 28, borderRadius: 14 },
   cloud: { position: 'absolute', top: 20, end: 130, width: 64, height: 20, borderRadius: 10 },
   star: { position: 'absolute', width: 4, height: 4, borderRadius: 2 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginTop: spacing.md },
+  top: { gap: 2, marginTop: spacing.sm },
+  stageRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginTop: spacing.md },
   stacked: { flexDirection: 'column-reverse', alignItems: 'stretch' },
-  text: { flex: 1, gap: 2 },
-  textStacked: { flex: 0 },
   date: { fontSize: 15, color: colors.textMuted },
   greeting: { fontSize: 30, lineHeight: 38, fontWeight: '800', color: colors.text },
-  message: { fontSize: 16, color: colors.text, marginTop: 2 },
+  bubble: {
+    flex: 1,
+    minHeight: 64,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 2,
+    borderRadius: 20,
+  },
+  bubbleText: { fontSize: 16, lineHeight: 23, color: colors.text },
+  tail: { position: 'absolute', width: 16, height: 16, transform: [{ rotate: '45deg' }] },
+  tailSide: { end: -6, top: '50%', marginTop: -8 },
+  tailUp: { top: -6, alignSelf: 'center' },
+  message: { fontSize: 16, color: colors.text, marginTop: spacing.md },
   pills: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.sm },
   pill: {
     flexDirection: 'row',
@@ -194,6 +292,6 @@ const useStyles = makeStyles(({ colors }) => ({
   },
   pillText: { fontSize: 14 },
   ringWrap: { alignItems: 'center', gap: 4 },
-  ringInner: { width: 104, height: 104, borderRadius: 52, alignItems: 'center', justifyContent: 'center' },
-  stage: { fontSize: 13, color: colors.text, maxWidth: 124, textAlign: 'center' },
+  ringInner: { width: 126, height: 126, borderRadius: 63, alignItems: 'center', justifyContent: 'center' },
+  stage: { fontSize: 13, color: colors.text, maxWidth: 148, textAlign: 'center' },
 }));
