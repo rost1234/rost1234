@@ -39,7 +39,7 @@ export interface TalkContext {
   comeback: boolean;
   /** Weekend, holiday or vacation. */
   dayOff: boolean;
-  /** Longest current streak among today's habits. */
+  /** Longest current streak among the habits. */
   bestStreak: number;
   stage: GrowthStage;
   stageName: string;
@@ -52,7 +52,8 @@ const line = (pool: TalkPool, seed: number): TalkLine => ({ key: `talk.${pool}.$
 
 /** What the sprout says when nothing just happened. `seed` varies the line (e.g. the day of the year). */
 export function ambientLine(c: TalkContext, seed: number): TalkLine {
-  if (c.noHabits) return line('seed', seed);
+  // "I'm still a seed" only while it really is one (it never shrinks, even if every habit is removed).
+  if (c.noHabits && c.stage === 0) return line('seed', seed);
   if (c.comeback) return line('comeback', seed);
   if (c.dueCount > 0 && c.doneCount >= c.dueCount) return line('allDone', seed);
   if (c.hour >= 22 || c.hour < 5) return line('night', seed);

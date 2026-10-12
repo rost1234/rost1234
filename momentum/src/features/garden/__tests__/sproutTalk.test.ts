@@ -34,7 +34,9 @@ describe('what the sprout says', () => {
     expect(ambientLine(base, 0).key).toMatch(/^talk\.morning\./);
     expect(ambientLine({ ...base, hour: 14 }, 1).key).toMatch(/^talk\.afternoon\./);
     expect(ambientLine({ ...base, hour: 23 }, 1).key).toMatch(/^talk\.night\./);
-    expect(ambientLine({ ...base, noHabits: true }, 1).key).toBe('talk.seed.1');
+    expect(ambientLine({ ...base, noHabits: true, stage: 0 }, 1).key).toBe('talk.seed.1');
+    // A grown sprout never calls itself a seed again.
+    expect(ambientLine({ ...base, noHabits: true, dueCount: 0 }, 1).key).toMatch(/^talk\.quiet\./);
     expect(ambientLine({ ...base, comeback: true }, 1).key).toMatch(/^talk\.comeback\./);
     expect(ambientLine({ ...base, doneCount: 3 }, 1).key).toMatch(/^talk\.allDone\./);
     expect(ambientLine({ ...base, dueCount: 0 }, 1).key).toMatch(/^talk\.quiet\./);

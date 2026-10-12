@@ -24,19 +24,25 @@ function MemberPill({ habit }: { habit: Habit }) {
   const isDone = progress.status === 'completed';
   const isSkipped = progress.status === 'skipped';
   const count = habit.isQuantitative ? `${progress.currentCount}/${habit.targetCount}` : null;
+  const mark = () => {
+    const willComplete = habit.isQuantitative ? progress.currentCount + 1 >= habit.targetCount && !isDone : !isDone;
+    if (willComplete) haptics.success();
+    else haptics.tap();
+    tapHabit(habit.id);
+  };
   return (
     <Pressable
       accessibilityRole={habit.isQuantitative ? 'adjustable' : 'checkbox'}
-      accessibilityState={habit.isQuantitative ? undefined : { checked: isDone }}
-      accessibilityLabel={`${habit.title}${count ? `, ${count}` : ''}${isDone ? `, ${t('habit.done')}` : ''}`}
-      accessibilityHint={habit.isQuantitative ? t('habit.hintCount') : t('habit.hintBinary')}
-      disabled={isSkipped}
-      onPress={() => {
-        const willComplete = habit.isQuantitative ? progress.currentCount + 1 >= habit.targetCount && !isDone : !isDone;
-        if (willComplete) haptics.success();
-        else haptics.tap();
-        tapHabit(habit.id);
+      accessibilityState={habit.isQuantitative ? { disabled: isSkipped } : { checked: isDone, disabled: isSkipped }}
+      accessibilityLabel={`${habit.title}${count ? `, ${count}` : ''}${isDone ? `, ${t('habit.done')}` : ''}${isSkipped ? `, ${t('group.skipped')}` : ''}`}
+      accessibilityHint={isSkipped ? undefined : habit.isQuantitative ? t('habit.hintCount') : t('habit.hintBinary')}
+      // Swipe up on a counted habit adds one, like a tap.
+      accessibilityActions={habit.isQuantitative ? [{ name: 'increment' }] : undefined}
+      onAccessibilityAction={(e) => {
+        if (e.nativeEvent.actionName === 'increment') mark();
       }}
+      disabled={isSkipped}
+      onPress={mark}
       style={({ pressed }) => [styles.pill, isDone && styles.pillDone, isSkipped && styles.pillSkipped, pressed && { opacity: 0.8 }]}
     >
       <Ionicons

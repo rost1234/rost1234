@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, useWindowDimensions, View } from 'react-native';
+import { AccessibilityInfo, Animated, Platform, Pressable, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Text } from '@/components/AppText';
@@ -152,6 +152,12 @@ export function GardenHeader({ today, hour, percent, doneCount, totalCount, free
   const line: TalkLine = !event ? ambientLine(ctx, seed) : event.kind === 'done' ? doneLine(ctx, seed + event.n) : tapLine(ctx, event.n);
   const lineId = event ? event.id : line.key;
   const said = line.plural !== undefined ? t.plural(line.key, line.plural, line.params) : t(line.key as TranslationKey, line.params);
+  // Android reads the bubble's live region; iOS needs the new line announced.
+  useEffect(() => {
+    if (event && Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(said);
+    // Only when a new reaction appears, not on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event?.id]);
   const message =
     totalCount === 0
       ? t('today.quietDay')
