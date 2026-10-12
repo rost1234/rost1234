@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
-import { Animated, Easing, Modal, Pressable, View } from 'react-native';
+import { Animated, Easing, Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,10 +17,23 @@ export interface SheetAction {
   destructive?: boolean;
 }
 
+/** An amount to set right in the sheet ("I did 2 of 3 sets"). */
+export interface SheetStepper {
+  label: string;
+  value: number;
+  /** The goal shown beside the value ("of 3 sets"). */
+  target: number;
+  unit: string;
+  max: number;
+  saveLabel: string;
+  onSave: (value: number) => void;
+}
+
 interface ActionSheetRequest {
   kind: 'sheet';
   title: string;
   message?: string;
+  stepper?: SheetStepper;
   actions: SheetAction[];
 }
 
@@ -99,10 +112,65 @@ interface PartProps<R> {
   close: (then?: () => void) => void;
 }
 
+function Stepper({ stepper, close }: { stepper: SheetStepper; close: (then?: () => void) => void }) {
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
+  const [value, setValue] = useState(stepper.value);
+  const change = (delta: number) => {
+    haptics.tap();
+    setValue((v) => Math.max(0, Math.min(stepper.max, v + delta)));
+  };
+  return (
+    <View style={styles.stepper}>
+      <Text style={typography.label}>{stepper.label}</Text>
+      <View style={styles.stepperRow}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('sheet.less')}
+          onPress={() => change(-1)}
+          disabled={value <= 0}
+          style={({ pressed }) => [styles.stepButton, { opacity: value <= 0 ? 0.4 : pressed ? 0.7 : 1 }]}
+        >
+          <Ionicons name="remove" size={22} color={colors.primary} />
+        </Pressable>
+        <Text
+          style={styles.stepValue}
+          accessibilityLiveRegion="polite"
+          accessibilityLabel={t('sheet.amountA11y', { value, target: stepper.target, unit: stepper.unit })}
+        >
+          {value}
+          <Text style={styles.stepTarget}>{` / ${stepper.target}${stepper.unit ? ` ${stepper.unit}` : ''}`}</Text>
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('sheet.more')}
+          onPress={() => change(1)}
+          disabled={value >= stepper.max}
+          style={({ pressed }) => [styles.stepButton, { opacity: value >= stepper.max ? 0.4 : pressed ? 0.7 : 1 }]}
+        >
+          <Ionicons name="add" size={22} color={colors.primary} />
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            haptics.success();
+            close(() => stepper.onSave(value));
+          }}
+          style={({ pressed }) => [styles.stepSave, { backgroundColor: colors.primary }, pressed && { opacity: 0.85 }]}
+        >
+          <Text style={[styles.stepSaveText, { color: colors.onPrimary }]}>{stepper.saveLabel}</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 function Sheet({ request, progress, close }: PartProps<ActionSheetRequest>) {
   const { colors, typography } = useTheme();
   const styles = useStyles();
   const bottom = useSafeAreaInsets().bottom;
+  // Long menus scroll instead of running off the screen.
+  const maxActions = useWindowDimensions().height * 0.55;
   const translateY = progress.interpolate({ inputRange: [0, 1], outputRange: [400, 0] });
 
   return (
@@ -114,7 +182,8 @@ function Sheet({ request, progress, close }: PartProps<ActionSheetRequest>) {
         </Text>
         {request.message ? <Text style={typography.caption}>{request.message}</Text> : null}
       </View>
-      <View style={styles.actions}>
+      {request.stepper ? <Stepper stepper={request.stepper} close={close} /> : null}
+      <ScrollView style={[styles.actions, { maxHeight: maxActions }]} bounces={false}>
         {request.actions.map((action) => {
           const tint = action.destructive ? colors.danger : colors.text;
           return (
@@ -135,7 +204,7 @@ function Sheet({ request, progress, close }: PartProps<ActionSheetRequest>) {
             </Pressable>
           );
         })}
-      </View>
+      </ScrollView>
       <Pressable
         accessibilityRole="button"
         onPress={() => close()}
@@ -201,7 +270,14 @@ const useStyles = makeStyles(({ colors, shadow }) => ({
   },
   grabber: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: colors.border, marginBottom: spacing.md },
   header: { gap: spacing.xs, paddingHorizontal: spacing.xs, marginBottom: spacing.md },
-  actions: { borderRadius: radius.lg, backgroundColor: colors.background, overflow: 'hidden' },
+  actions: { borderRadius: radius.lg, backgroundColor: colors.background, overflow: 'hidden', flexGrow: 0 },
+  stepper: { gap: spacing.sm, padding: spacing.md, marginBottom: spacing.md, borderRadius: radius.lg, backgroundColor: colors.background },
+  stepperRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  stepButton: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primarySoft },
+  stepValue: { flex: 1, textAlign: 'center', fontSize: 26, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'] },
+  stepTarget: { fontSize: 15, fontWeight: '400', color: colors.textMuted },
+  stepSave: { minHeight: 44, paddingHorizontal: spacing.lg, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
+  stepSaveText: { fontSize: 15, fontWeight: '800' },
   action: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.md, minHeight: 56 },
   iconWrap: { width: 36, height: 36, borderRadius: radius.sm + 2, alignItems: 'center', justifyContent: 'center' },
   actionLabel: { flex: 1, fontSize: 16, fontWeight: '600' },

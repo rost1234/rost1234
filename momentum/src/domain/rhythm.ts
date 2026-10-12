@@ -19,6 +19,15 @@ export function timeOfDayNow(hour: number): Exclude<TimeOfDay, 'any'> {
 const ORDER: Exclude<TimeOfDay, 'any'>[] = ['morning', 'afternoon', 'evening'];
 
 /**
+ * A habit kept for one part of the day whose part is over (a morning habit after noon, an
+ * afternoon one from 17:00). Evening and "any time" habits never pass before the day ends.
+ */
+export function partOfDayPassed(timeOfDay: TimeOfDay, hour: number): boolean {
+  if (timeOfDay === 'any' || timeOfDay === 'evening') return false;
+  return ORDER.indexOf(timeOfDayNow(hour)) > ORDER.indexOf(timeOfDay);
+}
+
+/**
  * Today's order: the current part of the day first, then later ones, then
  * earlier ones; "any time" habits stay with the current block. Stable within
  * a block, so habit stacking order is preserved.

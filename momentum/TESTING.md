@@ -305,3 +305,16 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Regular look: the group card has a stack icon instead of a pot; everything else works the same
 - [ ] Backup and restore keep the groups
 
+## Smart marking, set aside, plan ahead (build 38)
+- [ ] Long-press a counted habit (e.g. 3 sets): "How much today?" with − / + and Save → 2 shows 2/3 (partial), 3 marks it done; Undo works
+- [ ] Long-press a yes/no habit: "Mark done", "I did part of it" → half-filled circle, "Done in part · tap to complete", the ring counts half; one tap completes it
+- [ ] "Not today: skip (keeps the streak)" and "I didn't do it today": both move the habit to the folded "Set aside today" section; "I didn't do it today" stops today's reminders for it; "Back to today's list" brings it back
+- [ ] A morning habit not done: after 12:00 it moves to "Set aside today" with "Its time has passed · you can still mark it"; marking it done brings it back to the main list (done)
+- [ ] A habit in a group that's set aside leaves the group card; the rest of the group stays
+- [ ] Quit habit: "Urge now" is a small grey underlined link, not a big button; quit habits show "Today didn't work out" instead of "I didn't do it today"
+- [ ] Regular look: no floating Focus button; a ⏱ icon in the top bar opens Focus; while a session runs the floating button shows the time left
+- [ ] Garden: the bottom bar has four equal icons; during a session Focus turns yellow with the time
+- [ ] Reflection: the Back/Next/Save buttons are above the phone's navigation bar (gesture or 3-button); 4 steps; step 4 "Anything to plan ahead?" — pick Tomorrow or a day, add tasks, remove one; Save works even with no tasks
+- [ ] The planned tasks appear on Home on that day, and in the calendar day sheet
+- [ ] Long-press a task on Home → "Move to tomorrow" / "Another day…" (the coming week) → it leaves today's list and shows up on that day
+

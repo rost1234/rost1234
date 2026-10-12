@@ -1,4 +1,5 @@
-import type { Habit } from './models';
+import type { Habit, HabitLogStatus } from './models';
+import { partOfDayPassed } from './rhythm';
 
 export type HomeItem = { kind: 'habit'; habit: Habit } | { kind: 'group'; name: string; habits: Habit[] };
 
@@ -27,4 +28,26 @@ export function groupForHome(habits: readonly Habit[]): HomeItem[] {
     }
   }
   return items;
+}
+
+/**
+ * Today's habits split into the open list and the ones set aside for today: skipped, put away
+ * with "I didn't do it today", or kept for a part of the day that's over (a morning habit after
+ * noon). Done habits always stay in the open list, so the day's wins stay in view.
+ */
+export function setAsideToday<T extends Pick<Habit, 'id' | 'timeOfDay'>>(
+  habits: readonly T[],
+  statusOf: (habitId: string) => HabitLogStatus | undefined,
+  closedIds: readonly string[],
+  hour: number,
+): { open: T[]; aside: T[] } {
+  const open: T[] = [];
+  const aside: T[] = [];
+  for (const habit of habits) {
+    const status = statusOf(habit.id);
+    const away =
+      status === 'skipped' || (status !== 'completed' && (closedIds.includes(habit.id) || partOfDayPassed(habit.timeOfDay, hour)));
+    (away ? aside : open).push(habit);
+  }
+  return { open, aside };
 }

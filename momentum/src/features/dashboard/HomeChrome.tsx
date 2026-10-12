@@ -29,6 +29,7 @@ export function HomeTopBar() {
     <View style={styles.bar}>
       <IconButton icon="settings-outline" label={t('home.settings')} onPress={() => router.push('/settings')} />
       <View style={{ flex: 1 }} />
+      <IconButton icon="timer-outline" label={t('home.focus')} onPress={() => router.push('/focus')} />
       <IconButton icon="calendar-outline" label={t('cal.title')} onPress={() => router.push('/calendar')} />
       <IconButton icon="library-outline" label={t('home.library')} onPress={() => router.push('/library')} />
     </View>
@@ -40,7 +41,7 @@ function formatClock(seconds: number): string {
   return `${m}:${String(seconds % 60).padStart(2, '0')}`;
 }
 
-/** Floating "▶ Focus" button; while a session runs it shows the time left and reopens it. */
+/** While a focus session runs, a floating button shows the time left and reopens it (nothing otherwise). */
 export function FocusFab() {
   const t = useT();
   const styles = useStyles();
@@ -55,6 +56,7 @@ export function FocusFab() {
       : t('home.focusLeft', { time: formatClock(snapshot.remainingSeconds) })
     : t('home.focus');
 
+  if (!snapshot) return null;
   return (
     <View pointerEvents="box-none" style={[styles.fabWrap, { bottom: bottomInset + spacing.lg }]}>
       <Pressable

@@ -43,6 +43,8 @@ interface HabitState {
   tapHabit: (habitId: string) => void;
   undoHabitStep: (habitId: string) => void;
   skipHabit: (habitId: string) => void;
+  /** Today's mark set directly (an amount, "in part"), with Undo. */
+  setTodayProgress: (habitId: string, next: LogProgress) => void;
   /** Marks a past day done ("done yesterday too"); a freeze spent on that day comes back. */
   completeOnDate: (habitId: string, date: LocalDateString) => Promise<void>;
   /** Sets what a habit holds on `date` (today or earlier), e.g. from the calendar; a freeze spent on that day comes back when it becomes done. Resolves true when a freeze came back. */
@@ -66,11 +68,13 @@ export interface LastChange {
   at: number;
 }
 
-function describeChange(before: LogProgress, after: LogProgress, unit: string, nth: number): string {
+function describeChange(before: LogProgress, after: LogProgress, unit: string, nth: number, binary: boolean): string {
   if (after.status === 'skipped') return t('undo.skipped');
   // The path so far: every completion is one more small choice.
   if (after.status === 'completed' && before.status !== 'completed') return nth > 1 ? t('undo.doneNth', { count: nth }) : t('undo.done');
-  if (after.currentCount > before.currentCount) return t('undo.plusOne', { unit }).trim();
+  if (binary && after.status === 'in_progress' && after.currentCount > 0) return t('undo.partial');
+  if (after.currentCount === before.currentCount + 1) return t('undo.plusOne', { unit }).trim();
+  if (after.currentCount > before.currentCount) return t('undo.amount', { count: after.currentCount, unit }).trim();
   if (after.currentCount < before.currentCount || before.status === 'completed') return t('undo.undone');
   return t('undo.updated');
 }
@@ -107,7 +111,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
     if (options.recordUndo) {
       const before = progressOf(previous);
       const nth = (get().completedBefore[habitId] ?? 0) + 1;
-      set({ lastChange: { habitId, previous: before, label: t('undo.label', { title: habit.title, change: describeChange(before, next, habit.unit, nth) }), at: Date.now() } });
+      set({ lastChange: { habitId, previous: before, label: t('undo.label', { title: habit.title, change: describeChange(before, next, habit.unit, nth, !habit.isQuantitative) }), at: Date.now() } });
     }
     const optimistic: HabitLog = {
       id: previous?.id ?? `pending-${habitId}-${today}`,
@@ -219,6 +223,12 @@ export const useHabitStore = create<HabitState>((set, get) => {
         habit.isQuantitative ? decrementProgress(habit, progress) : { currentCount: 0, status: 'in_progress' },
         { recordUndo: true },
       );
+    },
+
+    setTodayProgress: (habitId, next) => {
+      const progress = currentProgress(habitId);
+      if (!progress || (progress.status === next.status && progress.currentCount === next.currentCount)) return;
+      commitProgress(habitId, next, { recordUndo: true });
     },
 
     skipHabit: (habitId) => {

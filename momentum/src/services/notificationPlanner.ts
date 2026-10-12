@@ -2,8 +2,9 @@ import { AppState, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { runDetached } from '@/core/errors';
 import { getLocalDeviceDate, parseLocalDate } from '@/core/localDate';
-import type { Habit } from '@/domain/models';
+import type { Habit, HabitLog } from '@/domain/models';
 import { planNotifications, type PlanInput, type PlannedNotification } from '@/domain/notificationPlan';
+import { useDayCloseStore } from '@/state/dayCloseStore';
 import { useHabitStore } from '@/state/habitStore';
 import { selectNotificationPrefs, useNotificationPrefsStore } from '@/state/notificationPrefsStore';
 import { usePlanningStore } from '@/state/planningStore';
@@ -26,11 +27,23 @@ export function currentPlanInput(now: Date = new Date()): PlanInput | null {
   const notif = useNotificationPrefsStore.getState();
   const today = getLocalDeviceDate(now);
   if (habitState.status !== 'ready' || habitState.today !== today || !settings || !notif.isHydrated) return null;
+  // "I didn't do it today": no more reminders for it today (it counts as set aside, like a skip).
+  const closed = useDayCloseStore.getState();
+  let logsByHabit = habitState.logs;
+  if (closed.date === today && closed.ids.length > 0) {
+    logsByHabit = { ...logsByHabit };
+    for (const habitId of closed.ids) {
+      const existing = logsByHabit[habitId]?.[today];
+      if (existing?.status === 'completed') continue;
+      const setAside: HabitLog = { id: `closed-${habitId}`, habitId, logDate: today, currentCount: existing?.currentCount ?? 0, status: 'skipped', updatedAt: now.toISOString() };
+      logsByHabit[habitId] = { ...logsByHabit[habitId], [today]: setAside };
+    }
+  }
   return {
     today,
     nowMinutes: now.getHours() * 60 + now.getMinutes(),
     habits: habitState.habits,
-    logsByHabit: habitState.logs,
+    logsByHabit,
     streaks: habitState.streaks,
     pauses: usePlanningStore.getState().pauses,
     prefs: selectNotificationPrefs(notif),
@@ -156,6 +169,9 @@ export function startNotificationPlanner(): () => void {
     }),
     useReflectionStore.subscribe((s, p) => {
       if (s.byDate !== p.byDate) requestNotificationSync();
+    }),
+    useDayCloseStore.subscribe((s, p) => {
+      if (s.ids !== p.ids || s.date !== p.date) requestNotificationSync();
     }),
     usePlanningStore.subscribe((s, p) => {
       if (s.pauses !== p.pauses) requestNotificationSync();

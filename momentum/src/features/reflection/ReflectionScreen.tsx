@@ -2,23 +2,27 @@ import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from '@/components/AppText';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { runDetached, toErrorMessage } from '@/core/errors';
 import { getLocalDeviceDate, type LocalDateString } from '@/core/localDate';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { Banner, Button, Chip } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import type { DailyReflection, MoodScore } from '@/domain/models';
+import { PlanAhead } from '@/features/tasks/PlanAhead';
 import { useReflectionStore } from '@/state/reflectionStore';
 import { MOOD_OPTIONS } from './mood';
 import { type TranslationKey, useT } from '@/i18n';
 import { useBottomSpace } from '@/components/useBottomSpace';
 
-type Step = 1 | 2 | 3;
+/** 1 mood and sleep, 2 gratitude, 3 lesson, 4 plan the coming days (optional). */
+type Step = 1 | 2 | 3 | 4;
+const LAST_STEP: Step = 4;
 
 /** Whole hours of sleep to pick from (the last one means "or more"). */
 const SLEEP_HOURS = [4, 5, 6, 7, 8, 9, 10] as const;
 
-const PROMPTS: Record<Exclude<Step, 1>, { title: TranslationKey; placeholder: TranslationKey }> = {
+const PROMPTS: Record<2 | 3, { title: TranslationKey; placeholder: TranslationKey }> = {
   2: { title: 'refl.gratitude', placeholder: 'refl.gratitudePh' },
   3: { title: 'refl.lesson', placeholder: 'refl.lessonPh' },
 };
@@ -77,6 +81,8 @@ function ReflectionForm({ logDate, initial }: { logDate: LocalDateString; initia
   const { colors, typography } = useTheme();
   const styles = useStyles();
   const bottomSpace = useBottomSpace();
+  // The buttons sit above the phone's navigation bar, not under it.
+  const bottomInset = useSafeAreaInsets().bottom;
   const save = useReflectionStore((s) => s.save);
   const [step, setStep] = useState<Step>(1);
   const [mood, setMood] = useState<MoodScore | null>(initial?.moodScore ?? null);
@@ -130,6 +136,12 @@ function ReflectionForm({ logDate, initial }: { logDate: LocalDateString; initia
               ))}
             </View>
           </>
+        ) : step === 4 ? (
+          <>
+            <Text style={typography.title}>{t('refl.planTitle')}</Text>
+            <Text style={typography.caption}>{t('refl.planLead')}</Text>
+            <PlanAhead today={logDate} />
+          </>
         ) : (
           <>
             <Text style={typography.title}>{t(PROMPTS[step].title)}</Text>
@@ -149,10 +161,10 @@ function ReflectionForm({ logDate, initial }: { logDate: LocalDateString; initia
         )}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: spacing.lg + bottomInset }]}>
         {step > 1 ? <Button label={t('common.back')} variant="ghost" onPress={() => setStep((s) => (s - 1) as Step)} /> : null}
         <View style={{ flex: 1 }} />
-        {step < 3 ? (
+        {step < LAST_STEP ? (
           <Button label={t('common.next')} onPress={() => setStep((s) => (s + 1) as Step)} disabled={!canContinue} />
         ) : (
           <Button label={t('refl.save')} onPress={() => void submit()} loading={isSaving} disabled={mood === null} />

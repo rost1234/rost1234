@@ -1,0 +1,133 @@
+import { useEffect, useState } from 'react';
+import { Pressable, ScrollView, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Text, TextInput } from '@/components/AppText';
+import { Chip } from '@/components/ui';
+import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
+import { runDetached } from '@/core/errors';
+import { haptics } from '@/core/haptics';
+import { addDays, dayOfMonth, getWeekday, weekdayName, type LocalDateString } from '@/core/localDate';
+import { repositories } from '@/data/repositories';
+import type { Task } from '@/domain/models';
+import { useT, type Translator } from '@/i18n';
+import { useTaskStore } from '@/state/taskStore';
+
+/** The next week, from tomorrow. */
+export function nextDays(today: LocalDateString, count = 7): LocalDateString[] {
+  return Array.from({ length: count }, (_, i) => addDays(today, i + 1));
+}
+
+/** "Tomorrow", then "Wed 15". */
+export function dayLabel(date: LocalDateString, today: LocalDateString, t: Translator): string {
+  if (date === addDays(today, 1)) return t('plan.tomorrow');
+  return `${weekdayName(getWeekday(date), t.locale)} ${dayOfMonth(date)}`;
+}
+
+/**
+ * Plan tasks for the coming days (from the evening reflection): pick a day, add a few things,
+ * and they wait on that day's list. Planned tasks can be removed here too.
+ */
+export function PlanAhead({ today }: { today: LocalDateString }) {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
+  const planTask = useTaskStore((s) => s.planTask);
+  const days = nextDays(today);
+  const [date, setDate] = useState<LocalDateString>(days[0] ?? addDays(today, 1));
+  const [tasks, setTasks] = useState<Task[] | null>(null);
+  const [draft, setDraft] = useState('');
+
+  useEffect(() => {
+    let current = true;
+    repositories.tasks.getForDate(date).then(
+      (list) => {
+        if (current) setTasks(list);
+      },
+      () => {
+        if (current) setTasks([]);
+      },
+    );
+    return () => {
+      current = false;
+    };
+  }, [date]);
+
+  const add = () => {
+    const title = draft.trim();
+    if (!title) return;
+    setDraft('');
+    haptics.success();
+    runDetached(
+      planTask(title, date).then((task) => {
+        if (task) setTasks((list) => [...(list ?? []), task]);
+      }),
+    );
+  };
+
+  const remove = (task: Task) => {
+    haptics.tap();
+    setTasks((list) => (list ?? []).filter((x) => x.id !== task.id));
+    runDetached(repositories.tasks.delete(task.id));
+  };
+
+  return (
+    <View style={styles.container}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.days}>
+        {days.map((d) => (
+          <Chip key={d} label={dayLabel(d, today, t)} selected={d === date} onPress={() => setDate(d)} />
+        ))}
+      </ScrollView>
+      <View style={styles.list}>
+        {(tasks ?? []).map((task) => (
+          <View key={task.id} style={styles.row}>
+            <View style={styles.dot} />
+            <Text style={[typography.body, { flex: 1 }]} numberOfLines={2}>
+              {task.title}
+            </Text>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('plan.removeA11y', { title: task.title })} onPress={() => remove(task)} hitSlop={10}>
+              <Ionicons name="close" size={18} color={colors.textMuted} />
+            </Pressable>
+          </View>
+        ))}
+        {tasks !== null && tasks.length === 0 ? <Text style={typography.caption}>{t('plan.empty')}</Text> : null}
+      </View>
+      <View style={styles.inputRow}>
+        <TextInput
+          value={draft}
+          onChangeText={setDraft}
+          onSubmitEditing={add}
+          placeholder={t('plan.placeholder', { day: dayLabel(date, today, t) })}
+          placeholderTextColor={colors.textMuted}
+          returnKeyType="done"
+          blurOnSubmit={false}
+          maxLength={120}
+          style={styles.input}
+          accessibilityLabel={t('plan.inputA11y', { day: dayLabel(date, today, t) })}
+        />
+        <Pressable accessibilityRole="button" accessibilityLabel={t('tasks.add')} onPress={add} style={styles.add} hitSlop={6}>
+          <Ionicons name="add" size={24} color={colors.onPrimary} />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+const useStyles = makeStyles(({ colors, typography, flat }) => ({
+  container: { gap: spacing.md },
+  days: { gap: spacing.sm, paddingVertical: spacing.xs },
+  list: { gap: spacing.sm, padding: spacing.md, borderRadius: radius.lg, backgroundColor: colors.surface, ...flat },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 36 },
+  dot: { width: 10, height: 10, borderRadius: 5, borderWidth: 2, borderColor: colors.primary },
+  inputRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  input: {
+    flex: 1,
+    ...typography.body,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  add: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primary },
+}));

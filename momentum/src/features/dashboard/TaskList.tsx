@@ -7,7 +7,9 @@ import type { Task } from '@/domain/models';
 import { MAX_OPEN_TASKS_PER_DAY } from '@/domain/taskPlanning';
 import { highlightFor, useHighlightStore } from '@/state/highlightStore';
 import { useTaskStore } from '@/state/taskStore';
-import { t, useT } from '@/i18n';
+import { addDays } from '@/core/localDate';
+import { dayLabel, nextDays } from '@/features/tasks/PlanAhead';
+import { currentLanguage, t, translatorFor, useT } from '@/i18n';
 
 function openTaskMenu(task: Task, isMain: boolean) {
   const { decide, today } = useTaskStore.getState();
@@ -15,10 +17,27 @@ function openTaskMenu(task: Task, isMain: boolean) {
     ...(today && !task.isCompleted
       ? [{ label: isMain ? t('tasks.unsetMain') : t('tasks.setMain'), icon: isMain ? ('star' as const) : ('star-outline' as const), run: () => useHighlightStore.getState().toggle(today, task.id) }]
       : []),
+    ...(today && !task.isCompleted
+      ? [
+          { label: t('tasks.moveTomorrow'), icon: 'arrow-forward-circle-outline' as const, run: () => useTaskStore.getState().moveToDate(task.id, addDays(today, 1)) },
+          { label: t('tasks.moveDay'), icon: 'calendar-outline' as const, run: () => openDayPicker(task) },
+        ]
+      : []),
     { label: t('tasks.moveLater'), icon: 'time-outline', run: () => decide(task.id, 'later') },
     { label: t('tasks.drop'), icon: 'trash-outline', run: () => decide(task.id, 'drop'), destructive: true },
   ];
   showActionSheet({ title: task.title, actions });
+}
+
+/** "Another day…": the coming week to pick from. */
+function openDayPicker(task: Task) {
+  const { today, moveToDate } = useTaskStore.getState();
+  if (!today) return;
+  const tr = translatorFor(currentLanguage());
+  showActionSheet({
+    title: t('tasks.moveDayTitle', { title: task.title }),
+    actions: nextDays(today).map((date) => ({ label: dayLabel(date, today, tr), icon: 'calendar-clear-outline', run: () => moveToDate(task.id, date) })),
+  });
 }
 
 export function TaskList() {

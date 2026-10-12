@@ -5,7 +5,7 @@ import { ProgressBar } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { haptics } from '@/core/haptics';
 import { habitPotStage } from '@/domain/garden';
-import { progressOf } from '@/domain/habitProgress';
+import { isPartialBinary, progressOf } from '@/domain/habitProgress';
 import type { Habit } from '@/domain/models';
 import { Sprout } from '@/features/garden/Sprout';
 import { useT } from '@/i18n';
@@ -46,7 +46,7 @@ function MemberPill({ habit }: { habit: Habit }) {
       style={({ pressed }) => [styles.pill, isDone && styles.pillDone, isSkipped && styles.pillSkipped, pressed && { opacity: 0.8 }]}
     >
       <Ionicons
-        name={isDone ? 'checkmark-circle' : habit.isQuantitative ? 'add-circle-outline' : 'ellipse-outline'}
+        name={isDone ? 'checkmark-circle' : habit.isQuantitative ? 'add-circle-outline' : isPartialBinary(habit, progress) ? 'contrast-outline' : 'ellipse-outline'}
         size={18}
         color={isDone ? colors.success : colors.primary}
       />

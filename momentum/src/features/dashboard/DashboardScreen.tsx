@@ -9,7 +9,7 @@ import { Toast } from '@/components/Toast';
 import { Banner, Button, SectionTitle } from '@/components/ui';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { dailyProgressPercent, progressOf } from '@/domain/habitProgress';
-import { groupForHome } from '@/domain/habitGroups';
+import { groupForHome, setAsideToday } from '@/domain/habitGroups';
 import { habitsDueOn } from '@/domain/habitSchedule';
 import { orderByTimeOfDay } from '@/domain/rhythm';
 import { orderByStacking } from '@/domain/stacking';
@@ -24,6 +24,8 @@ import { openEndedUrge, useUrgeStore } from '@/features/urge/urgeStore';
 import { useDayOff } from '@/hooks/useDayOff';
 import { useLocalDate } from '@/hooks/useLocalDate';
 import { useNow } from '@/hooks/useNow';
+import { useDayCloseStore } from '@/state/dayCloseStore';
+import { useFocusStore } from '@/state/focusStore';
 import { useHabitStore } from '@/state/habitStore';
 import { useReflectionStore } from '@/state/reflectionStore';
 import { useSettingsStore } from '@/state/settingsStore';
@@ -81,8 +83,9 @@ export function DashboardScreen() {
   const sproutStage = useGardenGrowth().stage;
   // The toast's little sprout only cheers when the change marked a habit done.
   const lastWasDone = useHabitStore((s) => (s.lastChange && s.today ? s.logs[s.lastChange.habitId]?.[s.today]?.status === 'completed' : false));
-  // Extra room for the floating focus button (or the Garden dock).
-  const bottomSpace = useBottomSpace(garden ? DOCK_CLEARANCE : 72);
+  // Extra room for the Garden dock, or the floating focus button while a session runs.
+  const focusRunning = useFocusStore((s) => s.timer !== null);
+  const bottomSpace = useBottomSpace(garden ? DOCK_CLEARANCE : focusRunning ? 72 : 0);
   // Re-renders (and reloads) automatically when the local date rolls over.
   const today = useLocalDate();
   const status = useHabitStore((s) => s.status);
@@ -101,6 +104,14 @@ export function DashboardScreen() {
   const freezes = useSettingsStore((s) => s.settings?.streakFreezesAvailable ?? 0);
   const reflection = useReflectionStore((s) => s.byDate[today]);
   const { dueToday, percent, doneCount, countedCount, restCount } = useDashboardData(today, hour);
+  // Skipped, "not today" and morning-only habits after the morning wait in a folded section.
+  const logs = useHabitStore((s) => s.logs);
+  const closedDate = useDayCloseStore((s) => s.date);
+  const closedIds = useDayCloseStore((s) => s.ids);
+  const { open: openHabits, aside } = useMemo(
+    () => setAsideToday(dueToday, (id) => logs[id]?.[today]?.status, closedDate === today ? closedIds : [], hour),
+    [dueToday, logs, today, closedDate, closedIds, hour],
+  );
   const dayOff = useDayOff(today);
   const welcomeBack = useWelcomeBack(today);
   const showWelcomeBack = useHomePromptSlot('welcomeBack', welcomeBack.show);
@@ -212,13 +223,22 @@ export function DashboardScreen() {
         ) : dueToday.length === 0 ? (
           <EmptyHabits hasAnyHabits={restCount > 0} />
         ) : (
-          groupForHome(dueToday).map((item) =>
-            item.kind === 'group' ? (
-              <HabitGroupCard key={`group:${item.name}`} name={item.name} habits={item.habits} />
-            ) : (
-              <HabitCard key={item.habit.id} habit={item.habit} />
-            ),
-          )
+          <>
+            {groupForHome(openHabits).map((item) =>
+              item.kind === 'group' ? (
+                <HabitGroupCard key={`group:${item.name}`} name={item.name} habits={item.habits} />
+              ) : (
+                <HabitCard key={item.habit.id} habit={item.habit} />
+              ),
+            )}
+            {aside.length > 0 ? (
+              <FoldedSection icon="🌙" title={t('aside.title')} summary={t.plural('aside.summary', aside.length)}>
+                {aside.map((habit) => (
+                  <HabitCard key={habit.id} habit={habit} passed />
+                ))}
+              </FoldedSection>
+            ) : null}
+          </>
         )}
 
         {dayOff ? (
@@ -254,7 +274,7 @@ export function DashboardScreen() {
           actionLabel={t('common.undo')}
           onAction={undoLast}
           onHide={dismissLastChange}
-          aboveFab
+          aboveFab={garden || focusRunning}
           // Garden: the sprout cheers in the corner of the toast.
           leading={garden && lastWasDone ? <Sprout stage={sproutStage} mood="joy" size={34} /> : undefined}
         />

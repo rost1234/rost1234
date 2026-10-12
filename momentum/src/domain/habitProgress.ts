@@ -36,15 +36,30 @@ export function toggleBinary(current: LogProgress): LogProgress {
     : { currentCount: 1, status: 'completed' };
 }
 
+/** Quantitative habits: the amount set directly ("I did 2 of 3 sets"), never below zero. */
+export function setAmount(habit: ProgressHabit, count: number): LogProgress {
+  const currentCount = Math.max(0, Math.round(count));
+  return { currentCount, status: statusForCount(habit, currentCount) };
+}
+
 /** Next state for the habit card's primary tap. */
 export function applyPrimaryAction(habit: ProgressHabit, current: LogProgress): LogProgress {
   return habit.isQuantitative ? incrementProgress(habit, current) : toggleBinary(current);
 }
 
+/**
+ * A yes/no habit done in part ("only two sets"): kept as in progress with a count of 1, so it
+ * reads as partial, never as done, and the next tap completes it.
+ */
+export const PARTIAL_BINARY: LogProgress = { currentCount: 1, status: 'in_progress' };
+
+export const isPartialBinary = (habit: ProgressHabit, progress: LogProgress): boolean =>
+  !habit.isQuantitative && progress.status === 'in_progress' && progress.currentCount > 0;
+
 /** 0..1 completion ratio for one habit on one day. */
 export function completionRatio(habit: ProgressHabit, progress: LogProgress): number {
   if (progress.status === 'completed' || progress.status === 'forgiven') return 1;
-  if (!habit.isQuantitative) return 0;
+  if (!habit.isQuantitative) return isPartialBinary(habit, progress) ? 0.5 : 0;
   if (habit.targetCount <= 0) return 0;
   return Math.min(1, progress.currentCount / habit.targetCount);
 }
@@ -68,6 +83,8 @@ export function dailyProgressPercent(
  */
 export function reevaluateProgress(habit: ProgressHabit, current: LogProgress): LogProgress {
   if (current.status === 'skipped' || current.status === 'forgiven') return current;
+  // A yes/no habit marked "in part" stays in part.
+  if (!habit.isQuantitative && current.status === 'in_progress') return { currentCount: Math.min(1, current.currentCount), status: 'in_progress' };
   const currentCount = habit.isQuantitative ? current.currentCount : Math.min(1, current.currentCount);
   return { currentCount, status: statusForCount(habit, currentCount) };
 }

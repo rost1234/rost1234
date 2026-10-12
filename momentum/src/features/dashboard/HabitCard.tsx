@@ -8,7 +8,7 @@ import { ProgressBar } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { haptics } from '@/core/haptics';
 import { formatShortDate } from '@/core/localDate';
-import { completionRatio, progressOf } from '@/domain/habitProgress';
+import { completionRatio, isPartialBinary, PARTIAL_BINARY, progressOf, setAmount } from '@/domain/habitProgress';
 import type { Habit } from '@/domain/models';
 import { habitPotStage } from '@/domain/garden';
 import { consistency, showConsistency } from '@/domain/motivation';
@@ -19,32 +19,75 @@ import { Sprout } from '@/features/garden/Sprout';
 import { useHabitDays } from '@/features/garden/useGarden';
 import { quitPlanText, savingsText } from '@/features/urge/quitText';
 import { useUrgeStore } from '@/features/urge/urgeStore';
+import { useDayCloseStore } from '@/state/dayCloseStore';
 import { useHabitStore } from '@/state/habitStore';
 import { usePlanningStore } from '@/state/planningStore';
 import { currentLanguage, t, tPlural, useT } from '@/i18n';
 
 interface HabitCardProps {
   habit: Habit;
+  /** Shown in "set aside for today": says why (its part of the day is over, or not today). */
+  passed?: boolean;
 }
 
-/** `withFocus`: the Garden card has no play button, so the menu offers Focus instead. */
-function openHabitMenu(habit: Habit, isSkipped: boolean, withFocus = false) {
-  const { skipHabit, archiveHabit, undoHabitStep, completedBefore, today, logs } = useHabitStore.getState();
-  const choices = (completedBefore[habit.id] ?? 0) + (today && logs[habit.id]?.[today]?.status === 'completed' ? 1 : 0);
-  const actions: SheetAction[] = [
-    ...(withFocus && !habit.isQuit
-      ? [{ label: t('habit.focusMenu'), icon: 'play-circle-outline', run: () => router.push({ pathname: '/focus', params: { habitId: habit.id } }) } satisfies SheetAction]
-      : []),
+/**
+ * The habit's menu (long press): mark it exactly as it went — done, in part, an amount, not
+ * today (a skip that keeps the streak) or "I didn't do it today" (put away until tomorrow) — and
+ * the usual edit, focus, pause and archive.
+ */
+function openHabitMenu(habit: Habit) {
+  const { skipHabit, archiveHabit, tapHabit, setTodayProgress, completedBefore, today, logs } = useHabitStore.getState();
+  const log = today ? logs[habit.id]?.[today] : undefined;
+  const progress = progressOf(log);
+  const isDone = progress.status === 'completed';
+  const isSkipped = progress.status === 'skipped';
+  const partial = isPartialBinary(habit, progress);
+  const closed = today ? useDayCloseStore.getState().isClosed(habit.id, today) : false;
+  const choices = (completedBefore[habit.id] ?? 0) + (isDone ? 1 : 0);
+  const actions: SheetAction[] = [];
+
+  if (!habit.isQuantitative && !isDone && !isSkipped) {
+    actions.push({ label: habit.isQuit ? t('mark.quitDone') : t('mark.done'), icon: 'checkmark-circle-outline', run: () => tapHabit(habit.id) });
+    if (!partial && !habit.isQuit) actions.push({ label: t('mark.partial'), icon: 'contrast-outline', run: () => setTodayProgress(habit.id, PARTIAL_BINARY) });
+  }
+  if (isDone || partial || (habit.isQuantitative && progress.currentCount > 0)) {
+    actions.push({ label: t('habit.resetToday'), icon: 'refresh-outline', run: () => setTodayProgress(habit.id, { currentCount: 0, status: 'in_progress' }) });
+  }
+  actions.push(
     isSkipped
       ? { label: t('habit.unskipToday'), icon: 'arrow-undo-outline', run: () => skipHabit(habit.id) }
-      : { label: t('habit.skipToday'), icon: 'play-skip-forward-outline', run: () => skipHabit(habit.id) },
+      : { label: t('mark.skip'), icon: 'play-skip-forward-outline', run: () => skipHabit(habit.id) },
+  );
+  if (today && !isDone && !isSkipped) {
+    actions.push(
+      closed
+        ? { label: t('mark.reopen'), icon: 'return-up-back-outline', run: () => useDayCloseStore.getState().reopen(habit.id, today) }
+        : { label: habit.isQuit ? t('mark.quitMissed') : t('mark.missed'), icon: 'moon-outline', run: () => useDayCloseStore.getState().close(habit.id, today) },
+    );
+  }
+  if (!habit.isQuit) {
+    actions.push({ label: t('habit.focusMenu'), icon: 'play-circle-outline', run: () => router.push({ pathname: '/focus', params: { habitId: habit.id } }) });
+  }
+  actions.push(
     { label: t('habit.edit'), icon: 'create-outline', run: () => router.push({ pathname: '/habit/[id]', params: { id: habit.id } }) },
-    { label: t('habit.resetToday'), icon: 'refresh-outline', run: () => undoHabitStep(habit.id) },
     { label: t('habit.pause'), icon: 'pause-circle-outline', run: () => router.push({ pathname: '/streaks', params: { habitId: habit.id } }) },
     { label: t('habit.archive'), icon: 'archive-outline', destructive: true, run: () => void archiveHabit(habit.id) },
-  ];
-  const message = [habit.why ? t('habit.why', { why: habit.why }) : null, choices > 0 ? tPlural(currentLanguage(), 'path.sofar', choices) : null].filter(Boolean).join('\n');
-  showActionSheet({ title: habit.title, message: message || undefined, actions });
+  );
+  // Counted habits: set the amount right here ("I did 2 of 3 sets").
+  const stepper =
+    habit.isQuantitative && !isSkipped
+      ? {
+          label: t('mark.howMuch'),
+          value: progress.currentCount,
+          target: habit.targetCount,
+          unit: habit.unit,
+          max: Math.max(habit.targetCount * 3, progress.currentCount + 10),
+          saveLabel: t('mark.save'),
+          onSave: (value: number) => setTodayProgress(habit.id, setAmount(habit, value)),
+        }
+      : undefined;
+    const message = [habit.why ? t('habit.why', { why: habit.why }) : null, choices > 0 ? tPlural(currentLanguage(), 'path.sofar', choices) : null].filter(Boolean).join('\n');
+  showActionSheet({ title: habit.title, message: message || undefined, stepper, actions });
 }
 
 /** Opens "urge now"; an old ended timer for another habit is dropped first. */
@@ -52,6 +95,31 @@ function openUrge(habitId: string) {
   const { session, clear } = useUrgeStore.getState();
   if (session && session.habitId !== habitId && Date.now() >= session.endsAt) clear();
   router.push({ pathname: '/urge', params: { habitId } });
+}
+
+/**
+ * "Urge now" for a habit to quit: a small, quiet link, there when it's needed but not asking
+ * to be pressed.
+ */
+function UrgeLink({ habit }: { habit: Habit }) {
+  const t = useT();
+  const { colors } = useTheme();
+  const styles = useStyles();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={t('urge.openA11y', { title: habit.title })}
+      onPress={() => {
+        haptics.tap();
+        openUrge(habit.id);
+      }}
+      hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
+      style={({ pressed }) => [styles.urgeLink, pressed && { opacity: 0.6 }]}
+    >
+      <Ionicons name="water-outline" size={15} color={colors.textMuted} />
+      <Text style={styles.urgeLinkText}>{t('urge.open')}</Text>
+    </Pressable>
+  );
 }
 
 /** Springs the check circle whenever the habit becomes done. */
@@ -68,7 +136,7 @@ function useDonePop(isDone: boolean): Animated.Value {
   return scale;
 }
 
-function HabitCardComponent({ habit }: HabitCardProps) {
+function HabitCardComponent({ habit, passed = false }: HabitCardProps) {
   const t = useT();
   const { colors, typography, look, scenery } = useTheme();
   const styles = useStyles();
@@ -109,13 +177,18 @@ function HabitCardComponent({ habit }: HabitCardProps) {
   const ratio = completionRatio(habit, progress);
   const isDone = progress.status === 'completed';
   const isSkipped = progress.status === 'skipped';
+  const partial = isPartialBinary(habit, progress);
+  const today = useHabitStore((s) => s.today);
+  const closed = useDayCloseStore((s) => today !== null && s.date === today && s.ids.includes(habit.id));
   const pop = useDonePop(isDone);
   // Quit habits: what the clean days saved, by the user's own per-day estimate.
   const cleanDays = useHabitStore((s) => (habit.isQuit ? (s.completedBefore[habit.id] ?? 0) : 0)) + (habit.isQuit && isDone ? 1 : 0);
   const savings = habit.isQuit ? quitSavings(cleanDays, habit.quitCost, habit.quitMinutes) : null;
   const countLabel = habit.isQuantitative
     ? `${progress.currentCount}/${habit.targetCount}${habit.unit ? ` ${habit.unit}` : ''}`
-    : isDone
+    : partial
+      ? t('habit.partial')
+      : isDone
       ? habit.isQuit
         ? t('habit.quitDone')
         : t('habit.done')
@@ -132,6 +205,12 @@ function HabitCardComponent({ habit }: HabitCardProps) {
 
   const subtitle = isSkipped
     ? t('habit.skipped')
+    : closed && !isDone
+      ? t('habit.closedToday')
+      : passed && !isDone
+        ? t('habit.timePassed')
+      : partial
+        ? t('habit.partial')
     : habit.isQuit
       ? habit.cue && habit.microStep
         ? quitPlanText(habit, t)
@@ -150,7 +229,7 @@ function HabitCardComponent({ habit }: HabitCardProps) {
   }`;
   const openMenu = () => {
     haptics.select();
-    openHabitMenu(habit, isSkipped, garden);
+    openHabitMenu(habit);
   };
 
   if (garden) {
@@ -260,6 +339,7 @@ function HabitCardComponent({ habit }: HabitCardProps) {
             style={({ pressed }) => pressed && { opacity: 0.8 }}
           >
             <Animated.View style={[styles.gCheck, isDone && styles.gCheckDone, { transform: [{ scale: pop }] }]}>
+              {partial ? <View style={[styles.halfFill, { backgroundColor: colors.primary }]} /> : null}
               {isDone ? (
                 <Ionicons name={habit.isQuit ? 'shield-checkmark' : 'checkmark'} size={28} color={colors.onPrimary} />
               ) : habit.isQuantitative ? (
@@ -268,20 +348,7 @@ function HabitCardComponent({ habit }: HabitCardProps) {
             </Animated.View>
           </Pressable>
         </View>
-        {habit.isQuit && !isSkipped ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('urge.openA11y', { title: habit.title })}
-            onPress={() => {
-              haptics.tap();
-              openUrge(habit.id);
-            }}
-            style={({ pressed }) => [styles.gUrge, { borderColor: scenery.coral, backgroundColor: scenery.coralSoft }, pressed && { opacity: 0.8 }]}
-          >
-            <Ionicons name="water-outline" size={20} color={scenery.coral} />
-            <Text style={[styles.gUrgeLabel, { color: scenery.coral }]}>{t('urge.open')}</Text>
-          </Pressable>
-        ) : null}
+        {habit.isQuit && !isSkipped ? <UrgeLink habit={habit} /> : null}
       </View>
     );
   }
@@ -300,6 +367,7 @@ function HabitCardComponent({ habit }: HabitCardProps) {
         style={({ pressed }) => [styles.main, pressed && { opacity: 0.75 }]}
       >
         <Animated.View style={[styles.checkCircle, isDone && styles.checkCircleDone, { transform: [{ scale: pop }] }]}>
+          {partial ? <View style={[styles.halfFill, { backgroundColor: colors.partial }]} /> : null}
           {isDone ? (
             <Ionicons name={habit.isQuit ? 'shield-checkmark' : 'checkmark'} size={22} color={colors.onPrimary} />
           ) : habit.isQuantitative ? (
@@ -386,20 +454,7 @@ function HabitCardComponent({ habit }: HabitCardProps) {
         )}
       </View>
       </View>
-      {habit.isQuit && !isSkipped ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('urge.openA11y', { title: habit.title })}
-          onPress={() => {
-            haptics.tap();
-            openUrge(habit.id);
-          }}
-          style={({ pressed }) => [styles.urgeButton, pressed && { opacity: 0.8 }]}
-        >
-          <Ionicons name="water-outline" size={18} color={colors.primary} />
-          <Text style={styles.urgeLabel}>{t('urge.open')}</Text>
-        </Pressable>
-      ) : null}
+      {habit.isQuit && !isSkipped ? <UrgeLink habit={habit} /> : null}
     </View>
   );
 }
@@ -419,16 +474,10 @@ const useStyles = makeStyles(({ colors, typography, flat }) => ({
   row: { flexDirection: 'row', alignItems: 'center' },
   savingsRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   savings: { fontSize: 13, fontWeight: '600', color: colors.text, flexShrink: 1 },
-  urgeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    minHeight: 44,
-    borderRadius: radius.md,
-    backgroundColor: colors.primarySoft,
-  },
-  urgeLabel: { fontSize: 15, fontWeight: '700', color: colors.primary },
+  urgeLink: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 5, minHeight: 32, paddingHorizontal: 2 },
+  urgeLinkText: { fontSize: 14, color: colors.textMuted, textDecorationLine: 'underline' },
+  // A yes/no habit done in part: half the circle filled.
+  halfFill: { position: 'absolute', top: 0, bottom: 0, start: 0, width: '50%' },
   cardDone: { backgroundColor: colors.doneCard },
   cardSkipped: { opacity: 0.55 },
   main: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
@@ -441,6 +490,7 @@ const useStyles = makeStyles(({ colors, typography, flat }) => ({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primarySoft,
+    overflow: 'hidden',
   },
   checkCircleDone: { backgroundColor: colors.success, borderColor: colors.success },
   body: { flex: 1, gap: 2 },
@@ -499,17 +549,8 @@ const useStyles = makeStyles(({ colors, typography, flat }) => ({
     alignItems: 'center',
     justifyContent: 'center',
     marginStart: spacing.sm,
+    overflow: 'hidden',
   },
   gCheckDone: { backgroundColor: colors.primary },
   plusOne: { fontSize: 19, fontWeight: '800', color: colors.primary },
-  gUrge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    minHeight: 48,
-    borderRadius: radius.pill,
-    borderWidth: 2,
-  },
-  gUrgeLabel: { fontSize: 16, fontWeight: '800' },
 }));

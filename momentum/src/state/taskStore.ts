@@ -30,6 +30,10 @@ interface TaskState {
   deleteTask: (taskId: string) => void;
   /** Moves a task from any list to today / Later, or drops it. */
   decide: (taskId: string, decision: TaskDecision) => void;
+  /** Plans a new task for a day after today (it shows up on that day). */
+  planTask: (title: string, date: LocalDateString) => Promise<Task | null>;
+  /** Moves a task to a day after today. */
+  moveToDate: (taskId: string, date: LocalDateString) => void;
   clearError: () => void;
 }
 
@@ -141,6 +145,27 @@ export const useTaskStore = create<TaskState>((set, get) => {
       const moved: Task = { ...found.task, dueDate };
       set(decision === 'today' ? { ...rest, tasks: [...rest.tasks, moved] } : { ...rest, later: [...rest.later, moved] });
       runDetached(repositories.tasks.setDueDate(taskId, dueDate), rollback(before, t('err.moveTask')));
+    },
+
+    planTask: async (title, date) => {
+      const { today } = get();
+      const trimmed = title.trim();
+      if (!today || trimmed.length === 0 || date <= today) return null;
+      try {
+        return await repositories.tasks.create({ title: trimmed, habitId: null, dueDate: date });
+      } catch (error) {
+        set({ error: `${t('err.addTask')} ${toErrorMessage(error)}` });
+        return null;
+      }
+    },
+
+    moveToDate: (taskId, date) => {
+      const { today } = get();
+      const found = findTask(taskId);
+      if (!today || !found || isPending(taskId) || date <= today) return;
+      const before = snapshot();
+      set(without(taskId));
+      runDetached(repositories.tasks.setDueDate(taskId, date), rollback(before, t('err.moveTask')));
     },
 
     clearError: () => set({ error: null }),

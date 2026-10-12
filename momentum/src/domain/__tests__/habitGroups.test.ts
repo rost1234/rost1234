@@ -1,5 +1,5 @@
 import { makeHabit } from '@/testing/fixtures';
-import { groupForHome } from '../habitGroups';
+import { groupForHome, setAsideToday } from '../habitGroups';
 
 describe('habit groups on Home', () => {
   const read = makeHabit({ id: 'read', title: 'Read' });
@@ -23,5 +23,28 @@ describe('habit groups on Home', () => {
       { kind: 'habit', habit: run },
       { kind: 'habit', habit: water },
     ]);
+  });
+});
+
+describe('set aside for today', () => {
+  const morning = makeHabit({ id: 'm', timeOfDay: 'morning' });
+  const evening = makeHabit({ id: 'e', timeOfDay: 'evening' });
+  const any = makeHabit({ id: 'a' });
+  const doneMorning = makeHabit({ id: 'dm', timeOfDay: 'morning' });
+  const statuses: Record<string, 'completed' | 'skipped' | 'in_progress'> = { dm: 'completed' };
+  const ids = (list: { id: string }[]) => list.map((h) => h.id);
+
+  it('a morning habit not done goes aside after noon; done ones stay', () => {
+    const before = setAsideToday([morning, evening, any, doneMorning], (id) => statuses[id], [], 9);
+    expect(ids(before.aside)).toEqual([]);
+    const after = setAsideToday([morning, evening, any, doneMorning], (id) => statuses[id], [], 13);
+    expect(ids(after.open)).toEqual(['e', 'a', 'dm']);
+    expect(ids(after.aside)).toEqual(['m']);
+  });
+
+  it('"I didn\'t do it today" and skipped habits go aside at any hour', () => {
+    const result = setAsideToday([morning, evening, any], (id) => (id === 'e' ? 'skipped' : undefined), ['a'], 8);
+    expect(ids(result.open)).toEqual(['m']);
+    expect(ids(result.aside)).toEqual(['e', 'a']);
   });
 });
