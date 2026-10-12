@@ -14,7 +14,8 @@ import { clientKey, createRateLimiter } from '../_shared/rateLimit.ts';
 import { parseLessonInput, writeLesson } from './service.ts';
 
 const llm = createStructuredLlm({ ...llmConfigFromEnv(), timeoutMs: 90_000 });
-const limit = createRateLimiter(40, 60 * 60 * 1000);
+// Enough for writing a whole course (the app paces itself and waits when this is reached).
+const limit = createRateLimiter(150, 60 * 60 * 1000);
 
 Deno.serve(handle(async (req) => {
   limit(clientKey(req));

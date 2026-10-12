@@ -47,12 +47,16 @@ results back (`applyPaperResults`). Importing lessons (`import.tsx`, from Learn 
 `[{topic, concept, reference, keyPoints?}]` is parsed by `src/content/import.ts` (`parseLessonImport`, `ImportError`)
 and added by `importLessons` to an on-device imported course: one per name the learner types (`imp-<hash of name>`; no name =
 the default course `imported`; `isImportedCourse`), topic = unit, duplicates by concept skipped per course, station keys
-hashed from the concept. With "automatic flashcards" off a station is `lean`: no auto card, and an AI upgrade keeps at most
-`LEAN_UPGRADE_CARDS` (3) of its cards. Stations with a `reference` run as `features/lesson/SelfCheck.tsx`: explain → reveal
+hashed from the concept. Cards are kept in check: a lesson gets the automatic "explain it" card only if the file gives it no
+cards of its own (and the switch is on; otherwise the station is `lean`), and the AI's full lesson adds at most
+`AI_UPGRADE_CARDS` (3), none at `ENOUGH_CARDS` (4), never twice. Missing lessons of any course are written by
+`data/lessonQueue.ts` (`LessonQueueCard` on the map: 2 at a time, waits out the server's hourly limit, skips failures).
+The notebook looks draw course/subject maps as a checklist (`features/learn/ChecklistRow`), classic keeps the path.
+The card store (`cards/index.tsx`, from the Review tab) shows counts and the cards by subject/concept, with bulk delete. Stations with a `reference` run as `features/lesson/SelfCheck.tsx`: explain → reveal
 the reference and key points → rate 1–5 (`addSelfCheck`, mastery = rating × 20) → full lesson. The full lesson
 comes from the file (optional `hook`/`sections`/`example`/`misconception`/`connection`/`check`/`cards`, validated with
 `lessonProblems`; `RICH_FORMAT_PROMPT` is the copyable AI instruction) or from `generate-lesson` with `reference` +
-`key_points` as the source of truth (`useUpgradeImported`, `UpgradeImported` on the map, saved by
+`key_points` as the source of truth (`upgradeOne`, saved by
 `saveImportedLesson`). Everything else
 (course maps, stations, concept pages, the review session) is a stack screen in `src/app/(app)/`.
 Review limits and accessibility live in `src/state/prefsStore.ts`; the theme reads text size and

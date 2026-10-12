@@ -5,7 +5,7 @@
 import { calculateNextReview, initialReviewData, type QualityScore } from '@/srs/sm2';
 import type { FeynmanEvaluation } from '@/api/functions';
 import { findStation, stationsOf, type Course, type CourseConcept, type LevelKey } from '@/content/types';
-import { DuplicateError, LessonMissingError, NotFoundError, type Concept, type Flashcard, type Lesson, type LocalDB, type Placement, type PrintKit, type QaTurn, type TutorTurn } from './types';
+import { DuplicateError, LessonMissingError, NotFoundError, type Concept, type Flashcard, type Lesson, type LocalDB, type Placement, type PrintKit, type QaTurn, type Subject, type TutorTurn } from './types';
 import { lessonPlainText } from '@/content/lesson';
 import { conceptKey, type ImportedLesson } from '@/content/import';
 
@@ -747,16 +747,22 @@ export interface ImportTexts {
   autoCards?: boolean;
 }
 
-/** After the AI writes a full lesson for a lesson imported without automatic cards, how many of its cards are kept. */
-export const LEAN_UPGRADE_CARDS = 3;
+/**
+ * The most cards the AI adds to an imported lesson when it writes the full lesson, and the number of cards at
+ * which a lesson counts as already covered (so the AI adds none). Together with the automatic card it stays at 4,
+ * like the built-in lessons.
+ */
+export const AI_UPGRADE_CARDS = 3;
+export const ENOUGH_CARDS = 4;
 
 /**
  * Adds pasted-in lessons to an imported course: the one named by `texts.name`
  * (created on first use), or the default one. Existing lessons and progress are
  * kept; a concept that is already there, or appears twice in the paste, is
  * skipped. New stations join the unit of their topic (or start a new one at
- * the end), so topics stay together on the map. Unless `autoCards` is off, each
- * station gets one flashcard: explain the concept, answer = the reference.
+ * the end), so topics stay together on the map. Unless `autoCards` is off, a
+ * lesson whose item has no cards of its own gets one flashcard: explain the
+ * concept, answer = the reference. A lesson with cards in the file keeps just those.
  */
 export function importLessons(db: LocalDB, items: ImportedLesson[], texts: ImportTexts, now: Date): [LocalDB, { added: number; skipped: number; courseId: string }] {
   const courseId = importedCourseId(texts.name);
@@ -782,7 +788,9 @@ export function importLessons(db: LocalDB, items: ImportedLesson[], texts: Impor
     const key = importedKey(item.concept, keys);
     keys.add(key);
     const points = item.keyPoints ?? [];
-    const cards = [...(autoCards ? [{ question: texts.cardPrompt(item.concept), answer: [item.reference, ...points.map((p) => `• ${p}`)].join('\n') }] : []), ...(item.cards ?? [])];
+    const own = item.cards ?? [];
+    const auto = autoCards && !own.length;
+    const cards = auto ? [{ question: texts.cardPrompt(item.concept), answer: [item.reference, ...points.map((p) => `• ${p}`)].join('\n') }] : own;
     const station: CourseConcept = {
       key,
       title: item.concept,
@@ -791,7 +799,8 @@ export function importLessons(db: LocalDB, items: ImportedLesson[], texts: Impor
       reference: item.reference,
       ...(points.length ? { keyPoints: points } : {}),
       ...(item.parts ? { parts: item.parts } : {}),
-      ...(autoCards ? {} : { lean: true }),
+      // No automatic first card (turned off, or the file brought its own cards).
+      ...(auto ? {} : { lean: true }),
       cards,
     };
     const lastOfTopic = stations.map((s) => s.unit).lastIndexOf(item.topic);
@@ -817,18 +826,22 @@ export function importedWithoutLesson(db: LocalDB, courseId?: string): { courseI
 }
 
 /**
- * Saves the full lesson the AI wrote for an imported station (a lesson imported
- * without automatic cards keeps only the first few of the AI's cards). If the
- * station was already started, its new flashcards join the concept's reviews.
+ * Saves the full lesson the AI wrote for an imported station. The AI adds at most
+ * `AI_UPGRADE_CARDS` cards, none when the lesson already has `ENOUGH_CARDS` of its own,
+ * and writing the lesson again never adds cards a second time. If the station was
+ * already started, its new flashcards join the concept's reviews.
  */
 export function saveImportedLesson(db: LocalDB, courseId: string, key: string, lesson: Lesson, newId: NewId, now: Date): LocalDB {
   const course = db.courses[courseId];
   const station = course && course.levels.flatMap((l) => l.stations).find((s) => s.key === key);
-  const kept = station?.lean ? { ...lesson, cards: lesson.cards.slice(0, LEAN_UPGRADE_CARDS) } : lesson;
+  const previous = db.lessons[lessonKey(courseId, key)];
+  const own = station?.cards?.length ?? 0;
+  const cards = previous?.cards?.length ? previous.cards : own >= ENOUGH_CARDS ? [] : lesson.cards.slice(0, AI_UPGRADE_CARDS);
+  const kept = { ...lesson, cards };
   let next = saveLesson(db, courseId, key, kept);
   const subject = courseSubject(next, courseId);
   const concept = subject && Object.values(next.concepts).find((c) => c.subject_id === subject.id && c.course_key === key);
-  if (concept) [next] = addCards(next, concept.id, kept.cards, newId, now);
+  if (concept && !previous?.cards?.length) [next] = addCards(next, concept.id, kept.cards, newId, now);
   return next;
 }
 
@@ -847,6 +860,73 @@ export function addSelfCheck(db: LocalDB, conceptId: string, explanation: string
     newId,
     now,
   );
+}
+
+// ---------------------------------------------------------------------------
+// Lessons still to write, and the card store
+// ---------------------------------------------------------------------------
+
+/**
+ * Stations of a course whose lesson the AI still has to write: ones with no lesson
+ * yet (AI courses and the upper levels of built-in ones), or, in an imported
+ * course, ones that only have a reference.
+ */
+export function stationsNeedingLessons(db: LocalDB, course: Course): CourseConcept[] {
+  if (isImportedCourse(course.id)) return importedWithoutLesson(db, course.id).map((t) => t.station);
+  return stationsOf(course)
+    .map((r) => r.station)
+    .filter((st) => lessonFor(db, course, st) === null);
+}
+
+export interface CardStats {
+  total: number;
+  /** Due for review now (never-reviewed cards count as due). */
+  due: number;
+  /** Never reviewed yet. */
+  fresh: number;
+  /** Reviewed at least once. */
+  learned: number;
+}
+
+export function cardStats(db: LocalDB, now: Date): CardStats {
+  const all = Object.values(db.cards);
+  const fresh = all.filter((c) => c.review.last_reviewed_at === null).length;
+  return { total: all.length, due: dueCards(db, now).length, fresh, learned: all.length - fresh };
+}
+
+export interface CardGroup {
+  subject: Subject;
+  total: number;
+  due: number;
+  concepts: { concept: Concept; cards: Flashcard[]; due: number }[];
+}
+
+/** All cards grouped by subject (largest first) and concept, for the card store screen. */
+export function cardGroups(db: LocalDB, now: Date): CardGroup[] {
+  const dueIds = new Set(dueCards(db, now).map((c) => c.id));
+  const byConcept = new Map<string, Flashcard[]>();
+  for (const c of Object.values(db.cards)) (byConcept.get(c.concept_id) ?? byConcept.set(c.concept_id, []).get(c.concept_id)!).push(c);
+  const groups = new Map<string, CardGroup>();
+  for (const [conceptId, cards] of byConcept) {
+    const concept = db.concepts[conceptId];
+    const subject = concept && db.subjects[concept.subject_id];
+    if (!concept || !subject) continue;
+    const group = groups.get(subject.id) ?? { subject, total: 0, due: 0, concepts: [] };
+    const due = cards.filter((c) => dueIds.has(c.id)).length;
+    group.concepts.push({ concept, cards: [...cards].sort((a, b) => a.created_at.localeCompare(b.created_at)), due });
+    group.total += cards.length;
+    group.due += due;
+    groups.set(subject.id, group);
+  }
+  return [...groups.values()]
+    .map((g) => ({ ...g, concepts: g.concepts.sort((a, b) => b.cards.length - a.cards.length || a.concept.title.localeCompare(b.concept.title)) }))
+    .sort((a, b) => b.total - a.total);
+}
+
+/** Deletes many cards at once (the concepts stay). */
+export function deleteCards(db: LocalDB, ids: string[]): LocalDB {
+  const drop = new Set(ids);
+  return { ...db, cards: Object.fromEntries(Object.entries(db.cards).filter(([id]) => !drop.has(id))) };
 }
 
 // ---------------------------------------------------------------------------

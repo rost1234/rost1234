@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { generateLesson } from '@/api/functions';
 import { parseLessonImport } from '@/content/import';
 import { findStation, stationsOf } from '@/content/types';
-import { addSelfCheck, importedWithoutLesson, importLessons, isImportedCourse, saveImportedLesson, type ImportTexts } from '@/local/logic';
+import { addSelfCheck, importLessons, isImportedCourse, saveImportedLesson, type ImportTexts } from '@/local/logic';
 import { commit, getDB, newId, useDBStore } from '@/local/store';
 import { NotFoundError } from '@/local/types';
 import { read } from './local';
@@ -27,7 +27,7 @@ export function useSelfCheck() {
 }
 
 /** Asks the AI for a full lesson (sections, example, misconception, check questions, cards) grounded in the station's reference. */
-async function upgradeOne(courseId: string, key: string): Promise<void> {
+export async function upgradeOne(courseId: string, key: string): Promise<void> {
   const course = getDB().courses[courseId];
   const ref = course && isImportedCourse(courseId) ? findStation(course, key) : undefined;
   if (!course || !ref?.station.reference) throw new NotFoundError('Station');
@@ -52,19 +52,4 @@ async function upgradeOne(courseId: string, key: string): Promise<void> {
 
 export function useUpgradeImported() {
   return useMutation({ mutationFn: ({ courseId, key }: { courseId: string; key: string }) => upgradeOne(courseId, key) });
-}
-
-/** Upgrades every lesson of an imported course that has no full lesson yet, one at a time; stops at the first error. */
-export function useUpgradeAllImported() {
-  return useMutation({
-    mutationFn: async ({ courseId, onProgress }: { courseId: string; onProgress: (done: number, total: number) => void }) => {
-      const todo = importedWithoutLesson(getDB(), courseId).map((t) => t.station.key);
-      for (let i = 0; i < todo.length; i++) {
-        onProgress(i, todo.length);
-        await upgradeOne(courseId, todo[i]!);
-      }
-      onProgress(todo.length, todo.length);
-      return todo.length;
-    },
-  });
 }

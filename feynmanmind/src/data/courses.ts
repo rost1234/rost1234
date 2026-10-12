@@ -132,30 +132,34 @@ export function useDeleteCourse() {
   });
 }
 
+/** Writes the lesson for a station (AI) and saves it on the device; returns the existing one unless `upgrade`. */
+export async function writeStationLesson(courseId: string, key: string, language: 'he' | 'en', upgrade?: boolean) {
+  const course = findCourse(courseId);
+  const ref = course && findStation(course, key);
+  if (!course || !ref) throw new NotFoundError('Station');
+  const existing = lessonFor(getDB(), course, ref.station);
+  if (existing && !upgrade) return existing;
+  const { lesson } = await generateLesson({
+    concept_title: ref.station.title,
+    summary: ref.station.summary,
+    unit: ref.station.unit,
+    course_title: course.title,
+    level: ref.level.key,
+    // Everything before this station, so the lesson builds on it.
+    previous_titles: stationsOf(course)
+      .slice(0, ref.index)
+      .map((s) => s.station.title),
+    language,
+  });
+  useDBStore.getState().update((db) => saveLesson(db, courseId, key, lesson));
+  return lesson;
+}
+
 /** Writes the lesson for a station that doesn't have one yet (AI), and saves it on the device. */
 export function useWriteStationLesson() {
   return useMutation({
-    mutationFn: async ({ courseId, key, language, upgrade }: { courseId: string; key: string; language: 'he' | 'en'; /** Rewrite an existing lesson in the new structure. */ upgrade?: boolean }) => {
-      const course = findCourse(courseId);
-      const ref = course && findStation(course, key);
-      if (!course || !ref) throw new NotFoundError('Station');
-      const existing = lessonFor(getDB(), course, ref.station);
-      if (existing && !upgrade) return existing;
-      const { lesson } = await generateLesson({
-        concept_title: ref.station.title,
-        summary: ref.station.summary,
-        unit: ref.station.unit,
-        course_title: course.title,
-        level: ref.level.key,
-        // Everything before this station, so the lesson builds on it.
-        previous_titles: stationsOf(course)
-          .slice(0, ref.index)
-          .map((s) => s.station.title),
-        language,
-      });
-      useDBStore.getState().update((db) => saveLesson(db, courseId, key, lesson));
-      return lesson;
-    },
+    mutationFn: ({ courseId, key, language, upgrade }: { courseId: string; key: string; language: 'he' | 'en'; /** Rewrite an existing lesson in the new structure. */ upgrade?: boolean }) =>
+      writeStationLesson(courseId, key, language, upgrade),
   });
 }
 

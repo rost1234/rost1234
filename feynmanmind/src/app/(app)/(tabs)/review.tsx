@@ -3,6 +3,7 @@ import { Button, EmptyState, Screen } from '@/components/ui';
 import { TabHeader } from '@/components/TabHeader';
 import { useStudyStats } from '@/data/study';
 import { Forecast, ReviewFilters, ReviewHero, WeekStrip } from '@/features/review/ReviewOverview';
+import { CardStoreCard } from '@/features/review/CardStoreCard';
 import { PrintCard } from '@/features/review/PrintCard';
 import { ReviewSettings } from '@/features/review/ReviewSettings';
 import { WeakConcepts } from '@/features/review/WeakConcepts';
@@ -31,6 +32,7 @@ export default function ReviewTab() {
           <WeakConcepts />
         </>
       )}
+      <CardStoreCard />
       <PrintCard />
       <ReviewSettings />
     </Screen>

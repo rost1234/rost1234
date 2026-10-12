@@ -218,11 +218,15 @@ const coursePlan = {
       await expectText('לחזור על הכרטיסיות', 'practice step');
       await shot('06b-station-practice');
 
-      // AI-built course (on the Learn tab).
+      // The Learn tab no longer has "add" cards (the + button has them).
       await page.goto(APP);
       await page.waitForTimeout(900);
       await page.getByRole('tab', { name: /^לימוד/ }).click();
       await page.waitForTimeout(700);
+      if ((await page.getByLabel('מסלול על כל נושא').count()) !== 0) failures.push('Learn tab still has the new-course card');
+      // AI-built course (from the + menu's screen).
+      await page.goto(`${APP}/new-course`);
+      await page.waitForTimeout(900);
       await page.getByLabel('מסלול על כל נושא').fill('אסטרונומיה');
       await page.getByRole('button', { name: 'לבנות מפת לימוד' }).click();
       await page.waitForTimeout(1500);
@@ -416,8 +420,9 @@ const coursePlan = {
       await page.goto(`${APP}/course/imported`);
       await page.waitForTimeout(1000);
       await expectText('2 שיעורים הם רק הסבר ייחוס', 'upgrade-all card');
-      await page.getByRole('button', { name: 'לשדרג את כולם עם AI' }).click();
-      await page.waitForTimeout(2000);
+      await page.getByRole('button', { name: /^לשדרג את כולם עם AI/ }).click();
+      await page.waitForTimeout(3000);
+      await expectText('הסתיים: נכתבו 2 שיעורים', 'queue finished');
       if ((await page.getByText('הם רק הסבר ייחוס').count()) !== 0) failures.push('upgrade-all card still shown after upgrading');
       await shot('15e-upgraded-map');
       // A named import: its own course, without automatic cards; the existing course is offered to add to.

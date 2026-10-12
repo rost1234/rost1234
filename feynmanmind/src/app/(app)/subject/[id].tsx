@@ -12,6 +12,7 @@ import { haptics } from '@/lib/haptics';
 import { subjectPath, type PathConcept } from '@/local/logic';
 import { useDBStore } from '@/local/store';
 import { SketchBorder, SketchCircle, useSeed } from '@/components/sketch';
+import { ChecklistRow } from '@/features/learn/ChecklistRow';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
 const WIND = [0, 48, 72, 48, 0, -48, -72, -48];
@@ -60,23 +61,39 @@ export default function SubjectMapScreen() {
                 <Text style={[styles.unitTitle, { color: look === 'classic' ? map.onFill : palette.main }]}>{t('course.unit', { n: u + 1 })}</Text>
                 <Text style={styles.unitSub}>{t('course.unitProgress', { done: unitDone, total: unit.length })}</Text>
               </View>
-              {unit.map((c) => (
-                <View key={c.id} style={[styles.nodeRow, { transform: [{ translateX: WIND[step++ % WIND.length]! }] }]}>
-                  <Node concept={c} current={c.id === path.nextId} palette={palette} />
+              {look === 'classic' ? (
+                <>
+                  {unit.map((c) => (
+                    <View key={c.id} style={[styles.nodeRow, { transform: [{ translateX: WIND[step++ % WIND.length]! }] }]}>
+                      <Node concept={c} current={c.id === path.nextId} palette={palette} />
+                    </View>
+                  ))}
+                  <View style={styles.nodeRow}>
+                    <View style={[styles.trophy, unitDone === unit.length ? { backgroundColor: map.gold.main, borderBottomColor: map.gold.lip } : null]}>
+                      <Ionicons name="trophy" size={28} color={unitDone === unit.length ? map.gold.ink : colors.textMuted} />
+                    </View>
+                  </View>
+                </>
+              ) : (
+                // The notebook looks list the concepts as a checklist.
+                <View>
+                  {unit.map((c, i) => (
+                    <ChecklistRow
+                      key={c.id}
+                      title={c.title}
+                      state={c.status}
+                      score={c.mastery}
+                      current={c.id === path.nextId}
+                      accent={palette.main}
+                      first={i === 0}
+                      last={i === unit.length - 1}
+                      flush
+                      onPress={() => router.push(`/concept/${c.id}`)}
+                      a11yLabel={`${c.title}, ${t('concept.mastery')} ${c.mastery}%`}
+                    />
+                  ))}
                 </View>
-              ))}
-              <View style={styles.nodeRow}>
-                {look === 'classic' ? (
-                  <View style={[styles.trophy, unitDone === unit.length ? { backgroundColor: map.gold.main, borderBottomColor: map.gold.lip } : null]}>
-                    <Ionicons name="trophy" size={28} color={unitDone === unit.length ? map.gold.ink : colors.textMuted} />
-                  </View>
-                ) : (
-                  <View style={styles.trophySketch}>
-                    <SketchCircle size={58} color={unitDone === unit.length ? map.gold.main : colors.border} fill={unitDone === unit.length ? map.gold.main : undefined} seed={u * 11 + 2} width={2.4} />
-                    <Ionicons name="trophy" size={26} color={unitDone === unit.length ? map.gold.ink : colors.textMuted} />
-                  </View>
-                )}
-              </View>
+              )}
             </View>
           );
         })}

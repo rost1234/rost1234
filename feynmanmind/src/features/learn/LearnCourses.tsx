@@ -11,7 +11,6 @@ import { useCourses } from '@/data/courses';
 import { useT, type TranslationKey } from '@/i18n';
 import type { CourseProgress } from '@/local/logic';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
-import { NewCourseCard } from './NewCourseCard';
 
 type Category = 'all' | 'science' | 'math' | 'society' | 'mine';
 
@@ -38,7 +37,7 @@ const isStarted = (p: CourseProgress) => p.started > 0 || p.placement !== null;
 export function LearnCourses() {
   const t = useT();
   const styles = useStyles();
-  const { colors, typography } = useTheme();
+  const { typography } = useTheme();
   const courses = useCourses();
   const [category, setCategory] = useState<Category>('all');
 
@@ -83,19 +82,6 @@ export function LearnCourses() {
             ))}
         </View>
       ))}
-      <NewCourseCard />
-      <Card onPress={() => router.push('/import')} accessibilityLabel={t('import.cardTitle')}>
-        <View style={styles.row}>
-          <View style={styles.icon}>
-            <Ionicons name="download-outline" size={24} color={colors.primary} />
-          </View>
-          <View style={{ flex: 1, gap: 2 }}>
-            <Text style={typography.subheading}>{t('import.cardTitle')}</Text>
-            <Text style={typography.caption}>{t('import.cardBody')}</Text>
-          </View>
-          <Chevron />
-        </View>
-      </Card>
     </>
   );
 }

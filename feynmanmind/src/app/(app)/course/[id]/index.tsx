@@ -10,8 +10,9 @@ import { useT } from '@/i18n';
 import { confirmAsync } from '@/lib/dialogs';
 import { errorMessage } from '@/lib/errors';
 import { useReduceMotion } from '@/lib/motion';
-import { UpgradeImported } from '@/features/learn/UpgradeImported';
-import { isImportedCourse, type StationProgress } from '@/local/logic';
+import { ChecklistRow } from '@/features/learn/ChecklistRow';
+import { LessonQueueCard } from '@/features/learn/LessonQueueCard';
+import type { StationProgress } from '@/local/logic';
 import { SketchBorder, SketchCircle, useSeed } from '@/components/sketch';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
@@ -104,7 +105,7 @@ export default function CourseMapScreen() {
         <View key={`unit-${unitNumber}`} style={[styles.unitHeader, look === 'chalk' ? null : { borderColor: palette.main }]}>
           {look === 'chalk' ? <SketchBorder color={palette.main} seed={unitNumber * 7 + 3} radius={14} /> : null}
           <View style={[styles.unitBadge, { backgroundColor: palette.main }]}>
-            <Text style={styles.unitBadgeText}>{unitNumber}</Text>
+            {complete && look !== 'classic' ? <Ionicons name="checkmark" size={20} color={map.onFill} /> : <Text style={styles.unitBadgeText}>{unitNumber}</Text>}
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[typography.caption, { color: palette.main, fontWeight: '800' }]}>{t('course.unit', { n: unitNumber })}</Text>
@@ -113,10 +114,31 @@ export default function CourseMapScreen() {
           <Text style={typography.caption}>{t('course.unitProgress', { done: unitDone, total: unit.stations.length })}</Text>
         </View>,
       );
-      unit.stations.forEach((station) => {
+      unit.stations.forEach((station, si) => {
         const { p, n } = byKey.get(station.key)!;
-        const offset = WIND[pathStep++ % WIND.length]!;
         const current = p.key === progress.nextKey;
+        if (look !== 'classic') {
+          // The notebook looks list a unit's stations as a checklist instead of a winding path.
+          rows.push(
+            <ChecklistRow
+              key={station.key}
+              title={station.title}
+              subtitle={station.summary}
+              state={p.status === 'mastered' ? 'mastered' : p.status === 'known' ? 'done' : p.status === 'started' ? 'started' : 'new'}
+              score={p.mastery}
+              current={current}
+              needsAi={!p.hasLesson && p.status !== 'known'}
+              accent={palette.main}
+              first={si === 0}
+              last={si === unit.stations.length - 1}
+              onPress={() => open(station.key)}
+              onLayout={current ? onCurrentLayout : undefined}
+              a11yLabel={`${t('course.station', { n })}: ${station.title}`}
+            />,
+          );
+          return;
+        }
+        const offset = WIND[pathStep++ % WIND.length]!;
         rows.push(
           <View
             key={station.key}
@@ -135,18 +157,12 @@ export default function CourseMapScreen() {
           </View>,
         );
       });
+      if (look !== 'classic') continue;
       rows.push(
         <View key={`trophy-${unitNumber}`} style={styles.trophyRow} accessibilityLabel={t('course.unitTrophy')}>
-          {look === 'classic' ? (
-            <View style={[styles.trophy, complete ? { backgroundColor: map.gold.main, borderBottomColor: map.gold.lip } : { backgroundColor: colors.surfaceMuted, borderBottomColor: colors.border }]}>
-              <Ionicons name="trophy" size={30} color={complete ? map.gold.ink : colors.textMuted} />
-            </View>
-          ) : (
-            <View style={styles.trophySketch}>
-              <SketchCircle size={60} color={complete ? map.gold.main : colors.border} fill={complete ? map.gold.main : undefined} seed={unitNumber * 13} width={2.4} />
-              <Ionicons name="trophy" size={28} color={complete ? map.gold.ink : colors.textMuted} />
-            </View>
-          )}
+          <View style={[styles.trophy, complete ? { backgroundColor: map.gold.main, borderBottomColor: map.gold.lip } : { backgroundColor: colors.surfaceMuted, borderBottomColor: colors.border }]}>
+            <Ionicons name="trophy" size={30} color={complete ? map.gold.ink : colors.textMuted} />
+          </View>
         </View>,
       );
     }
@@ -198,7 +214,7 @@ export default function CourseMapScreen() {
           )
         ) : null}
 
-        {isImportedCourse(course.id) ? <UpgradeImported courseId={course.id} /> : null}
+        <LessonQueueCard course={course} />
 
         {progress.nextKey ? (
           <Button

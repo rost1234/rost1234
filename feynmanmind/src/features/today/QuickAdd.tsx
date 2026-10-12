@@ -5,6 +5,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { OptionsSheet } from '@/components/OptionsSheet';
 import { PromptModal } from '@/components/PromptModal';
 import { useAddLooseConcept } from '@/data/concepts';
+import { useSaveSubject } from '@/data/subjects';
 import { useT } from '@/i18n';
 import { errorMessage } from '@/lib/errors';
 import { haptics } from '@/lib/haptics';
@@ -17,6 +18,8 @@ export function QuickAdd() {
   const add = useAddLooseConcept();
   const [menu, setMenu] = useState(false);
   const [prompt, setPrompt] = useState(false);
+  const saveSubject = useSaveSubject();
+  const [subjectPrompt, setSubjectPrompt] = useState(false);
 
   return (
     <>
@@ -44,6 +47,14 @@ export function QuickAdd() {
               setPrompt(true);
             },
           },
+          {
+            label: t('library.addSubject'),
+            icon: 'folder-open-outline',
+            onPress: () => {
+              saveSubject.reset();
+              setSubjectPrompt(true);
+            },
+          },
           { label: t('quick.course'), icon: 'sparkles-outline', onPress: () => router.push('/new-course') },
           { label: t('quick.import'), icon: 'download-outline', onPress: () => router.push('/import') },
           { label: t('quick.review'), icon: 'albums-outline', onPress: () => router.push('/study') },
@@ -65,6 +76,27 @@ export function QuickAdd() {
                 haptics.success();
                 setPrompt(false);
                 router.push(`/concept/${id}`);
+              },
+            },
+          )
+        }
+      />
+      <PromptModal
+        visible={subjectPrompt}
+        title={t('library.addSubject')}
+        label={t('library.subjectName')}
+        confirmLabel={t('common.add')}
+        busy={saveSubject.isPending}
+        error={saveSubject.error ? errorMessage(saveSubject.error, t) : null}
+        onClose={() => setSubjectPrompt(false)}
+        onSubmit={(title) =>
+          saveSubject.mutate(
+            { title },
+            {
+              onSuccess: () => {
+                haptics.success();
+                setSubjectPrompt(false);
+                router.push('/learn');
               },
             },
           )
