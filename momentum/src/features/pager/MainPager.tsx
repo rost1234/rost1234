@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ComponentType } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ComponentType } from 'react';
 import { Animated, BackHandler, Dimensions, Easing, I18nManager, PanResponder, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useTheme } from '@/components/theme';
@@ -75,6 +75,8 @@ export function MainPager() {
   const [offset] = useState(() => new Animated.Value(0));
   const [responder] = useState(() => makeResponder(offset));
   const dir = sign();
+  // Where each page sits: the shared swipe offset plus its own place along the reading direction.
+  const shifts = useMemo(() => PAGES.map((_, i) => Animated.add(offset, i * width * dir)), [offset, width, dir]);
 
   // Keep the pager "on" while it's the screen in front, so links switch pages instead of opening sheets.
   useFocusEffect(
@@ -108,28 +110,29 @@ export function MainPager() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]} {...responder.panHandlers}>
-      <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ translateX: offset }] }]}>
-        {PAGES.map((id, i) => {
-          const Screen = SCREENS[id];
-          const current = id === page;
-          return (
-            <View
-              key={id}
-              style={[StyleSheet.absoluteFill, { width, transform: [{ translateX: i * width * dir }] }]}
-              // Only the page in view is read by screen readers and takes touches.
-              importantForAccessibility={current ? 'auto' : 'no-hide-descendants'}
-              accessibilityElementsHidden={!current}
-              pointerEvents={current ? 'auto' : 'none'}
-            >
-              {visited.includes(id) ? (
-                <PagerContext.Provider value={FRAME}>
-                  <Screen />
-                </PagerContext.Provider>
-              ) : null}
-            </View>
-          );
-        })}
-      </Animated.View>
+      {PAGES.map((id, i) => {
+        const Screen = SCREENS[id];
+        const current = id === page;
+        return (
+          <Animated.View
+            key={id}
+            // Each page moves by itself, so the page in view really sits on the screen: Android
+            // only hands scrolling to views inside their parent's bounds (a shifted strip of
+            // pages left the Month, Insights and Library lists unscrollable).
+            style={[StyleSheet.absoluteFill, { width, transform: [{ translateX: shifts[i] ?? offset }] }]}
+            // Only the page in view is read by screen readers and takes touches.
+            importantForAccessibility={current ? 'auto' : 'no-hide-descendants'}
+            accessibilityElementsHidden={!current}
+            pointerEvents={current ? 'auto' : 'none'}
+          >
+            {visited.includes(id) ? (
+              <PagerContext.Provider value={FRAME}>
+                <Screen />
+              </PagerContext.Provider>
+            ) : null}
+          </Animated.View>
+        );
+      })}
       <FocusFab />
       <MainTabs />
     </View>

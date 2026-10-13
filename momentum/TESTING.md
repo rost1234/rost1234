@@ -336,3 +336,8 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] TalkBack: the tab bar reads as tabs with the selected one; only the visible page is read
 - [ ] "Remove animations" on: tabs switch without sliding
 
+## Scrolling on Month, Insights and Library (build 40)
+- [ ] Month, Insights and Library scroll up and down (build 39 only scrolled Today: those pages took taps but not scrolls)
+- [ ] Their chip rows scroll sideways, and pull-to-refresh works on Insights
+- [ ] Swiping between pages still slides, both directions, and the page in view is the one that takes taps
+
