@@ -338,6 +338,6 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 
 ## Scrolling on Month, Insights and Library (build 40)
 - [ ] Month, Insights and Library scroll up and down (build 39 only scrolled Today: those pages took taps but not scrolls)
-- [ ] Their chip rows scroll sideways, and pull-to-refresh works on Insights
+- [ ] Their chip rows scroll sideways, pull-to-refresh works on Insights, and the Insights heatmap scrolls sideways (a swipe above or below it turns the page)
 - [ ] Swiping between pages still slides, both directions, and the page in view is the one that takes taps
 
