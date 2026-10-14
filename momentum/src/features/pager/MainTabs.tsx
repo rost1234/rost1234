@@ -21,7 +21,7 @@ const TABS: Record<PageId, { label: TranslationKey; icon: IconName; iconOn: Icon
 export const TAB_BAR_SPACE = 88;
 
 /**
- * The tab bar of the four main screens (they also swipe). In the Garden look it's the rounded
+ * The tab bar of the main screens (they also swipe). In the Garden look it's the rounded
  * dock with a sun-yellow current tab; in the regular look a slim floating bar.
  */
 export function MainTabs() {

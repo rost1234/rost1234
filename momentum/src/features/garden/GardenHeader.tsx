@@ -114,6 +114,9 @@ const daySeed = (today: LocalDateString) => Number(today.replace(/-/g, '')) || 0
 /** Seconds a reaction stays before the sprout goes back to its everyday line. */
 const EVENT_MS = 9000;
 
+/** The bubble's small buttons take touches a little around them (the row leaves room for it). */
+const TELL_SLOP = { top: 5, bottom: 5, left: 4, right: 4 };
+
 /** How the sprout opens a moment's card ("Not today? That's fine."). */
 const MOMENT_INTRO: Record<MomentReason, TranslationKey> = {
   notToday: 'moment.notToday',
@@ -317,8 +320,10 @@ export function GardenHeader({
                   onPress={() => {
                     haptics.select();
                     setActionFor(told.insight.id);
+                    // The button goes away with the new line: read the suggestion out.
+                    if (lines) AccessibilityInfo.announceForAccessibility(lines.action);
                   }}
-                  hitSlop={8}
+                  hitSlop={TELL_SLOP}
                   style={({ pressed }) => [styles.tellPill, { backgroundColor: colors.primarySoft }, pressed && { opacity: 0.8 }]}
                 >
                   <Text style={[styles.tellPillText, { color: colors.primaryDeep }]}>{t('tip.whatToDo')}</Text>
@@ -328,7 +333,7 @@ export function GardenHeader({
                 accessibilityRole="button"
                 accessibilityHint={t('tip.thanksHint')}
                 onPress={thanks}
-                hitSlop={8}
+                hitSlop={TELL_SLOP}
                 style={({ pressed }) => [styles.tellPill, styles.tellPillQuiet, { borderColor: colors.border }, pressed && { opacity: 0.8 }]}
               >
                 <Text style={[styles.tellPillText, { color: colors.textMuted }]}>{t('tip.thanks')}</Text>
@@ -341,7 +346,7 @@ export function GardenHeader({
                   haptics.select();
                   useNotebookStore.getState().toggleSaved(told.insight.id);
                 }}
-                hitSlop={10}
+                hitSlop={TELL_SLOP}
                 style={({ pressed }) => [styles.saveStar, pressed && { opacity: 0.7 }]}
               >
                 <Ionicons name={isSaved ? 'star' : 'star-outline'} size={18} color={isSaved ? scenery.sun : scenery.coral} />
@@ -427,11 +432,11 @@ const useStyles = makeStyles(({ colors }) => ({
   bubbleTextLong: { fontSize: 15, lineHeight: 22 },
   tail: { position: 'absolute', width: 16, height: 16, transform: [{ rotate: '45deg' }] },
   tailSide: { start: -6, top: '50%', marginTop: -8 },
-  tellRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: spacing.sm },
-  tellPill: { minHeight: 30, paddingHorizontal: 10, borderRadius: radius.pill, justifyContent: 'center' },
+  tellRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: spacing.xs, paddingVertical: 5 },
+  tellPill: { minHeight: 34, paddingHorizontal: 12, borderRadius: radius.pill, justifyContent: 'center' },
   tellPillQuiet: { borderWidth: 1.5 },
   tellPillText: { fontSize: 13, fontWeight: '600' },
-  saveStar: { width: 30, height: 30, marginStart: 'auto', alignItems: 'center', justifyContent: 'center' },
+  saveStar: { width: 36, height: 34, marginStart: 'auto', alignItems: 'center', justifyContent: 'center' },
   tailUp: { top: -6, alignSelf: 'center' },
   message: { fontSize: 16, color: colors.text, marginTop: spacing.md },
   pills: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.sm },

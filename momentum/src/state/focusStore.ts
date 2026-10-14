@@ -194,8 +194,10 @@ export const useFocusStore = create<FocusState>((set, get) => {
         });
         // On-time single sessions are announced by the scheduled notification; everything else is cancelled.
         if (!snapshot.isFinished || timer.pomodoro) await cancelTimerNotifications(timer);
-        // Stopped halfway: the Garden sprout has a study about interruptions.
-        if (!snapshot.isFinished && !isBreak) offerMomentLater('focusStopped');
+        // Stopped well before the end, with nothing finished yet: the Garden sprout has a study about interruptions.
+        if (!snapshot.isFinished && !isBreak && minutes < timer.targetDurationMinutes / 2 && (get().lastSummary?.blocks ?? 0) === 0) {
+          offerMomentLater('focusStopped');
+        }
         const previous = get().lastSummary;
         set({
           lastSummary: { minutes: (previous?.minutes ?? 0) + minutes, blocks: (previous?.blocks ?? 0) + (minutes > 0 ? 1 : 0) },

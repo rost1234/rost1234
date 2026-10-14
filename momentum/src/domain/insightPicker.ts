@@ -59,12 +59,15 @@ export function pickInsight<T extends PickableInsight>(
   const today = insights.find((i) => shown[i.id] === date && !notDaily.has(i.id));
   if (today) return today;
 
-  const unseen = insights.filter((i) => shown[i.id] === undefined);
+  // A card the sprout told today for another reason isn't today's card either, even when `shown` predates it.
+  const eligible = insights.filter((i) => !notDaily.has(i.id));
+  if (eligible.length === 0) return null;
+  const unseen = eligible.filter((i) => shown[i.id] === undefined);
   const pool =
     unseen.length > 0
       ? unseen
       : // Everything seen: recycle, least recently shown first.
-        [...insights].sort((a, b) => (shown[a.id] ?? '').localeCompare(shown[b.id] ?? '')).slice(0, Math.max(1, Math.ceil(insights.length / 3)));
+        [...eligible].sort((a, b) => (shown[a.id] ?? '').localeCompare(shown[b.id] ?? '')).slice(0, Math.max(1, Math.ceil(eligible.length / 3)));
 
   const score = (i: T) =>
     (i.triggers.some((t) => activeTriggers.includes(t as InsightTriggerId)) ? 2 : 0) +

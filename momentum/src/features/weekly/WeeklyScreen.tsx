@@ -62,11 +62,11 @@ export function WeeklyScreen() {
 
   const { summary } = data;
   // Seeded by the week, not the day, and not recorded as shown: it doesn't touch the daily card.
-  // The card shown as the daily one on the week's first day is left out, or it would just repeat.
+  // Cards told on the week's first day (the daily one, any moment's) are left out, or one would just repeat.
   const shownBefore = Object.fromEntries(Object.entries(data.shown).filter(([, date]) => date !== summary.start));
-  const repeat = Object.entries(data.shown).find(([, date]) => date === summary.start)?.[0];
+  const repeats = new Set(Object.entries(data.shown).filter(([, date]) => date === summary.start).map(([id]) => id));
   const insight = pickInsight(
-    INSIGHTS.filter((i) => i.id !== repeat),
+    INSIGHTS.filter((i) => !repeats.has(i.id)),
     summary.start,
     goal,
     [],

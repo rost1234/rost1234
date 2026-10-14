@@ -3,7 +3,7 @@ import { Linking, Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { Text } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
-import { INSIGHTS } from '@/content/insights';
+import { INSIGHTS, insightById } from '@/content/insights';
 import type { Insight } from '@/content/insightSchema';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { runDetached } from '@/core/errors';
@@ -83,8 +83,12 @@ export function useDailyInsight(today: LocalDateString): DailyInsight {
   const notes = useNotebookStore((s) => s.notes);
   const notebookReady = useNotebookStore((s) => s.hydrated);
   const ready = habitsReady && notebookReady && loaded?.date === today && !freshStart;
-  const insight =
-    ready && loaded ? pickInsight(INSIGHTS, today, goal, [...habitTriggers, ...loaded.context], loaded.shown, toldTodayNotDaily(notes, today)) : null;
+  // Once today's card is picked it stays, whatever else the sprout tells later today.
+  const pickedToday = Object.entries(notes).find(([, note]) => note.date === today && note.reason === 'daily')?.[0];
+  const insight = !ready || !loaded
+    ? null
+    : ((pickedToday ? insightById(pickedToday) : undefined) ??
+      pickInsight(INSIGHTS, today, goal, [...habitTriggers, ...loaded.context], loaded.shown, toldTodayNotDaily(notes, today)));
   const shown = ready && loaded ? loaded.shown : null;
 
   useEffect(() => {

@@ -69,8 +69,8 @@ function openHabitMenu(habit: Habit) {
             icon: 'moon-outline',
             run: () => {
               useDayCloseStore.getState().close(habit.id, today);
-              // The Garden sprout has a study about a missed day.
-              offerMomentLater('notToday', today);
+              // The Garden sprout has a study about a missed day (a slip on a quit habit is the urge flow's).
+              if (!habit.isQuit) offerMomentLater('notToday', today);
             },
           },
     );

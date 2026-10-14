@@ -71,5 +71,7 @@ describe('the moment card and the day card', () => {
     const today = '2026-10-14';
     const shown = { a: today, b: today };
     expect(pickInsight(cards, today, null, [], shown, new Set(['a']))?.id).toBe('b');
+    // Told today (after `shown` was read): still not a candidate for today's card.
+    expect(pickInsight(cards, today, 'health', [], {}, new Set(['c']))?.id).not.toBe('c');
   });
 });
