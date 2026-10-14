@@ -5,6 +5,7 @@ import { useTaskStore } from '../taskStore';
 const mockCreate = jest.fn();
 const mockSetDueDate = jest.fn();
 const mockDelete = jest.fn();
+const mockGetForDate = jest.fn();
 
 jest.mock('@/data/repositories', () => ({
   repositories: {
@@ -12,6 +13,7 @@ jest.mock('@/data/repositories', () => ({
       create: (...args: unknown[]) => mockCreate(...args),
       setDueDate: (...args: unknown[]) => mockSetDueDate(...args),
       delete: (...args: unknown[]) => mockDelete(...args),
+      getForDate: (...args: unknown[]) => mockGetForDate(...args),
     },
   },
 }));
@@ -31,6 +33,7 @@ beforeEach(() => {
   mockCreate.mockReset();
   mockSetDueDate.mockReset().mockResolvedValue(undefined);
   mockDelete.mockReset().mockResolvedValue(undefined);
+  mockGetForDate.mockReset().mockResolvedValue([]);
   useTaskStore.setState({ today: TODAY, tasks: [], overdue: [], later: [], upcoming: [], isLoaded: true, error: null });
 });
 
@@ -57,6 +60,17 @@ describe('planning tasks for the coming days', () => {
     expect(useTaskStore.getState().upcoming).toEqual([]);
     await flush();
     expect(mockDelete).toHaveBeenCalledWith('a');
+  });
+
+  it('keeps three open tasks a day for planned days too', async () => {
+    mockGetForDate.mockResolvedValue([task('x', '2026-10-15'), task('y', '2026-10-15'), task('z', '2026-10-15')]);
+    expect(await useTaskStore.getState().planTask('One more', '2026-10-15')).toBe('full');
+    expect(mockCreate).not.toHaveBeenCalled();
+
+    useTaskStore.setState({ tasks: [task('a', TODAY)], upcoming: [task('x', '2026-10-15'), task('y', '2026-10-15'), task('z', '2026-10-15')] });
+    useTaskStore.getState().moveToDate('a', '2026-10-15');
+    expect(useTaskStore.getState().tasks.map((t) => t.id)).toEqual(['a']);
+    expect(useTaskStore.getState().error).toBeTruthy();
   });
 
   it('drops a planned task even when it is beyond the lists (the reflection plans a week ahead)', () => {

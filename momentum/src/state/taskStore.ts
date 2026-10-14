@@ -37,8 +37,11 @@ interface TaskState {
   deleteTask: (taskId: string) => void;
   /** Moves a task from any list (the coming week's too) to today / Later, or drops it. */
   decide: (taskId: string, decision: TaskDecision) => void;
-  /** Plans a new task for a day after today (it shows up on that day). */
-  planTask: (title: string, date: LocalDateString) => Promise<Task | null>;
+  /**
+   * Plans a new task for a day after today (it shows up on that day). `'full'` when that day already
+   * has its three open tasks; `null` when it couldn't be saved (the caller says so).
+   */
+  planTask: (title: string, date: LocalDateString) => Promise<Task | 'full' | null>;
   /** Moves a task to a day after today. */
   moveToDate: (taskId: string, date: LocalDateString) => void;
   clearError: () => void;
@@ -172,12 +175,14 @@ export const useTaskStore = create<TaskState>((set, get) => {
       // ">= today": a reflection finished after midnight plans "tomorrow", which is now today.
       if (!today || trimmed.length === 0 || date < today) return null;
       try {
+        // Every day keeps its three-task limit, a planned one too.
+        const onDay = date === today ? get().tasks : await repositories.tasks.getForDate(date);
+        if (!hasRoomToday(onDay, date)) return 'full';
         const task = await repositories.tasks.create({ title: trimmed, habitId: null, dueDate: date });
         if (date === today) set({ tasks: [...get().tasks, task] });
         else if (isUpcoming(date, today)) set({ upcoming: byDay([...get().upcoming, task]) });
         return task;
-      } catch (error) {
-        set({ error: `${t('err.addTask')} ${toErrorMessage(error)}` });
+      } catch {
         return null;
       }
     },
@@ -186,6 +191,10 @@ export const useTaskStore = create<TaskState>((set, get) => {
       const { today } = get();
       const found = findTask(taskId);
       if (!today || !found || isPending(taskId) || date <= today) return;
+      if (isUpcoming(date, today) && found.task.dueDate !== date && !hasRoomToday(get().upcoming, date)) {
+        set({ error: t('err.dayFull') });
+        return;
+      }
       const before = snapshot();
       const rest = without(taskId);
       set(isUpcoming(date, today) ? { ...rest, upcoming: byDay([...rest.upcoming, { ...found.task, dueDate: date }]) } : rest);

@@ -357,10 +357,10 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 
 ## Tasks for the coming days (build 42)
 - [ ] Today → tasks: start typing; "Today · Tomorrow · Another day…" appear under the field. Today is picked by default and the 0/3 counter shows
-- [ ] Pick Tomorrow and add a task: the field says "a task for tomorrow", the counter hides, "Saved for tomorrow ✓" shows, and the task appears under "Coming up → Tomorrow" (not in today's 3)
+- [ ] Pick Tomorrow and add a task: the field says "משימה למחר" ("Tomorrow: add a task…"), the counter hides, "המשימה נשמרה למחר ✓" shows, and the task appears under "בימים הקרובים → מחר" (not in today's 3)
 - [ ] Another day… lists the next 7 days; the chip then shows the chosen day; adding goes to that day. Tap "Today" to go back
-- [ ] With 3 open tasks today, planning for tomorrow still works (the cap is only today's)
-- [ ] Coming up shows up to 3 days with up to 3 tasks each, then "+N more" / "+N more tasks later this week"
+- [ ] With 3 open tasks today, planning for tomorrow still works; a 4th task for the same future day says that day is full (from Today, the Month sheet and the reflection), and "Another day…" onto a full day shows the full-day banner
+- [ ] Coming up shows up to 3 days with up to 3 tasks each, then "ועוד N" / "ועוד N משימות בשבוע הקרוב"
 - [ ] Tap a task in Coming up: Move to today (respects the 3-task cap), Another day, Later, Drop; each updates the list at once
 - [ ] Month: tap a future day: "Tasks for this day" comes first with its tasks and a field to add one; it shows in Coming up when within a week. Past days and today look as before
 - [ ] Reflection step 4 still plans tasks; removing one there removes it from Coming up too

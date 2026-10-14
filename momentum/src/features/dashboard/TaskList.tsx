@@ -143,10 +143,14 @@ export function TaskList() {
     }
     const day = dayLabel(forDay, today, t);
     runDetached(
-      planTask(title, forDay).then((task) => {
-        if (task) haptics.success();
-        else setDraft(title);
-        setHint(task ? t('tasks.plannedFor', { day }) : t('plan.failed'));
+      planTask(title, forDay).then((result) => {
+        if (result && result !== 'full') {
+          haptics.success();
+          setHint(t('tasks.plannedFor', { day }));
+          return;
+        }
+        setDraft(title);
+        setHint(result === 'full' ? t('tasks.dayFull', { day }) : t('plan.failed'));
       }),
     );
   };
@@ -214,13 +218,17 @@ export function TaskList() {
         </Pressable>
       </View>
       {showDays && today ? (
-        <View style={styles.days} accessibilityRole="radiogroup" accessibilityLabel={t('tasks.whenA11y')}>
+        <View style={styles.days} accessibilityLabel={t('tasks.whenA11y')}>
           <Chip label={t('tasks.whenToday')} selected={!forDay} onPress={() => setTarget(null)} />
           <Chip label={t('plan.tomorrow')} selected={forDay !== null && forDay === tomorrow} onPress={() => setTarget(tomorrow)} />
           <Chip label={otherDay ? dayLabel(otherDay, today, t) : t('tasks.moveDay')} selected={otherDay !== null} onPress={pickOtherDay} />
         </View>
       ) : null}
-      {hint ? <Text style={[typography.caption, styles.hint]}>{hint}</Text> : null}
+      {hint ? (
+        <Text style={[typography.caption, styles.hint]} accessibilityLiveRegion="polite">
+          {hint}
+        </Text>
+      ) : null}
       {!mainId && openCount > 1 ? <Text style={[typography.caption, styles.hint]}>{t('tasks.mainHint')}</Text> : null}
       {today ? <UpcomingTasks today={today} /> : null}
     </View>

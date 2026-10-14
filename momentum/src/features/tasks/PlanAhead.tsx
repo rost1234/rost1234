@@ -33,7 +33,7 @@ export function DayTaskInput({ date, today, onAdded }: { date: LocalDateString; 
   const styles = useStyles();
   const planTask = useTaskStore((s) => s.planTask);
   const [draft, setDraft] = useState('');
-  const [failed, setFailed] = useState(false);
+  const [problem, setProblem] = useState<'full' | 'failed' | null>(null);
   const day = dayLabel(date, today, t);
 
   const add = () => {
@@ -41,15 +41,15 @@ export function DayTaskInput({ date, today, onAdded }: { date: LocalDateString; 
     if (!title) return;
     setDraft('');
     runDetached(
-      planTask(title, date).then((task) => {
-        if (!task) {
-          setFailed(true);
+      planTask(title, date).then((result) => {
+        if (!result || result === 'full') {
+          setProblem(result ?? 'failed');
           setDraft(title);
           return;
         }
         haptics.success();
-        setFailed(false);
-        onAdded(task);
+        setProblem(null);
+        onAdded(result);
       }),
     );
   };
@@ -73,7 +73,11 @@ export function DayTaskInput({ date, today, onAdded }: { date: LocalDateString; 
           <Ionicons name="add" size={24} color={colors.onPrimary} />
         </Pressable>
       </View>
-      {failed ? <Text style={[typography.caption, { color: colors.danger }]}>{t('plan.failed')}</Text> : null}
+      {problem ? (
+        <Text style={[typography.caption, problem === 'failed' && { color: colors.danger }]} accessibilityLiveRegion="polite">
+          {problem === 'full' ? t('tasks.dayFull', { day }) : t('plan.failed')}
+        </Text>
+      ) : null}
     </View>
   );
 }
