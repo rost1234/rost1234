@@ -1,14 +1,19 @@
 import { create } from 'zustand';
 import { runDetached, toErrorMessage } from '@/core/errors';
 import { createId } from '@/core/id';
-import type { LocalDateString } from '@/core/localDate';
+import { addDays, type LocalDateString } from '@/core/localDate';
 import { repositories } from '@/data/repositories';
 import type { Task } from '@/domain/models';
 import { hasRoomToday, placementForNewTask } from '@/domain/taskPlanning';
 import { t } from '@/i18n';
 
 /** Where a task lives relative to today. */
-type Bucket = 'today' | 'overdue' | 'later';
+type Bucket = 'today' | 'overdue' | 'later' | 'upcoming';
+
+/** How far ahead "Coming up" looks. */
+export const UPCOMING_DAYS = 7;
+
+const isUpcoming = (date: LocalDateString | null, today: LocalDateString) => date !== null && date > today && date <= addDays(today, UPCOMING_DAYS);
 
 export type TaskDecision = 'today' | 'later' | 'drop';
 
@@ -20,6 +25,8 @@ interface TaskState {
   overdue: Task[];
   /** Open, undated tasks. */
   later: Task[];
+  /** Open tasks planned for the coming week (after today), soonest first. */
+  upcoming: Task[];
   isLoaded: boolean;
   error: string | null;
 
@@ -28,7 +35,7 @@ interface TaskState {
   addTask: (title: string) => 'today' | 'later' | null;
   toggleTask: (taskId: string) => void;
   deleteTask: (taskId: string) => void;
-  /** Moves a task from any list to today / Later, or drops it. */
+  /** Moves a task from any list (the coming week's too) to today / Later, or drops it. */
   decide: (taskId: string, decision: TaskDecision) => void;
   /** Plans a new task for a day after today (it shows up on that day). */
   planTask: (title: string, date: LocalDateString) => Promise<Task | null>;
@@ -40,8 +47,10 @@ interface TaskState {
 const isPending = (id: string) => id.startsWith('pending-');
 
 export const useTaskStore = create<TaskState>((set, get) => {
-  type Lists = Pick<TaskState, 'tasks' | 'overdue' | 'later'>;
-  const snapshot = (): Lists => ({ tasks: get().tasks, overdue: get().overdue, later: get().later });
+  type Lists = Pick<TaskState, 'tasks' | 'overdue' | 'later' | 'upcoming'>;
+  const snapshot = (): Lists => ({ tasks: get().tasks, overdue: get().overdue, later: get().later, upcoming: get().upcoming });
+  // Soonest first, then in the order they were added.
+  const byDay = (list: Task[]) => [...list].sort((a, b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? '') || a.createdAt.localeCompare(b.createdAt));
   const rollback = (lists: Lists, message: string) => (error: unknown) =>
     set({ ...lists, error: `${message} ${toErrorMessage(error)}` });
 
@@ -52,13 +61,16 @@ export const useTaskStore = create<TaskState>((set, get) => {
     const inOverdue = overdue.find((t) => t.id === taskId);
     if (inOverdue) return { task: inOverdue, bucket: 'overdue' };
     const inLater = later.find((t) => t.id === taskId);
-    return inLater ? { task: inLater, bucket: 'later' } : null;
+    if (inLater) return { task: inLater, bucket: 'later' };
+    const inUpcoming = get().upcoming.find((t) => t.id === taskId);
+    return inUpcoming ? { task: inUpcoming, bucket: 'upcoming' } : null;
   };
 
   const without = (taskId: string): Lists => ({
     tasks: get().tasks.filter((t) => t.id !== taskId),
     overdue: get().overdue.filter((t) => t.id !== taskId),
     later: get().later.filter((t) => t.id !== taskId),
+    upcoming: get().upcoming.filter((t) => t.id !== taskId),
   });
 
   return {
@@ -66,18 +78,20 @@ export const useTaskStore = create<TaskState>((set, get) => {
     tasks: [],
     overdue: [],
     later: [],
+    upcoming: [],
     isLoaded: false,
     error: null,
 
     load: async (today) => {
       set({ today });
       try {
-        const [tasks, overdue, later] = await Promise.all([
+        const [tasks, overdue, later, upcoming] = await Promise.all([
           repositories.tasks.getForDate(today),
           repositories.tasks.getOverdue(today),
           repositories.tasks.getBacklog(),
+          repositories.tasks.getUpcoming(today, addDays(today, UPCOMING_DAYS)),
         ]);
-        if (get().today === today) set({ tasks, overdue, later, isLoaded: true, error: null });
+        if (get().today === today) set({ tasks, overdue, later, upcoming, isLoaded: true, error: null });
       } catch (error) {
         set({ isLoaded: true, error: toErrorMessage(error) });
       }
@@ -128,7 +142,12 @@ export const useTaskStore = create<TaskState>((set, get) => {
     decide: (taskId, decision) => {
       const { today } = get();
       const found = findTask(taskId);
-      if (!today || !found || isPending(taskId)) return;
+      if (!today || isPending(taskId)) return;
+      // Planned further ahead than the lists reach (e.g. from the reflection): drop it all the same.
+      if (!found) {
+        if (decision === 'drop') runDetached(repositories.tasks.delete(taskId), rollback(snapshot(), t('err.dropTask')));
+        return;
+      }
       if (decision === 'today' && found.bucket !== 'today' && !hasRoomToday(get().tasks, today)) {
         set({ error: t('err.todayFull') });
         return;
@@ -155,6 +174,7 @@ export const useTaskStore = create<TaskState>((set, get) => {
       try {
         const task = await repositories.tasks.create({ title: trimmed, habitId: null, dueDate: date });
         if (date === today) set({ tasks: [...get().tasks, task] });
+        else if (isUpcoming(date, today)) set({ upcoming: byDay([...get().upcoming, task]) });
         return task;
       } catch (error) {
         set({ error: `${t('err.addTask')} ${toErrorMessage(error)}` });
@@ -167,7 +187,8 @@ export const useTaskStore = create<TaskState>((set, get) => {
       const found = findTask(taskId);
       if (!today || !found || isPending(taskId) || date <= today) return;
       const before = snapshot();
-      set(without(taskId));
+      const rest = without(taskId);
+      set(isUpcoming(date, today) ? { ...rest, upcoming: byDay([...rest.upcoming, { ...found.task, dueDate: date }]) } : rest);
       runDetached(repositories.tasks.setDueDate(taskId, date), rollback(before, t('err.moveTask')));
     },
 

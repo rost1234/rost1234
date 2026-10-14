@@ -163,6 +163,18 @@ describe('tasks', () => {
     ]);
     expect(await r.tasks.getOverdue(today)).toEqual([]);
   });
+
+  it('lists the coming week: open tasks after today up to the last day, soonest first', async () => {
+    const r = repos(createTestDatabase().executor);
+    const today = '2026-09-24';
+    await r.tasks.create({ title: 'in a week', habitId: null, dueDate: '2026-10-01' });
+    await r.tasks.create({ title: 'tomorrow', habitId: null, dueDate: '2026-09-25' });
+    await r.tasks.create({ title: 'too far', habitId: null, dueDate: '2026-10-02' });
+    await r.tasks.create({ title: 'today', habitId: null, dueDate: today });
+    const done = await r.tasks.create({ title: 'done early', habitId: null, dueDate: '2026-09-26' });
+    await r.tasks.setCompleted(done.id, true, '2026-09-26');
+    expect((await r.tasks.getUpcoming(today, '2026-10-01')).map((t) => t.title)).toEqual(['tomorrow', 'in a week']);
+  });
 });
 
 describe('reflections and usage', () => {

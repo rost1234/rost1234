@@ -354,3 +354,15 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] All 100 studies by topic: a topic shows what was told plus teasers of the rest; "Tell me now" moves it to the told list (and to Today's date in the notebook) without changing today's own insight on Home
 - [ ] Hebrew: the sprout never addresses you in a gendered form; RTL bubble tail points at the sprout; largest font: the sprout goes above the bubble and the buttons wrap
 - [ ] TalkBack: the bubble's buttons read as buttons ("What do we do?", "Thanks", star with its state); a moment card is announced when it appears
+
+## Tasks for the coming days (build 42)
+- [ ] Today → tasks: start typing; "Today · Tomorrow · Another day…" appear under the field. Today is picked by default and the 0/3 counter shows
+- [ ] Pick Tomorrow and add a task: the field says "a task for tomorrow", the counter hides, "Saved for tomorrow ✓" shows, and the task appears under "Coming up → Tomorrow" (not in today's 3)
+- [ ] Another day… lists the next 7 days; the chip then shows the chosen day; adding goes to that day. Tap "Today" to go back
+- [ ] With 3 open tasks today, planning for tomorrow still works (the cap is only today's)
+- [ ] Coming up shows up to 3 days with up to 3 tasks each, then "+N more" / "+N more tasks later this week"
+- [ ] Tap a task in Coming up: Move to today (respects the 3-task cap), Another day, Later, Drop; each updates the list at once
+- [ ] Month: tap a future day: "Tasks for this day" comes first with its tasks and a field to add one; it shows in Coming up when within a week. Past days and today look as before
+- [ ] Reflection step 4 still plans tasks; removing one there removes it from Coming up too
+- [ ] Next day: yesterday's "tomorrow" tasks are today's tasks; Coming up moves on
+- [ ] Hebrew: day names read naturally ("מחר", "יום שישי 16"); TalkBack reads a Coming up task with its day and a hint

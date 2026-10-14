@@ -42,6 +42,7 @@ import {
 import { progressOf } from '@/domain/habitProgress';
 import type { DailyReflection, FocusSession, Habit, HabitLog, Pause, Task } from '@/domain/models';
 import { MOOD_OPTIONS } from '@/features/reflection/mood';
+import { DayTaskInput } from '@/features/tasks/PlanAhead';
 import { useReflectionAccess } from '@/features/reflection/ReflectionLock';
 import { useLocalDate } from '@/hooks/useLocalDate';
 import { useHabitStore } from '@/state/habitStore';
@@ -479,6 +480,7 @@ function DaySheet({
   }, [date]);
 
   if (!date) return null;
+  const isFuture = date > today;
 
   // Habits that didn't exist yet that day, so a missing row isn't a mystery.
   const later = (habitId ? data.habits.filter((h) => h.id === habitId) : data.habits).filter(
@@ -542,7 +544,19 @@ function DaySheet({
             <Ionicons name="close" size={20} color={colors.text} />
           </Pressable>
         </View>
-        <ScrollView ref={scrollRef} style={{ maxHeight }} contentContainerStyle={{ gap: spacing.xs }}>
+        <ScrollView ref={scrollRef} style={{ maxHeight }} contentContainerStyle={{ gap: spacing.xs }} keyboardShouldPersistTaps="handled">
+          {/* A day to come: its tasks first, and room to plan one more. */}
+          {isFuture ? (
+            <>
+              <Text style={typography.overline}>{t('cal.tasksFor')}</Text>
+              {tasks.map((task) => (
+                <TaskRow key={task.id} task={task} />
+              ))}
+              {tasks.length === 0 ? <Text style={[typography.caption, { paddingVertical: spacing.xs }]}>{t('plan.empty')}</Text> : null}
+              <DayTaskInput date={date} today={today} onAdded={(task) => setTasks((list) => [...list, task])} />
+              <View style={styles.sectionGap} />
+            </>
+          ) : null}
           <Text style={typography.overline}>{t('cal.habitsTitle')}</Text>
           {error ? <Banner message={error} onDismiss={() => setError(null)} /> : null}
           {note ? (
@@ -576,7 +590,7 @@ function DaySheet({
             </Text>
           ) : null}
 
-          {tasks.length > 0 ? (
+          {tasks.length > 0 && !isFuture ? (
             <>
               <Text style={[typography.overline, styles.sectionGap]}>{t('cal.tasksTitle')}</Text>
               {tasks.map((task) => (

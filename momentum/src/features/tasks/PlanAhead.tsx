@@ -24,6 +24,61 @@ export function dayLabel(date: LocalDateString, today: LocalDateString, t: Trans
 }
 
 /**
+ * A text field and ＋ that plan a task for one day (shows up on that day's list). Says so when
+ * saving failed and keeps the text. `onAdded` gets the saved task.
+ */
+export function DayTaskInput({ date, today, onAdded }: { date: LocalDateString; today: LocalDateString; onAdded: (task: Task) => void }) {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
+  const planTask = useTaskStore((s) => s.planTask);
+  const [draft, setDraft] = useState('');
+  const [failed, setFailed] = useState(false);
+  const day = dayLabel(date, today, t);
+
+  const add = () => {
+    const title = draft.trim();
+    if (!title) return;
+    setDraft('');
+    runDetached(
+      planTask(title, date).then((task) => {
+        if (!task) {
+          setFailed(true);
+          setDraft(title);
+          return;
+        }
+        haptics.success();
+        setFailed(false);
+        onAdded(task);
+      }),
+    );
+  };
+
+  return (
+    <View style={styles.inputBlock}>
+      <View style={styles.inputRow}>
+        <TextInput
+          value={draft}
+          onChangeText={setDraft}
+          onSubmitEditing={add}
+          placeholder={t('plan.placeholder', { day })}
+          placeholderTextColor={colors.textMuted}
+          returnKeyType="done"
+          blurOnSubmit={false}
+          maxLength={120}
+          style={styles.input}
+          accessibilityLabel={t('plan.inputA11y', { day })}
+        />
+        <Pressable accessibilityRole="button" accessibilityLabel={t('tasks.add')} onPress={add} style={styles.add} hitSlop={6}>
+          <Ionicons name="add" size={24} color={colors.onPrimary} />
+        </Pressable>
+      </View>
+      {failed ? <Text style={[typography.caption, { color: colors.danger }]}>{t('plan.failed')}</Text> : null}
+    </View>
+  );
+}
+
+/**
  * Plan tasks for the coming days (from the evening reflection): pick a day, add a few things,
  * and they wait on that day's list. Planned tasks can be removed here too.
  */
@@ -31,14 +86,11 @@ export function PlanAhead({ today }: { today: LocalDateString }) {
   const t = useT();
   const { colors, typography } = useTheme();
   const styles = useStyles();
-  const planTask = useTaskStore((s) => s.planTask);
   const days = nextDays(today);
   const [date, setDate] = useState<LocalDateString>(days[0] ?? addDays(today, 1));
   const [tasks, setTasks] = useState<Task[] | null>(null);
-  const [draft, setDraft] = useState('');
   // Only what was added here can be removed here (a quick fix of a typo, not a way to lose tasks).
   const [addedIds, setAddedIds] = useState<string[]>([]);
-  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let current = true;
@@ -55,29 +107,16 @@ export function PlanAhead({ today }: { today: LocalDateString }) {
     };
   }, [date]);
 
-  const add = () => {
-    const title = draft.trim();
-    if (!title) return;
-    setDraft('');
-    runDetached(
-      planTask(title, date).then((task) => {
-        if (!task) {
-          setFailed(true);
-          setDraft(title);
-          return;
-        }
-        haptics.success();
-        setFailed(false);
-        setAddedIds((ids) => [...ids, task.id]);
-        setTasks((list) => [...(list ?? []), task]);
-      }),
-    );
+  const added = (task: Task) => {
+    setAddedIds((ids) => [...ids, task.id]);
+    setTasks((list) => [...(list ?? []), task]);
   };
 
   const remove = (task: Task) => {
     haptics.tap();
     setTasks((list) => (list ?? []).filter((x) => x.id !== task.id));
-    runDetached(repositories.tasks.delete(task.id));
+    // Through the store, so Today's "Coming up" drops it too.
+    useTaskStore.getState().decide(task.id, 'drop');
   };
 
   return (
@@ -102,25 +141,8 @@ export function PlanAhead({ today }: { today: LocalDateString }) {
           </View>
         ))}
         {tasks !== null && tasks.length === 0 ? <Text style={typography.caption}>{t('plan.empty')}</Text> : null}
-        {failed ? <Text style={[typography.caption, { color: colors.danger }]}>{t('plan.failed')}</Text> : null}
       </View>
-      <View style={styles.inputRow}>
-        <TextInput
-          value={draft}
-          onChangeText={setDraft}
-          onSubmitEditing={add}
-          placeholder={t('plan.placeholder', { day: dayLabel(date, today, t) })}
-          placeholderTextColor={colors.textMuted}
-          returnKeyType="done"
-          blurOnSubmit={false}
-          maxLength={120}
-          style={styles.input}
-          accessibilityLabel={t('plan.inputA11y', { day: dayLabel(date, today, t) })}
-        />
-        <Pressable accessibilityRole="button" accessibilityLabel={t('tasks.add')} onPress={add} style={styles.add} hitSlop={6}>
-          <Ionicons name="add" size={24} color={colors.onPrimary} />
-        </Pressable>
-      </View>
+      <DayTaskInput key={date} date={date} today={today} onAdded={added} />
     </View>
   );
 }
@@ -131,6 +153,7 @@ const useStyles = makeStyles(({ colors, typography, flat }) => ({
   list: { gap: spacing.sm, padding: spacing.md, borderRadius: radius.lg, backgroundColor: colors.surface, ...flat },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 36 },
   dot: { width: 10, height: 10, borderRadius: 5, borderWidth: 2, borderColor: colors.primary },
+  inputBlock: { gap: spacing.xs },
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   input: {
     flex: 1,

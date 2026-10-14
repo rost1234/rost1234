@@ -83,6 +83,8 @@ export interface TaskRepository {
   getOverdue(date: LocalDateString): Promise<Task[]>;
   /** Open, undated tasks ("Later"). */
   getBacklog(): Promise<Task[]>;
+  /** Open tasks planned for a day after `after`, up to and including `until` (soonest first). */
+  getUpcoming(after: LocalDateString, until: LocalDateString): Promise<Task[]>;
   /** Plans a task for a day, or `null` to move it to Later. */
   setDueDate(id: string, dueDate: LocalDateString | null): Promise<void>;
   getAll(): Promise<Task[]>;

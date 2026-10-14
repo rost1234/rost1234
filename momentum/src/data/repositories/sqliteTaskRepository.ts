@@ -41,6 +41,17 @@ export class SqliteTaskRepository implements TaskRepository {
     });
   }
 
+  getUpcoming(after: LocalDateString, until: LocalDateString): Promise<Task[]> {
+    return guardDb('tasks.getUpcoming', async () => {
+      const db = await this.db();
+      const rows = await db.getAllAsync<TaskRow>(
+        'SELECT * FROM tasks WHERE is_completed = 0 AND due_date > ? AND due_date <= ? ORDER BY due_date ASC, created_at ASC',
+        [after, until],
+      );
+      return rows.map(mapTask);
+    });
+  }
+
   setDueDate(id: string, dueDate: LocalDateString | null): Promise<void> {
     return guardDb('tasks.setDueDate', async () => {
       const db = await this.db();
