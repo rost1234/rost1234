@@ -490,6 +490,31 @@ const coursePlan = {
         await row.getByRole('button', { name: 'מחיקה' }).click();
         await page.waitForTimeout(500);
         if ((await countOf()) !== 2) failures.push(`single delete left ${await countOf()} cards, expected 2`);
+        // Long-press selects a card; the bar deletes the selection.
+        const q2 = await page.evaluate((id) => Object.values(JSON.parse(localStorage.getItem('feynmanmind.db')).state.db.cards).find((c) => c.concept_id === id).question, conceptId);
+        const target = page.getByText(q2, { exact: true }).first();
+        const box = await target.boundingBox();
+        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+        await page.mouse.down();
+        await page.waitForTimeout(900);
+        await page.mouse.up();
+        await page.waitForTimeout(300);
+        await expectText('1 נבחרו', 'long-press selection');
+        await shot('16c-card-store-select');
+        page.once('dialog', (d) => d.accept());
+        await page.getByRole('button', { name: 'מחיקה' }).last().click();
+        await page.waitForTimeout(500);
+        if ((await countOf()) !== 1) failures.push(`selection delete left ${await countOf()} cards, expected 1`);
+        // Mid-review: "I don't need this card" deletes the card shown.
+        const total = () => page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('feynmanmind.db')).state.db.cards).length);
+        const before = await total();
+        await page.goto(`${APP}/study`);
+        await page.waitForTimeout(1200);
+        page.once('dialog', (d) => d.accept());
+        await page.getByRole('button', { name: 'לא צריך את הכרטיסייה' }).click();
+        await page.waitForTimeout(600);
+        if ((await total()) !== before - 1) failures.push(`review drop: ${before} → ${await total()}`);
+        await shot('16d-review-drop');
       }
     }
     await ctx.close();
