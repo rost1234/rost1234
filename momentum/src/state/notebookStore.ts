@@ -32,6 +32,8 @@ interface NotebookState {
   /** Cards starred to keep. */
   saved: string[];
   moment: Moment | null;
+  /** The stored copy has been read (until then, today's card isn't picked: it might be a moment's). */
+  hydrated: boolean;
   hydrate: () => Promise<void>;
   note: (id: string, date: LocalDateString, reason: TellReason) => void;
   toggleSaved: (id: string) => void;
@@ -73,6 +75,7 @@ export const useNotebookStore = create<NotebookState>((set, get) => {
     notes: {},
     saved: [],
     moment: null,
+    hydrated: false,
     hydrate: async () => {
       try {
         const raw = await AsyncStorage.getItem(KEY);
@@ -87,6 +90,8 @@ export const useNotebookStore = create<NotebookState>((set, get) => {
         }));
       } catch {
         // An empty notebook.
+      } finally {
+        set({ hydrated: true });
       }
     },
     note: (id, date, reason) => {

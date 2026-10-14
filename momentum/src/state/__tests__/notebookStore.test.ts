@@ -38,6 +38,7 @@ describe('the sprout notebook', () => {
     const state = useNotebookStore.getState();
     expect(state.saved.sort()).toEqual(['new', 'old']);
     expect(Object.keys(state.notes).sort()).toEqual(['x', 'y']);
+    expect(state.hydrated).toBe(true);
   });
 
   it('ignores a broken stored copy', async () => {

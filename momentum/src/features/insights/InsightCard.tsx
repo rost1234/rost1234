@@ -81,7 +81,8 @@ export function useDailyInsight(today: LocalDateString): DailyInsight {
 
   // Cards the sprout told today for a moment (or on request) are not today's own card.
   const notes = useNotebookStore((s) => s.notes);
-  const ready = habitsReady && loaded?.date === today && !freshStart;
+  const notebookReady = useNotebookStore((s) => s.hydrated);
+  const ready = habitsReady && notebookReady && loaded?.date === today && !freshStart;
   const insight =
     ready && loaded ? pickInsight(INSIGHTS, today, goal, [...habitTriggers, ...loaded.context], loaded.shown, toldTodayNotDaily(notes, today)) : null;
   const shown = ready && loaded ? loaded.shown : null;
