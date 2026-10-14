@@ -594,7 +594,7 @@ export function lessonFor(db: LocalDB, course: Course, station: CourseConcept): 
     const parts = station.parts ?? upgraded?.parts;
     return {
       explanation: [station.reference, ...(station.keyPoints ?? []).map((p) => `• ${p}`)].join('\n\n'),
-      cards: [...(station.cards ?? []), ...(upgraded?.cards ?? [])],
+      cards: [...(station.cards ?? []), ...(upgraded?.cards ?? [])].slice(0, CARDS_PER_LESSON),
       ...(parts ? { parts } : {}),
     };
   }
@@ -748,12 +748,11 @@ export interface ImportTexts {
 }
 
 /**
- * The most cards the AI adds to an imported lesson when it writes the full lesson, and the number of cards at
- * which a lesson counts as already covered (so the AI adds none). Together with the automatic card it stays at 4,
- * like the built-in lessons.
+ * The most flashcards an imported lesson gets, all sources together: the file's own cards (extra ones are
+ * dropped), the automatic "explain it" card, and the AI's cards when it writes the full lesson (only up to
+ * what's left).
  */
-export const AI_UPGRADE_CARDS = 3;
-export const ENOUGH_CARDS = 4;
+export const CARDS_PER_LESSON = 3;
 
 /**
  * Adds pasted-in lessons to an imported course: the one named by `texts.name`
@@ -788,7 +787,7 @@ export function importLessons(db: LocalDB, items: ImportedLesson[], texts: Impor
     const key = importedKey(item.concept, keys);
     keys.add(key);
     const points = item.keyPoints ?? [];
-    const own = item.cards ?? [];
+    const own = (item.cards ?? []).slice(0, CARDS_PER_LESSON);
     const auto = autoCards && !own.length;
     const cards = auto ? [{ question: texts.cardPrompt(item.concept), answer: [item.reference, ...points.map((p) => `• ${p}`)].join('\n') }] : own;
     const station: CourseConcept = {
@@ -826,8 +825,8 @@ export function importedWithoutLesson(db: LocalDB, courseId?: string): { courseI
 }
 
 /**
- * Saves the full lesson the AI wrote for an imported station. The AI adds at most
- * `AI_UPGRADE_CARDS` cards, none when the lesson already has `ENOUGH_CARDS` of its own,
+ * Saves the full lesson the AI wrote for an imported station. The AI's cards only fill
+ * the lesson up to `CARDS_PER_LESSON` (none if it already has that many of its own),
  * and writing the lesson again never adds cards a second time. If the station was
  * already started, its new flashcards join the concept's reviews.
  */
@@ -836,7 +835,7 @@ export function saveImportedLesson(db: LocalDB, courseId: string, key: string, l
   const station = course && course.levels.flatMap((l) => l.stations).find((s) => s.key === key);
   const previous = db.lessons[lessonKey(courseId, key)];
   const own = station?.cards?.length ?? 0;
-  const cards = previous?.cards?.length ? previous.cards : own >= ENOUGH_CARDS ? [] : lesson.cards.slice(0, AI_UPGRADE_CARDS);
+  const cards = previous?.cards?.length ? previous.cards : lesson.cards.slice(0, Math.max(0, CARDS_PER_LESSON - own));
   const kept = { ...lesson, cards };
   let next = saveLesson(db, courseId, key, kept);
   const subject = courseSubject(next, courseId);
@@ -924,6 +923,29 @@ export function cardGroups(db: LocalDB, now: Date): CardGroup[] {
 }
 
 /** Deletes many cards at once (the concepts stay). */
+/**
+ * Cards of imported lessons beyond `CARDS_PER_LESSON` per lesson that were never reviewed (the one-time clean-up
+ * of lessons imported before the limit). Each lesson keeps the cards already reviewed first, then the oldest;
+ * reviewed cards are never offered for removal, even past the limit.
+ */
+export function excessImportedCards(db: LocalDB): string[] {
+  const imported = new Set(Object.values(db.subjects).filter((s) => s.course_id && isImportedCourse(s.course_id)).map((s) => s.id));
+  const byConcept = new Map<string, Flashcard[]>();
+  for (const c of Object.values(db.cards)) {
+    const concept = db.concepts[c.concept_id];
+    if (!concept?.course_key || !imported.has(concept.subject_id)) continue;
+    (byConcept.get(c.concept_id) ?? byConcept.set(c.concept_id, []).get(c.concept_id)!).push(c);
+  }
+  const reviewed = (c: Flashcard) => c.review.last_reviewed_at !== null;
+  const out: string[] = [];
+  for (const cards of byConcept.values()) {
+    if (cards.length <= CARDS_PER_LESSON) continue;
+    const ordered = [...cards].sort((a, b) => Number(reviewed(b)) - Number(reviewed(a)) || a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id));
+    out.push(...ordered.slice(CARDS_PER_LESSON).filter((c) => !reviewed(c)).map((c) => c.id));
+  }
+  return out;
+}
+
 export function deleteCards(db: LocalDB, ids: string[]): LocalDB {
   const drop = new Set(ids);
   return { ...db, cards: Object.fromEntries(Object.entries(db.cards).filter(([id]) => !drop.has(id))) };

@@ -447,6 +447,50 @@ const coursePlan = {
       await page.waitForTimeout(1000);
       await expectText('אבטחת מידע', 'named course on the map');
       await shot('15g-named-course');
+
+      // Card store: an imported lesson with more than 3 never-reviewed cards can be trimmed to 3; one card can be deleted.
+      const conceptId = await page.evaluate(() => {
+        const raw = JSON.parse(localStorage.getItem('feynmanmind.db'));
+        const db = raw.state.db;
+        const subject = Object.values(db.subjects).find((s) => s.course_id === 'imported');
+        const concept = Object.values(db.concepts).find((c) => subject && c.subject_id === subject.id && c.course_key);
+        if (!concept) return null;
+        const review = { ease_factor: 2.5, interval_days: 0, repetitions: 0, next_review_date: null, last_reviewed_at: null, last_quality: null };
+        for (let i = 1; i <= 5; i++) {
+          const id = `extra-${i}`;
+          db.cards[id] = { id, concept_id: concept.id, question: `כרטיסייה עודפת ${i}?`, answer: 'x', created_at: new Date(Date.now() + i * 1000).toISOString(), review };
+        }
+        localStorage.setItem('feynmanmind.db', JSON.stringify(raw));
+        return concept.id;
+      });
+      if (!conceptId) failures.push('no started imported station to test the card trim');
+      else {
+        const countOf = () => page.evaluate((id) => Object.values(JSON.parse(localStorage.getItem('feynmanmind.db')).state.db.cards).filter((c) => c.concept_id === id).length, conceptId);
+        await page.goto(`${APP}/cards`);
+        await page.waitForTimeout(1200);
+        await expectText('יותר מ-3 כרטיסיות לשיעור', 'trim offer in the card store');
+        await expectText('לחיצה ארוכה', 'selection hint');
+        await shot('16a-card-store-trim');
+        page.once('dialog', (d) => d.accept());
+        await page.getByRole('button', { name: 'לצמצם ל-3 לכל שיעור' }).click();
+        await page.waitForTimeout(600);
+        const after = await countOf();
+        if (after !== 3) failures.push(`trim left ${after} cards, expected 3`);
+        await expectText('נמחקו', 'trim result');
+        // Open the imported subject and its concept, then delete one card with its bin.
+        await page.getByText('שיעורים מיובאים', { exact: false }).first().click();
+        await page.waitForTimeout(300);
+        const conceptTitle = await page.evaluate((id) => JSON.parse(localStorage.getItem('feynmanmind.db')).state.db.concepts[id].title, conceptId);
+        await page.getByText(conceptTitle, { exact: true }).first().click();
+        await page.waitForTimeout(300);
+        await shot('16b-card-store-open');
+        const question = await page.evaluate((id) => Object.values(JSON.parse(localStorage.getItem('feynmanmind.db')).state.db.cards).find((c) => c.concept_id === id).question, conceptId);
+        const row = page.getByRole('button').filter({ has: page.getByText(question, { exact: true }) }).last();
+        page.once('dialog', (d) => d.accept());
+        await row.getByRole('button', { name: 'מחיקה' }).click();
+        await page.waitForTimeout(500);
+        if ((await countOf()) !== 2) failures.push(`single delete left ${await countOf()} cards, expected 2`);
+      }
     }
     await ctx.close();
   }

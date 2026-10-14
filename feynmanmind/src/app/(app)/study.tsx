@@ -6,6 +6,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Button, EmptyState, ErrorState, IconButton, InlineError, LoadingState, ProgressBar, Screen } from '@/components/ui';
 import { keys } from '@/data/keys';
+import { confirmAsync } from '@/lib/dialogs';
+import { useDeleteFlashcard } from '@/data/flashcards';
 import { useDueCards, useReviewCard } from '@/data/study';
 import { useT } from '@/i18n';
 import { errorMessage } from '@/lib/errors';
@@ -30,8 +32,11 @@ export default function StudyScreen() {
   const [grades, setGrades] = useState<QualityScore[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  // Cards deleted during the session ("I don't need this card"); the next one takes their place.
+  const [dropped, setDropped] = useState<Set<string>>(() => new Set());
+  const remove = useDeleteFlashcard();
 
-  const cards = due.data ?? [];
+  const cards = (due.data ?? []).filter((c) => !dropped.has(c.id));
   const card = cards[index];
   const finished = due.isSuccess && index >= cards.length;
 
@@ -62,6 +67,21 @@ export default function StudyScreen() {
     setRevealed(false);
     setIndex((i) => i + 1);
     setSubmitting(false);
+  };
+
+  const drop = async () => {
+    if (!card) return;
+    const ok = await confirmAsync({
+      title: t('concept.deleteCard.title'),
+      message: t('review.dropCardBody'),
+      confirmLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
+      destructive: true,
+    });
+    if (!ok) return;
+    await remove.mutateAsync(card.id);
+    setDropped((d) => new Set(d).add(card.id));
+    setRevealed(false);
   };
 
   const close = () => router.back();
@@ -177,6 +197,7 @@ export default function StudyScreen() {
         ) : (
           <Button label={t('study.showAnswer')} onPress={() => setRevealed(true)} />
         )}
+        <Button label={t('review.dropCard')} icon="trash-outline" variant="ghost" onPress={() => void drop()} />
       </Screen>
     </>
   );

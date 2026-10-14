@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Button, ErrorState, InlineError, LoadingState, Screen, TextField } from '@/components/ui';
-import { useFlashcard, useSaveFlashcard } from '@/data/flashcards';
+import { useDeleteFlashcard, useFlashcard, useSaveFlashcard } from '@/data/flashcards';
+import { confirmAsync } from '@/lib/dialogs';
 import { useT } from '@/i18n';
 import { errorMessage } from '@/lib/errors';
 
@@ -35,6 +36,7 @@ function CardForm({ id, conceptId, initialQuestion, initialAnswer }: {
   const t = useT();
   const isNew = !id;
   const save = useSaveFlashcard();
+  const remove = useDeleteFlashcard();
   const [question, setQuestion] = useState(initialQuestion);
   const [answer, setAnswer] = useState(initialAnswer);
   const targetConcept = conceptId;
@@ -75,6 +77,23 @@ function CardForm({ id, conceptId, initialQuestion, initialAnswer }: {
           disabled={!valid}
           loading={save.isPending}
         />
+        {id ? (
+          <Button
+            label={t('common.delete')}
+            icon="trash-outline"
+            variant="danger"
+            onPress={async () => {
+              const ok = await confirmAsync({
+                title: t('concept.deleteCard.title'),
+                message: t('concept.deleteCard.body'),
+                confirmLabel: t('common.delete'),
+                cancelLabel: t('common.cancel'),
+                destructive: true,
+              });
+              if (ok) remove.mutate(id, { onSuccess: () => router.back() });
+            }}
+          />
+        ) : null}
       </Screen>
     </>
   );

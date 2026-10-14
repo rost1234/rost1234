@@ -8,6 +8,7 @@ import {
   cardGroups,
   cardStats,
   deleteCards,
+  excessImportedCards,
   importedCourseId,
   importedWithoutLesson,
   isImportedCourse,
@@ -653,13 +654,14 @@ describe('imported lessons', () => {
     db = saveImportedLesson(db, IMPORTED_COURSE_ID, rop!.key, { explanation: 'x', parts, cards }, newId, NOW);
     expect(cardsOf(db, id).map((c) => c.question).sort()).toEqual(['AI 1?', 'AI 2?', 'AI 3?']);
 
-    // A regular import (with automatic cards) keeps all of the AI's cards.
+    // With the automatic card, the AI only fills the lesson up to three.
     const [full] = importLessons(emptyDB(), [lesson('BOF', 'ROP')], texts, NOW);
     const fullSaved = saveImportedLesson(full, IMPORTED_COURSE_ID, stations(full)[0]!.key, { explanation: 'x', parts, cards }, newId, NOW);
-    expect(fullSaved.lessons[`${IMPORTED_COURSE_ID}/${stations(full)[0]!.key}`]!.cards).toHaveLength(3);
+    expect(fullSaved.lessons[`${IMPORTED_COURSE_ID}/${stations(full)[0]!.key}`]!.cards).toHaveLength(2);
+    expect(lessonFor(fullSaved, fullSaved.courses[IMPORTED_COURSE_ID]!, stations(fullSaved)[0]!)!.cards).toHaveLength(3);
   });
 
-  it('the AI adds no cards to a lesson that already has enough, and never adds them twice', () => {
+  it('a lesson keeps at most three cards from the file, the AI only fills up to three, and never twice', () => {
     const parts = { hook: 'h', sections: [{ heading: 'a', body: 'b' }], check: [] };
     const ai = (n: number) => [1, 2, 3, 4].map((i) => ({ question: `AI ${n}.${i}?`, answer: 'x' }));
     const mine = [1, 2, 3, 4].map((i) => ({ question: `mine ${i}?`, answer: 'a' }));
@@ -669,13 +671,37 @@ describe('imported lessons', () => {
     let ropId: string, canaryId: string;
     [db, ropId] = startStation(db, course, rop!.key, newId, NOW);
     [db, canaryId] = startStation(db, course, canary!.key, newId, NOW);
+    expect(rop!.cards!.map((c) => c.question)).toEqual(['mine 1?', 'mine 2?', 'mine 3?']);
+    expect(cardsOf(db, ropId)).toHaveLength(3);
     db = saveImportedLesson(db, IMPORTED_COURSE_ID, rop!.key, { explanation: 'x', parts, cards: ai(1) }, newId, NOW);
-    expect(cardsOf(db, ropId)).toHaveLength(4);
+    expect(cardsOf(db, ropId)).toHaveLength(3);
     db = saveImportedLesson(db, IMPORTED_COURSE_ID, canary!.key, { explanation: 'x', parts, cards: ai(1) }, newId, NOW);
-    expect(cardsOf(db, canaryId)).toHaveLength(4);
+    expect(cardsOf(db, canaryId)).toHaveLength(3);
     // Writing the lesson again keeps the first cards and adds nothing.
     db = saveImportedLesson(db, IMPORTED_COURSE_ID, canary!.key, { explanation: 'y', parts, cards: ai(2) }, newId, NOW);
-    expect(cardsOf(db, canaryId).map((c) => c.question).sort()).toEqual(['AI 1.1?', 'AI 1.2?', 'AI 1.3?', 'Explain: Canary']);
+    expect(cardsOf(db, canaryId).map((c) => c.question).sort()).toEqual(['AI 1.1?', 'AI 1.2?', 'Explain: Canary']);
+  });
+
+  it('offers the never-reviewed cards past three per imported lesson for a one-time clean-up', () => {
+    let [db] = importLessons(emptyDB(), [lesson('BOF', 'ROP')], texts, NOW);
+    const course = db.courses[IMPORTED_COURSE_ID]!;
+    let id: string;
+    [db, id] = startStation(db, course, stations(db)[0]!.key, newId, NOW);
+    // Lessons imported before the limit could have many more cards.
+    [db] = addCards(db, id, [1, 2, 3, 4, 5].map((i) => ({ question: `old ${i}?`, answer: 'x' })), newId, new Date(NOW.getTime() + 1000));
+    const cards = cardsOf(db, id);
+    const newest = cards.find((c) => c.question === 'old 5?')!;
+    db = reviewCard(db, newest.id, 4, NOW);
+    const extra = excessImportedCards(db);
+    // Six cards: the reviewed one and the two oldest stay; the reviewed one is never removed.
+    expect(extra).toHaveLength(3);
+    expect(extra).not.toContain(newest.id);
+    expect(cardsOf(deleteCards(db, extra), id)).toHaveLength(3);
+    expect(excessImportedCards(deleteCards(db, extra))).toEqual([]);
+    // Other courses' cards are never touched.
+    const [withSubject, subjectId] = saveSubject(emptyDB(), { title: 'Physics' }, newId, NOW);
+    const [other, otherId] = saveConcept(withSubject, { subjectId, title: 'Force' }, newId, NOW);
+    expect(excessImportedCards(addCards(other, otherId, [1, 2, 3, 4].map((i) => ({ question: `q${i}`, answer: 'a' })), newId, NOW)[0])).toEqual([]);
   });
 
   it('lists the lessons still to write: no lesson yet, or only a reference', () => {
