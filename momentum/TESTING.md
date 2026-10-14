@@ -351,6 +351,6 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Regular look: no moment cards; the insight card is as before plus "All insights ›" opening the notebook ("מחברת התובנות", plain cards)
 - [ ] Notebook (Garden pill "המחברת"): newest first, grouped by day, with why ("אחרי יום כבד", "התובנה של היום"); "What to do & source" opens the suggestion, the source, the caveat, the evidence and "Open the source"
 - [ ] Starred filter shows only starred cards (and an empty message when none); stars survive closing the app
-- [ ] All 100 studies by topic: a topic shows what was told plus teasers of the rest; "Hear it now" moves it to the told list (and to Today's date in the notebook) without changing today's own insight on Home
+- [ ] All 100 studies by topic: a topic shows what was told plus teasers of the rest; "Tell me now" moves it to the told list (and to Today's date in the notebook) without changing today's own insight on Home
 - [ ] Hebrew: the sprout never addresses you in a gendered form; RTL bubble tail points at the sprout; largest font: the sprout goes above the bubble and the buttons wrap
 - [ ] TalkBack: the bubble's buttons read as buttons ("What do we do?", "Thanks", star with its state); a moment card is announced when it appears

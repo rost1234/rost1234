@@ -14,9 +14,12 @@ export function insightLines(insight: Insight, he: boolean, sprout: boolean): Sp
   return sprout ? text.sprout : { finding: text.finding, action: text.action };
 }
 
-/** Where a card comes from, in one short line: the institution (or authors) and the year. */
+/**
+ * Where a card comes from, in one short line: the institution (or authors) and the year. The name is
+ * isolated so an English name inside a Hebrew line keeps its own direction.
+ */
 export function sourceShort(insight: Insight): string {
-  return `${insight.source.institution ?? insight.source.authors} · ${insight.source.year}`;
+  return `\u2068${insight.source.institution ?? insight.source.authors}\u2069 · ${insight.source.year}`;
 }
 
 /** The start of a card's first line ("I read a study from London…"): a teaser for one not told yet. */

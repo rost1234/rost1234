@@ -378,7 +378,7 @@ export const he: Record<TranslationKey, string> = {
   'notebook.intro': 'כל מה שסיפרתי לך, עם המקורות: {told} מתוך {total} עד עכשיו.',
   'notebook.introCalm': 'כל התובנות שהוצגו עד עכשיו, עם המקורות: {told} מתוך {total}.',
   'notebook.less': 'פחות',
-  'notebook.listen': 'להקשיב עכשיו',
+  'notebook.listen': 'ספר לי עכשיו',
   'notebook.listenHint': 'הנבט יספר את זה עכשיו, וזה יישמר במחברת',
   'notebook.more': 'מה עושים והמקור',
   'notebook.openHint': 'פותח את כל מה שהנבט סיפר, עם המקורות',

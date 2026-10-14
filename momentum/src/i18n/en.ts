@@ -376,7 +376,7 @@ export const en = {
   'notebook.intro': 'Everything I\'ve told you, with the sources: {told} of {total} so far.',
   'notebook.introCalm': 'Every insight shown so far, with sources: {told} of {total}.',
   'notebook.less': 'Less',
-  'notebook.listen': 'Hear it now',
+  'notebook.listen': 'Tell me now',
   'notebook.listenHint': 'The sprout tells it now, and it stays in the notebook',
   'notebook.more': 'What to do & source',
   'notebook.openHint': 'Opens everything the sprout told you, with sources',

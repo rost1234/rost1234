@@ -683,7 +683,7 @@
     "action": "If today feels heavier than usual, check how you slept before blaming yourself, and aim for an earlier bedtime.",
     "sprout": {
       "finding": "I read a review from Montana of more than 50 years of experiments: losing sleep lowered people's good feelings and raised their anxiety.",
-      "action": "If today feels heavy, let's check how we slept before blaming ourselves. And tonight, let's aim for bed a little earlier."
+      "action": "When a day feels heavy, let's check how we slept before blaming ourselves. And at night, let's aim for bed a little earlier."
     },
     "source": {
       "type": "meta_analysis",
@@ -706,7 +706,7 @@
       "action": "אם היום מרגיש כבד מהרגיל, לבדוק קודם איך הייתה השינה לפני שמאשימים את עצמנו, ולנסות ללכת לישון מוקדם יותר.",
       "sprout": {
         "finding": "קראתי סקירה ממונטנה של ניסויים מיותר מ-50 שנה: חוסר שינה הוריד אצל אנשים את הרגשות הטובים והעלה את החרדה.",
-        "action": "אם היום מרגיש כבד, קודם נבדוק איך ישנו, לפני שמאשימים את עצמנו. והלילה ננסה ללכת לישון קצת יותר מוקדם."
+        "action": "כשיום מרגיש כבד, קודם נבדוק איך ישנו, לפני שמאשימים את עצמנו. ובלילה ננסה ללכת לישון קצת יותר מוקדם."
       },
       "caveat": "154 ניסויי מעבדה עם אנשים בריאים בני 7 עד 79. התוצאות לגבי מצב רוח שלילי ותסמיני דיכאון היו מעורבות."
     }
@@ -845,7 +845,7 @@
     "action": "Plan a 10–20 minute walk in a park or other green space today.",
     "sprout": {
       "finding": "I heard about a survey of about 20,000 people in England: those who spent at least 2 hours a week in nature more often reported good health and wellbeing. I'm all for it, obviously.",
-      "action": "Shall we plan a 10–20 minute walk in a park or somewhere green today?"
+      "action": "Shall we plan a 10–20 minute walk in a park or somewhere green, today or tomorrow?"
     },
     "source": {
       "type": "peer_reviewed",
@@ -868,7 +868,7 @@
       "action": "לתכנן להיום הליכה של 10–20 דקות בפארק או בשטח ירוק אחר.",
       "sprout": {
         "finding": "שמעתי על סקר מאנגליה של כ-20,000 איש: מי שבילו לפחות שעתיים בשבוע בטבע נטו לדווח יותר על בריאות ורווחה טובות. אני, כמובן, בעד.",
-        "action": "נתכנן להיום הליכה של 10–20 דקות בפארק או במקום ירוק?"
+        "action": "נתכנן הליכה של 10–20 דקות בפארק או במקום ירוק, היום או מחר?"
       },
       "statLabel": "דקות בשבוע בטבע שקשורות לרווחה טובה יותר",
       "caveat": "נתוני סקר מתאמיים. אפשר לחלק את הזמן לביקורים קצרים, אבל זה לא מוכיח שהטבע הוא הגורם."
@@ -967,7 +967,7 @@
     "action": "Start a short, friendly chat today with someone you don't usually talk to, like a cashier or neighbor.",
     "sprout": {
       "finding": "I heard about an experiment from Chicago: commuters thought they'd prefer sitting alone, but those asked to chat with a stranger enjoyed the ride more.",
-      "action": "Maybe today, a short friendly chat with someone you don't usually talk to, like a cashier or a neighbor?"
+      "action": "Maybe next time, a short friendly chat with someone you don't usually talk to, like a cashier or a neighbor?"
     },
     "source": {
       "type": "peer_reviewed",
@@ -990,7 +990,7 @@
       "action": "לפתוח היום שיחה קצרה וידידותית עם מישהו שבדרך כלל לא מדברים איתו, כמו קופאי או שכן.",
       "sprout": {
         "finding": "שמעתי על ניסוי משיקגו: נוסעים חשבו שיעדיפו לשבת לבד, אבל מי שהתבקשו לדבר עם זר נהנו מהנסיעה יותר.",
-        "action": "אולי היום נפתח שיחה קצרה ונעימה עם מישהו שבדרך כלל לא מדברים איתו, למשל בקופה או בבניין?"
+        "action": "אולי בפעם הבאה נפתח שיחה קצרה ונעימה עם מישהו שבדרך כלל לא מדברים איתו, למשל בקופה או בבניין?"
       },
       "caveat": "ניסויים עם נוסעים ברכבות ובאוטובוסים ועם משתתפי מעבדה. נמדדה ההנאה מנסיעה אחת, לא השפעות לטווח ארוך."
     }
@@ -1077,7 +1077,7 @@
     "action": "Do one small kind thing for someone today, like helping with a task or sharing something useful.",
     "sprout": {
       "finding": "A review from Oxford found that small acts of kindness lift the giver too: a small-to-medium boost in wellbeing, on average.",
-      "action": "One small kind thing for someone today? Help with a task, or share something useful."
+      "action": "One small kind thing for someone, today or tomorrow? Help with a task, or share something useful."
     },
     "source": {
       "type": "meta_analysis",
@@ -1100,7 +1100,7 @@
       "action": "לעשות היום דבר טוב וקטן אחד בשביל מישהו, כמו עזרה במשימה או שיתוף של משהו שימושי.",
       "sprout": {
         "finding": "סקירה מאוקספורד מצאה שמעשי חסד קטנים משמחים גם את מי שעושה אותם: דחיפה קטנה עד בינונית לרווחה, בממוצע.",
-        "action": "דבר טוב וקטן אחד בשביל מישהו היום? לעזור במשימה, או לשתף משהו שימושי."
+        "action": "דבר טוב וקטן אחד בשביל מישהו, היום או מחר? לעזור במשימה, או לשתף משהו שימושי."
       },
       "caveat": "מבוסס על 27 מחקרים עם כ-4,000 משתתפים. ההשפעה צנועה."
     }
@@ -1972,7 +1972,7 @@
     "action": "Put one small thing you enjoy or care about into your calendar for later today.",
     "sprout": {
       "finding": "I read a review of 20 studies from Australia: deliberately planning enjoyable or meaningful things (it's called behavioral activation) raised wellbeing with a medium effect.",
-      "action": "Shall we put one small thing we enjoy or care about in the calendar for later today?"
+      "action": "Shall we put one small thing we enjoy or care about in the calendar, for later on or for tomorrow?"
     },
     "source": {
       "type": "meta_analysis",
@@ -1995,7 +1995,7 @@
       "action": "להכניס ללוח השנה דבר קטן אחד מהנה או משמעותי למועד מאוחר יותר היום.",
       "sprout": {
         "finding": "קראתי סקירה מאוסטרליה של 20 מחקרים: לתכנן בכוונה דברים מהנים או משמעותיים (זה נקרא \"הפעלה התנהגותית\") שיפר את הרווחה בהשפעה בינונית.",
-        "action": "נכניס ליומן דבר קטן אחד שכיף או חשוב לנו, למועד מאוחר יותר היום?"
+        "action": "נכניס ליומן דבר קטן אחד שכיף או חשוב לנו, לשעות הקרובות או למחר?"
       },
       "caveat": "20 מחקרים אקראיים עם כ-1,350 משתתפים. זה לא תחליף לעזרה מקצועית."
     }
@@ -2124,7 +2124,7 @@
     "action": "Say hi and ask one question to an acquaintance today, like a classmate, coworker or barista.",
     "sprout": {
       "finding": "I read a study from Vancouver: on days students talked with more classmates than usual, they felt happier and more like they belonged. Casual chats with acquaintances count too!",
-      "action": "Shall we say hi to an acquaintance today and ask one question? A classmate, a coworker or the barista."
+      "action": "Next time, shall we say hi to an acquaintance and ask one question? A classmate, a coworker or the barista."
     },
     "source": {
       "type": "peer_reviewed",
@@ -2147,7 +2147,7 @@
       "action": "להגיד שלום ולשאול שאלה אחת מכר או מכרה היום, כמו מישהו מהכיתה, מהעבודה או מבית הקפה.",
       "sprout": {
         "finding": "קראתי מחקר מוונקובר: בימים שבהם סטודנטים דיברו עם יותר חברים לכיתה מהרגיל, הם הרגישו שמחים ושייכים יותר. גם שיחה קלילה עם מכרים נחשבת!",
-        "action": "נגיד היום שלום למכר או למכרה ונשאל שאלה אחת? מהכיתה, מהעבודה או מבית הקפה."
+        "action": "בפעם הבאה נגיד שלום למכר או למכרה ונשאל שאלה אחת? מהכיתה, מהעבודה או מבית הקפה."
       },
       "caveat": "מחקרי יומן מתאמיים: ייתכן שאנשים מאושרים יותר פשוט מדברים יותר."
     }
@@ -2290,7 +2290,7 @@
       "finding": "אנשים ציפו ששיחות עמוקות עם זרים יהיו מביכות יותר ממה שהיו בפועל, והרגישו אחר כך יותר קרובים ממה שחזו.",
       "action": "בשיחה הבאה, לשאול שאלה אחת עמוקה יותר, כמו \"מה מחכה לך בקרוב שמשמח אותך?\"",
       "sprout": {
-        "finding": "קראתי מחקר מנורת'ווסטרן: אנשים חשבו ששיחה עמוקה עם זר תהיה מביכה יותר ממה שהייתה, והרגישו אחריה קרובים יותר ממה שציפו.",
+        "finding": "קראתי מחקר מאילינוי: אנשים חשבו ששיחה עמוקה עם זר תהיה מביכה יותר ממה שהייתה, והרגישו אחריה קרובים יותר ממה שציפו.",
         "action": "בשיחה הבאה ננסה שאלה אחת עמוקה יותר, כמו \"מה מחכה לך בקרוב שמשמח אותך?\""
       },
       "caveat": "ניסויים שנעשו בעיקר בשיחות חד-פעמיות בין זרים."
@@ -2694,7 +2694,7 @@
     "action": "When you feel tense today, play one song you find calming and just listen to it.",
     "sprout": {
       "finding": "I read a review from Amsterdam of 104 trials with about 9,600 people: music lowered stress, both in how it felt and in the body, like heart rate.",
-      "action": "When you feel tense today, let's put on one calming song and just listen."
+      "action": "When you feel tense, let's put on one calming song and just listen."
     },
     "source": {
       "type": "meta_analysis",
@@ -2717,7 +2717,7 @@
       "action": "כשמרגישים מתח היום, לשים שיר אחד שמרגיע אתכם ופשוט להקשיב לו.",
       "sprout": {
         "finding": "קראתי סקירה מאמסטרדם של 104 ניסויים עם כ-9,600 איש: מוזיקה הפחיתה לחץ, גם בתחושה וגם בגוף, למשל בדופק.",
-        "action": "כשמרגישים מתח היום, נשים שיר אחד מרגיע ופשוט נקשיב."
+        "action": "כשמרגישים מתח, נשים שיר אחד מרגיע ופשוט נקשיב."
       },
       "caveat": "האפקטים היו קטנים עד בינוניים בממוצע, ורבים מהניסויים נערכו במסגרות רפואיות. לא תחליף לעזרה מקצועית."
     }
@@ -3006,7 +3006,7 @@
       "finding": "בנתוני כניסות של כ-30,000 מנויי חדר כושר לאורך 4 שנים, המנבא החזק ביותר לדילוג היה הזמן מאז הביקור האחרון: ככל שעבר יותר זמן, הסיכוי שיגיעו ירד.",
       "action": "אם אתמול לא הסתדר, לעשות היום אפילו גרסת 2 דקות של ההרגל, כדי שיום הפסקה אחד לא יהפוך לשניים.",
       "sprout": {
-        "finding": "קראתי מחקר מפנסילבניה ומקלטק על כ-30,000 מנויי חדר כושר לאורך 4 שנים: מה שהכי ניבא דילוג היה הזמן מאז הפעם האחרונה. ככל שעבר יותר זמן, הסיכוי לחזור ירד.",
+        "finding": "קראתי מחקר מפנסילבניה ומקליפורניה על כ-30,000 מנויי חדר כושר לאורך 4 שנים: מה שהכי ניבא דילוג היה הזמן מאז הפעם האחרונה. ככל שעבר יותר זמן, הסיכוי לחזור ירד.",
         "action": "כשיום לא הסתדר, ננסה למחרת אפילו גרסה של 2 דקות, כדי שיום אחד לא יהפוך לשניים."
       },
       "caveat": "נתונים מרשת חדרי כושר אחת. הדפוס מנבא התנהגות, אבל לא מוכיח שחזרה מהירה היא מה שגורם להרגל להחזיק."
