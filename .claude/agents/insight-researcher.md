@@ -60,6 +60,11 @@ It must pass. Fix any validation errors it reports before finishing.
 - **Fit the app.** Momentum is about small daily habits, focus sessions, reflection and streaks. Prefer insights the user can act on inside that loop.
 - **`id`:** kebab-case, descriptive, and never reused.
 - **`he`:** a natural Hebrew translation of `finding`, `action`, and — when present — `stat.label` (as `statLabel`) and `caveat`. Same meaning, no added claims.
+- **`sprout` and `he.sprout`:** the same card as the Garden sprout tells it, in its own voice (`finding` up to 220 characters, `action` up to 160). Same facts and hedges as `finding`/`action`, nothing added.
+  - The sprout speaks for itself ("I read a study from London: …", "קראתי מחקר מלונדון: …"), naming the place of the institution rather than its full name, and stays warm and plain.
+  - Its suggestion is shared, never a command: "Shall we …?", "Let's …", "ננסה…?", "נכתוב…".
+  - Hebrew: the sprout may use masculine first person for itself, but the user is never addressed in a gendered form (use "we", past tense or infinitives).
+  - The source, caveat and evidence level stay out of the sprout's lines; the notebook shows them.
 
 ## Process
 

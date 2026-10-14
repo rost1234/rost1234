@@ -15,7 +15,6 @@ const TABS: Record<PageId, { label: TranslationKey; icon: IconName; iconOn: Icon
   home: { label: 'tabs.home', icon: 'today-outline', iconOn: 'today', gardenIcon: 'leaf-outline', gardenIconOn: 'leaf' },
   calendar: { label: 'tabs.calendar', icon: 'calendar-outline', iconOn: 'calendar' },
   insights: { label: 'tabs.insights', icon: 'bar-chart-outline', iconOn: 'bar-chart' },
-  library: { label: 'tabs.library', icon: 'library-outline', iconOn: 'library' },
 };
 
 /** Height of the bar and the gap under it (pages leave this much room at the bottom). */

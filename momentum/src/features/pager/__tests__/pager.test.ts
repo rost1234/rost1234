@@ -6,8 +6,8 @@ jest.mock('expo-router', () => ({ router: { push: jest.fn() }, useFocusEffect: j
 describe('main pager', () => {
   beforeEach(() => usePagerStore.setState({ page: 'home', visited: ['home'], active: false }));
 
-  it('runs Today → month → insights → library', () => {
-    expect(PAGES).toEqual(['home', 'calendar', 'insights', 'library']);
+  it('runs Today → month → progress', () => {
+    expect(PAGES).toEqual(['home', 'calendar', 'insights']);
   });
 
   it('builds a page on its first visit and keeps it', () => {

@@ -6,7 +6,6 @@ import { AnalyticsScreen } from '@/features/analytics/AnalyticsScreen';
 import { CalendarScreen } from '@/features/calendar/CalendarScreen';
 import { DashboardScreen } from '@/features/dashboard/DashboardScreen';
 import { FocusFab } from '@/features/dashboard/HomeChrome';
-import { LibraryScreen } from '@/features/library/LibraryScreen';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { MainTabs, TAB_BAR_SPACE } from './MainTabs';
 import { PAGES, PagerContext, usePagerStore, type PageId } from './pager';
@@ -15,7 +14,6 @@ const SCREENS: Record<PageId, ComponentType> = {
   home: DashboardScreen,
   calendar: CalendarScreen,
   insights: AnalyticsScreen,
-  library: LibraryScreen,
 };
 
 /** How far (share of the width) or how fast a swipe must go to turn the page. */
@@ -61,7 +59,7 @@ function makeResponder(offset: Animated.Value) {
 }
 
 /**
- * Today, the month, insights and the library side by side: swipe between them (in reading
+ * Today, the month and progress side by side: swipe between them (in reading
  * direction, so in Hebrew the next page comes from the left) or use the tab bar. A page is
  * built the first time it's visited and kept, so coming back is instant. Android's back
  * button returns to Today before leaving the app.
@@ -118,7 +116,7 @@ export function MainPager() {
             key={id}
             // Each page moves by itself, so the page in view really sits on the screen: Android
             // only hands scrolling to views inside their parent's bounds (a shifted strip of
-            // pages left the Month, Insights and Library lists unscrollable).
+            // pages left the Month and Progress lists unscrollable).
             style={[StyleSheet.absoluteFill, { width, transform: [{ translateX: shifts[i] ?? offset }] }]}
             // Only the page in view is read by screen readers and takes touches.
             importantForAccessibility={current ? 'auto' : 'no-hide-descendants'}

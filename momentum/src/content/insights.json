@@ -9,6 +9,10 @@
       "label": "days (median) until a habit felt automatic"
     },
     "action": "Judge your new habit after two months, not two weeks. If you miss today, just do it tomorrow.",
+    "sprout": {
+      "finding": "There's a study from London: a new habit took about two months (66 days, median) to feel automatic. And missing one day? It didn't ruin a thing.",
+      "action": "So let's judge a new habit after two months, not two weeks. If today slips, we just pick it up tomorrow."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "How are habits formed: Modelling habit formation in the real world",
@@ -29,6 +33,10 @@
     "he": {
       "finding": "במחקר בעולם האמיתי, לקח חציון של 66 ימים עד שהרגל יומי חדש הרגיש אוטומטי — ופספוס של יום בודד לא הרס אותו.",
       "action": "לשפוט הרגל חדש אחרי חודשיים, לא אחרי שבועיים. היום התפספס? פשוט לעשות אותו מחר.",
+      "sprout": {
+        "finding": "יש מחקר מלונדון: לקח לאנשים בערך חודשיים (66 ימים בחציון) עד שהרגל חדש הרגיש אוטומטי. ויום אחד שפספסו? לא הרס כלום.",
+        "action": "אז נשפוט הרגל חדש אחרי חודשיים, לא אחרי שבועיים. ואם היום התפספס, פשוט נחזור אליו מחר."
+      },
       "statLabel": "ימים (חציון) עד שהרגל הרגיש אוטומטי",
       "caveat": "מבוסס על 39 מתוך 96 מתנדבים שהנתונים שלהם התאימו היטב למודל. הטווח היה רחב: 18 עד 254 ימים."
     }
@@ -43,6 +51,10 @@
       "label": "independent tests in the meta-analysis"
     },
     "action": "Rewrite one habit as: \"When ___ happens, I will ___.\"",
+    "sprout": {
+      "finding": "I read a big review from Germany and England: deciding ahead exactly when and where you'll act (\"If it's 7am and I'm in the kitchen, I stretch\") really helps people follow through.",
+      "action": "Small idea: let's rewrite one habit as \"When ___ happens, I'll ___.\""
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Implementation intentions and goal achievement: A meta-analysis of effects and processes",
@@ -65,6 +77,10 @@
     "he": {
       "finding": "החלטה מראש מתי ואיפה בדיוק לפעול (\"אם השעה 7 בבוקר ואני במטבח, אז אני עושה מתיחות\") עוזרת לאנשים לבצע את מה שתכננו באופן עקבי.",
       "action": "לנסח הרגל אחד מחדש: \"כש___ קורה, אני ___.\"",
+      "sprout": {
+        "finding": "קראתי סקירה גדולה מגרמניה ואנגליה: מי שמחליטים מראש מתי ואיפה בדיוק יעשו משהו (\"אם השעה 7 ואני במטבח, אז מתיחות\") באמת מבצעים יותר.",
+        "action": "רעיון קטן: ננסח הרגל אחד מחדש, \"כש___ קורה, אני ___\"."
+      },
       "statLabel": "בדיקות בלתי תלויות במטא-אנליזה"
     }
   },
@@ -78,6 +94,10 @@
       "label": "experiments in the meta-analysis"
     },
     "action": "Before bed, mark which habits you did today and which you didn't. Be honest, and write it down.",
+    "sprout": {
+      "finding": "A review from England found that people who check and record their progress are more likely to reach their goal, especially when they write it down or share it. That's exactly what we do here!",
+      "action": "Before bed, let's go over it together: what got done today and what didn't. Honestly, no judging."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Does monitoring goal progress promote goal attainment? A meta-analysis of the experimental evidence",
@@ -96,6 +116,10 @@
     "he": {
       "finding": "אנשים שבודקים ורושמים באופן קבוע את ההתקדמות שלהם לעבר מטרה נוטים יותר להשיג אותה, במיוחד כשהם כותבים את זה או משתפים אחרים.",
       "action": "לפני השינה, לסמן אילו הרגלים נעשו היום ואילו לא. בכנות, ובכתב.",
+      "sprout": {
+        "finding": "סקירה מאנגליה מצאה שמי שבודקים ורושמים את ההתקדמות שלהם נוטים יותר להגיע למטרה, במיוחד כשכותבים את זה או משתפים מישהו. בדיוק מה שאנחנו עושים כאן!",
+        "action": "לפני השינה נעבור יחד: מה נעשה היום ומה לא. בכנות, בלי לשפוט."
+      },
       "statLabel": "ניסויים במטא-אנליזה"
     }
   },
@@ -105,6 +129,10 @@
     "goals": [],
     "finding": "When people do something almost daily in the same setting, they tend to do it on autopilot, think about other things, and feel less stressed while doing it.",
     "action": "Choose one fixed place and time for your newest habit, and do it there again today.",
+    "sprout": {
+      "finding": "I heard about a study from Texas: when you do something almost daily in the same place, it tends to slip into autopilot. Your mind is free for other things, and it feels less stressful.",
+      "action": "How about we pick one fixed place and time for the newest habit, and do it there again today?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Habits in everyday life: Thought, emotion, and action",
@@ -124,6 +152,10 @@
     "he": {
       "finding": "כשאנשים עושים משהו כמעט כל יום באותה סביבה, הם נוטים לעשות את זה על טייס אוטומטי, לחשוב על דברים אחרים ולהרגיש פחות לחץ בזמן הפעולה.",
       "action": "לבחור מקום ושעה קבועים להרגל החדש ביותר, ולעשות אותו שם שוב היום.",
+      "sprout": {
+        "finding": "שמעתי על מחקר מטקסס: כשעושים משהו כמעט כל יום באותו מקום, הוא נוטה לעבור לטייס אוטומטי. הראש פנוי למחשבות אחרות, ויש פחות לחץ.",
+        "action": "מה דעתך שנבחר להרגל הכי חדש מקום ושעה קבועים, ונעשה אותו שם גם היום?"
+      },
       "caveat": "מבוסס על שני מחקרי יומן עם דיווח עצמי. הוא מתאר איך הרגלים מרגישים, לא כמה מהר הם נוצרים."
     }
   },
@@ -133,6 +165,10 @@
     "goals": [],
     "finding": "In a flossing study, people who flossed right after brushing their teeth built a stronger habit than people who flossed before brushing.",
     "action": "Attach your new habit to something you already do daily: \"After I ___, I will ___.\"",
+    "sprout": {
+      "finding": "I heard about a flossing experiment from London: people who flossed right after brushing built a stronger habit than people who flossed before.",
+      "action": "So maybe we hook a new habit onto something you already do every day: \"After I ___, I'll ___.\""
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Forming a flossing habit: An exploratory study of the psychological determinants of habit formation",
@@ -156,6 +192,10 @@
     "he": {
       "finding": "במחקר על חוט דנטלי, אנשים שהשתמשו בחוט מיד אחרי צחצוח השיניים בנו הרגל חזק יותר מאנשים שהשתמשו בו לפני הצחצוח.",
       "action": "לחבר את ההרגל החדש למשהו שכבר נעשה כל יום: \"אחרי ש___, אני ___.\"",
+      "sprout": {
+        "finding": "שמעתי על ניסוי מלונדון עם חוט דנטלי: מי שהשתמשו בו מיד אחרי צחצוח השיניים בנו הרגל חזק יותר ממי שהשתמשו בו לפני.",
+        "action": "אז אולי נצמיד הרגל חדש למשהו שכבר עושים כל יום: \"אחרי ש___, אני ___\"."
+      },
       "caveat": "מחקר גישוש אחד עם 50 אנשים שלמדו להשתמש בחוט דנטלי. השפעת הסדר עדיין לא נבדקה בהרחבה על הרגלים אחרים."
     }
   },
@@ -165,6 +205,10 @@
     "goals": [],
     "finding": "In a gym study with about 6,800 people, getting an audiobook and being encouraged to listen only while working out raised weekly workouts by about 10–12%.",
     "action": "Pick a treat, like a podcast or playlist, and save it only for while you do your hardest habit.",
+    "sprout": {
+      "finding": "I read a study from Pennsylvania with about 6,800 gym-goers: those given an audiobook and nudged to listen only while working out did about 10–12% more workouts a week.",
+      "action": "Idea: let's pick a treat, a podcast or a playlist, and save it only for your hardest habit."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Teaching temptation bundling to boost exercise: A field experiment",
@@ -188,6 +232,10 @@
     "he": {
       "finding": "במחקר בחדרי כושר עם כ-6,800 אנשים, קבלת ספר שמע ועידוד להאזין לו רק בזמן אימון העלו את מספר האימונים השבועי בכ-10–12%.",
       "action": "לבחור פינוק, כמו פודקאסט או פלייליסט, ולשמור אותו רק לזמן שבו עושים את ההרגל הכי קשה.",
+      "sprout": {
+        "finding": "קראתי מחקר מפנסילבניה על כ-6,800 מתאמנים: מי שקיבלו ספר שמע ועידוד להאזין לו רק באימון התאמנו בערך 10–12% יותר בשבוע.",
+        "action": "רעיון: נבחר פינוק, פודקאסט או פלייליסט, ונשמור אותו רק לזמן של ההרגל הכי קשה."
+      },
       "caveat": "ההשפעה הייתה צנועה, ועצת ה\"צימוד\" הוסיפה רק מעט מעבר לקבלת ספר השמע עצמו."
     }
   },
@@ -199,6 +247,10 @@
     ],
     "finding": "When work gets interrupted, people often keep up by working faster, but they pay for it with more stress, frustration and effort.",
     "action": "Before your next focus session, silence alerts and close chat apps, even if it's only for 25 minutes.",
+    "sprout": {
+      "finding": "I read a study from California and Berlin: when work gets interrupted, we keep up by working faster, but we pay for it in stress and frustration.",
+      "action": "So what shall we try? Before the next focus session, let's silence alerts and close the chats, even for just 25 minutes."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "The cost of interrupted work: More speed and stress",
@@ -218,6 +270,10 @@
     "he": {
       "finding": "כשעבודה נקטעת, אנשים לרוב עומדים בקצב בכך שהם עובדים מהר יותר, אבל משלמים על זה ביותר לחץ, תסכול ומאמץ.",
       "action": "לפני סשן הריכוז הבא, להשתיק התראות ולסגור אפליקציות צ'אט, גם אם זה רק ל-25 דקות.",
+      "sprout": {
+        "finding": "קראתי מחקר מקליפורניה ומברלין: כשקוטעים לנו את העבודה, אנחנו עובדים מהר יותר כדי לעמוד בקצב, אבל משלמים על זה בלחץ ובתסכול.",
+        "action": "אז מה ננסה? לפני הפוקוס הבא נשתיק התראות ונסגור את הצ'אטים, אפילו רק ל-25 דקות."
+      },
       "caveat": "ניסוי מעבדה יחיד. אנשים שונים זה מזה במידה שבה הפרעות משפיעות עליהם."
     }
   },
@@ -229,6 +285,10 @@
     ],
     "finding": "In a lab study, just getting a phone notification, without even checking it, made people do worse on a task that needed steady attention.",
     "action": "Put your phone on silent with vibration off for your next focus session.",
+    "sprout": {
+      "finding": "I heard about a lab experiment from Florida: just getting a phone notification, without even looking at it, made people do worse on a task that needed steady focus.",
+      "action": "For the next focus session, let's put the phone on silent, vibration off too."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "The attentional cost of receiving a cell phone notification",
@@ -248,6 +308,10 @@
     "he": {
       "finding": "במחקר מעבדה, עצם קבלת התראה בטלפון, אפילו בלי לבדוק אותה, גרמה לאנשים לבצע גרוע יותר משימה שדרשה קשב רציף.",
       "action": "להעביר את הטלפון למצב שקט, בלי רטט, לסשן הריכוז הבא.",
+      "sprout": {
+        "finding": "שמעתי על ניסוי מפלורידה: עצם זה שהגיעה התראה לטלפון, אפילו בלי להציץ בה, גרם לאנשים להצליח פחות במשימה שדרשה ריכוז רציף.",
+        "action": "בפוקוס הבא נעביר את הטלפון למצב שקט, גם בלי רטט."
+      },
       "caveat": "מחקר מעבדה אחד. מחקר מאוחר יותר עם צליל התראה כללי מצא השפעה קטנה יותר ושונה במקצת."
     }
   },
@@ -260,6 +324,10 @@
     ],
     "finding": "In a big study that pinged people on their phones, minds wandered close to half the time, and people tended to feel less happy when they did.",
     "action": "Pick one everyday task today, like washing dishes, and give it your full attention from start to finish.",
+    "sprout": {
+      "finding": "I read a Harvard study: our minds wander almost half the time, and people tend to feel less happy when they do.",
+      "action": "Shall we try one everyday task today, like the dishes, with full attention from start to finish?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "A wandering mind is an unhappy mind",
@@ -277,6 +345,10 @@
     "he": {
       "finding": "במחקר גדול ששלח לאנשים הודעות לטלפון, המחשבות נדדו כמעט מחצית מהזמן, ואנשים נטו להרגיש פחות מאושרים כשזה קרה.",
       "action": "לבחור היום משימה יומיומית אחת, כמו שטיפת כלים, ולתת לה את מלוא תשומת הלב מתחילתה ועד סופה.",
+      "sprout": {
+        "finding": "קראתי מחקר מהרווארד: המחשבות שלנו נודדות כמעט חצי מהזמן, וכשזה קורה אנשים נוטים להרגיש פחות שמחים.",
+        "action": "ננסה היום משימה יומיומית אחת, כמו שטיפת כלים, עם כל תשומת הלב, מההתחלה ועד הסוף?"
+      },
       "caveat": "נתוני תצפית מ-2,250 מתנדבים שהשתמשו באפליקציה לאייפון. דפוסי התזמון מרמזים שנדידת המחשבות באה קודם, אבל זה לא היה ניסוי.",
       "statLabel": "מהבדיקות שבהן המחשבות נדדו"
     },
@@ -297,6 +369,10 @@
       "label": "study samples in the meta-analysis"
     },
     "action": "After this focus session, stand up, stretch or look out a window for 2–3 minutes before starting the next one.",
+    "sprout": {
+      "finding": "A review from Romania found that short breaks, 10 minutes or less, go with more energy and less tiredness, on average.",
+      "action": "After this focus session, let's stand up, stretch or look out the window for 2–3 minutes before the next one."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "\"Give me a break!\" A systematic review and meta-analysis on the efficacy of micro-breaks for increasing well-being and performance",
@@ -314,6 +390,10 @@
     "he": {
       "finding": "הפסקות קצרות של 10 דקות או פחות קשורות, בממוצע, לתחושה של יותר אנרגיה ופחות עייפות.",
       "action": "אחרי סשן הריכוז הזה, לקום, להתמתח או להסתכל מהחלון 2–3 דקות לפני שמתחילים את הבא.",
+      "sprout": {
+        "finding": "סקירה מרומניה מצאה שהפסקות קצרות, של 10 דקות או פחות, קשורות בממוצע ליותר אנרגיה ופחות עייפות.",
+        "action": "אחרי הפוקוס הזה נקום, נתמתח או נסתכל מהחלון 2–3 דקות, ורק אז נמשיך."
+      },
       "statLabel": "מדגמי מחקר במטא-אנליזה",
       "caveat": "ההפסקות שיפרו אנרגיה בעקביות רבה יותר מאשר ביצועים. עבודה תובענית במיוחד עשויה לדרוש הפסקות ארוכות יותר."
     }
@@ -330,6 +410,10 @@
       "label": "studies in the meta-analysis"
     },
     "action": "Stuck on a problem? Take a 5-minute walk and think about it while you move.",
+    "sprout": {
+      "finding": "I read a review of 23 studies from Canada: walking gave brainstorming, coming up with lots of new ideas, a big boost on average.",
+      "action": "Stuck on something? Let's take a 5-minute walk and think about it on the move."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "The impact of walking on creative thinking: A systematic review and meta-analysis",
@@ -349,6 +433,10 @@
     "he": {
       "finding": "לפי 23 מחקרים, הליכה נתנה בממוצע דחיפה גדולה לסיעור מוחות, כלומר ליכולת להעלות הרבה רעיונות חדשים.",
       "action": "תקועים עם בעיה? לצאת להליכה של 5 דקות ולחשוב עליה תוך כדי תנועה.",
+      "sprout": {
+        "finding": "קראתי סקירה מקנדה של 23 מחקרים: הליכה נתנה בממוצע דחיפה גדולה לסיעור מוחות, כלומר להמציא הרבה רעיונות חדשים.",
+        "action": "יש בעיה שנתקענו בה? נצא להליכה של 5 דקות ונחשוב עליה תוך כדי תנועה."
+      },
       "statLabel": "מחקרים במטא-אנליזה",
       "caveat": "רוב המשתתפים היו סטודנטים, והרבה מהתוצאות החיוביות הגיעו ממחקרים של חוקרת אחת, כך שההשפעה האמיתית עשויה להיות קטנה יותר."
     }
@@ -365,6 +453,10 @@
       "label": "hours of sleep a night recommended for adults"
     },
     "action": "Count back at least 7 hours from tomorrow's wake-up time and set a bedtime reminder for tonight.",
+    "sprout": {
+      "finding": "I heard that sleep experts recommend adults regularly sleep 7 hours or more. Less than that, night after night, is linked to health problems, low mood and more mistakes.",
+      "action": "Shall we count 7 hours back from tomorrow's wake-up time and set a bedtime reminder for tonight?"
+    },
     "source": {
       "type": "institutional_report",
       "title": "Recommended amount of sleep for a healthy adult: A joint consensus statement of the American Academy of Sleep Medicine and Sleep Research Society",
@@ -382,6 +474,10 @@
     "he": {
       "finding": "מומחי שינה ממליצים שמבוגרים יישנו באופן קבוע 7 שעות או יותר בלילה. שינה קצרה יותר באופן קבוע קשורה לבעיות בריאות, למצב רוח ירוד וליותר טעויות.",
       "action": "לספור לפחות 7 שעות אחורה משעת ההשכמה של מחר, ולהגדיר תזכורת לשעת שינה הלילה.",
+      "sprout": {
+        "finding": "שמעתי שמומחי שינה ממליצים למבוגרים לישון בקביעות 7 שעות או יותר. פחות מזה, לילה אחרי לילה, קשור לבעיות בריאות, למצב רוח ירוד וליותר טעויות.",
+        "action": "נספור 7 שעות אחורה משעת ההשכמה של מחר, ונכוון תזכורת לשעת השינה של הלילה?"
+      },
       "statLabel": "שעות שינה בלילה המומלצות למבוגרים",
       "caveat": "ההמלצה מתייחסת למבוגרים בני 18 עד 60, וצורכי השינה משתנים מאדם לאדם."
     }
@@ -398,6 +494,10 @@
       "label": "minutes less sleep after caffeine, on average"
     },
     "action": "Set a caffeine cutoff about 9 hours before your usual bedtime and stick to it today.",
+    "sprout": {
+      "finding": "I read a review from Australia: on average, caffeine cut sleep by about 45 minutes. The authors suggest a regular coffee at least 8.8 hours before bed.",
+      "action": "Shall we set a caffeine cutoff today, about 9 hours before bedtime, and stick to it?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "The effect of caffeine on subsequent sleep: A systematic review and meta-analysis",
@@ -415,6 +515,10 @@
     "he": {
       "finding": "בממוצע, קפאין קיצר את השינה בכ-45 דקות. החוקרים ממליצים לשתות קפה רגיל לפחות 8.8 שעות לפני השינה.",
       "action": "לקבוע שעת סיום לקפאין, כ-9 שעות לפני שעת השינה הרגילה, ולהיצמד אליה היום.",
+      "sprout": {
+        "finding": "קראתי סקירה מאוסטרליה: בממוצע קפאין קיצר את השינה בכ-45 דקות. החוקרים מציעים לשתות קפה רגיל לפחות 8.8 שעות לפני השינה.",
+        "action": "נקבע היום שעה אחרונה לקפאין, כ-9 שעות לפני השינה, וניצמד אליה?"
+      },
       "statLabel": "דקות שינה פחות בממוצע אחרי קפאין",
       "caveat": "ממוצעים מ-24 מחקרים. עוצמת ההשפעה תלויה בכמות וברגישות האישית שלך."
     }
@@ -427,6 +531,10 @@
     ],
     "finding": "Regular exercise is linked to better sleep quality and falling asleep a bit faster. The benefits are small to moderate on average.",
     "action": "Fit in a brisk 5-minute walk or a few flights of stairs today.",
+    "sprout": {
+      "finding": "A review from Boston found that regular exercise goes with better sleep and falling asleep a little faster. The benefit is small to moderate on average, but it's there.",
+      "action": "Shall we fit in a brisk 5-minute walk today, or a few flights of stairs?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "The effects of physical activity on sleep: A meta-analytic review",
@@ -444,6 +552,10 @@
     "he": {
       "finding": "פעילות גופנית קבועה קשורה לאיכות שינה טובה יותר ולהירדמות קצת יותר מהירה. התועלת בממוצע קטנה עד בינונית.",
       "action": "לשלב היום הליכה נמרצת של 5 דקות או כמה קומות במדרגות.",
+      "sprout": {
+        "finding": "סקירה מבוסטון מצאה שפעילות גופנית קבועה קשורה לשינה טובה יותר ולהירדמות קצת יותר מהירה. התועלת בממוצע קטנה עד בינונית, אבל היא שם.",
+        "action": "נשלב היום הליכה נמרצת של 5 דקות, או כמה קומות במדרגות?"
+      },
       "caveat": "66 מחקרים בשיטות שונות. ההשפעות בעיקר קטנות עד בינוניות."
     }
   },
@@ -455,6 +567,10 @@
     ],
     "finding": "People who read on a light-emitting tablet before bed took longer to fall asleep and felt less alert the next morning than when they read a printed book.",
     "action": "Tonight, swap the last 30 minutes of screen time for a paper book or dim lights.",
+    "sprout": {
+      "finding": "I heard about an experiment from Harvard: people who read on a glowing tablet before bed took longer to fall asleep and were less alert the next morning than with a printed book.",
+      "action": "Tonight, let's swap the last half hour of screens for a paper book or dim lights."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Evening use of light-emitting eReaders negatively affects sleep, circadian timing, and next-morning alertness",
@@ -472,6 +588,10 @@
     "he": {
       "finding": "אנשים שקראו לפני השינה בטאבלט מאיר לקחו יותר זמן להירדם והרגישו פחות ערניים למחרת בבוקר, לעומת קריאה בספר מודפס.",
       "action": "הלילה, להחליף את 30 דקות המסך האחרונות בספר מנייר או בתאורה עמומה.",
+      "sprout": {
+        "finding": "שמעתי על ניסוי מהרווארד: מי שקראו לפני השינה בטאבלט מאיר נרדמו לאט יותר והיו פחות ערניים בבוקר, לעומת קריאה בספר מודפס.",
+        "action": "הלילה ננסה להחליף את חצי השעה האחרונה של מסך בספר מנייר או באור עמום."
+      },
       "caveat": "רק 12 צעירים, שקראו כ-4 שעות בכל ערב במשך 5 ערבים, בבהירות מלאה. בחיי היומיום ההשפעה עשויה להיות קטנה יותר.",
       "statLabel": "דקות נוספות עד ההירדמות אחרי קריאה במכשיר מאיר"
     },
@@ -488,6 +608,10 @@
     ],
     "finding": "After a short night's sleep, a 10-minute afternoon nap worked best of the nap lengths tested, which ranged from 5 to 30 minutes.",
     "action": "Slept badly? Try a nap of about 10 minutes this afternoon, and set an alarm so it stays short.",
+    "sprout": {
+      "finding": "I read a study from Australia: after a short night, a 10-minute afternoon nap worked best of the lengths tested, from 5 to 30 minutes.",
+      "action": "Rough night? Let's try a nap of about 10 minutes this afternoon, with an alarm so it stays short."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "A brief afternoon nap following nocturnal sleep restriction: Which nap duration is most recuperative?",
@@ -505,6 +629,10 @@
     "he": {
       "finding": "אחרי לילה של שינה קצרה, תנומת צהריים של 10 דקות הייתה היעילה ביותר מבין אורכי התנומה שנבדקו, בין 5 ל-30 דקות.",
       "action": "הלילה היה גרוע? לנסות תנומה של כ-10 דקות אחר הצהריים, עם שעון מעורר כדי שתישאר קצרה.",
+      "sprout": {
+        "finding": "קראתי מחקר מאוסטרליה: אחרי לילה קצר, תנומת צהריים של 10 דקות עבדה הכי טוב מבין האורכים שנבדקו, בין 5 ל-30 דקות.",
+        "action": "הלילה היה קשה? ננסה אחר הצהריים תנומה של בערך 10 דקות, עם שעון מעורר כדי שתישאר קצרה."
+      },
       "caveat": "רק 24 צעירים בריאים שישנים טוב, שנבדקו אחרי לילה של כ-5 שעות שינה."
     }
   },
@@ -516,6 +644,10 @@
     ],
     "finding": "In about 61,000 adults, going to sleep and waking at regular times was linked to a lower risk of early death, more strongly than how long they slept.",
     "action": "Pick one wake-up time for this week and set it as a daily alarm, weekends included.",
+    "sprout": {
+      "finding": "I read a study from Australia of about 61,000 adults: sleeping and waking at regular times was linked to a lower risk of early death, even more than how long they slept.",
+      "action": "Shall we pick one wake-up time for the whole week and set a daily alarm, weekend included?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Sleep regularity is a stronger predictor of mortality risk than sleep duration: A prospective cohort study",
@@ -533,6 +665,10 @@
     "he": {
       "finding": "אצל כ-61,000 מבוגרים, הליכה לישון והתעוררות בשעות קבועות היו קשורות לסיכון נמוך יותר למוות מוקדם, יותר מאשר משך השינה.",
       "action": "לבחור שעת השכמה אחת לשבוע הזה ולהגדיר אותה כשעון מעורר יומי, כולל בסופי שבוע.",
+      "sprout": {
+        "finding": "קראתי מחקר מאוסטרליה על כ-61,000 מבוגרים: ללכת לישון ולקום בשעות קבועות היה קשור לסיכון נמוך יותר למוות מוקדם, אפילו יותר מכמה זמן ישנו.",
+        "action": "נבחר שעת השכמה אחת לכל השבוע ונכוון לה שעון מעורר יומי, גם בסוף השבוע?"
+      },
       "caveat": "מחקר מתאמי על מבוגרים בריטים, רובם בגיל העמידה ומעלה. הוא לא מוכיח ששינה סדירה עצמה גורמת לתועלת."
     }
   },
@@ -545,6 +681,10 @@
     ],
     "finding": "Across more than 50 years of experiments, losing sleep lowered people's positive feelings and raised their anxiety.",
     "action": "If today feels heavier than usual, check how you slept before blaming yourself, and aim for an earlier bedtime.",
+    "sprout": {
+      "finding": "I read a review from Montana of more than 50 years of experiments: losing sleep lowered people's good feelings and raised their anxiety.",
+      "action": "If today feels heavy, let's check how we slept before blaming ourselves. And tonight, let's aim for bed a little earlier."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Sleep loss and emotion: A systematic review and meta-analysis of over 50 years of experimental research",
@@ -564,6 +704,10 @@
     "he": {
       "finding": "לפי ניסויים מיותר מ-50 שנה, חוסר שינה הפחית את הרגשות החיוביים של אנשים והגביר את החרדה שלהם.",
       "action": "אם היום מרגיש כבד מהרגיל, לבדוק קודם איך הייתה השינה לפני שמאשימים את עצמנו, ולנסות ללכת לישון מוקדם יותר.",
+      "sprout": {
+        "finding": "קראתי סקירה ממונטנה של ניסויים מיותר מ-50 שנה: חוסר שינה הוריד אצל אנשים את הרגשות הטובים והעלה את החרדה.",
+        "action": "אם היום מרגיש כבד, קודם נבדוק איך ישנו, לפני שמאשימים את עצמנו. והלילה ננסה ללכת לישון קצת יותר מוקדם."
+      },
       "caveat": "154 ניסויי מעבדה עם אנשים בריאים בני 7 עד 79. התוצאות לגבי מצב רוח שלילי ותסמיני דיכאון היו מעורבות."
     }
   },
@@ -575,6 +719,10 @@
     ],
     "finding": "Putting a feeling into words, like \"I feel anxious,\" tends to calm it a little, even though it doesn't feel like you're trying to.",
     "action": "Right now, write one word or a short sentence that names how you feel.",
+    "sprout": {
+      "finding": "I heard from research in Los Angeles that putting a feeling into words, like \"I feel anxious,\" tends to calm it a little, even when it doesn't feel like trying.",
+      "action": "Shall we try now? One word or a short sentence that names the feeling."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Putting feelings into words: Affect labeling as implicit emotion regulation",
@@ -594,6 +742,10 @@
     "he": {
       "finding": "לתת לרגש שם במילים, כמו \"יש לי חרדה\", נוטה להרגיע אותו קצת, גם אם זה לא מרגיש כמו מאמץ להירגע.",
       "action": "עכשיו, לכתוב מילה אחת או משפט קצר שמתאר את ההרגשה.",
+      "sprout": {
+        "finding": "שמעתי ממחקרים בלוס אנג'לס שכשנותנים לרגש שם במילים, כמו \"יש לי חרדה\", הוא נוטה להירגע קצת, גם כשזה לא מרגיש כמו מאמץ להירגע.",
+        "action": "ננסה עכשיו? מילה אחת או משפט קצר שמתאר את ההרגשה."
+      },
       "caveat": "סקירה של מחקרי מעבדה קצרים ברובם. זה לא תחליף לעזרה מקצועית."
     }
   },
@@ -605,6 +757,10 @@
     ],
     "finding": "Gratitude exercises, like listing things you're thankful for, gave a small boost to wellbeing compared with other activities, but didn't reduce anxiety.",
     "action": "Write down three specific things from today that you're grateful for.",
+    "sprout": {
+      "finding": "A review from Atlanta found that gratitude exercises give wellbeing a small boost. To be honest, though, they didn't reduce anxiety.",
+      "action": "Shall we write down three specific things from today to be thankful for?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Thankful for the little things: A meta-analysis of gratitude interventions",
@@ -624,6 +780,10 @@
     "he": {
       "finding": "תרגילי הכרת תודה, כמו לרשום דברים שמעוררים תודה, נתנו דחיפה קטנה לרווחה הנפשית לעומת פעילויות אחרות, אבל לא הפחיתו חרדה.",
       "action": "לכתוב שלושה דברים ספציפיים מהיום שמעוררים הכרת תודה.",
+      "sprout": {
+        "finding": "סקירה מאטלנטה מצאה שתרגילי הכרת תודה נותנים דחיפה קטנה לרווחה הנפשית. אבל אני חייב להיות כן: הם לא הפחיתו חרדה.",
+        "action": "נכתוב שלושה דברים ספציפיים מהיום שמעוררים הכרת תודה?"
+      },
       "caveat": "ההשפעות היו קטנות, והמחקרים שנכללו היו מעטים יחסית לכל תוצאה."
     }
   },
@@ -639,6 +799,10 @@
       "label": "randomized studies in the meta-analysis"
     },
     "action": "Set a 5-minute timer and write freely about something on your mind. You can throw the page away after.",
+    "sprout": {
+      "finding": "I read a review from California: writing freely about your deepest thoughts and feelings on something that bothers you has a small but real benefit, on average.",
+      "action": "A 5-minute timer, and write freely about what's on your mind. You can throw the page away after."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Experimental disclosure and its moderators: A meta-analysis",
@@ -658,6 +822,10 @@
     "he": {
       "finding": "כתיבה חופשית על המחשבות והרגשות העמוקים שלך לגבי משהו שמטריד אותך מביאה תועלת קטנה אבל אמיתית, בממוצע.",
       "action": "להפעיל טיימר ל-5 דקות ולכתוב בחופשיות על משהו שמעסיק את המחשבות. אפשר לזרוק את הדף אחר כך.",
+      "sprout": {
+        "finding": "קראתי סקירה מקליפורניה: כתיבה חופשית על המחשבות והרגשות העמוקים לגבי משהו שמטריד נותנת תועלת קטנה אבל אמיתית, בממוצע.",
+        "action": "טיימר ל-5 דקות, וכותבים בחופשיות על מה שמעסיק את הראש. אחר כך אפשר לזרוק את הדף."
+      },
       "statLabel": "מחקרים אקראיים במטא-אנליזה",
       "caveat": "ההשפעה הממוצעת הייתה קטנה (r = .075) והתוצאות השתנו בין מחקרים. זה לא תחליף לעזרה מקצועית."
     }
@@ -675,6 +843,10 @@
       "label": "minutes a week in nature linked to better wellbeing"
     },
     "action": "Plan a 10–20 minute walk in a park or other green space today.",
+    "sprout": {
+      "finding": "I heard about a survey of about 20,000 people in England: those who spent at least 2 hours a week in nature more often reported good health and wellbeing. I'm all for it, obviously.",
+      "action": "Shall we plan a 10–20 minute walk in a park or somewhere green today?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Spending at least 120 minutes a week in nature is associated with good health and wellbeing",
@@ -694,6 +866,10 @@
     "he": {
       "finding": "בסקר של כ-20,000 אנשים באנגליה, מי שבילו לפחות שעתיים בשבוע בטבע נטו יותר לדווח על בריאות ורווחה טובות.",
       "action": "לתכנן להיום הליכה של 10–20 דקות בפארק או בשטח ירוק אחר.",
+      "sprout": {
+        "finding": "שמעתי על סקר מאנגליה של כ-20,000 איש: מי שבילו לפחות שעתיים בשבוע בטבע נטו לדווח יותר על בריאות ורווחה טובות. אני, כמובן, בעד.",
+        "action": "נתכנן להיום הליכה של 10–20 דקות בפארק או במקום ירוק?"
+      },
       "statLabel": "דקות בשבוע בטבע שקשורות לרווחה טובה יותר",
       "caveat": "נתוני סקר מתאמיים. אפשר לחלק את הזמן לביקורים קצרים, אבל זה לא מוכיח שהטבע הוא הגורם."
     }
@@ -711,6 +887,10 @@
       "label": "trials summarized in the review"
     },
     "action": "Do 5 minutes of movement you enjoy, like walking, dancing or stairs, and notice your mood afterward.",
+    "sprout": {
+      "finding": "I read a review from Australia covering more than 1,000 trials: physical activity eased depression, anxiety and distress in many groups of adults.",
+      "action": "5 minutes of movement you enjoy, walking, dancing or stairs, and then let's notice the mood after?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Effectiveness of physical activity interventions for improving depression, anxiety and distress: An overview of systematic reviews",
@@ -730,6 +910,10 @@
     "he": {
       "finding": "סקירה שכללה יותר מ-1,000 ניסויים מצאה שפעילות גופנית שיפרה תסמינים של דיכאון, חרדה ומצוקה נפשית אצל קבוצות רבות של מבוגרים.",
       "action": "לעשות 5 דקות של תנועה מהנה, כמו הליכה, ריקוד או מדרגות, ולשים לב למצב הרוח אחר כך.",
+      "sprout": {
+        "finding": "קראתי סקירה מאוסטרליה של יותר מ-1,000 ניסויים: פעילות גופנית שיפרה תסמינים של דיכאון, חרדה ומצוקה אצל הרבה קבוצות של מבוגרים.",
+        "action": "5 דקות של תנועה כיפית, הליכה, ריקוד או מדרגות, ואחר כך נשים לב איך מצב הרוח?"
+      },
       "statLabel": "ניסויים שסוכמו בסקירה",
       "caveat": "נבדק אצל מבוגרים. תנועה יכולה לתמוך במצב הרוח, אבל היא לא תחליף לעזרה מקצועית אם קשה לך."
     }
@@ -744,6 +928,10 @@
       "label": "higher chance of survival with strong social ties"
     },
     "action": "Send a short message to someone you care about and ask how their week is going.",
+    "sprout": {
+      "finding": "I read a review of 148 studies from Utah: people with stronger social ties had a 50% greater chance of survival over the study periods. People need people.",
+      "action": "Shall we send a short message to someone you care about and ask how their week is going?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Social relationships and mortality risk: A meta-analytic review",
@@ -761,6 +949,10 @@
     "he": {
       "finding": "לפי 148 מחקרים, לאנשים עם קשרים חברתיים חזקים יותר היה סיכוי גבוה ב-50% לשרוד לאורך תקופות המחקר.",
       "action": "לשלוח הודעה קצרה לאדם יקר ולשאול איך עובר השבוע.",
+      "sprout": {
+        "finding": "קראתי סקירה מיוטה של 148 מחקרים: לאנשים עם קשרים חברתיים חזקים יותר היה סיכוי גבוה ב-50% לשרוד לאורך תקופות המחקר. אנשים צריכים אנשים.",
+        "action": "נשלח הודעה קצרה למישהו יקר ונשאל איך עובר השבוע?"
+      },
       "statLabel": "סיכוי גבוה יותר לשרוד עם קשרים חברתיים חזקים",
       "caveat": "מתאמי: אלה מחקרי תצפית ארוכי טווח, ולכן הם מראים קשר ולא הוכחה לסיבתיות."
     }
@@ -773,6 +965,10 @@
     ],
     "finding": "Commuters expected to prefer sitting alone, but those asked to chat with a stranger actually enjoyed their trip more.",
     "action": "Start a short, friendly chat today with someone you don't usually talk to, like a cashier or neighbor.",
+    "sprout": {
+      "finding": "I heard about an experiment from Chicago: commuters thought they'd prefer sitting alone, but those asked to chat with a stranger enjoyed the ride more.",
+      "action": "Maybe today, a short friendly chat with someone you don't usually talk to, like a cashier or a neighbor?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Mistakenly seeking solitude",
@@ -792,6 +988,10 @@
     "he": {
       "finding": "נוסעים בתחבורה ציבורית ציפו שיעדיפו לשבת לבד, אבל מי שהתבקשו לשוחח עם זר נהנו מהנסיעה יותר.",
       "action": "לפתוח היום שיחה קצרה וידידותית עם מישהו שבדרך כלל לא מדברים איתו, כמו קופאי או שכן.",
+      "sprout": {
+        "finding": "שמעתי על ניסוי משיקגו: נוסעים חשבו שיעדיפו לשבת לבד, אבל מי שהתבקשו לדבר עם זר נהנו מהנסיעה יותר.",
+        "action": "אולי היום נפתח שיחה קצרה ונעימה עם מישהו שבדרך כלל לא מדברים איתו, כמו בקופה או שכן?"
+      },
       "caveat": "ניסויים עם נוסעים ברכבות ובאוטובוסים ועם משתתפי מעבדה. נמדדה ההנאה מנסיעה אחת, לא השפעות לטווח ארוך."
     }
   },
@@ -803,6 +1003,10 @@
     ],
     "finding": "People who wrote thank-you letters underestimated how good the receivers would feel and overestimated how awkward it would be.",
     "action": "Send a two-line thank-you to someone who helped you, and say exactly what they did.",
+    "sprout": {
+      "finding": "I heard about a study from Chicago: people writing thank-you letters underestimated how good the receivers would feel, and expected it to be far more awkward than it was.",
+      "action": "Shall we send a two-line thank-you to someone who helped, saying exactly what they did?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Undervaluing gratitude: Expressers misunderstand the consequences of showing appreciation",
@@ -822,6 +1026,10 @@
     "he": {
       "finding": "אנשים שכתבו מכתבי תודה העריכו בחסר כמה טוב ירגישו המקבלים, והעריכו ביתר כמה מביך זה יהיה.",
       "action": "לשלוח הודעת תודה של שתי שורות למי שעזר, ולפרט בדיוק במה הייתה העזרה.",
+      "sprout": {
+        "finding": "שמעתי על מחקר משיקגו: מי שכתבו מכתבי תודה לא האמינו כמה טוב ירגישו המקבלים, וחשבו שזה יהיה הרבה יותר מביך ממה שבאמת היה.",
+        "action": "נשלח תודה של שתי שורות למי שעזר, ונגיד בדיוק על מה?"
+      },
       "caveat": "מבוסס על מספר קטן של ניסויים. המקבלים היו אנשים שהכותבים בחרו להודות להם."
     }
   },
@@ -831,6 +1039,10 @@
     "goals": [],
     "finding": "People tend to underestimate how much someone appreciates a quick, unexpected message just checking in on them.",
     "action": "Text one person you haven't talked to in a while: \"Was just thinking of you. How are you?\"",
+    "sprout": {
+      "finding": "I read a study from Pittsburgh: people tend to underestimate how much someone appreciates a short, unexpected \"just checking in\" message.",
+      "action": "Shall we text someone we haven't talked to in a while? \"Was just thinking of you. How are you?\""
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "The surprise of reaching out: Appreciated more than we think",
@@ -848,6 +1060,10 @@
     "he": {
       "finding": "אנשים נוטים להעריך בחסר כמה מישהו מעריך הודעה קצרה ולא צפויה שרק בודקת מה שלומו.",
       "action": "לשלוח הודעה לאדם שלא היה איתו קשר מזמן: \"בדיוק חשבתי עליך. מה שלומך?\"",
+      "sprout": {
+        "finding": "קראתי מחקר מפיטסבורג: אנשים נוטים לזלזל בכמה שמחים כשמקבלים הודעה קצרה ולא צפויה של \"רק רציתי לשאול מה שלומך\".",
+        "action": "נשלח למישהו שלא דיברנו איתו מזמן: \"בדיוק חשבתי עליך. מה שלומך?\""
+      },
       "caveat": "סדרה של ניסויים שנרשמו מראש. השפעות לטווח ארוך לא נמדדו."
     }
   },
@@ -859,6 +1075,10 @@
     ],
     "finding": "Doing small acts of kindness gives the person doing them a small-to-medium boost in wellbeing, on average.",
     "action": "Do one small kind thing for someone today, like helping with a task or sharing something useful.",
+    "sprout": {
+      "finding": "A review from Oxford found that small acts of kindness lift the giver too: a small-to-medium boost in wellbeing, on average.",
+      "action": "One small kind thing for someone today? Help with a task, or share something useful."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Happy to help? A systematic review and meta-analysis of the effects of performing acts of kindness on the well-being of the actor",
@@ -878,6 +1098,10 @@
     "he": {
       "finding": "עשיית מעשי חסד קטנים נותנת למי שעושה אותם דחיפה קטנה עד בינונית ברווחה הנפשית, בממוצע.",
       "action": "לעשות היום דבר טוב וקטן אחד בשביל מישהו, כמו עזרה במשימה או שיתוף של משהו שימושי.",
+      "sprout": {
+        "finding": "סקירה מאוקספורד מצאה שמעשי חסד קטנים משמחים גם את מי שעושה אותם: דחיפה קטנה עד בינונית לרווחה, בממוצע.",
+        "action": "דבר טוב וקטן אחד בשביל מישהו היום? עזרה במשימה, או לשתף משהו שימושי."
+      },
       "caveat": "מבוסס על 27 מחקרים עם כ-4,000 משתתפים. ההשפעה צנועה."
     }
   },
@@ -894,6 +1118,10 @@
       "label": "participants in the 23-lab replication"
     },
     "action": "Next time you think \"I'm out of willpower,\" try doing just 2 minutes of the task anyway.",
+    "sprout": {
+      "finding": "Here's a surprise: the idea that willpower runs out like a battery was tested in 23 labs, led from Australia, and the effect came out close to zero.",
+      "action": "Next time it feels like \"I'm out of willpower,\" let's try just 2 minutes of the task anyway."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "A multilab preregistered replication of the ego-depletion effect",
@@ -913,6 +1141,10 @@
     "he": {
       "finding": "הרעיון הפופולרי שכוח הרצון נגמר כמו סוללה נכשל במבחן גדול: ב-23 מעבדות, ההשפעה הייתה קרובה לאפס.",
       "action": "בפעם הבאה שעולה המחשבה \"נגמר לי כוח הרצון\", לנסות בכל זאת לעשות רק 2 דקות מהמשימה.",
+      "sprout": {
+        "finding": "יש לי סיפור מפתיע: הרעיון שכוח רצון נגמר כמו סוללה נבדק ב-23 מעבדות, בהובלה מאוסטרליה, וההשפעה יצאה קרובה לאפס.",
+        "action": "בפעם הבאה שנדמה ש\"נגמר כוח הרצון\", ננסה בכל זאת רק 2 דקות מהמשימה."
+      },
       "statLabel": "משתתפים בניסוי השחזור ב-23 מעבדות",
       "caveat": "חלק מהחוקרים עדיין מתווכחים על האפקט, אבל המבחן הגדול הזה, שנרשם מראש, לא מצא לו ראיות אמינות."
     }
@@ -929,6 +1161,10 @@
       "label": "of performance differences in music explained by practice"
     },
     "action": "Pick one small weak spot in a skill you care about and practice just that for 5 focused minutes.",
+    "sprout": {
+      "finding": "I read a review from Princeton and two other universities: the 10,000-hours idea is overstated. Deliberate practice explained only about a fifth of skill differences in music, and much less at school and work.",
+      "action": "Shall we pick one small weak spot in something we care about and practice just that for 5 focused minutes?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Deliberate practice and performance in music, games, sports, education, and professions: A meta-analysis",
@@ -946,6 +1182,10 @@
     "he": {
       "finding": "רעיון 10,000 השעות מוגזם: תרגול מכוון הסביר כחמישית מההבדלים ביכולת במוזיקה, והרבה פחות בלימודים ובעבודה.",
       "action": "לבחור נקודת חולשה קטנה אחת במיומנות חשובה, ולתרגל רק אותה במשך 5 דקות מרוכזות.",
+      "sprout": {
+        "finding": "קראתי סקירה מפרינסטון ומעוד שתי אוניברסיטאות: רעיון 10,000 השעות מוגזם. תרגול מכוון הסביר רק כחמישית מההבדלים במוזיקה, והרבה פחות בלימודים ובעבודה.",
+        "action": "נבחר נקודת חולשה קטנה אחת במשהו שחשוב לנו, ונתרגל רק אותה 5 דקות מרוכזות?"
+      },
       "statLabel": "מההבדלים בביצועים במוזיקה שהוסברו על ידי תרגול",
       "caveat": "תרגול עדיין חשוב. המחקר מראה שהוא משמעותי, רק לא כל הסיפור."
     }
@@ -958,6 +1198,10 @@
     ],
     "finding": "Growth-mindset lessons help less than often claimed: across many studies, their average effect on school achievement was small.",
     "action": "When something feels hard today, write down one specific strategy you'll try next.",
+    "sprout": {
+      "finding": "A review from Ohio found that growth-mindset lessons help less than people say: their average effect on school achievement was small.",
+      "action": "When something feels hard today, let's write down one specific strategy to try next time."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "To what extent and under which circumstances are growth mind-sets important to academic achievement? Two meta-analyses",
@@ -979,6 +1223,10 @@
     "he": {
       "finding": "שיעורים על \"חשיבה צומחת\" עוזרים פחות ממה שנטען לעיתים קרובות: לפי מחקרים רבים, ההשפעה הממוצעת שלהם על ההישגים בלימודים הייתה קטנה.",
       "action": "כשמשהו מרגיש קשה היום, לכתוב אסטרטגיה ספציפית אחת לנסות בפעם הבאה.",
+      "sprout": {
+        "finding": "סקירה מאוהיו מצאה ששיעורים על \"חשיבה צומחת\" עוזרים פחות ממה שמספרים: ההשפעה הממוצעת שלהם על ההישגים בלימודים הייתה קטנה.",
+        "action": "כשמשהו מרגיש קשה היום, נכתוב אסטרטגיה אחת ספציפית לנסות בפעם הבאה."
+      },
       "caveat": "תלמידים ממשפחות מעוטות הכנסה או בסיכון לכישלון עשויים להרוויח יותר."
     }
   },
@@ -990,6 +1238,10 @@
     ],
     "finding": "Decades of research show that specific, challenging goals lead to better performance than vague goals like \"just do your best.\"",
     "action": "Turn one vague goal into a specific one with a number, like \"read 10 pages\" instead of \"read more.\"",
+    "sprout": {
+      "finding": "Decades of research, summed up in Maryland and Toronto, show that a specific, challenging goal leads to better results than \"just do your best.\"",
+      "action": "Shall we turn one vague goal into one with a number? Like \"read 10 pages\" instead of \"read more.\""
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Building a practically useful theory of goal setting and task motivation: A 35-year odyssey",
@@ -1008,6 +1260,10 @@
     "he": {
       "finding": "עשרות שנות מחקר מראות שמטרות ספציפיות ומאתגרות מובילות לביצועים טובים יותר ממטרות מעורפלות כמו \"פשוט לעשות כמיטב היכולת\".",
       "action": "להפוך מטרה מעורפלת אחת למטרה ספציפית עם מספר, למשל \"לקרוא 10 עמודים\" במקום \"לקרוא יותר\".",
+      "sprout": {
+        "finding": "עשרות שנות מחקר, שסוכמו במרילנד ובטורונטו, מראות שמטרה ספציפית ומאתגרת מובילה לביצועים טובים יותר מ\"פשוט לעשות כמיטב היכולת\".",
+        "action": "נהפוך מטרה מעורפלת אחת למטרה עם מספר? למשל \"לקרוא 10 עמודים\" במקום \"לקרוא יותר\"."
+      },
       "caveat": "מטרות עובדות הכי טוב כשיש מחויבות אליהן ומשוב על ההתקדמות."
     },
     "caveat": "Goals work best when people are committed to them and get feedback on their progress."
@@ -1024,6 +1280,10 @@
       "label": "participants across 21 studies"
     },
     "action": "Name one goal for today and its biggest obstacle, then write: \"If [obstacle], then I will ___.\"",
+    "sprout": {
+      "finding": "I read a review from China about a method called WOOP: picture the goal, then the obstacle, then make an if-then plan. It helps people reach goals, with a small-to-medium effect.",
+      "action": "Let's pick one goal for today and its biggest obstacle, and write: \"If [obstacle], then I'll ___.\""
+    },
     "source": {
       "type": "meta_analysis",
       "title": "A meta-analysis of the effects of mental contrasting with implementation intentions on goal attainment",
@@ -1043,6 +1303,10 @@
     "he": {
       "finding": "לדמיין את המטרה, אחר כך את המכשול שבדרך, ואז להכין תוכנית \"אם-אז\" להתמודדות איתו (שיטה שנקראת WOOP) עוזר לאנשים להשיג מטרות, בהשפעה קטנה עד בינונית.",
       "action": "לבחור מטרה אחת להיום ואת המכשול הגדול ביותר שלה, ולכתוב: \"אם [מכשול], אז אני ___.\"",
+      "sprout": {
+        "finding": "קראתי סקירה מסין על שיטה בשם WOOP: מדמיינים את המטרה, אחר כך את המכשול, ומכינים תוכנית \"אם-אז\". זה עוזר להשיג מטרות, בהשפעה קטנה עד בינונית.",
+        "action": "נבחר מטרה אחת להיום ואת המכשול הכי גדול שלה, ונכתוב: \"אם [מכשול], אז אני ___\"."
+      },
       "statLabel": "משתתפים ב-21 מחקרים",
       "caveat": "ההשפעה הייתה חזקה יותר כשאדם הנחה את התרגיל מאשר כשאנשים רק עקבו אחרי הוראות כתובות."
     }
@@ -1055,6 +1319,10 @@
     ],
     "finding": "After a failure, people who treated themselves kindly were more motivated to improve. For example, they studied longer after doing badly on a test.",
     "action": "Missed a day? Write one kind sentence to yourself, as you would to a friend, then plan tomorrow's step.",
+    "sprout": {
+      "finding": "I heard about a study from Berkeley: after a failure, people who were kind to themselves were more motivated to improve. For example, they studied longer after a bad test.",
+      "action": "Missed a day? Let's write one kind sentence to ourselves, like to a friend, then plan tomorrow's step."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Self-compassion increases self-improvement motivation",
@@ -1074,6 +1342,10 @@
     "he": {
       "finding": "אחרי כישלון, אנשים שהתייחסו לעצמם בחמלה היו בעלי מוטיבציה גבוהה יותר להשתפר. למשל, הם למדו יותר זמן אחרי שנכשלו במבחן.",
       "action": "יום התפספס? לכתוב לעצמך משפט אחד טוב, כמו שכותבים לחבר, ואז לתכנן את הצעד של מחר.",
+      "sprout": {
+        "finding": "שמעתי על מחקר מברקלי: אחרי כישלון, מי שהתייחסו לעצמם בחמלה רצו יותר להשתפר. למשל, הם למדו יותר זמן אחרי מבחן שלא הלך.",
+        "action": "יום התפספס? נכתוב לעצמנו משפט טוב אחד, כמו לחבר, ואז נתכנן את הצעד של מחר."
+      },
       "caveat": "ארבעה ניסויים קצרים. השפעות לטווח ארוך לא נבדקו."
     }
   },
@@ -1087,6 +1359,10 @@
       "label": "exercise programs tested head-to-head"
     },
     "action": "If you missed a habit yesterday, do it today and give yourself a small treat for the comeback.",
+    "sprout": {
+      "finding": "I read a study from Pennsylvania of 61,293 gym members and 54 programs: the one that worked best gave a small reward for coming back after a missed workout.",
+      "action": "If a habit slipped yesterday, let's do it today and celebrate the comeback with a small treat."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Megastudies improve the impact of applied behavioural science",
@@ -1106,6 +1382,10 @@
     "he": {
       "finding": "במחקר על 61,293 מנויי חדר כושר שבחן 54 תוכניות שונות, התוכנית הטובה ביותר נתנה פרסים קטנים על חזרה אחרי אימון שפוספס.",
       "action": "אם הרגל התפספס אתמול, לעשות אותו היום ולתת לעצמך פינוק קטן על החזרה.",
+      "sprout": {
+        "finding": "קראתי מחקר מפנסילבניה על 61,293 מנויי חדר כושר ו-54 תוכניות: הכי טוב עבדה זו שנתנה פרס קטן על חזרה אחרי אימון שפוספס.",
+        "action": "אם הרגל התפספס אתמול, נעשה אותו היום, ונחגוג את החזרה עם פינוק קטן."
+      },
       "statLabel": "תוכניות אימון שנבדקו זו מול זו",
       "caveat": "רוב ההשפעות דעכו אחרי ארבעת השבועות. רק 8% מהתוכניות עדיין הראו השפעה מדידה אחר כך."
     }
@@ -1116,6 +1396,10 @@
     "goals": [],
     "finding": "People with strong self-control seem to rely less on resisting temptation and more on good habits that make the right choice automatic.",
     "action": "Set up tomorrow's habit cue tonight, like laying out your shoes or putting your book on your pillow.",
+    "sprout": {
+      "finding": "I read a study from Pennsylvania: people with strong self-control don't seem to fight temptation more. They have good habits that make the right choice automatic.",
+      "action": "Shall we set up tomorrow's habit cue tonight? Shoes by the door, or a book on the pillow."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "More than resisting temptation: Beneficial habits mediate the relationship between self-control and positive life outcomes",
@@ -1135,6 +1419,10 @@
     "he": {
       "finding": "נראה שאנשים עם שליטה עצמית גבוהה נשענים פחות על עמידה בפני פיתויים ויותר על הרגלים טובים שהופכים את הבחירה הנכונה לאוטומטית.",
       "action": "להכין הלילה את הסימן להרגל של מחר, למשל להניח את נעלי הספורט ליד הדלת או את הספר על הכרית.",
+      "sprout": {
+        "finding": "קראתי מחקר מפנסילבניה: נראה שאנשים עם שליטה עצמית גבוהה לא נלחמים יותר בפיתויים. יש להם הרגלים טובים שהופכים את הבחירה הנכונה לאוטומטית.",
+        "action": "נכין הלילה את הסימן להרגל של מחר? נעלי ספורט ליד הדלת, או ספר על הכרית."
+      },
       "caveat": "שישה מחקרים עם 2,274 משתתפים, רובם מתאמיים."
     }
   },
@@ -1144,6 +1432,10 @@
     "goals": [],
     "finding": "In a review of 20 studies, habits done in the morning and habits people chose for themselves tended to become stronger.",
     "action": "Choose a habit you actually want, not one you feel you should do, and try doing it in the morning.",
+    "sprout": {
+      "finding": "An early review from Australia, of 20 studies, found that morning habits and habits people chose themselves tended to grow stronger.",
+      "action": "Shall we pick a habit you actually want, not one you feel you should, and try it in the morning?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Time to form a habit: A systematic review and meta-analysis of health behaviour habit formation and its determinants",
@@ -1163,6 +1455,10 @@
     "he": {
       "finding": "בסקירה של 20 מחקרים, הרגלים שנעשו בבוקר והרגלים שאנשים בחרו בעצמם נטו להתחזק יותר.",
       "action": "לבחור הרגל שבאמת רוצים, לא כזה ש\"צריך\", ולנסות לעשות אותו בבוקר.",
+      "sprout": {
+        "finding": "סקירה ראשונית מאוסטרליה, של 20 מחקרים, מצאה שהרגלים של בוקר והרגלים שבחרנו בעצמנו נטו להתחזק יותר.",
+        "action": "נבחר הרגל שבאמת רוצים, לא כזה ש\"צריך\", וננסה לעשות אותו בבוקר?"
+      },
       "caveat": "מעט מחקרים, רבים מהם בסיכון גבוה להטיה. הזמן עד שהרגל נוצר השתנה מאוד: בין 4 ל-335 ימים."
     }
   },
@@ -1174,6 +1470,10 @@
     ],
     "finding": "People stuck with healthy goals longer when they picked the version they enjoyed most instead of the one they thought was most useful.",
     "action": "Pick the most fun version of your habit today, like a workout you enjoy, even if it seems less efficient.",
+    "sprout": {
+      "finding": "I heard about a study from Chicago: people stuck with health goals longer when they chose the version they enjoyed most, not the one that seemed most useful.",
+      "action": "Today, let's pick the most fun version of the habit, even if it looks less efficient."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "For the fun of it: Harnessing immediate rewards to increase persistence in long-term goals",
@@ -1193,6 +1493,10 @@
     "he": {
       "finding": "אנשים התמידו זמן רב יותר במטרות בריאות כשבחרו בגרסה המהנה ביותר עבורם ולא בזו שנראתה להם הכי מועילה.",
       "action": "לבחור היום את הגרסה הכי מהנה של ההרגל, כמו אימון אהוב, גם אם היא נראית פחות יעילה.",
+      "sprout": {
+        "finding": "שמעתי על מחקר משיקגו: אנשים התמידו יותר זמן במטרות בריאות כשבחרו בגרסה הכי מהנה, ולא בזו שנראתה הכי מועילה.",
+        "action": "היום נבחר את הגרסה הכי כיפית של ההרגל, גם אם היא נראית פחות יעילה."
+      },
       "caveat": "כמה ניסויים במאמר אחד. עדיין אין הרבה שחזורים עצמאיים."
     }
   },
@@ -1202,6 +1506,10 @@
     "goals": [],
     "finding": "Goals that came with a few 'emergency' skip days made people stick with them more, partly because they tried not to use up the skips.",
     "action": "Give your habit 2 emergency skip days for this month, and try to save them.",
+    "sprout": {
+      "finding": "I read a study from Los Angeles: goals with a few 'emergency' skip days made people stick with them more, partly because they tried not to waste them. A bit like our freezes.",
+      "action": "Let's say this month has 2 emergency skip days, and try to save them."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "The benefits of emergency reserves: Greater preference and persistence for goals that have slack with a cost",
@@ -1222,6 +1530,10 @@
     "he": {
       "finding": "מטרות שכללו כמה ימי דילוג \"לשעת חירום\" גרמו לאנשים להתמיד יותר, בין השאר כי הם השתדלו לא לבזבז את הדילוגים.",
       "action": "לתת להרגל 2 ימי דילוג לשעת חירום החודש, ולהשתדל לשמור אותם.",
+      "sprout": {
+        "finding": "קראתי מחקר מלוס אנג'לס: מטרות עם כמה ימי דילוג \"לשעת חירום\" גרמו לאנשים להתמיד יותר, בין השאר כי השתדלו לא לבזבז אותם. קצת כמו ההקפאות שלנו.",
+        "action": "נחליט שיש החודש 2 ימי דילוג לשעת חירום, וננסה לשמור אותם."
+      },
       "caveat": "שישה מחקרים במאמר אחד, ורק אחד מהם מדד התמדה אמיתית לאורך זמן."
     }
   },
@@ -1233,6 +1545,10 @@
     ],
     "finding": "Switching back and forth between tasks costs extra time, and the cost grows when the tasks are more complex.",
     "action": "Pick one task for your next focus session and park everything else on a list until it ends.",
+    "sprout": {
+      "finding": "I heard about a study from the US aviation authority: every switch back and forth between tasks costs time, and the cost grows with harder tasks.",
+      "action": "For the next focus session, let's pick one task, and everything else waits on a list till the end."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Executive control of cognitive processes in task switching",
@@ -1252,6 +1568,10 @@
     "he": {
       "finding": "מעבר הלוך ושוב בין משימות עולה בזמן נוסף, והמחיר גדל כשהמשימות מורכבות יותר.",
       "action": "לבחור משימה אחת לסשן הריכוז הבא, ולרשום את כל השאר ברשימה עד שהוא נגמר.",
+      "sprout": {
+        "finding": "שמעתי על מחקר מרשות התעופה האמריקאית: כל מעבר הלוך ושוב בין משימות עולה בזמן, והמחיר גדל כשהמשימות מורכבות יותר.",
+        "action": "בפוקוס הבא נבחר משימה אחת, וכל השאר יחכה ברשימה עד הסוף."
+      },
       "caveat": "ארבעה ניסויי מעבדה עם משימות פשוטות של צורות וחשבון. המחיר בעבודה אמיתית לא נמדד."
     }
   },
@@ -1263,6 +1583,10 @@
     ],
     "finding": "When people were interrupted, writing a quick plan for how they'd get back to the unfinished task helped them focus better on the new one.",
     "action": "Before switching tasks, jot one line: where you stopped and what you'll do next.",
+    "sprout": {
+      "finding": "I read a study from Seattle and Minnesota: when we get interrupted, a quick plan for getting back to the unfinished task helps us focus better on the new one.",
+      "action": "Before switching tasks, let's jot one line: where we stopped and what's next."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Tasks interrupted: How anticipating time pressure on resumption of an interrupted task causes attention residue and low performance on interrupting tasks and how a \"ready-to-resume\" plan mitigates the effects",
@@ -1282,6 +1606,10 @@
     "he": {
       "finding": "כשאנשים נקטעו באמצע עבודה, כתיבת תוכנית קצרה לחזרה למשימה שלא הסתיימה עזרה להם להתרכז טוב יותר במשימה החדשה.",
       "action": "לפני שעוברים משימה, לרשום שורה אחת: איפה עצרנו ומה הצעד הבא.",
+      "sprout": {
+        "finding": "קראתי מחקר מסיאטל וממינסוטה: כשקוטעים אותנו, תוכנית קצרה לחזרה למשימה שלא נגמרה עוזרת להתרכז טוב יותר במשימה החדשה.",
+        "action": "לפני שעוברים משימה, נרשום שורה אחת: איפה עצרנו ומה הצעד הבא."
+      },
       "caveat": "ארבעה מחקרים של אותו צוות חוקרים."
     }
   },
@@ -1297,6 +1625,10 @@
       "label": "experiments in the meta-analysis"
     },
     "action": "Spend 3 minutes today reviewing something you learned a few days ago.",
+    "sprout": {
+      "finding": "A review from San Diego found that spreading practice over several sessions beats cramming it into one, especially for remembering long-term.",
+      "action": "Shall we spend 3 minutes today reviewing something learned a few days ago?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Distributed practice in verbal recall tasks: A review and quantitative synthesis",
@@ -1314,6 +1646,10 @@
     "he": {
       "finding": "פיזור התרגול על פני כמה מפגשים עובד טוב יותר מדחיסה של הכול למפגש אחד, במיוחד כדי לזכור לטווח ארוך.",
       "action": "להקדיש היום 3 דקות לחזרה על משהו שנלמד לפני כמה ימים.",
+      "sprout": {
+        "finding": "סקירה מסן דייגו מצאה שתרגול שמפוזר על כמה פעמים עובד טוב יותר מדחיסה של הכול לפעם אחת, במיוחד כדי לזכור לאורך זמן.",
+        "action": "נקדיש היום 3 דקות לחזרה על משהו שלמדנו לפני כמה ימים?"
+      },
       "statLabel": "ניסויים במטא-אנליזה",
       "caveat": "רוב המחקרים בדקו זכירה של מילים ועובדות."
     }
@@ -1326,6 +1662,10 @@
     ],
     "finding": "Testing yourself on something you're learning helps it stick better than simply rereading it.",
     "action": "Close your notes and write down everything you remember about one topic for 3 minutes.",
+    "sprout": {
+      "finding": "I read a review from Washington State: testing yourself on something you're learning makes it stick better than simply rereading it.",
+      "action": "Shall we close the notes and write down everything we remember about one topic for 3 minutes?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Rethinking the use of tests: A meta-analysis of practice testing",
@@ -1343,6 +1683,10 @@
     "he": {
       "finding": "לבחון את עצמנו על חומר שלומדים עוזר לזכור אותו טוב יותר מאשר רק לקרוא אותו שוב.",
       "action": "לסגור את הסיכומים ולכתוב במשך 3 דקות את כל מה שזוכרים על נושא אחד.",
+      "sprout": {
+        "finding": "קראתי סקירה ממדינת וושינגטון: לבחון את עצמנו על חומר עוזר לזכור אותו יותר טוב מאשר סתם לקרוא אותו שוב.",
+        "action": "נסגור את הסיכומים ונכתוב 3 דקות את כל מה שזוכרים על נושא אחד?"
+      },
       "caveat": "גודל התועלת השתנה לפי סוג המבחן, הלומדים והחומר."
     }
   },
@@ -1354,6 +1698,10 @@
     ],
     "finding": "Time in nature improved working memory and flexible thinking a little, on average, and real outdoor settings seemed to work better than pictures.",
     "action": "During your next break, step outside or look at trees or plants for a few minutes.",
+    "sprout": {
+      "finding": "A review from Copenhagen found that time in nature slightly improved working memory and flexible thinking, on average, and real outdoors worked better than pictures. I fully agree.",
+      "action": "During the next break, let's step outside, or look at trees and plants for a few minutes. Like me."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Attention Restoration Theory II: A systematic review to clarify attention processes affected by exposure to natural environments",
@@ -1373,6 +1721,10 @@
     "he": {
       "finding": "זמן בטבע שיפר מעט, בממוצע, את זיכרון העבודה ואת הגמישות המחשבתית, וסביבות אמיתיות בחוץ נראו יעילות יותר מתמונות.",
       "action": "בהפסקה הבאה, לצאת החוצה או להסתכל כמה דקות על עצים או צמחים.",
+      "sprout": {
+        "finding": "סקירה מקופנהגן מצאה שזמן בטבע שיפר מעט, בממוצע, את זיכרון העבודה ואת הגמישות המחשבתית, וטבע אמיתי בחוץ עבד טוב יותר מתמונות. אני מסכים לגמרי.",
+        "action": "בהפסקה הבאה נצא החוצה, או נסתכל כמה דקות על עצים וצמחים. כמוני."
+      },
       "caveat": "השפעות קטנות עד בינוניות, ופחות עקביות בשליטה בקשב. ייתכן שחשוב גם כמה זמן שוהים בטבע."
     }
   },
@@ -1385,6 +1737,10 @@
     ],
     "finding": "After a night without sleep, simple attention took the biggest hit, with many more lapses, while reasoning was barely affected.",
     "action": "Pulled a late night? Save today's focus session for your simplest task and keep it short.",
+    "sprout": {
+      "finding": "I read a review from Pennsylvania: after a night without sleep, basic attention took the biggest hit, with many more lapses, while reasoning was barely affected.",
+      "action": "Very short night? Let's save today's focus session for the simplest task, and keep it short."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "A meta-analysis of the impact of short-term sleep deprivation on cognitive variables",
@@ -1404,6 +1760,10 @@
     "he": {
       "finding": "אחרי לילה בלי שינה, הקשב הבסיסי נפגע יותר מכול, עם הרבה יותר רגעי \"ניתוק\", בעוד שיכולת ההסקה כמעט לא נפגעה.",
       "action": "הלילה היה קצר מאוד? לשמור את סשן הריכוז של היום למשימה הפשוטה ביותר, ולהשאיר אותו קצר.",
+      "sprout": {
+        "finding": "קראתי סקירה מפנסילבניה: אחרי לילה בלי שינה, הקשב הבסיסי נפגע הכי הרבה, עם הרבה רגעי \"ניתוק\", בזמן שהיכולת להסיק מסקנות כמעט לא נפגעה.",
+        "action": "הלילה היה קצר מאוד? נשמור את הפוקוס של היום למשימה הכי פשוטה, ונשאיר אותו קצר."
+      },
       "caveat": "המחקרים בדקו מניעת שינה מלאה של עד 48 שעות, לא סתם לילה קצר."
     }
   },
@@ -1415,6 +1775,10 @@
     ],
     "finding": "A warm bath or shower (about 40–42.5°C) taken 1–2 hours before bed, even for just 10 minutes, was linked to falling asleep faster.",
     "action": "Tonight, take a warm shower 1–2 hours before your bedtime.",
+    "sprout": {
+      "finding": "I read a review from Texas: a warm bath or shower (about 40–42.5°C) 1–2 hours before bed, even for 10 minutes, was linked to falling asleep faster.",
+      "action": "Tonight, shall we try a warm shower 1–2 hours before bedtime?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Before-bedtime passive body heating by warm shower or bath to improve sleep: A systematic review and meta-analysis",
@@ -1432,6 +1796,10 @@
     "he": {
       "finding": "אמבטיה או מקלחת חמה (כ-40–42.5 מעלות) שנה עד שעתיים לפני השינה, אפילו ל-10 דקות בלבד, נקשרה להירדמות מהירה יותר.",
       "action": "הלילה, להתקלח במים חמים שעה עד שעתיים לפני שעת השינה.",
+      "sprout": {
+        "finding": "קראתי סקירה מטקסס: מקלחת או אמבטיה חמה (כ-40–42.5 מעלות) שעה-שעתיים לפני השינה, אפילו ל-10 דקות, נקשרה להירדמות מהירה יותר.",
+        "action": "הלילה ננסה מקלחת חמה שעה עד שעתיים לפני השינה?"
+      },
       "caveat": "מבוסס על 17 מחקרים בלבד. התזמון והמשך האידיאליים עדיין דורשים מחקר נוסף."
     }
   },
@@ -1443,6 +1811,10 @@
     ],
     "finding": "Spending 5 minutes at bedtime writing a specific to-do list for the next few days helped people fall asleep faster than writing about what they'd already done.",
     "action": "Before bed tonight, spend 5 minutes writing a detailed to-do list for tomorrow.",
+    "sprout": {
+      "finding": "I heard about an experiment from Texas: 5 minutes writing a detailed to-do list for the coming days, at bedtime, helped people fall asleep faster than writing about what they'd already done.",
+      "action": "Tonight before bed, let's spend 5 minutes on a detailed to-do list for tomorrow."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "The effects of bedtime writing on difficulty falling asleep: A polysomnographic study comparing to-do lists and completed activity lists",
@@ -1460,6 +1832,10 @@
     "he": {
       "finding": "כתיבה של רשימת משימות מפורטת לימים הקרובים, במשך 5 דקות לפני השינה, עזרה לאנשים להירדם מהר יותר מאשר כתיבה על מה שכבר עשו.",
       "action": "הלילה לפני השינה, להקדיש 5 דקות לכתיבת רשימת משימות מפורטת למחר.",
+      "sprout": {
+        "finding": "שמעתי על ניסוי מטקסס: 5 דקות של כתיבת רשימת משימות מפורטת לימים הבאים, לפני השינה, עזרו להירדם מהר יותר מכתיבה על מה שכבר נעשה.",
+        "action": "הלילה, לפני השינה, נקדיש 5 דקות לרשימת משימות מפורטת למחר."
+      },
       "caveat": "מחקר מעבדה אחד עם 57 צעירים בריאים בני 18–30."
     }
   },
@@ -1475,6 +1851,10 @@
       "label": "adults across 15 study groups"
     },
     "action": "Check today's step count, then take a 5-minute walk to nudge it up.",
+    "sprout": {
+      "finding": "I read a review from Massachusetts: more daily steps were linked to a lower risk of early death, but the benefit leveled off around 6,000–8,000 steps over 60, and 8,000–10,000 for younger adults.",
+      "action": "Shall we peek at today's steps, then take a 5-minute walk to add a few more?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Daily steps and all-cause mortality: A meta-analysis of 15 international cohorts",
@@ -1492,6 +1872,10 @@
     "he": {
       "finding": "יותר צעדים ביום נקשרו לסיכון נמוך יותר למוות מוקדם, אבל התועלת התייצבה סביב 6,000–8,000 צעדים לבני 60 ומעלה ו-8,000–10,000 למבוגרים צעירים יותר.",
       "action": "לבדוק את מספר הצעדים של היום, ואז לצאת להליכה של 5 דקות כדי להוסיף עוד קצת.",
+      "sprout": {
+        "finding": "קראתי סקירה ממסצ'וסטס: יותר צעדים ביום נקשרו לסיכון נמוך יותר למוות מוקדם, אבל התועלת התייצבה סביב 6,000–8,000 צעדים מגיל 60, ו-8,000–10,000 לצעירים יותר.",
+        "action": "נציץ במספר הצעדים של היום, ואז נצא להליכה של 5 דקות להוסיף עוד קצת?"
+      },
       "statLabel": "מבוגרים שנכללו ב-15 קבוצות מחקר",
       "caveat": "מתאמי: ייתכן שאנשים בריאים יותר פשוט הולכים יותר. נבדק רק אצל מבוגרים."
     }
@@ -1505,6 +1889,10 @@
     ],
     "finding": "In a Stanford experiment, people who took a 90-minute walk in nature reported less brooding afterward, while people who walked in a city setting didn't.",
     "action": "Find the nearest park or green path and put a walk there in your calendar this week.",
+    "sprout": {
+      "finding": "I heard about an experiment from Stanford: people who walked 90 minutes in nature reported less brooding afterward. People who walked in the city didn't.",
+      "action": "Shall we find the nearest park or green path and plan a walk there this week?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Nature experience reduces rumination and subgenual prefrontal cortex activation",
@@ -1524,6 +1912,10 @@
     "he": {
       "finding": "בניסוי בסטנפורד, אנשים שהלכו 90 דקות בטבע דיווחו אחר כך על פחות מחשבות טורדניות, ואילו מי שהלכו בסביבה עירונית לא.",
       "action": "למצוא את הפארק או השביל הירוק הקרוב ולקבוע בלוח השנה הליכה שם השבוע.",
+      "sprout": {
+        "finding": "שמעתי על ניסוי מסטנפורד: מי שהלכו 90 דקות בטבע דיווחו אחר כך על פחות מחשבות טורדניות. מי שהלכו בעיר, לא.",
+        "action": "נמצא את הפארק או השביל הירוק הכי קרוב, ונקבע שם הליכה השבוע?"
+      },
       "caveat": "ניסוי יחיד עם מבוגרים בריאים, עם הליכה ארוכה של 90 דקות. זה לא תחליף לעזרה מקצועית."
     }
   },
@@ -1539,6 +1931,10 @@
       "label": "studies in the meta-analysis"
     },
     "action": "Spend 5 minutes writing about your life a year from now if your efforts go as well as they realistically could.",
+    "sprout": {
+      "finding": "I read a review from Valencia: imagining and writing about your best possible future self gave a small-to-moderate boost to wellbeing and optimism, on average.",
+      "action": "5 minutes of writing: what will life look like a year from now, if your efforts go as well as they realistically could?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Effects of the Best Possible Self intervention: A systematic review and meta-analysis",
@@ -1558,6 +1954,10 @@
     "he": {
       "finding": "לדמיין ולכתוב על הגרסה הטובה ביותר של עצמנו בעתיד נתן בממוצע דחיפה קטנה עד בינונית לרווחה ולאופטימיות.",
       "action": "להקדיש 5 דקות לכתיבה על החיים בעוד שנה, אם המאמצים יצליחו הכי טוב שאפשר באופן מציאותי.",
+      "sprout": {
+        "finding": "קראתי סקירה מוולנסיה: לדמיין ולכתוב על הגרסה הכי טובה של עצמנו בעתיד נתן בממוצע דחיפה קטנה עד בינונית לרווחה ולאופטימיות.",
+        "action": "5 דקות כתיבה: איך ייראו החיים בעוד שנה, אם המאמצים יצליחו הכי טוב שאפשר באופן מציאותי?"
+      },
       "statLabel": "מחקרים במטא-אנליזה",
       "caveat": "ההשפעה על מצב רוח ירוד ותסמיני דיכאון הייתה קטנה. זה לא תחליף לעזרה מקצועית."
     }
@@ -1570,6 +1970,10 @@
     ],
     "finding": "Deliberately planning enjoyable or meaningful activities, known as behavioral activation, raised wellbeing with a medium effect across 20 studies.",
     "action": "Put one small thing you enjoy or care about into your calendar for later today.",
+    "sprout": {
+      "finding": "I read a review of 20 studies from Australia: deliberately planning enjoyable or meaningful things (it's called behavioral activation) raised wellbeing with a medium effect.",
+      "action": "Shall we put one small thing we enjoy or care about in the calendar for later today?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Behavioral activation interventions for well-being: A meta-analysis",
@@ -1589,6 +1993,10 @@
     "he": {
       "finding": "תכנון מכוון של פעילויות מהנות או משמעותיות, שנקרא \"הפעלה התנהגותית\", שיפר את הרווחה בהשפעה בינונית לפי 20 מחקרים.",
       "action": "להכניס ללוח השנה דבר קטן אחד מהנה או משמעותי למועד מאוחר יותר היום.",
+      "sprout": {
+        "finding": "קראתי סקירה מאוסטרליה של 20 מחקרים: לתכנן בכוונה דברים מהנים או משמעותיים (זה נקרא \"הפעלה התנהגותית\") שיפר את הרווחה בהשפעה בינונית.",
+        "action": "נכניס ללוח דבר קטן אחד שכיף או חשוב לנו, למועד מאוחר יותר היום?"
+      },
       "caveat": "20 מחקרים אקראיים עם כ-1,350 משתתפים. זה לא תחליף לעזרה מקצועית."
     }
   },
@@ -1604,6 +2012,10 @@
       "label": "experimental comparisons in the meta-analysis"
     },
     "action": "Think of one thing bothering you and write how a calm friend might see it.",
+    "sprout": {
+      "finding": "I read a review from England: rethinking a situation, or seeing it from someone else's side, calmed emotions more reliably than focusing on the feeling itself.",
+      "action": "Shall we take one thing that's bothering us and write how a calm friend might see it?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Dealing with feeling: A meta-analysis of the effectiveness of strategies derived from the process model of emotion regulation",
@@ -1623,6 +2035,10 @@
     "he": {
       "finding": "לחשוב מחדש על מצב, או לראות אותו מנקודת המבט של מישהו אחר, הרגיע רגשות באופן עקבי יותר מאשר להתמקד ברגש עצמו.",
       "action": "לחשוב על דבר אחד שמטריד, ולכתוב איך חבר רגוע היה רואה אותו.",
+      "sprout": {
+        "finding": "קראתי סקירה מאנגליה: לחשוב מחדש על מצב, או לראות אותו מהצד של מישהו אחר, הרגיע רגשות בצורה עקבית יותר מאשר להתמקד ברגש עצמו.",
+        "action": "נחשוב על דבר אחד שמטריד, ונכתוב איך חבר רגוע היה רואה אותו?"
+      },
       "statLabel": "השוואות ניסוייות במטא-אנליזה",
       "caveat": "ההשפעות היו קטנות עד בינוניות והשתנו לפי האסטרטגיה."
     }
@@ -1635,6 +2051,10 @@
     ],
     "finding": "Short mindfulness practice, from a single session up to two weeks, eased negative feelings like stress and worry a little, on average.",
     "action": "Set a 3-minute timer and gently focus on your breathing, coming back to it whenever your mind drifts.",
+    "sprout": {
+      "finding": "I read a review of short studies: brief mindfulness practice, from one session up to two weeks, eased stress and worry a little, on average.",
+      "action": "A 3-minute timer, and gently focus on the breath. When the mind drifts, just come back to it."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Brief mindfulness training for negative affectivity: A systematic review and meta-analysis",
@@ -1653,6 +2073,10 @@
     "he": {
       "finding": "תרגול מיינדפולנס קצר, ממפגש אחד ועד שבועיים, הקל מעט, בממוצע, על רגשות שליליים כמו לחץ ודאגה.",
       "action": "להפעיל טיימר ל-3 דקות ולהתמקד בעדינות בנשימה, ולחזור אליה בכל פעם שהמחשבות נודדות.",
+      "sprout": {
+        "finding": "קראתי סקירה של מחקרים קצרים: תרגול מיינדפולנס קצר, מפעם אחת ועד שבועיים, הקל מעט, בממוצע, על לחץ ודאגה.",
+        "action": "טיימר ל-3 דקות, ומתמקדים בעדינות בנשימה. כשהמחשבות נודדות, פשוט חוזרים אליה."
+      },
       "caveat": "ההשפעה קטנה (g = .21), ויש סימנים לכך שמחקרים ללא תוצאות לא פורסמו. זה לא תחליף לעזרה מקצועית."
     }
   },
@@ -1664,6 +2088,10 @@
     ],
     "finding": "People giving compliments underestimated how good the receiver would feel and overestimated how awkward it would be.",
     "action": "Give one sincere, specific compliment to someone today.",
+    "sprout": {
+      "finding": "I heard about a study from Pennsylvania and Cornell: people giving compliments underestimated how good the receiver would feel, and expected far more awkwardness than there was.",
+      "action": "One sincere, specific compliment for someone today?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Why a simple act of kindness is not as simple as it seems: Underestimating the positive impact of our compliments on others",
@@ -1681,6 +2109,10 @@
     "he": {
       "finding": "אנשים שנתנו מחמאות העריכו בחסר כמה טוב ירגיש מי שקיבל אותן, והעריכו ביתר כמה מביך זה יהיה.",
       "action": "לתת היום מחמאה כנה וספציפית אחת למישהו.",
+      "sprout": {
+        "finding": "שמעתי על מחקר מפנסילבניה ומקורנל: מי שנתנו מחמאות לא האמינו כמה טוב ירגיש מי שקיבל, וחשבו שזה יהיה מביך הרבה יותר ממה שהיה.",
+        "action": "מחמאה אחת כנה וספציפית למישהו היום?"
+      },
       "caveat": "חמישה מחקרים שמדדו תחושות לטווח קצר."
     }
   },
@@ -1690,6 +2122,10 @@
     "goals": [],
     "finding": "On days when students talked with more classmates than usual, they felt happier and more like they belonged. Casual chats with acquaintances count too.",
     "action": "Say hi and ask one question to an acquaintance today, like a classmate, coworker or barista.",
+    "sprout": {
+      "finding": "I read a study from Vancouver: on days students talked with more classmates than usual, they felt happier and more like they belonged. Casual chats with acquaintances count too!",
+      "action": "Shall we say hi to an acquaintance today and ask one question? A classmate, a coworker or the barista."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Social interactions and well-being: The surprising power of weak ties",
@@ -1709,6 +2145,10 @@
     "he": {
       "finding": "בימים שבהם סטודנטים דיברו עם יותר חברים לכיתה מהרגיל, הם הרגישו מאושרים יותר ויותר שייכים. גם שיחות קלילות עם מכרים נחשבות.",
       "action": "להגיד שלום ולשאול שאלה אחת מכר או מכרה היום, כמו מישהו מהכיתה, מהעבודה או מבית הקפה.",
+      "sprout": {
+        "finding": "קראתי מחקר מוונקובר: בימים שבהם סטודנטים דיברו עם יותר חברים לכיתה מהרגיל, הם הרגישו שמחים ושייכים יותר. גם שיחה קלילה עם מכרים נחשבת!",
+        "action": "נגיד היום שלום למכר או למכרה ונשאל שאלה אחת? מהכיתה, מהעבודה או מבית הקפה."
+      },
       "caveat": "מחקרי יומן מתאמיים: ייתכן שאנשים מאושרים יותר פשוט מדברים יותר."
     }
   },
@@ -1720,6 +2160,10 @@
     ],
     "finding": "Large replication studies found that spending money on others does lift happiness, but by less than early studies suggested.",
     "action": "Spend a little on someone else today, like buying a friend a snack or a coffee.",
+    "sprout": {
+      "finding": "I heard about large replication studies from Canada and Harvard: spending money on others really does lift happiness, but less than early studies thought.",
+      "action": "Shall we treat someone a little today? A snack or a coffee for a friend."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Does spending money on others promote happiness?: A registered replication report",
@@ -1737,6 +2181,10 @@
     "he": {
       "finding": "מחקרי שחזור גדולים מצאו שהוצאת כסף על אחרים אכן משפרת את מצב הרוח, אבל פחות ממה שמחקרים מוקדמים הציעו.",
       "action": "להוציא היום סכום קטן על מישהו אחר, למשל לקנות לחבר חטיף או קפה.",
+      "sprout": {
+        "finding": "שמעתי על מחקרי שחזור גדולים מקנדה ומהרווארד: להוציא כסף על אחרים באמת משמח, אבל פחות ממה שמחקרים מוקדמים חשבו.",
+        "action": "נפנק היום מישהו בקטנה? חטיף או קפה לחבר."
+      },
       "caveat": "באחד משלושת הניסויים לא נמצאה השפעה, ובאחר היא הייתה קטנה."
     }
   },
@@ -1748,6 +2196,10 @@
     ],
     "finding": "After talking with someone new, people usually underestimate how much the other person liked them and enjoyed their company.",
     "action": "After your next conversation, assume it went better than it felt and send a friendly follow-up.",
+    "sprout": {
+      "finding": "I read a study from Cornell: after talking with someone new, people usually underestimate how much the other person liked them and enjoyed their company.",
+      "action": "After the next conversation, let's assume it went better than it felt and send a friendly follow-up."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "The liking gap in conversations: Do people like us more than we think?",
@@ -1765,6 +2217,10 @@
     "he": {
       "finding": "אחרי שיחה עם מישהו חדש, אנשים בדרך כלל מעריכים בחסר כמה הצד השני חיבב אותם ונהנה מחברתם.",
       "action": "אחרי השיחה הבאה, להניח שהיא עברה טוב יותר ממה שנדמה, ולשלוח הודעת המשך ידידותית.",
+      "sprout": {
+        "finding": "קראתי מחקר מקורנל: אחרי שיחה עם מישהו חדש, אנשים בדרך כלל לא מעריכים מספיק כמה הצד השני חיבב אותם ונהנה מחברתם.",
+        "action": "אחרי השיחה הבאה נניח שהיא הלכה יותר טוב ממה שנדמה, ונשלח הודעת המשך ידידותית."
+      },
       "caveat": "נמצא בין זרים במעבדה, בין שותפים למעונות ובין משתתפי סדנה. הפער נשאר גם אחרי כמה חודשים."
     }
   },
@@ -1774,6 +2230,10 @@
     "goals": [],
     "finding": "Sharing good news with others was linked to a better mood, especially when the listener responded with real enthusiasm.",
     "action": "When someone shares good news today, ask a follow-up question and show you're glad for them.",
+    "sprout": {
+      "finding": "I read a study from Los Angeles: sharing good news was linked to a better mood, especially when the listener responded with real enthusiasm.",
+      "action": "When someone shares good news today, let's ask a follow-up question and show we're glad for them."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "What do you do when things go right? The intrapersonal and interpersonal benefits of sharing positive events",
@@ -1793,6 +2253,10 @@
     "he": {
       "finding": "שיתוף של חדשות טובות עם אחרים נקשר למצב רוח טוב יותר, במיוחד כשהצד השני הגיב בהתלהבות אמיתית.",
       "action": "כשמישהו משתף היום בחדשות טובות, לשאול שאלת המשך ולהראות שמחה בשבילו.",
+      "sprout": {
+        "finding": "קראתי מחקר מלוס אנג'לס: לשתף בחדשות טובות נקשר למצב רוח טוב יותר, במיוחד כשהצד השני הגיב בהתלהבות אמיתית.",
+        "action": "כשמישהו ישתף היום בחדשות טובות, נשאל שאלת המשך ונראה שאנחנו שמחים בשבילו."
+      },
       "caveat": "בעיקר מחקרי יומן ומחקרים על זוגות, מתאמיים ברובם."
     }
   },
@@ -1804,6 +2268,10 @@
     ],
     "finding": "People expected deep conversations with strangers to feel more awkward than they did, and felt more connected afterward than they predicted.",
     "action": "In your next chat, ask one deeper question, like \"What's something you're looking forward to?\"",
+    "sprout": {
+      "finding": "I read a study from Northwestern: people expected deep talks with strangers to be more awkward than they were, and felt closer afterward than they predicted.",
+      "action": "In the next chat, let's try one deeper question, like \"What's something you're looking forward to?\""
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Overly shallow?: Miscalibrated expectations create a barrier to deeper conversation",
@@ -1821,6 +2289,10 @@
     "he": {
       "finding": "אנשים ציפו ששיחות עמוקות עם זרים יהיו מביכות יותר ממה שהיו בפועל, והרגישו אחר כך יותר קרובים ממה שחזו.",
       "action": "בשיחה הבאה, לשאול שאלה אחת עמוקה יותר, כמו \"מה מחכה לך בקרוב שמשמח אותך?\"",
+      "sprout": {
+        "finding": "קראתי מחקר מנורת'ווסטרן: אנשים חשבו ששיחה עמוקה עם זר תהיה מביכה יותר ממה שהייתה, והרגישו אחריה קרובים יותר ממה שציפו.",
+        "action": "בשיחה הבאה ננסה שאלה אחת עמוקה יותר, כמו \"מה מחכה לך בקרוב שמשמח אותך?\""
+      },
       "caveat": "ניסויים שנעשו בעיקר בשיחות חד-פעמיות בין זרים."
     }
   },
@@ -1830,6 +2302,10 @@
     "goals": [],
     "finding": "People were more likely to start working on goals, like going to the gym, right after fresh-start dates such as a new week, a new month or a birthday.",
     "action": "Missed a few days? Pick your next fresh start, like Monday or the 1st, and name the one habit you'll restart.",
+    "sprout": {
+      "finding": "I read a study from Pennsylvania: people were more likely to start on goals, like the gym, right after a fresh start: a new week, a new month or a birthday.",
+      "action": "Missed a few days? Let's pick the next fresh start, a Monday or the 1st, and choose the one habit that comes back."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "The fresh start effect: Temporal landmarks motivate aspirational behavior",
@@ -1854,6 +2330,10 @@
     "he": {
       "finding": "אנשים נטו יותר להתחיל לעבוד על מטרות, כמו ללכת לחדר כושר, מיד אחרי תאריכים של \"התחלה חדשה\", כמו שבוע חדש, חודש חדש או יום הולדת.",
       "action": "פספסנו כמה ימים? לבחור את ההתחלה החדשה הקרובה, כמו יום ראשון או ה-1 לחודש, ולקבוע איזה הרגל אחד חוזר.",
+      "sprout": {
+        "finding": "קראתי מחקר מפנסילבניה: אנשים נטו יותר להתחיל לעבוד על מטרות, כמו חדר כושר, מיד אחרי \"התחלה חדשה\": שבוע חדש, חודש חדש או יום הולדת.",
+        "action": "פספסנו כמה ימים? נבחר את ההתחלה החדשה הקרובה, יום ראשון או ה-1 לחודש, ונחליט איזה הרגל אחד חוזר."
+      },
       "caveat": "נתוני שטח (חיפושים, ביקורים בחדר כושר), כך שזה דפוס ולא ניסוי מבוקר. ניסיונות שחזור מאוחרים יותר נתנו תמיכה חלקית."
     }
   },
@@ -1863,6 +2343,10 @@
     "goals": [],
     "finding": "People speed up as they get closer to a goal. A coffee card that came with 2 bonus stamps was filled faster, even though the same 10 purchases were needed.",
     "action": "Split a bigger goal into small steps and check off the first one today.",
+    "sprout": {
+      "finding": "I heard about a study from New York: people speed up as they get closer to a goal. A coffee card that came with 2 bonus stamps filled faster, even though it still took the same 10 purchases.",
+      "action": "Shall we split a big goal into small steps and tick off the first one today?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "The goal-gradient hypothesis resurrected: Purchase acceleration, illusionary goal progress, and customer retention",
@@ -1882,6 +2366,10 @@
     "he": {
       "finding": "אנשים מאיצים ככל שהם מתקרבים למטרה. כרטיסיית קפה שהגיעה עם 2 חותמות בונוס התמלאה מהר יותר, למרות שנדרשו אותן 10 קניות.",
       "action": "לפרק מטרה גדולה לצעדים קטנים ולסמן היום את הראשון.",
+      "sprout": {
+        "finding": "שמעתי על מחקר מניו יורק: ככל שמתקרבים למטרה, מאיצים. כרטיסיית קפה שהגיעה עם 2 חותמות בונוס התמלאה מהר יותר, למרות שעדיין נדרשו אותן 10 קניות.",
+        "action": "נפרק מטרה גדולה לצעדים קטנים, ונסמן היום את הראשון?"
+      },
       "caveat": "מחקרי שטח עם כרטיסיית קפה ותוכנית תגמולים באתר אינטרנט, ולא מחקרים על הרגלים."
     }
   },
@@ -1897,6 +2385,10 @@
       "label": "correlations in the meta-analysis"
     },
     "action": "Make the task less unpleasant: shrink it to a 2-minute first step and start that step now.",
+    "sprout": {
+      "finding": "I read a review of hundreds of studies from Calgary: people tended to put off mostly the tasks they found unpleasant, especially when they were impulsive or easily distracted.",
+      "action": "Let's make the task less unpleasant: a 2-minute first step, started right now."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "The nature of procrastination: A meta-analytic and theoretical review of quintessential self-regulatory failure",
@@ -1916,6 +2408,10 @@
     "he": {
       "finding": "לפי מאות מחקרים, אנשים נטו לדחות בעיקר משימות שנראו להם לא נעימות, ובמיוחד כשהיו אימפולסיביים או מוסחים בקלות.",
       "action": "להפוך את המשימה לפחות לא נעימה: לכווץ אותה לצעד ראשון של 2 דקות ולהתחיל אותו עכשיו.",
+      "sprout": {
+        "finding": "קראתי סקירה מקלגרי של מאות מחקרים: אנשים נטו לדחות בעיקר משימות שנראו להם לא נעימות, ובמיוחד כשהיו אימפולסיביים או מוסחים בקלות.",
+        "action": "נהפוך את המשימה לפחות לא נעימה: צעד ראשון של 2 דקות, ומתחילים אותו עכשיו."
+      },
       "statLabel": "מתאמים במטא-אנליזה",
       "caveat": "מתאמי: מדובר בתכונות ובמאפייני משימה שקשורים לדחיינות, לא בהוכחה לסיבתיות."
     }
@@ -1928,6 +2424,10 @@
     ],
     "finding": "Across 128 experiments, expecting a reward for an interesting activity often lowered people's later interest in it, while positive feedback raised it.",
     "action": "Skip the bribe today. Instead, write one thing you did well in your habit.",
+    "sprout": {
+      "finding": "I read a review of 128 experiments from Rochester: expecting a reward for an interesting activity often lowered later interest in it, while positive feedback raised it.",
+      "action": "No bribes today: let's write down one thing that went well in the habit."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "A meta-analytic review of experiments examining the effects of extrinsic rewards on intrinsic motivation",
@@ -1947,6 +2447,10 @@
     "he": {
       "finding": "לפי 128 ניסויים, ציפייה לפרס על פעילות מעניינת הורידה פעמים רבות את העניין בה בהמשך, ואילו משוב חיובי העלה אותו.",
       "action": "לוותר היום על ה\"שוחד\", ובמקום זה לכתוב דבר אחד שהצליח בהרגל.",
+      "sprout": {
+        "finding": "קראתי סקירה מרוצ'סטר של 128 ניסויים: לצפות לפרס על פעילות מעניינת הוריד פעמים רבות את העניין בה בהמשך, ומשוב חיובי דווקא העלה אותו.",
+        "action": "היום בלי \"שוחד\": נכתוב דבר אחד שהצליח בהרגל."
+      },
       "caveat": "יש ויכוח בין חוקרים: מטא-אנליזות קודמות באותו נושא הגיעו למסקנות שונות."
     }
   },
@@ -1958,6 +2462,10 @@
     ],
     "finding": "Across 12 studies, people ate less of a snack when it was placed farther away from them, on average. A little distance made a moderate difference.",
     "action": "Move one snack or distraction you want less of out of sight or into another room.",
+    "sprout": {
+      "finding": "I read a review of 12 studies from Cambridge: people ate less of a snack when it was placed farther away, on average. A little distance made a moderate difference.",
+      "action": "Shall we move one snack or distraction out of sight, or into another room?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Altering the availability or proximity of food, alcohol, and tobacco products to change their selection and consumption",
@@ -1977,6 +2485,10 @@
     "he": {
       "finding": "ב-12 מחקרים, אנשים אכלו פחות מחטיף כשהוא הונח רחוק יותר מהם, בממוצע. מעט מרחק עשה הבדל בינוני.",
       "action": "להרחיק חטיף או הסחת דעת אחת שרוצים פחות ממנה – מחוץ לטווח הראייה או לחדר אחר.",
+      "sprout": {
+        "finding": "קראתי סקירה מקיימברידג' של 12 מחקרים: אנשים אכלו פחות מחטיף כשהוא היה רחוק יותר, בממוצע. קצת מרחק עשה הבדל בינוני.",
+        "action": "נרחיק חטיף או הסחת דעת אחת, מחוץ לטווח הראייה או לחדר אחר?"
+      },
       "caveat": "קוקרן דירגו את רמת הוודאות כנמוכה: רוב המחקרים היו קצרים, במעבדה ועם סיכון מסוים להטיה, וכולם בדקו רק אוכל."
     }
   },
@@ -1986,6 +2498,10 @@
     "goals": [],
     "finding": "In a study of 800 households, advice to change daily habits worked better for people who had moved home recently, with the window lasting about three months.",
     "action": "If your routine recently changed (move, new job, new term), pick one habit to attach to the new routine today.",
+    "sprout": {
+      "finding": "I heard about a study of 800 households from England: advice to change daily habits worked better for people who had just moved home, and the window lasted about three months.",
+      "action": "If your routine just changed (a move, a new job, a new term), let's pick one habit today and attach it to the new routine."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Empowering interventions to promote sustainable lifestyles: Testing the habit discontinuity hypothesis in a field experiment",
@@ -2005,6 +2521,10 @@
     "he": {
       "finding": "במחקר על 800 משקי בית, עצות לשינוי הרגלים יומיומיים עבדו טוב יותר אצל מי שעבר דירה לאחרונה, וה\"חלון\" נמשך כשלושה חודשים.",
       "action": "אם השגרה השתנתה לאחרונה (מעבר דירה, עבודה חדשה, סמסטר חדש), לבחור היום הרגל אחד ולחבר אותו לשגרה החדשה.",
+      "sprout": {
+        "finding": "שמעתי על מחקר מאנגליה על 800 משקי בית: עצות לשינוי הרגלים עבדו טוב יותר אצל מי שעברו דירה לאחרונה, וה\"חלון\" נמשך כשלושה חודשים.",
+        "action": "אם השגרה השתנתה לאחרונה (דירה, עבודה, סמסטר), נבחר היום הרגל אחד ונחבר אותו לשגרה החדשה."
+      },
       "caveat": "ניסוי שדה אחד על התנהגויות ידידותיות לסביבה, שנמדדו בדיווח עצמי לאורך שמונה שבועות."
     }
   },
@@ -2016,6 +2536,10 @@
     ],
     "finding": "Across 14 studies, people who exercised at a consistent time of day or right after the same routine tended to have stronger exercise habits.",
     "action": "Give one habit a fixed slot: the same time each day, or right after something you already do daily.",
+    "sprout": {
+      "finding": "I read a review of 14 studies from China: people who exercised at a consistent time, or right after the same routine, tended to have stronger exercise habits.",
+      "action": "Shall we give one habit a fixed slot: the same time every day, or right after something you already do?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Not all cues are equal: A systematic review and three-level meta-analysis of context consistency, physical activity and habit strength",
@@ -2035,6 +2559,10 @@
     "he": {
       "finding": "ב-14 מחקרים, אנשים שהתאמנו בשעה קבועה ביום או מיד אחרי אותה שגרה נטו להרגל אימון חזק יותר.",
       "action": "לתת להרגל אחד משבצת קבועה: אותה שעה בכל יום, או מיד אחרי משהו שכבר עושים כל יום.",
+      "sprout": {
+        "finding": "קראתי סקירה מסין של 14 מחקרים: מי שהתאמנו בשעה קבועה, או מיד אחרי אותה שגרה, נטו להרגל אימון חזק יותר.",
+        "action": "ניתן להרגל אחד משבצת קבועה: אותה שעה כל יום, או מיד אחרי משהו שכבר עושים?"
+      },
       "caveat": "מתאמי ומדובר בקשרים קטנים (r = 0.20 עם עוצמת ההרגל). מטא-אנליזה אחת וחדשה, שהתמקדה בפעילות גופנית."
     }
   },
@@ -2047,6 +2575,10 @@
     ],
     "finding": "Across 79 studies, a single bout of exercise gave thinking and memory tasks a small boost, during the exercise and afterward.",
     "action": "Before your next focus session, do 5 minutes of brisk walking or stairs.",
+    "sprout": {
+      "finding": "I read a review of 79 studies from North Carolina: a single bout of exercise gave thinking and memory tasks a small boost, during the exercise and after.",
+      "action": "Before the next focus session, 5 minutes of brisk walking or stairs?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "The effects of acute exercise on cognitive performance: A meta-analysis",
@@ -2066,6 +2598,10 @@
     "he": {
       "finding": "ב-79 מחקרים, אימון גופני בודד נתן שיפור קטן במשימות חשיבה וזיכרון, גם בזמן האימון וגם אחריו.",
       "action": "לפני סשן המיקוד הבא, ללכת 5 דקות בקצב מהיר או לעלות מדרגות.",
+      "sprout": {
+        "finding": "קראתי סקירה מצפון קרוליינה של 79 מחקרים: אימון גופני אחד נתן שיפור קטן במשימות חשיבה וזיכרון, גם בזמן האימון וגם אחריו.",
+        "action": "לפני הפוקוס הבא, 5 דקות הליכה מהירה או מדרגות?"
+      },
       "caveat": "האפקט הממוצע היה קטן (g = 0.097) ותלוי במשך ובעצימות האימון."
     }
   },
@@ -2081,6 +2617,10 @@
       "label": "average effect size (Hedges' g), a moderate effect"
     },
     "action": "In your next study session, shuffle practice questions from two or three topics instead of doing them in blocks.",
+    "sprout": {
+      "finding": "I read a review from Germany: mixing different types of problems in one practice session helped people learn to tell them apart better than practicing one type at a time.",
+      "action": "In the next study session, let's shuffle questions from two or three topics instead of doing them in blocks."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Similarity matters: A meta-analysis of interleaved learning and its moderators",
@@ -2098,6 +2638,10 @@
     "he": {
       "finding": "ערבוב סוגים שונים של בעיות או דוגמאות באותו תרגול עזר לאנשים ללמוד להבדיל ביניהם טוב יותר מתרגול של סוג אחד בכל פעם.",
       "action": "בסשן הלמידה הבא, לערבב שאלות תרגול משניים-שלושה נושאים במקום לפתור אותן בבלוקים.",
+      "sprout": {
+        "finding": "קראתי סקירה מגרמניה: לערבב סוגים שונים של שאלות באותו תרגול עזר ללמוד להבחין ביניהם טוב יותר מאשר לתרגל סוג אחד בכל פעם.",
+        "action": "בלמידה הבאה נערבב שאלות משניים-שלושה נושאים, במקום לפתור אותן בבלוקים."
+      },
       "statLabel": "גודל אפקט ממוצע (Hedges' g), אפקט בינוני",
       "caveat": "עבד הכי טוב בחומר חזותי כמו ציורים, ומעט במתמטיקה. בלמידת רשימות מילים, תרגול בבלוקים היה עדיף."
     }
@@ -2110,6 +2654,10 @@
     ],
     "finding": "Across 65 studies, background noise, talking and music all hurt reading a little. Speech you can understand and songs with lyrics distracted the most.",
     "action": "For your next reading or writing session, pick silence or music without lyrics.",
+    "sprout": {
+      "finding": "I read a review of 65 studies from England: background noise, talking and music all hurt reading a little. Speech you understand and songs with lyrics distracted the most.",
+      "action": "For the next reading or writing session, let's pick silence or music without lyrics."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Auditory distraction during reading: A Bayesian meta-analysis of a continuing controversy",
@@ -2129,6 +2677,10 @@
     "he": {
       "finding": "ב-65 מחקרים, רעש רקע, דיבור ומוזיקה פגעו כולם מעט בקריאה. דיבור מובן ושירים עם מילים הסיחו את הדעת הכי הרבה.",
       "action": "לסשן הקריאה או הכתיבה הבא, לבחור שקט או מוזיקה בלי מילים.",
+      "sprout": {
+        "finding": "קראתי סקירה מאנגליה של 65 מחקרים: רעש רקע, דיבור ומוזיקה פגעו כולם מעט בקריאה. דיבור שמבינים ושירים עם מילים הסיחו הכי הרבה.",
+        "action": "לקריאה או לכתיבה הבאה, נבחר שקט או מוזיקה בלי מילים."
+      },
       "caveat": "האפקט הכולל היה קטן, והוא נמדד במשימות קריאה, לא בכל סוגי העבודה."
     }
   },
@@ -2140,6 +2692,10 @@
     ],
     "finding": "Across 104 trials with about 9,600 people, music interventions lowered stress, both in how stressed people felt and in body signs like heart rate.",
     "action": "When you feel tense today, play one song you find calming and just listen to it.",
+    "sprout": {
+      "finding": "I read a review from Amsterdam of 104 trials with about 9,600 people: music lowered stress, both in how it felt and in the body, like heart rate.",
+      "action": "When you feel tense today, let's put on one calming song and just listen."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Effects of music interventions on stress-related outcomes: A systematic review and two meta-analyses",
@@ -2159,6 +2715,10 @@
     "he": {
       "finding": "ב-104 ניסויים עם כ-9,600 אנשים, התערבויות מוזיקליות הפחיתו לחץ, גם בתחושה וגם בסימנים גופניים כמו דופק.",
       "action": "כשמרגישים מתח היום, לשים שיר אחד שמרגיע אתכם ופשוט להקשיב לו.",
+      "sprout": {
+        "finding": "קראתי סקירה מאמסטרדם של 104 ניסויים עם כ-9,600 איש: מוזיקה הפחיתה לחץ, גם בתחושה וגם בגוף, למשל בדופק.",
+        "action": "כשמרגישים מתח היום, נשים שיר אחד מרגיע ופשוט נקשיב."
+      },
       "caveat": "האפקטים היו קטנים עד בינוניים בממוצע, ורבים מהניסויים נערכו במסגרות רפואיות. לא תחליף לעזרה מקצועית."
     }
   },
@@ -2170,6 +2730,10 @@
     ],
     "finding": "Across 12 trials, people who practiced breathing techniques reported less stress than people who didn't, with a small-to-medium effect.",
     "action": "Take 2 minutes now to breathe slowly, making each out-breath a little longer than the in-breath.",
+    "sprout": {
+      "finding": "I read a review of 12 trials from England: people who practiced breathing techniques reported less stress than those who didn't, with a small-to-medium effect.",
+      "action": "Shall we breathe slowly for 2 minutes now, each out-breath a little longer than the in-breath?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Effect of breathwork on stress and mental health: A meta-analysis of randomised-controlled trials",
@@ -2189,6 +2753,10 @@
     "he": {
       "finding": "ב-12 ניסויים, אנשים שתרגלו טכניקות נשימה דיווחו על פחות לחץ מאלה שלא תרגלו, באפקט קטן עד בינוני.",
       "action": "לקחת עכשיו 2 דקות לנשימה איטית, כשכל נשיפה קצת יותר ארוכה מהשאיפה.",
+      "sprout": {
+        "finding": "קראתי סקירה מדרום אנגליה של 12 ניסויים: מי שתרגלו טכניקות נשימה דיווחו על פחות לחץ ממי שלא, בהשפעה קטנה עד בינונית.",
+        "action": "ננשום עכשיו 2 דקות לאט, כשכל נשיפה קצת יותר ארוכה מהשאיפה?"
+      },
       "caveat": "רק 785 מבוגרים, ולרוב הניסויים היה סיכון בינוני להטיה. החוקרים מזהירים מהייפ. לא תחליף לעזרה מקצועית."
     }
   },
@@ -2200,6 +2768,10 @@
     ],
     "finding": "Savoring, which means slowing down to notice and enjoy good moments, raised positive feelings and eased low mood with a moderate effect across 20 trials.",
     "action": "Pick one good moment from today and spend a minute replaying it: what you saw, heard and felt.",
+    "sprout": {
+      "finding": "I read a review of 20 trials from Taiwan: savoring, slowing down to notice and enjoy good moments, raised good feelings and eased low mood with a moderate effect.",
+      "action": "Shall we pick one good moment from today and replay it for a minute: what we saw, heard and felt?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Effectiveness of savoring interventions: A systematic review and meta-analysis of randomized controlled trials",
@@ -2220,6 +2792,10 @@
     "he": {
       "finding": "התענגות – להאט כדי לשים לב לרגעים טובים וליהנות מהם – העלתה רגשות חיוביים והקלה על מצב רוח ירוד, באפקט בינוני ב-20 ניסויים.",
       "action": "לבחור רגע טוב אחד מהיום ולהקדיש דקה לשחזר אותו: מה ראיתם, שמעתם והרגשתם.",
+      "sprout": {
+        "finding": "קראתי סקירה מטייוואן של 20 ניסויים: \"התענגות\", כלומר להאט וליהנות מרגעים טובים, העלתה רגשות טובים והקלה על מצב רוח ירוד, בהשפעה בינונית.",
+        "action": "נבחר רגע טוב אחד מהיום ונשחזר אותו דקה: מה ראינו, שמענו והרגשנו?"
+      },
       "caveat": "מטא-אנליזה אחת וחדשה. האפקטים נראו גדולים יותר מול קבוצות ביקורת בלי פעילות מאשר מול פעילויות אחרות."
     }
   },
@@ -2231,6 +2807,10 @@
     ],
     "finding": "Across 27 studies, even about two standard drinks before bed reduced REM (dreaming) sleep, and the effect grew with more alcohol.",
     "action": "If you drink tonight, stop early in the evening instead of having a drink right before bed.",
+    "sprout": {
+      "finding": "I read a review of 27 studies from Australia: even about two standard drinks before bed cut REM (dreaming) sleep, and more alcohol meant a bigger effect.",
+      "action": "If you drink tonight, let's finish early in the evening, not right before bed."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "The effect of alcohol on subsequent sleep in healthy adults: A systematic review and meta-analysis",
@@ -2248,6 +2828,10 @@
     "he": {
       "finding": "ב-27 מחקרים, אפילו כשתי מנות אלכוהול סטנדרטיות לפני השינה הפחיתו את שנת ה-REM (שנת החלומות), והאפקט גדל ככל ששתו יותר.",
       "action": "אם שותים הערב, לסיים מוקדם בערב במקום לשתות ממש לפני השינה.",
+      "sprout": {
+        "finding": "קראתי סקירה מאוסטרליה של 27 מחקרים: אפילו כשתי מנות אלכוהול לפני השינה הפחיתו את שנת החלומות (REM), וככל ששתו יותר, ההשפעה גדלה.",
+        "action": "אם שותים הערב, נסיים מוקדם, ולא ממש לפני השינה."
+      },
       "caveat": "ההשפעה על משך השינה הכולל לא הייתה ברורה. הירדמות מהירה יותר נראתה רק בכחמש מנות, וזה פגע עוד יותר בשנת ה-REM."
     }
   },
@@ -2257,6 +2841,10 @@
     "goals": [],
     "finding": "In conversations, people who asked more questions, especially follow-up questions, were liked more, yet people didn't expect questions to have this effect.",
     "action": "In your next conversation, ask one follow-up question about something the other person just said.",
+    "sprout": {
+      "finding": "I read a study from Harvard: in conversations, people who asked more questions, especially follow-ups, were liked more. And people didn't see that coming.",
+      "action": "In the next conversation, let's ask one follow-up question about something the other person just said."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "It doesn't hurt to ask: Question-asking increases liking",
@@ -2274,6 +2862,10 @@
     "he": {
       "finding": "בשיחות, אנשים ששאלו יותר שאלות, ובמיוחד שאלות המשך, היו אהודים יותר, אבל אנשים לא ציפו שלשאלות תהיה השפעה כזו.",
       "action": "בשיחה הבאה, לשאול שאלת המשך אחת על משהו שהאדם השני אמר עכשיו.",
+      "sprout": {
+        "finding": "קראתי מחקר מהרווארד: בשיחות, מי ששאלו יותר שאלות, במיוחד שאלות המשך, היו אהודים יותר. ואנשים בכלל לא ציפו לזה.",
+        "action": "בשיחה הבאה נשאל שאלת המשך אחת על משהו שהצד השני אמר הרגע."
+      },
       "caveat": "שלושה מחקרים על שיחות היכרות ודייטים מהירים מצוות מחקר אחד; עדיין לא שוחזרו באופן רחב."
     }
   },
@@ -2283,6 +2875,10 @@
     "goals": [],
     "finding": "When people reconnected with an old friend or chatted with a stranger, voice or video felt more connecting than text, and wasn't more awkward than people feared.",
     "action": "Instead of texting one person today, give them a quick call or voice message.",
+    "sprout": {
+      "finding": "I read a study from Texas and Chicago: reconnecting with an old friend or chatting with a stranger, a voice or video call felt closer than text, and wasn't more awkward than people feared.",
+      "action": "Instead of a text, shall we call someone today for a quick chat, or send a voice message?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "It's surprisingly nice to hear you: Misunderstanding the impact of communication media can lead to suboptimal choices of how to connect with others",
@@ -2300,6 +2896,10 @@
     "he": {
       "finding": "כשאנשים חידשו קשר עם חבר ותיק או שוחחו עם זר, שיחה קולית או וידאו יצרה יותר קרבה מטקסט, ולא הייתה מביכה יותר ממה שחששו.",
       "action": "במקום לשלוח הודעה לאדם אחד היום, להתקשר אליו לשיחה קצרה או לשלוח הודעה קולית.",
+      "sprout": {
+        "finding": "קראתי מחקר מטקסס ומשיקגו: כשאנשים חידשו קשר עם חבר ותיק או דיברו עם זר, שיחה קולית או וידאו קירבה יותר מטקסט, ולא הייתה מביכה יותר ממה שחששו.",
+        "action": "במקום הודעה, נתקשר היום למישהו לשיחה קצרה, או נשלח הודעה קולית?"
+      },
       "caveat": "ניסוי שדה ומחקרי מעבדה מצוות אחד; עדיין לא שוחזרו באופן רחב."
     }
   },
@@ -2309,6 +2909,10 @@
     "goals": [],
     "finding": "Across 73 studies, programs that helped people act for reasons they truly valued, not pressure or guilt, led to small-to-medium gains in healthy behaviour.",
     "action": "Write one sentence on why your habit matters to you personally, in your own words, not a 'should'.",
+    "sprout": {
+      "finding": "I read a review of 73 studies from Australia: programs that helped people act for reasons they truly valued, not pressure or guilt, led to small-to-medium gains in healthy behavior.",
+      "action": "Let's write one sentence, in our own words, on why this habit really matters. No 'shoulds'."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "A meta-analysis of self-determination theory-informed intervention studies in the health domain: Effects on motivation, health behavior, physical, and psychological health",
@@ -2328,6 +2932,10 @@
     "he": {
       "finding": "ב-73 מחקרים, תוכניות שעזרו לאנשים לפעול מסיבות שבאמת חשובות להם, ולא מלחץ או מאשמה, הביאו לשיפור קטן עד בינוני בהתנהגות בריאה.",
       "action": "לכתוב משפט אחד על למה ההרגל שלכם חשוב לכם אישית, במילים שלכם, בלי \"צריך\".",
+      "sprout": {
+        "finding": "קראתי סקירה מאוסטרליה של 73 מחקרים: תוכניות שעזרו לאנשים לפעול מסיבות שבאמת חשובות להם, ולא מלחץ או אשמה, שיפרו קצת עד בינוני את ההתנהגות הבריאה.",
+        "action": "נכתוב משפט אחד, במילים שלנו, למה ההרגל הזה באמת חשוב. בלי \"צריך\"."
+      },
       "caveat": "האפקטים היו צנועים והשתנו מאוד בין תוכניות, שרובן הועברו על ידי מאמנים או אנשי מקצוע בתחום הבריאות."
     }
   },
@@ -2337,6 +2945,10 @@
     "goals": [],
     "finding": "When a tracker showed a broken streak, people did the activity less afterward than when it showed an unbroken one, even with the same real effort. Being able to 'repair' the streak helped.",
     "action": "Do a tiny version of your habit today to start a fresh streak. One gap doesn't erase what you've already built.",
+    "sprout": {
+      "finding": "I heard about a study: when a tracker showed a broken streak, people did the activity less afterward, even with exactly the same effort. Being able to 'repair' the streak helped.",
+      "action": "Let's do a tiny version of the habit today and start a fresh streak. One gap doesn't erase what's already grown."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "On or Off Track: How (Broken) Streaks Affect Consumer Decisions",
@@ -2355,6 +2967,10 @@
     "he": {
       "finding": "כשמעקב הרגלים הראה רצף שנשבר, אנשים עשו את הפעילות פחות לאחר מכן מאשר כשהראה רצף שלם, גם כשהמאמץ בפועל היה זהה. האפשרות \"לתקן\" את הרצף עזרה.",
       "action": "לעשות היום גרסה קטנטנה של ההרגל כדי להתחיל רצף חדש. הפסקה אחת לא מוחקת את מה שכבר נבנה.",
+      "sprout": {
+        "finding": "שמעתי על מחקר: כשמעקב הראה רצף שבור, אנשים עשו אחר כך את הפעילות פחות, גם כשהמאמץ היה בדיוק אותו דבר. והאפשרות \"לתקן\" את הרצף עזרה.",
+        "action": "נעשה היום גרסה קטנטנה של ההרגל ונתחיל רצף חדש. הפסקה אחת לא מוחקת את מה שכבר גדל."
+      },
       "caveat": "שבעה מחקרים במאמר אחד; עדיין לא שוחזר באופן רחב על ידי צוותי מחקר אחרים."
     }
   },
@@ -2366,6 +2982,10 @@
     ],
     "finding": "In 4 years of check-ins from about 30,000 gym members, the best predictor of skipping was time since the last visit: the longer someone had been away, the less likely they were to go.",
     "action": "If you missed yesterday, do even a 2-minute version of your habit today so one missed day doesn't turn into two.",
+    "sprout": {
+      "finding": "I read a study from Pennsylvania and Caltech of about 30,000 gym members over 4 years: the best predictor of skipping was time since the last visit. The longer away, the less likely to go.",
+      "action": "Yesterday didn't work out? Let's do even a 2-minute version today, so one missed day doesn't become two."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "What can machine learning teach us about habit formation? Evidence from exercise and hygiene",
@@ -2385,6 +3005,10 @@
     "he": {
       "finding": "בנתוני כניסות של כ-30,000 מנויי חדר כושר לאורך 4 שנים, המנבא החזק ביותר לדילוג היה הזמן מאז הביקור האחרון: ככל שעבר יותר זמן, הסיכוי שיגיעו ירד.",
       "action": "אם אתמול לא הסתדר, לעשות היום אפילו גרסת 2 דקות של ההרגל, כדי שיום הפסקה אחד לא יהפוך לשניים.",
+      "sprout": {
+        "finding": "קראתי מחקר מפנסילבניה ומקלטק על כ-30,000 מנויי חדר כושר לאורך 4 שנים: מה שהכי ניבא דילוג היה הזמן מאז הפעם האחרונה. ככל שעבר יותר זמן, הסיכוי לחזור ירד.",
+        "action": "אתמול לא הסתדר? נעשה היום אפילו גרסה של 2 דקות, שיום אחד לא יהפוך לשניים."
+      },
       "caveat": "נתונים מרשת חדרי כושר אחת. הדפוס מנבא התנהגות, אבל לא מוכיח שחזרה מהירה היא מה שגורם להרגל להחזיק."
     }
   },
@@ -2396,6 +3020,10 @@
     ],
     "finding": "In two small trials, people who picked a few phone tweaks, like turning off non-essential notifications and switching the screen to grayscale, cut their screen time and problem phone use.",
     "action": "Switch your phone screen to grayscale for the rest of today and notice whether you pick it up less.",
+    "sprout": {
+      "finding": "I heard about two small trials from Montreal: people who chose a few phone tweaks, like turning off non-essential notifications and a grayscale screen, cut their screen time and problem phone use.",
+      "action": "Shall we try a grayscale screen for the rest of today and see if the phone gets picked up less?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "A Nudge-Based Intervention to Reduce Problematic Smartphone Use: Randomised Controlled Trial",
@@ -2413,6 +3041,10 @@
     "he": {
       "finding": "בשני ניסויים קטנים, אנשים שבחרו כמה שינויים בטלפון, כמו כיבוי התראות לא חיוניות ומעבר למסך בגווני אפור, צמצמו את זמן המסך ואת השימוש הבעייתי בטלפון.",
       "action": "להעביר את מסך הטלפון לגווני אפור עד סוף היום ולשים לב אם מרימים אותו פחות.",
+      "sprout": {
+        "finding": "שמעתי על שני ניסויים קטנים ממונטריאול: מי שבחרו כמה שינויים בטלפון, כמו כיבוי התראות מיותרות ומסך בגווני אפור, צמצמו את זמן המסך ואת השימוש הבעייתי בטלפון.",
+        "action": "ננסה מסך בגווני אפור עד סוף היום, ונראה אם מרימים את הטלפון פחות?"
+      },
       "caveat": "שני מחקרים קטנים (51 ו-70 משתתפים) שנמשכו כמה שבועות. המשתתפים בחרו שילוב של כמה טיפים, כך שלא ברור איזה מהם עבד."
     }
   },
@@ -2424,6 +3056,10 @@
     ],
     "finding": "Inactive students who got a varied exercise program stuck with it more over 6 weeks than students who repeated the same routine.",
     "action": "Keep your habit, but swap in one new twist for next week, like a different route, playlist or exercise.",
+    "sprout": {
+      "finding": "I read a study from Vancouver: inactive students given a varied workout program stuck with it more over 6 weeks than those repeating the same routine.",
+      "action": "Keep the habit, but add one new twist next week: a different route, playlist or exercise."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Variety support and exercise adherence behavior: experimental and mediating effects",
@@ -2443,6 +3079,10 @@
     "he": {
       "finding": "סטודנטים שלא היו פעילים גופנית וקיבלו תוכנית אימונים מגוונת התמידו בה יותר לאורך 6 שבועות מסטודנטים שחזרו על אותה שגרה.",
       "action": "לשמור על ההרגל, אבל להכניס שינוי חדש אחד לשבוע הבא, כמו מסלול, פלייליסט או תרגיל אחר.",
+      "sprout": {
+        "finding": "קראתי מחקר מוונקובר: סטודנטים שלא התאמנו וקיבלו תוכנית אימונים מגוונת התמידו בה יותר לאורך 6 שבועות ממי שחזרו על אותה שגרה.",
+        "action": "שומרים על ההרגל, אבל מכניסים בשבוע הבא שינוי קטן אחד: מסלול, פלייליסט או תרגיל אחר."
+      },
       "caveat": "ניסוי אחד עם 121 סטודנטים, והאפקט היה צנוע."
     }
   },
@@ -2454,6 +3094,10 @@
     ],
     "finding": "In a 2-week study of workers, a to-do list helped on calm days, but planning ahead for likely interruptions helped people stay engaged and perform well even on busy days.",
     "action": "Write tomorrow's top 3 tasks, plus one line on what you'll do if you get interrupted.",
+    "sprout": {
+      "finding": "I heard about a 2-week study of workers: a to-do list helped on calm days, but planning ahead for likely interruptions kept people engaged and doing well even on busy days.",
+      "action": "Let's write tomorrow's top 3 tasks, plus one line on what we'll do if an interruption comes."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "When daily planning improves employee performance: The importance of planning type, engagement, and interruptions",
@@ -2472,6 +3116,10 @@
     "he": {
       "finding": "במחקר של שבועיים על עובדים, רשימת משימות עזרה בימים רגועים, אבל תכנון מראש של התמודדות עם הפרעות צפויות עזר לשמור על מעורבות וביצועים טובים גם בימים עמוסים.",
       "action": "לכתוב את 3 המשימות החשובות למחר, ועוד שורה אחת על מה לעשות אם תגיע הפרעה.",
+      "sprout": {
+        "finding": "שמעתי על מחקר של שבועיים על עובדים: רשימת משימות עזרה בימים רגועים, אבל תכנון מראש של מה עושים כשמפריעים עזר להישאר בעניינים גם בימים עמוסים.",
+        "action": "נכתוב את 3 המשימות החשובות למחר, ועוד שורה אחת: מה נעשה אם תגיע הפרעה."
+      },
       "caveat": "מחקר יומנים של שבועיים בקרב עובדים. הוא מראה קשרים בין ימים, ולא ניסוי מבוקר."
     }
   },
@@ -2483,6 +3131,10 @@
     ],
     "finding": "People usually underestimate how long their own tasks will take. In one study, the bias went away when they first linked the plan to how long similar tasks took before.",
     "action": "Before planning next week, check how long one similar task really took last time, and plan around that.",
+    "sprout": {
+      "finding": "I heard that people usually underestimate how long their tasks will take. In one study, the bias went away when they first linked the plan to how long similar tasks took before.",
+      "action": "Before planning next week, let's check how long one similar task really took last time, and plan around that."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Exploring the \"planning fallacy\": Why people underestimate their task completion times",
@@ -2502,6 +3154,10 @@
     "he": {
       "finding": "אנשים בדרך כלל מעריכים בחסר כמה זמן ייקחו המשימות שלהם. במחקר אחד, ההטיה נעלמה כשקודם קישרו את התוכנית לזמן שמשימות דומות לקחו בעבר.",
       "action": "לפני תכנון השבוע הבא, לבדוק כמה זמן משימה דומה אחת לקחה בפועל בפעם הקודמת, ולתכנן לפי זה.",
+      "sprout": {
+        "finding": "שמעתי שאנשים בדרך כלל מעריכים בחסר כמה זמן ייקחו המשימות שלהם. ובמחקר אחד, ההטיה נעלמה כשקודם חיברו את התוכנית לזמן שמשימות דומות לקחו בעבר.",
+        "action": "לפני שמתכננים את השבוע הבא, נבדוק כמה זמן משימה דומה לקחה באמת בפעם שעברה, ונתכנן לפי זה."
+      },
       "caveat": "האופטימיות-היתר בתכנון שוחזרה פעמים רבות, אבל התיקון של היזכרות במשימות קודמות נבדק רק באחד מחמשת המחקרים במאמר."
     }
   },
@@ -2513,6 +3169,10 @@
     ],
     "finding": "Across 54 studies with about 171,000 readers, people understood informational texts a bit better on paper than on screens, and the gap grew when they were short on time.",
     "action": "For the next article you need to really understand, print it or read it slowly without rushing.",
+    "sprout": {
+      "finding": "I read a review of 54 studies with about 171,000 readers: people understood informational texts a bit better on paper than on screens, and the gap grew when time was short.",
+      "action": "For the next article that really matters, let's print it or read it slowly, without rushing."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Don't throw away your printed books: A meta-analysis on the effects of reading media on reading comprehension",
@@ -2529,6 +3189,10 @@
     "he": {
       "finding": "ב-54 מחקרים עם כ-171,000 קוראים, אנשים הבינו טקסטים מידעיים קצת יותר טוב על נייר מאשר על מסך, והפער גדל כשהיה להם מעט זמן.",
       "action": "את המאמר הבא שחשוב להבין לעומק, להדפיס או לקרוא לאט בלי למהר.",
+      "sprout": {
+        "finding": "קראתי סקירה של 54 מחקרים עם כ-171,000 קוראים: אנשים הבינו טקסטים מידעיים קצת יותר טוב על נייר מאשר על מסך, והפער גדל כשהזמן היה לחוץ.",
+        "action": "את המאמר הבא שחשוב להבין לעומק, נדפיס או נקרא לאט, בלי למהר."
+      },
       "caveat": "האפקט הממוצע קטן, ובטקסטים סיפוריים לבדם לא נמצא פער."
     }
   },
@@ -2540,6 +3204,10 @@
     ],
     "finding": "In a field experiment with 237 people, getting phone notifications in 3 batches a day left people more attentive, in a better mood and more in control. Turning them all off raised anxiety.",
     "action": "Pick one noisy app and set its notifications to a scheduled summary, or check it only at set times today.",
+    "sprout": {
+      "finding": "I heard about an experiment with 237 people: getting notifications in 3 batches a day left them more attentive, in a better mood and more in control. Turning them all off actually raised anxiety.",
+      "action": "Shall we pick one noisy app and set it to a scheduled summary, or check it only at set times today?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Batching smartphone notifications can improve well-being",
@@ -2558,6 +3226,10 @@
     "he": {
       "finding": "בניסוי שדה עם 237 אנשים, קבלת התראות הטלפון ב-3 מקבצים ביום הובילה לקשב רב יותר, למצב רוח טוב יותר ולתחושת שליטה. כיבוי מוחלט שלהן דווקא העלה חרדה.",
       "action": "לבחור אפליקציה רועשת אחת ולהגדיר לה סיכום התראות מתוזמן, או לבדוק אותה היום רק בשעות קבועות.",
+      "sprout": {
+        "finding": "שמעתי על ניסוי עם 237 אנשים: מי שקיבלו התראות ב-3 מקבצים ביום היו קשובים יותר, במצב רוח טוב יותר ובשליטה. כיבוי מוחלט שלהן דווקא העלה חרדה.",
+        "action": "נבחר אפליקציה רועשת אחת ונעביר אותה לסיכום התראות מתוזמן, או שנבדוק אותה היום רק בשעות קבועות?"
+      },
       "caveat": "ניסוי שדה אחד שנמדד בדיווח עצמי; עדיין לא שוחזר באופן רחב."
     }
   },
@@ -2567,6 +3239,10 @@
     "goals": [],
     "finding": "Across 54 samples with about 26,600 workers, mentally switching off from work in free time was linked to feeling less worn out, more than just relaxing was.",
     "action": "Choose one evening or day this week with no work messages, and put it in your calendar now.",
+    "sprout": {
+      "finding": "I read a review of 54 samples with about 26,600 workers: mentally switching off from work in free time was linked to feeling less worn out, more than just resting.",
+      "action": "Shall we pick one evening or day this week with no work messages, and mark it in the calendar right now?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Recovery from work-related effort: A meta-analysis",
@@ -2583,6 +3259,10 @@
     "he": {
       "finding": "ב-54 מדגמים עם כ-26,600 עובדים, ניתוק מחשבתי מהעבודה בזמן הפנוי נקשר לתחושת שחיקה נמוכה יותר, יותר מאשר מנוחה לבדה.",
       "action": "לבחור ערב או יום אחד השבוע בלי הודעות עבודה, ולסמן אותו ביומן כבר עכשיו.",
+      "sprout": {
+        "finding": "קראתי סקירה של 54 מדגמים עם כ-26,600 עובדים: להתנתק מהעבודה בראש, בזמן הפנוי, נקשר לפחות שחיקה, יותר ממנוחה לבדה.",
+        "action": "נבחר ערב או יום אחד השבוע בלי הודעות עבודה, ונסמן אותו ביומן כבר עכשיו?"
+      },
       "caveat": "רוב המחקרים מתאמיים, כך שהם מראים קשר ולא סיבה ותוצאה."
     }
   },
@@ -2599,6 +3279,10 @@
       "label": "body weight lost as fluid, past which thinking dipped more"
     },
     "action": "Fill a glass or bottle of water and keep it within reach for your next focus session.",
+    "sprout": {
+      "finding": "I read a review of 33 studies from Atlanta: dehydration slightly worsened attention and thinking, more so past 2% of body weight in lost fluid. I need water too, by the way.",
+      "action": "Let's fill a glass or bottle of water and keep it close for the next focus session."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Dehydration Impairs Cognitive Performance: A Meta-analysis",
@@ -2618,6 +3302,10 @@
     "he": {
       "finding": "ב-33 מחקרים, התייבשות פגעה מעט בקשב ובחשיבה, והאפקט היה גדול יותר כשאנשים איבדו נוזלים ביותר מ-2% ממשקל הגוף.",
       "action": "למלא כוס או בקבוק מים ולהשאיר אותם בהישג יד לקראת סשן הפוקוס הבא.",
+      "sprout": {
+        "finding": "קראתי סקירה מאטלנטה של 33 מחקרים: התייבשות פגעה מעט בקשב ובחשיבה, ויותר כשאיבדו נוזלים ביותר מ-2% ממשקל הגוף. גם אני צריך מים, אגב.",
+        "action": "נמלא כוס או בקבוק מים ונשאיר אותם קרוב לפוקוס הבא."
+      },
       "statLabel": "אובדן נוזלים ממשקל הגוף שמעבר לו החשיבה נפגעה יותר",
       "caveat": "בסך הכול 413 משתתפים, בעיקר במחקרי מעבדה שבהם גרמו להתייבשות בכוונה. האפקט הכולל קטן."
     }
@@ -2630,6 +3318,10 @@
     ],
     "finding": "In a trial with 171 young adults, those handed 2 extra servings of fruit and vegetables a day for 2 weeks reported more energy, motivation and flourishing. Text reminders alone didn't help.",
     "action": "Add one piece of fruit or a handful of vegetables to your next meal or snack.",
+    "sprout": {
+      "finding": "I heard about a trial from New Zealand with 171 young adults: those given 2 extra servings of fruit and veg a day for 2 weeks reported more energy, motivation and flourishing. Text reminders alone didn't help.",
+      "action": "Shall we add a piece of fruit or a handful of veg to the next meal? As a plant, I approve."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Let them eat fruit! The effect of fruit and vegetable consumption on psychological well-being in young adults: A randomized controlled trial",
@@ -2647,6 +3339,10 @@
     "he": {
       "finding": "בניסוי עם 171 צעירים, מי שקיבלו 2 מנות נוספות של פירות וירקות ביום במשך שבועיים דיווחו על יותר אנרגיה, מוטיבציה ושגשוג. תזכורות בהודעות טקסט לבדן לא עזרו.",
       "action": "להוסיף פרי אחד או חופן ירקות לארוחה או לנשנוש הבא.",
+      "sprout": {
+        "finding": "שמעתי על ניסוי מניו זילנד עם 171 צעירים: מי שקיבלו 2 מנות נוספות של פירות וירקות ביום, במשך שבועיים, דיווחו על יותר אנרגיה, מוטיבציה ושגשוג. תזכורות בהודעות לבד לא עזרו.",
+        "action": "נוסיף פרי אחד או חופן ירקות לארוחה הבאה? כצמח, אני בעד."
+      },
       "caveat": "ניסוי אחד קצר ורשום מראש (14 יום), בצעירים שאכלו מעט פירות וירקות. לא נמצא שינוי בדיכאון, בחרדה או במצב הרוח."
     }
   },
@@ -2662,6 +3358,10 @@
       "label": "short vigorous bursts a day linked to lower death risk"
     },
     "action": "At your next break, take the stairs briskly or walk fast for 1–2 minutes.",
+    "sprout": {
+      "finding": "I read a study from Sydney of about 25,000 adults who didn't exercise: three 1–2 minute bursts a day of vigorous everyday activity, like fast stair climbing, were linked to a 38–40% lower risk of early death.",
+      "action": "At the next break, shall we take the stairs briskly or walk fast for a minute or two?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Association of wearable device-measured vigorous intermittent lifestyle physical activity with mortality",
@@ -2679,6 +3379,10 @@
     "he": {
       "finding": "בקרב כ-25,000 מבוגרים שלא התאמנו, שלושה פרצים של 1–2 דקות ביום של פעילות יומיומית נמרצת, כמו עלייה במדרגות, נקשרו לסיכון נמוך ב-38–40% למוות מוקדם.",
       "action": "בהפסקה הבאה, לעלות במדרגות בקצב מהיר או ללכת מהר במשך 1–2 דקות.",
+      "sprout": {
+        "finding": "קראתי מחקר מסידני על כ-25,000 מבוגרים שלא התאמנו: שלושה פרצים ביום של 1–2 דקות פעילות נמרצת, כמו עלייה מהירה במדרגות, נקשרו לסיכון נמוך ב-38–40% למוות מוקדם.",
+        "action": "בהפסקה הבאה נעלה במדרגות בקצב מהיר, או נלך מהר דקה-שתיים?"
+      },
       "statLabel": "פרצי פעילות נמרצת ביום שנקשרו לסיכון תמותה נמוך יותר",
       "caveat": "מחקר תצפיתי (UK Biobank, גיל ממוצע 62), כך שהוא מראה קשר ולא סיבה ותוצאה."
     }
@@ -2691,6 +3395,10 @@
     ],
     "finding": "Across 27 trials, programs that taught people to treat themselves kindly lowered brooding and self-criticism, on average, compared with control groups.",
     "action": "Think of what you'd say to a friend who slipped up, then write that same sentence to yourself.",
+    "sprout": {
+      "finding": "I read a review of 27 trials: programs that taught people to be kind to themselves lowered brooding and self-criticism, on average.",
+      "action": "What would we say to a friend who slipped up? Let's write that exact sentence to ourselves."
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Self-Compassion Interventions and Psychosocial Outcomes: a Meta-Analysis of RCTs",
@@ -2710,6 +3418,10 @@
     "he": {
       "finding": "ב-27 ניסויים, תוכניות שלימדו אנשים להתייחס לעצמם בחמלה הפחיתו בממוצע מחשבות טורדניות חוזרות וביקורת עצמית, בהשוואה לקבוצות ביקורת.",
       "action": "לחשוב מה היינו אומרים לחבר או לחברה שמעדו, ואז לכתוב את אותו משפט בדיוק לעצמנו.",
+      "sprout": {
+        "finding": "קראתי סקירה של 27 ניסויים: תוכניות שלימדו אנשים להתייחס לעצמם בחמלה הפחיתו בממוצע מחשבות טורדניות וביקורת עצמית.",
+        "action": "מה היינו אומרים לחבר או לחברה שמעדו? נכתוב את אותו משפט בדיוק לעצמנו."
+      },
       "caveat": "רוב התוכניות היו קורסים של כמה שבועות, לא תרגיל קצר, והחוקרים מציינים הטיית פרסום אפשרית. לא תחליף לעזרה מקצועית."
     }
   },
@@ -2725,6 +3437,10 @@
       "label": "minutes a day freed up, on average, by a Facebook break"
     },
     "action": "Log out of one social app for the rest of today and notice what you do with the time instead.",
+    "sprout": {
+      "finding": "I heard about a big experiment from Stanford and New York: people who deactivated Facebook for 4 weeks were a little happier and more satisfied, and spent more time offline, including with friends and family.",
+      "action": "Shall we log out of one social app for the rest of today and notice what we do with the time instead?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "The Welfare Effects of Social Media",
@@ -2742,6 +3458,10 @@
     "he": {
       "finding": "בניסוי גדול בארה\"ב, אנשים שהשביתו את חשבון הפייסבוק ל-4 שבועות היו קצת יותר מאושרים ומרוצים מחייהם, ובילו יותר זמן מחוץ לרשת, גם עם חברים ומשפחה.",
       "action": "להתנתק מאפליקציה חברתית אחת עד סוף היום ולשים לב מה עושים עם הזמן במקום.",
+      "sprout": {
+        "finding": "שמעתי על ניסוי גדול מסטנפורד ומניו יורק: מי שהשביתו את הפייסבוק ל-4 שבועות היו קצת יותר מאושרים ומרוצים, ובילו יותר זמן מחוץ לרשת, גם עם חברים ומשפחה.",
+        "action": "נתנתק מאפליקציה חברתית אחת עד סוף היום, ונשים לב מה עשינו עם הזמן במקום?"
+      },
       "statLabel": "דקות ביום שהתפנו בממוצע בזכות הפסקה מפייסבוק",
       "caveat": "שיפור קטן ברווחה (0.09 סטיות תקן) בניסוי אחד על פייסבוק לפני בחירות 2018; ייתכן שהתוצאות שונות באפליקציות אחרות."
     }
@@ -2752,6 +3472,10 @@
     "goals": [],
     "finding": "In a 3-week study of employees, briefly writing at the end of the workday about good things that happened, and why, was linked to lower stress and better health that evening.",
     "action": "Before your evening winds down, write one thing that went well today and why it happened.",
+    "sprout": {
+      "finding": "I heard about a 3-week study of employees: briefly writing at the end of the day about good things that happened, and why, was linked to less stress and better health that evening.",
+      "action": "As the evening winds down, let's write one thing that went well today, and why it happened."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Building Positive Resources: Effects of Positive Events and Positive Reflection on Work Stress and Health",
@@ -2771,6 +3495,10 @@
     "he": {
       "finding": "במחקר של 3 שבועות על עובדים, כתיבה קצרה בסוף יום העבודה על דברים טובים שקרו, ולמה, נקשרה ללחץ נמוך יותר ולבריאות טובה יותר באותו ערב.",
       "action": "לקראת סוף הערב, לכתוב דבר אחד שהלך טוב היום ולמה הוא קרה.",
+      "sprout": {
+        "finding": "שמעתי על מחקר של 3 שבועות על עובדים: כתיבה קצרה בסוף היום על דברים טובים שקרו, ולמה, נקשרה לפחות לחץ ולבריאות טובה יותר באותו ערב.",
+        "action": "לקראת סוף הערב נכתוב דבר אחד שהלך טוב היום, ולמה הוא קרה."
+      },
       "caveat": "מחקר שדה אחד בקרב עובדים, והתוצאות השתנו בין סוגי הניתוחים. לא תחליף לעזרה מקצועית."
     }
   },
@@ -2780,6 +3508,10 @@
     "goals": [],
     "finding": "People underestimated how interesting it would feel to later rediscover ordinary, everyday moments they had written down, compared with how it actually felt.",
     "action": "Write 2–3 lines about an ordinary moment from this week, and set a reminder to reread it in 3 months.",
+    "sprout": {
+      "finding": "I read a study from Harvard: people underestimated how interesting it would be to rediscover, later on, totally ordinary moments they once wrote down.",
+      "action": "Shall we write 2–3 lines about an ordinary moment from this week, and set a reminder to reread them in 3 months?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "A \"present\" for the future: the unexpected value of rediscovery",
@@ -2799,6 +3531,10 @@
     "he": {
       "finding": "אנשים העריכו בחסר כמה מעניין יהיה לגלות מחדש, אחרי זמן מה, רגעים יומיומיים ורגילים שתיעדו, לעומת מה שהרגישו כשזה קרה בפועל.",
       "action": "לכתוב 2–3 שורות על רגע רגיל מהשבוע, ולקבוע תזכורת לקרוא אותן שוב בעוד 3 חודשים.",
+      "sprout": {
+        "finding": "קראתי מחקר מהרווארד: אנשים לא האמינו כמה מעניין יהיה לגלות מחדש, אחרי זמן, רגעים רגילים לגמרי שכתבו פעם.",
+        "action": "נכתוב 2–3 שורות על רגע רגיל מהשבוע, ונכוון תזכורת לקרוא אותן שוב בעוד 3 חודשים?"
+      },
       "caveat": "ארבעה מחקרים במאמר אחד, בעיקר עם סטודנטים; עדיין לא שוחזר באופן רחב."
     }
   },
@@ -2812,6 +3548,10 @@
       "label": "how much people underestimated others' yes to helping"
     },
     "action": "Ask one person to check in on your habit this week, for example by texting you tomorrow evening.",
+    "sprout": {
+      "finding": "I heard about a study: people expect others to turn down a direct request for help far more often than they really do.",
+      "action": "Shall we ask one person to check in on the habit this week? Say, a text tomorrow evening."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "If you need help, just ask: Underestimating compliance with direct requests for help",
@@ -2831,6 +3571,10 @@
     "he": {
       "finding": "אנשים מצפים שאחרים יסרבו לבקשה ישירה לעזרה הרבה יותר ממה שהם מסרבים בפועל.",
       "action": "לבקש מאדם אחד להתעניין השבוע איך הולך עם ההרגל, למשל בהודעה מחר בערב.",
+      "sprout": {
+        "finding": "שמעתי על מחקר: אנשים חושבים שיסרבו לבקשה ישירה לעזרה הרבה יותר ממה שמסרבים באמת.",
+        "action": "נבקש ממישהו אחד להתעניין השבוע איך הולך עם ההרגל? למשל, הודעה מחר בערב."
+      },
       "statLabel": "עד כמה אנשים העריכו בחסר את הנכונות של אחרים לעזור",
       "caveat": "שישה מחקרים במאמר אחד עם בקשות קטנות ויומיומיות. הפער הגיע עד 50%, ולא תמיד היה גדול כל כך."
     }
@@ -2841,6 +3585,10 @@
     "goals": [],
     "finding": "In a restaurant experiment with over 300 people, keeping phones on the table during a meal with friends or family made people more distracted, and they enjoyed the time less.",
     "action": "Put your phone out of sight at your next meal or conversation with someone.",
+    "sprout": {
+      "finding": "I heard about a restaurant experiment with over 300 people: with phones on the table during a meal with friends or family, people were more distracted and enjoyed the time together less.",
+      "action": "At the next meal or chat with someone, shall we put the phone out of sight?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Smartphone use undermines enjoyment of face-to-face social interactions",
@@ -2857,6 +3605,10 @@
     "he": {
       "finding": "בניסוי במסעדה עם יותר מ-300 אנשים, השארת הטלפונים על השולחן בארוחה עם חברים או משפחה הגבירה את הסחת הדעת והפחיתה את ההנאה מהזמן יחד.",
       "action": "להניח את הטלפון מחוץ לטווח הראייה בארוחה או בשיחה הבאה עם מישהו.",
+      "sprout": {
+        "finding": "שמעתי על ניסוי במסעדה עם יותר מ-300 איש: כשהטלפונים נשארו על השולחן בארוחה עם חברים או משפחה, היה יותר הסחת דעת ופחות הנאה מהזמן יחד.",
+        "action": "בארוחה או בשיחה הבאה, נשים את הטלפון מחוץ לטווח הראייה?"
+      },
       "caveat": "ניסוי שדה אחד ועוד מחקר יומנים; עדיין לא שוחזר באופן רחב."
     }
   },
@@ -2866,6 +3618,10 @@
     "goals": [],
     "finding": "More hours spent together, especially doing fun things, was linked to new acquaintances becoming closer friends over time.",
     "action": "Invite someone you'd like to know better to do something fun together this week, like a walk or a game.",
+    "sprout": {
+      "finding": "I read a study: more hours together, especially doing fun things, was linked to new acquaintances becoming closer friends over time. Friendships, like pots, need time.",
+      "action": "Shall we invite someone we'd like to know better to do something fun together this week, like a walk or a game?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "How many hours does it take to make a friend?",
@@ -2882,6 +3638,10 @@
     "he": {
       "finding": "יותר שעות יחד, במיוחד בפעילויות מהנות, נקשרו להפיכה של מכרים חדשים לחברים קרובים יותר עם הזמן.",
       "action": "להזמין מישהו שרוצים להכיר טוב יותר לעשות יחד משהו מהנה השבוע, כמו הליכה או משחק.",
+      "sprout": {
+        "finding": "קראתי מחקר: יותר שעות יחד, במיוחד בדברים כיפיים, נקשרו להפיכה של מכרים חדשים לחברים קרובים עם הזמן. חברות, כמו עציץ, צריכה זמן.",
+        "action": "נזמין השבוע מישהו שרוצים להכיר טוב יותר למשהו כיפי יחד, כמו הליכה או משחק?"
+      },
       "caveat": "מחקר מתאמי, המבוסס על הערכות עצמיות של שעות, בשני מדגמים (355 ו-112 אנשים)."
     }
   },
@@ -2893,6 +3653,10 @@
     ],
     "finding": "Across 28 studies, preparing to teach something, and even more so actually teaching it, helped people learn it better than studying it for themselves.",
     "action": "Explain one thing you learned today to a friend or family member in 2 minutes.",
+    "sprout": {
+      "finding": "I read a review of 28 studies: preparing to teach something, and even more actually teaching it, helped people learn it better than studying alone.",
+      "action": "Shall we explain one thing we learned today to a friend or family member, in 2 minutes?"
+    },
     "source": {
       "type": "meta_analysis",
       "title": "Learning by Preparing-to-Teach and Teaching: A Meta-Analysis",
@@ -2909,6 +3673,10 @@
     "he": {
       "finding": "ב-28 מחקרים, הכנה ללמד משהו, ועוד יותר ללמד אותו בפועל, עזרו לאנשים ללמוד אותו טוב יותר מאשר למידה לעצמם בלבד.",
       "action": "להסביר למישהו מהחברים או מהמשפחה דבר אחד שנלמד היום, בתוך 2 דקות.",
+      "sprout": {
+        "finding": "קראתי סקירה של 28 מחקרים: להתכונן ללמד משהו, ועוד יותר ללמד אותו באמת, עזר ללמוד אותו טוב יותר מאשר ללמוד לבד.",
+        "action": "נסביר למישהו קרוב דבר אחד שלמדנו היום, ב-2 דקות?"
+      },
       "caveat": "רוב המחקרים עסקו בסטודנטים ותלמידים שלמדו חומר לימודי. ההשפעה הייתה גדולה יותר כשההוראה כללה שיחה הדדית."
     }
   },
@@ -2920,6 +3688,10 @@
     ],
     "finding": "In 5 studies with 1,674 people, people learned less from their own failures than from successes, because failing feels threatening and they tune out. They learned fine from others' failures.",
     "action": "Write one calm sentence on why yesterday slipped, as if describing a friend's day, plus one small fix.",
+    "sprout": {
+      "finding": "I read about 5 studies from Chicago with 1,674 people: people learned less from their own failures than from successes, because failing feels threatening and they tune out. From others' failures, they learned just fine.",
+      "action": "Let's write one calm sentence on why yesterday slipped, as if it were a friend's day, plus one small fix."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Not Learning From Failure—the Greatest Failure of All",
@@ -2940,6 +3712,10 @@
     "he": {
       "finding": "ב-5 מחקרים עם 1,674 משתתפים, אנשים למדו פחות מהכישלונות שלהם מאשר מההצלחות, כי כישלון מרגיש מאיים והם מתנתקים. מכישלונות של אחרים הם למדו היטב.",
       "action": "לכתוב משפט רגוע אחד על למה אתמול לא הסתדר, כאילו מתארים יום של חבר או חברה, ועוד תיקון קטן אחד.",
+      "sprout": {
+        "finding": "קראתי על 5 מחקרים משיקגו עם 1,674 משתתפים: אנשים למדו פחות מהכישלונות שלהם מאשר מהצלחות, כי כישלון מרגיש מאיים ומתנתקים ממנו. מכישלונות של אחרים למדו מצוין.",
+        "action": "נכתוב משפט רגוע אחד על למה אתמול לא הסתדר, כאילו זה היום של חבר, ועוד תיקון קטן אחד."
+      },
       "caveat": "נבדק במשימות מעבדה עם שאלות של שתי אפשרויות, לא בהרגלים. הצעד מבוסס על הממצא, אבל לא נבדק ישירות."
     }
   },
@@ -2949,6 +3725,10 @@
     "goals": [],
     "finding": "People were more likely to take a goal up again when they set a range, like 3–5 times a week, instead of one number, because a range felt both reachable and challenging.",
     "action": "Set next week's target as a range, like 3–5 sessions: an easy low end and a stretch high end.",
+    "sprout": {
+      "finding": "I heard about a study: people were more likely to take a goal up again when they set a range, like 3–5 times a week, instead of one number. A range felt both reachable and challenging.",
+      "action": "Shall we set next week's target as a range, like 3–5 times: an easy low end and a stretch high end?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "The Effect of Goal Specificity on Consumer Goal Reengagement",
@@ -2968,6 +3748,10 @@
     "he": {
       "finding": "אנשים נטו יותר לחזור למטרה כשקבעו טווח, כמו 3–5 פעמים בשבוע, במקום מספר אחד, כי טווח הרגיש גם בר השגה וגם מאתגר.",
       "action": "לקבוע את היעד לשבוע הבא כטווח, למשל 3–5 פעמים: רף תחתון קל ורף עליון מאתגר.",
+      "sprout": {
+        "finding": "שמעתי על מחקר: אנשים נטו יותר לחזור למטרה כשקבעו טווח, כמו 3–5 פעמים בשבוע, במקום מספר אחד, כי טווח הרגיש גם בר השגה וגם מאתגר.",
+        "action": "נקבע את היעד לשבוע הבא כטווח, 3–5 פעמים: רף תחתון קל ורף עליון מאתגר?"
+      },
       "caveat": "מחקרים ממאמר אחד בתחום חקר הצרכנות; עדיין לא שוחזר באופן רחב."
     }
   },
@@ -2977,6 +3761,10 @@
     "goals": [],
     "finding": "Feeling that you've made good progress on a goal can make people more likely to pick things that work against it next, as if the progress earned them a break.",
     "action": "After a strong week, write down your next step now so the progress feels like momentum, not a reason to coast.",
+    "sprout": {
+      "finding": "I heard about an interesting study: feeling you've made good progress can make people pick things that work against the goal next, as if they'd \"earned a break.\"",
+      "action": "After a strong week, let's write the next step down now, so the progress feels like momentum, not a reason to coast."
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Goals as Excuses or Guides: The Liberating Effect of Perceived Goal Progress on Choice",
@@ -2995,6 +3783,10 @@
     "he": {
       "finding": "התחושה של התקדמות יפה במטרה יכולה לגרום לאנשים לבחור אחר כך דברים שפועלים נגדה, כאילו ההתקדמות מזכה אותם בהפסקה.",
       "action": "אחרי שבוע חזק, לכתוב כבר עכשיו את הצעד הבא, כדי שההתקדמות תרגיש כמו תנופה ולא כמו סיבה להרפות.",
+      "sprout": {
+        "finding": "שמעתי על מחקר מעניין: תחושה של התקדמות יפה יכולה לגרום לבחור אחר כך דברים שפועלים נגד המטרה, כאילו \"הרווחנו הפסקה\".",
+        "action": "אחרי שבוע חזק, נכתוב כבר עכשיו את הצעד הבא, כדי שההתקדמות תרגיש כמו תנופה ולא כמו סיבה להרפות."
+      },
       "caveat": "ארבעה מחקרים. אפקטים דומים של \"היתר עצמי\" הצטמקו מאוד אחרי תיקון להטיית פרסום (Kuper ו-Bott, 2019)."
     }
   },
@@ -3004,6 +3796,10 @@
     "goals": [],
     "finding": "In lab experiments, people who felt proud of how they did kept working longer on a hard, boring follow-up task linked to that skill.",
     "action": "Name one thing you're proud of from this week and write down the effort it took.",
+    "sprout": {
+      "finding": "I read about lab experiments from Boston: people who felt proud of how they did kept going longer on a hard, boring follow-up task tied to that skill.",
+      "action": "Shall we name one thing from this week to be proud of, and write down the effort it took?"
+    },
     "source": {
       "type": "peer_reviewed",
       "title": "Pride and perseverance: The motivational role of pride",
@@ -3023,6 +3819,10 @@
     "he": {
       "finding": "בניסויי מעבדה, אנשים שהרגישו גאווה בביצוע שלהם התמידו יותר זמן במשימת המשך קשה ומשעממת שקשורה לאותה מיומנות.",
       "action": "לבחור דבר אחד מהשבוע שמעורר גאווה, ולכתוב כמה מאמץ הוא דרש.",
+      "sprout": {
+        "finding": "קראתי על ניסויי מעבדה מבוסטון: מי שהרגישו גאווה בביצוע שלהם התמידו יותר זמן במשימת המשך קשה ומשעממת שקשורה לאותה מיומנות.",
+        "action": "נבחר דבר אחד מהשבוע שמעורר גאווה, ונכתוב כמה מאמץ הוא דרש?"
+      },
       "caveat": "שני מחקרי מעבדה; עדיין לא שוחזר באופן רחב."
     }
   }

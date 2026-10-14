@@ -4,6 +4,7 @@ import { repositories } from '@/data/repositories';
 import { computeSnapshot, createTimer, focusedMinutes, pauseTimer, resumeTimer, type PersistedTimer } from '@/domain/focusTimer';
 import { CLASSIC_POMODORO, advanceFinishedPhases, firstPhase } from '@/domain/pomodoro';
 import { pauseFocusSound, playFocusMix, stopFocusSound } from '@/services/focusSoundPlayer';
+import { offerMomentLater } from '@/services/sproutMoments';
 import { cancelTimerNotifications, scheduleTimerNotifications } from '@/services/timerNotifications';
 import { clearTimer, loadTimer, saveTimer } from '@/services/timerStorage';
 import { refreshFocusWidget } from '@/widget/refreshWidget';
@@ -193,6 +194,8 @@ export const useFocusStore = create<FocusState>((set, get) => {
         });
         // On-time single sessions are announced by the scheduled notification; everything else is cancelled.
         if (!snapshot.isFinished || timer.pomodoro) await cancelTimerNotifications(timer);
+        // Stopped halfway: the Garden sprout has a study about interruptions.
+        if (!snapshot.isFinished && !isBreak) offerMomentLater('focusStopped');
         const previous = get().lastSummary;
         set({
           lastSummary: { minutes: (previous?.minutes ?? 0) + minutes, blocks: (previous?.blocks ?? 0) + (minutes > 0 ? 1 : 0) },

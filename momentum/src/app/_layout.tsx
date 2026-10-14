@@ -25,6 +25,7 @@ import { useFocusStore } from '@/state/focusStore';
 import { useGardenStore } from '@/state/gardenStore';
 import { useGroupFoldStore } from '@/state/groupFoldStore';
 import { useDayCloseStore } from '@/state/dayCloseStore';
+import { useNotebookStore } from '@/state/notebookStore';
 import { useSproutTipStore } from '@/state/sproutTipStore';
 import { useHighlightStore } from '@/state/highlightStore';
 import { usePrefsStore } from '@/state/prefsStore';
@@ -84,6 +85,7 @@ function Bootstrap() {
     runDetached(useGroupFoldStore.getState().hydrate());
     runDetached(useDayCloseStore.getState().hydrate());
     runDetached(useSproutTipStore.getState().hydrate());
+    runDetached(useNotebookStore.getState().hydrate());
     // Weekly backup to the user's folder, if they set one up.
     runDetached(useDevicePrefsStore.getState().hydrate().then(runAutoBackupIfDue));
     // A session may have been started from the Focus widget while we were away.

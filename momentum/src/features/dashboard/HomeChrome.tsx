@@ -22,7 +22,7 @@ function IconButton({ icon, label, onPress }: { icon: ComponentProps<typeof Ioni
   );
 }
 
-/** Settings and Focus (the month, insights and the library are tabs: swipe or use the tab bar). */
+/** Settings and Focus (the month and progress are tabs: swipe or use the tab bar). */
 export function HomeTopBar() {
   const t = useT();
   const styles = useStyles();

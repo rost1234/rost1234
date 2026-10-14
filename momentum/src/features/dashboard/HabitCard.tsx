@@ -20,6 +20,7 @@ import { useHabitDays } from '@/features/garden/useGarden';
 import { quitPlanText, savingsText } from '@/features/urge/quitText';
 import { useUrgeStore } from '@/features/urge/urgeStore';
 import { useDayCloseStore } from '@/state/dayCloseStore';
+import { offerMomentLater } from '@/services/sproutMoments';
 import { useHabitStore } from '@/state/habitStore';
 import { usePlanningStore } from '@/state/planningStore';
 import { currentLanguage, t, tPlural, useT } from '@/i18n';
@@ -63,7 +64,15 @@ function openHabitMenu(habit: Habit) {
             icon: currentLanguage() === 'he' ? 'return-up-forward-outline' : 'return-up-back-outline',
             run: () => useDayCloseStore.getState().reopen(habit.id, today),
           }
-        : { label: habit.isQuit ? t('mark.quitMissed') : t('mark.missed'), icon: 'moon-outline', run: () => useDayCloseStore.getState().close(habit.id, today) },
+        : {
+            label: habit.isQuit ? t('mark.quitMissed') : t('mark.missed'),
+            icon: 'moon-outline',
+            run: () => {
+              useDayCloseStore.getState().close(habit.id, today);
+              // The Garden sprout has a study about a missed day.
+              offerMomentLater('notToday', today);
+            },
+          },
     );
   }
   if (!habit.isQuit) {

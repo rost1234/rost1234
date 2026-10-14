@@ -1,8 +1,9 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { Linking, Pressable, View } from 'react-native';
+import { router } from 'expo-router';
 import { Text } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
-import rawInsights from '@/content/insights.json';
+import { INSIGHTS } from '@/content/insights';
 import type { Insight } from '@/content/insightSchema';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { runDetached } from '@/core/errors';
@@ -12,11 +13,9 @@ import { contextTriggers, pickInsight, type InsightTriggerId } from '@/domain/in
 import { hasCompletionBefore } from '@/domain/streaks';
 import { useT } from '@/i18n';
 import { useHabitStore } from '@/state/habitStore';
+import { toldTodayNotDaily, useNotebookStore } from '@/state/notebookStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { FreshStartCard, useFreshStart } from './FreshStartCard';
-
-/** Validated by src/content/__tests__/insights.test.ts. */
-export const INSIGHTS = rawInsights as unknown as Insight[];
 
 function useActiveTriggers(today: LocalDateString): InsightTriggerId[] {
   const habits = useHabitStore((s) => s.habits);
@@ -80,14 +79,17 @@ export function useDailyInsight(today: LocalDateString): DailyInsight {
     };
   }, [today]);
 
+  // Cards the sprout told today for a moment (or on request) are not today's own card.
+  const notes = useNotebookStore((s) => s.notes);
   const ready = habitsReady && loaded?.date === today && !freshStart;
-  const insight = ready && loaded ? pickInsight(INSIGHTS, today, goal, [...habitTriggers, ...loaded.context], loaded.shown) : null;
+  const insight =
+    ready && loaded ? pickInsight(INSIGHTS, today, goal, [...habitTriggers, ...loaded.context], loaded.shown, toldTodayNotDaily(notes, today)) : null;
   const shown = ready && loaded ? loaded.shown : null;
 
   useEffect(() => {
-    if (insight && shown && shown[insight.id] !== today) {
-      runDetached(repositories.shownInsights.markShown(insight.id, today));
-    }
+    if (!insight || !shown) return;
+    if (shown[insight.id] !== today) runDetached(repositories.shownInsights.markShown(insight.id, today));
+    useNotebookStore.getState().note(insight.id, today, 'daily');
   }, [insight, shown, today]);
 
   return { insight, freshStart, habitsReady };
@@ -98,7 +100,7 @@ export function InsightCard({ daily, hideInsight = false }: { daily: DailyInsigh
   const t = useT();
   if (daily.freshStart && daily.habitsReady) return <FreshStartCard {...daily.freshStart} />;
   if (!daily.insight || hideInsight) return null;
-  return <InsightView insight={daily.insight} title={t('insight.title')} />;
+  return <InsightView insight={daily.insight} title={t('insight.title')} notebookLink />;
 }
 
 /** One insight card: finding (and stat) up front; action and caveat on tap; source behind its own button. */
@@ -106,16 +108,13 @@ export function InsightView({
   insight,
   title,
   defaultOpen = false,
-  bare = false,
-  icon,
+  notebookLink = false,
 }: {
   insight: Insight;
   title: string;
   defaultOpen?: boolean;
-  /** No card of its own (the Garden sprout's speech bubble wraps it). */
-  bare?: boolean;
-  /** Replaces the bulb before the title. */
-  icon?: ReactNode;
+  /** Ends with a link to every card told so far (the notebook). */
+  notebookLink?: boolean;
 }) {
   const t = useT();
   const { colors, typography } = useTheme();
@@ -129,9 +128,9 @@ export function InsightView({
   const caveat = he ? insight.he.caveat : insight.caveat;
 
   return (
-    <View style={bare ? styles.bare : styles.card}>
+    <View style={styles.card}>
       <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} onPress={() => setOpen((v) => !v)} style={styles.header}>
-        {icon ?? <Ionicons name="bulb-outline" size={20} color={colors.accent} />}
+        <Ionicons name="bulb-outline" size={20} color={colors.accent} />
         <Text style={[typography.overline, { flex: 1, color: colors.accent }]}>{title}</Text>
         <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textMuted} />
       </Pressable>
@@ -173,13 +172,22 @@ export function InsightView({
           <Text style={typography.caption}>{t(`insight.evidence.${insight.evidence}`)}</Text>
         </View>
       ) : null}
+      {notebookLink ? (
+        <Pressable
+          accessibilityRole="link"
+          onPress={() => router.push('/notebook')}
+          hitSlop={8}
+          style={({ pressed }) => [styles.notebookLink, pressed && { opacity: 0.7 }]}
+        >
+          <Text style={[typography.label, { color: colors.primary }]}>{t('notebook.all')}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
 
 const useStyles = makeStyles(({ colors, flat }) => ({
   card: { gap: spacing.sm, padding: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.surface, marginBottom: spacing.md, ...flat },
-  bare: { gap: spacing.sm },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   statRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   stat: { fontSize: 30, fontWeight: '800', color: colors.accent },
@@ -198,4 +206,5 @@ const useStyles = makeStyles(({ colors, flat }) => ({
   },
   sourceToggleLabel: { fontSize: 12, fontWeight: '600', color: colors.textMuted },
   sourceBox: { gap: spacing.xs, padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.surfaceMuted },
+  notebookLink: { alignSelf: 'flex-start', paddingVertical: spacing.xs },
 }));

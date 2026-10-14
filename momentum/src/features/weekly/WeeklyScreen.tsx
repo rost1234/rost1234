@@ -10,7 +10,8 @@ import { formatFriendlyDate, getLocalDeviceDate, parseLocalDate, addDays, type L
 import { repositories } from '@/data/repositories';
 import { pickInsight } from '@/domain/insightPicker';
 import { buildWeeklySummary, previousWeek, type WeeklySummary } from '@/domain/weekly';
-import { INSIGHTS, InsightView } from '@/features/insights/InsightCard';
+import { INSIGHTS } from '@/content/insights';
+import { InsightView } from '@/features/insights/InsightCard';
 import { useSettingsStore } from '@/state/settingsStore';
 import { useT } from '@/i18n';
 import { useBottomSpace } from '@/components/useBottomSpace';

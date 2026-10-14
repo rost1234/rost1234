@@ -3,7 +3,7 @@ import { addDays, localDateFromIso, type LocalDateString } from '@/core/localDat
 export type InsightTriggerId = 'new_habit' | 'streak_broken' | 'perfect_week' | 'low_mood' | 'missed_focus';
 
 /** Mood at or below this (1–5) makes "low mood" cards more likely the next day. */
-const LOW_MOOD = 2;
+export const LOW_MOOD = 2;
 
 /**
  * Triggers that come from what happened recently rather than from habits:
@@ -50,11 +50,13 @@ export function pickInsight<T extends PickableInsight>(
   goal: string | null,
   activeTriggers: readonly InsightTriggerId[],
   shown: Readonly<Record<string, LocalDateString>>,
+  /** Cards told today for another reason (a moment, the notebook): never taken for today's own card. */
+  notDaily: ReadonlySet<string> = new Set(),
 ): T | null {
   if (insights.length === 0) return null;
 
   // Already picked today? Keep it.
-  const today = insights.find((i) => shown[i.id] === date);
+  const today = insights.find((i) => shown[i.id] === date && !notDaily.has(i.id));
   if (today) return today;
 
   const unseen = insights.filter((i) => shown[i.id] === undefined);
@@ -70,4 +72,26 @@ export function pickInsight<T extends PickableInsight>(
   const best = Math.max(...pool.map(score));
   const candidates = pool.filter((i) => score(i) === best).sort((a, b) => a.id.localeCompare(b.id));
   return candidates[hash(date) % candidates.length] ?? null;
+}
+
+/**
+ * The one extra card of a day, for a moment (a habit set aside, a heavy day, a new habit…): a card
+ * made for that moment that hasn't been told yet (or the one told longest ago), never one already
+ * told today, stable for the day.
+ */
+export function pickMoment<T extends PickableInsight>(
+  insights: readonly T[],
+  trigger: InsightTriggerId,
+  date: LocalDateString,
+  shown: Readonly<Record<string, LocalDateString>>,
+): T | null {
+  const fits = insights.filter((i) => i.triggers.includes(trigger) && shown[i.id] !== date);
+  if (fits.length === 0) return null;
+  const unseen = fits.filter((i) => shown[i.id] === undefined);
+  const pool =
+    unseen.length > 0
+      ? unseen
+      : [...fits].sort((a, b) => (shown[a.id] ?? '').localeCompare(shown[b.id] ?? '')).slice(0, Math.max(1, Math.ceil(fits.length / 3)));
+  const candidates = [...pool].sort((a, b) => a.id.localeCompare(b.id));
+  return candidates[hash(`${date}:${trigger}`) % candidates.length] ?? null;
 }

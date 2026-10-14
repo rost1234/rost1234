@@ -53,11 +53,19 @@ export interface Insight {
   triggers: InsightTrigger[];
   /** YYYY-MM-DD the source was last checked. */
   verifiedOn: string;
+  /** The same card as the Garden sprout tells it, in its own voice (no source, caveat or evidence: the notebook shows those). */
+  sprout: SproutLines;
   /** Hebrew translation of the user-facing text (required). */
-  he: { finding: string; action: string; statLabel?: string; caveat?: string };
+  he: { finding: string; action: string; sprout: SproutLines; statLabel?: string; caveat?: string };
 }
 
-export const LIMITS = { finding: 200, action: 140, statLabel: 60, caveat: 200 } as const;
+/** What the sprout says about a card: the finding, then (on "What do we do?") its suggestion. */
+export interface SproutLines {
+  finding: string;
+  action: string;
+}
+
+export const LIMITS = { finding: 200, action: 140, statLabel: 60, caveat: 200, sproutFinding: 220, sproutAction: 160 } as const;
 
 const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -95,9 +103,17 @@ export function validateInsights(data: unknown): string[] {
     if (raw.caveat !== undefined && (!nonEmpty(raw.caveat) || raw.caveat.length > LIMITS.caveat)) at('caveat too long or empty');
     if (!Array.isArray(raw.triggers) || !raw.triggers.every((t) => oneOf(INSIGHT_TRIGGERS, t))) at('invalid triggers');
     if (!nonEmpty(raw.verifiedOn) || !DATE.test(raw.verifiedOn)) at('verifiedOn must be YYYY-MM-DD');
+    const sproutProblem = (v: unknown) =>
+      !isRecord(v) ||
+      !nonEmpty(v.finding) ||
+      !nonEmpty(v.action) ||
+      v.finding.length > LIMITS.sproutFinding ||
+      v.action.length > LIMITS.sproutAction;
+    if (sproutProblem(raw.sprout)) at(`sprout.finding and sprout.action are required, max ${LIMITS.sproutFinding}/${LIMITS.sproutAction} chars`);
     const he = raw.he;
     if (!isRecord(he) || !nonEmpty(he.finding) || !nonEmpty(he.action)) at('he.finding and he.action are required');
     else {
+      if (sproutProblem(he.sprout)) at(`he.sprout.finding and he.sprout.action are required, max ${LIMITS.sproutFinding}/${LIMITS.sproutAction} chars`);
       if (raw.stat !== undefined && !nonEmpty(he.statLabel)) at('he.statLabel is required when stat is set');
       if (raw.caveat !== undefined && !nonEmpty(he.caveat)) at('he.caveat is required when caveat is set');
     }

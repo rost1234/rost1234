@@ -22,7 +22,8 @@ export default function MainLayout() {
       <Stack.Screen name="focus" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
       <Stack.Screen name="urge" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
       <Stack.Screen name="analytics" options={sheet} />
-      <Stack.Screen name="library" options={sheet} />
+      <Stack.Screen name="notebook/index" options={sheet} />
+      <Stack.Screen name="notebook/[topic]" options={sheet} />
       <Stack.Screen name="settings/index" options={sheet} />
       <Stack.Screen name="settings/[section]" options={sheet} />
       <Stack.Screen name="calendar" options={sheet} />

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, Animated, Platform, Pressable, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -10,12 +10,12 @@ import { haptics } from '@/core/haptics';
 import { isNight, sproutMood } from '@/domain/garden';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { useT, type TranslationKey } from '@/i18n';
-import { openMain } from '@/features/pager/pager';
 import { useHabitStore } from '@/state/habitStore';
+import { insightById, insightLines } from '@/content/insights';
 import type { Insight } from '@/content/insightSchema';
+import { useNotebookStore, type MomentReason } from '@/state/notebookStore';
 import { useSproutTipStore } from '@/state/sproutTipStore';
 import { LiveSprout } from './LiveSprout';
-import { SproutTip } from './SproutTip';
 import { ambientLine, doneLine, tapLine, type TalkContext, type TalkLine } from './sproutTalk';
 import { stageKey, useGardenGrowth } from './useGarden';
 
@@ -68,7 +68,23 @@ function Sky({ night }: { night: boolean }) {
 }
 
 /** The sprout's speech bubble; a new line pops in gently. Screen readers hear each new line. */
-function Bubble({ text, id, stacked, live }: { text: string; id: number | string; stacked: boolean; live: boolean }) {
+function Bubble({
+  text,
+  id,
+  stacked,
+  live,
+  long = false,
+  children,
+}: {
+  text: string;
+  id: number | string;
+  stacked: boolean;
+  live: boolean;
+  /** A research card: a little smaller, it's a longer line. */
+  long?: boolean;
+  /** Small buttons under the line. */
+  children?: ReactNode;
+}) {
   const { colors } = useTheme();
   const styles = useStyles();
   const reduce = useReduceMotion();
@@ -86,7 +102,8 @@ function Bubble({ text, id, stacked, live }: { text: string; id: number | string
       accessibilityLiveRegion={live ? 'polite' : 'none'}
     >
       <View style={[styles.tail, stacked ? styles.tailUp : styles.tailSide, { backgroundColor: colors.surface }]} />
-      <Text style={styles.bubbleText}>{text}</Text>
+      <Text style={[styles.bubbleText, long && styles.bubbleTextLong]}>{text}</Text>
+      {children}
     </Animated.View>
   );
 }
@@ -97,10 +114,21 @@ const daySeed = (today: LocalDateString) => Number(today.replace(/-/g, '')) || 0
 /** Seconds a reaction stays before the sprout goes back to its everyday line. */
 const EVENT_MS = 9000;
 
+/** How the sprout opens a moment's card ("Not today? That's fine."). */
+const MOMENT_INTRO: Record<MomentReason, TranslationKey> = {
+  notToday: 'moment.notToday',
+  lowMood: 'moment.lowMood',
+  focusStopped: 'moment.focusStopped',
+  newHabit: 'moment.newHabit',
+};
+
 /**
  * Today in the Garden look, built around the sprout: it sits in the day's ring, talks in a bubble
  * (greets, thanks you for each habit, cheers a full day, is glad when you're back), hops when a
  * habit is done and reacts when tapped. Long-press (or "Your sprout") opens every stage.
+ * It also tells research in its own words: the morning's card, and at most one more when something
+ * happens that a study speaks to. "What do we do?" swaps in its suggestion, "Thanks" puts the card
+ * away, the star keeps it in the notebook (where the sources are).
  */
 export function GardenHeader({
   today,
@@ -127,7 +155,17 @@ export function GardenHeader({
   const stageName = t(stageKey(growth.stage));
   const seed = daySeed(today);
   const tipDismissedOn = useSproutTipStore((s) => s.dismissedOn);
-  const showTip = tip !== null && tipDismissedOn !== today;
+  const moment = useNotebookStore((s) => s.moment);
+  const saved = useNotebookStore((s) => s.saved);
+  // The card it's telling now: a moment's card first, then the morning's (until "Thanks").
+  const momentCard = moment && moment.date === today && !moment.dismissed ? (insightById(moment.id) ?? null) : null;
+  const told: { insight: Insight; moment: MomentReason | null } | null = momentCard
+    ? { insight: momentCard, moment: moment?.reason ?? null }
+    : tip !== null && tipDismissedOn !== today
+      ? { insight: tip, moment: null }
+      : null;
+  const [actionFor, setActionFor] = useState<string | null>(null);
+  const showingAction = told !== null && actionFor === told.insight.id;
   const ctx: TalkContext = {
     hour,
     dueCount: countedCount,
@@ -141,7 +179,6 @@ export function GardenHeader({
     nextName: growth.next === null ? null : t(stageKey(growth.next)),
     toNext: growth.toNext,
     days: growth.days,
-    hasTip: showTip,
   };
 
   // A reaction (a habit done, a tap) shows for a while, then the everyday line comes back.
@@ -174,14 +211,32 @@ export function GardenHeader({
   };
 
   const line: TalkLine = !event ? ambientLine(ctx, seed) : event.kind === 'done' ? doneLine(ctx, seed + event.n) : tapLine(ctx, event.n);
-  const lineId = event ? event.id : line.key;
-  const said = line.plural !== undefined ? t.plural(line.key, line.plural, line.params) : t(line.key as TranslationKey, line.params);
+  // A reaction shows for a moment; otherwise the card it's telling, otherwise its everyday line.
+  const telling = event === null && told !== null;
+  const lines = told ? insightLines(told.insight, t.language === 'he', true) : null;
+  const tellText = !told || !lines ? '' : showingAction ? lines.action : told.moment ? `${t(MOMENT_INTRO[told.moment])} ${lines.finding}` : lines.finding;
+  const lineId = event ? event.id : telling && told ? `tip:${told.insight.id}:${showingAction ? 'action' : 'finding'}` : line.key;
+  const said = telling
+    ? tellText
+    : line.plural !== undefined
+      ? t.plural(line.key, line.plural, line.params)
+      : t(line.key as TranslationKey, line.params);
+  const isSaved = told !== null && saved.includes(told.insight.id);
   // Android reads the bubble's live region; iOS needs the new line announced.
+  const announceId = event ? `event:${event.id}` : told?.moment ? lineId : null;
   useEffect(() => {
-    if (event && Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(said);
-    // Only when a new reaction appears, not on every render.
+    if (announceId && Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(said);
+    // Only when a new reaction or moment card appears, not on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event?.id]);
+  }, [announceId]);
+
+  const thanks = () => {
+    if (!told) return;
+    haptics.tap();
+    setActionFor(null);
+    if (told.moment) useNotebookStore.getState().dismissMoment();
+    else useSproutTipStore.getState().dismiss(today);
+  };
   const message =
     totalCount === 0
       ? t('today.quietDay')
@@ -192,7 +247,7 @@ export function GardenHeader({
   return (
     <View style={[styles.hill, { backgroundColor: scenery.hill }]}>
       <Sky night={isNight(hour)} />
-      {/* Settings and Focus (the month, insights and library are tabs below). */}
+      {/* Settings and Focus (the month and progress are tabs below). */}
       <View style={styles.corner}>
         <Pressable
           accessibilityRole="button"
@@ -228,7 +283,6 @@ export function GardenHeader({
       </View>
 
       <View style={[styles.stageRow, stacked && styles.stacked]}>
-        <Bubble text={said} id={lineId} stacked={stacked} live={event !== null} />
         {/* The sprout grows with every day a habit is done; the ring around it is today. */}
         <Pressable
           accessibilityRole="button"
@@ -254,9 +308,48 @@ export function GardenHeader({
             {stageName}
           </Text>
         </Pressable>
+        <Bubble text={said} id={lineId} stacked={stacked} live={event !== null || (telling && told?.moment != null)} long={telling}>
+          {telling && told ? (
+            <View style={styles.tellRow}>
+              {showingAction ? null : (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => {
+                    haptics.select();
+                    setActionFor(told.insight.id);
+                  }}
+                  hitSlop={8}
+                  style={({ pressed }) => [styles.tellPill, { backgroundColor: colors.primarySoft }, pressed && { opacity: 0.8 }]}
+                >
+                  <Text style={[styles.tellPillText, { color: colors.primaryDeep }]}>{t('tip.whatToDo')}</Text>
+                </Pressable>
+              )}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityHint={t('tip.thanksHint')}
+                onPress={thanks}
+                hitSlop={8}
+                style={({ pressed }) => [styles.tellPill, styles.tellPillQuiet, { borderColor: colors.border }, pressed && { opacity: 0.8 }]}
+              >
+                <Text style={[styles.tellPillText, { color: colors.textMuted }]}>{t('tip.thanks')}</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={isSaved ? t('tip.savedA11y') : t('tip.save')}
+                accessibilityState={{ selected: isSaved }}
+                onPress={() => {
+                  haptics.select();
+                  useNotebookStore.getState().toggleSaved(told.insight.id);
+                }}
+                hitSlop={10}
+                style={({ pressed }) => [styles.saveStar, pressed && { opacity: 0.7 }]}
+              >
+                <Ionicons name={isSaved ? 'star' : 'star-outline'} size={18} color={isSaved ? scenery.sun : scenery.coral} />
+              </Pressable>
+            </View>
+          ) : null}
+        </Bubble>
       </View>
-
-      {showTip && tip ? <SproutTip insight={tip} today={today} stage={growth.stage} /> : null}
 
       <Text style={styles.message}>{message}</Text>
       <View style={styles.pills}>
@@ -273,14 +366,13 @@ export function GardenHeader({
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t('garden.insights')}
-          accessibilityHint={t('home.openInsights')}
-          onPress={() => openMain('insights')}
+          accessibilityHint={t('notebook.openHint')}
+          onPress={() => router.push('/notebook')}
           hitSlop={6}
           style={({ pressed }) => [styles.pill, { backgroundColor: colors.surface }, pressed && { opacity: 0.8 }]}
         >
-          <Ionicons name="bar-chart-outline" size={14} color={colors.text} />
-          <Text style={[styles.pillText, { color: colors.text }]}>{t('garden.insights')}</Text>
+          <Ionicons name="book-outline" size={14} color={colors.text} />
+          <Text style={[styles.pillText, { color: colors.text }]}>{t('notebook.pill')}</Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -303,7 +395,7 @@ const useStyles = makeStyles(({ colors }) => ({
     marginHorizontal: -spacing.lg,
     marginTop: -spacing.lg,
     marginBottom: spacing.md,
-    paddingHorizontal: spacing.xl,
+    paddingHorizontal: spacing.lg,
     paddingTop: spacing.xl + spacing.sm,
     paddingBottom: spacing.xl,
     borderBottomLeftRadius: 44,
@@ -319,7 +411,7 @@ const useStyles = makeStyles(({ colors }) => ({
   corner: { flexDirection: 'row', gap: spacing.sm, alignSelf: 'flex-start' },
   cornerButton: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   stageRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginTop: spacing.md },
-  stacked: { flexDirection: 'column-reverse', alignItems: 'stretch' },
+  stacked: { flexDirection: 'column', alignItems: 'stretch' },
   date: { fontSize: 15, color: colors.textMuted },
   greeting: { fontSize: 30, lineHeight: 38, fontWeight: '800', color: colors.text },
   bubble: {
@@ -332,8 +424,14 @@ const useStyles = makeStyles(({ colors }) => ({
   },
   bubbleStacked: { flex: 0 },
   bubbleText: { fontSize: 16, lineHeight: 23, color: colors.text },
+  bubbleTextLong: { fontSize: 15, lineHeight: 22 },
   tail: { position: 'absolute', width: 16, height: 16, transform: [{ rotate: '45deg' }] },
-  tailSide: { end: -6, top: '50%', marginTop: -8 },
+  tailSide: { start: -6, top: '50%', marginTop: -8 },
+  tellRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: spacing.sm },
+  tellPill: { minHeight: 30, paddingHorizontal: 10, borderRadius: radius.pill, justifyContent: 'center' },
+  tellPillQuiet: { borderWidth: 1.5 },
+  tellPillText: { fontSize: 13, fontWeight: '600' },
+  saveStar: { width: 30, height: 30, marginStart: 'auto', alignItems: 'center', justifyContent: 'center' },
   tailUp: { top: -6, alignSelf: 'center' },
   message: { fontSize: 16, color: colors.text, marginTop: spacing.md },
   pills: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.sm },

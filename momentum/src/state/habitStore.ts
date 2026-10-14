@@ -8,6 +8,7 @@ import { applyDayEdit } from '@/domain/calendar';
 import { applyPauses } from '@/domain/pauses';
 import { computeStreak } from '@/domain/streaks';
 import { MAX_STREAK_FREEZES, refundsFreeze } from '@/domain/freezeRewards';
+import { offerMomentLater } from '@/services/sproutMoments';
 import { historyStart, reconcileStreakFreezes, statusesByHabit } from '@/services/streakService';
 import { refreshTodayWidget } from '@/widget/refreshWidget';
 import { usePlanningStore } from './planningStore';
@@ -287,6 +288,8 @@ export const useHabitStore = create<HabitState>((set, get) => {
         habits: [...get().habits, habit],
         streaks: { ...get().streaks, [habit.id]: today ? streakFor(habit, logs, today) : 0 },
       });
+      // The Garden sprout has a study for a fresh start.
+      offerMomentLater('newHabit', today ?? undefined);
     },
 
     updateHabit: async (habitId, changes) => {

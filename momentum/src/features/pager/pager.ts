@@ -2,15 +2,14 @@ import { createContext, useCallback, useContext, type EffectCallback } from 'rea
 import { router, useFocusEffect } from 'expo-router';
 import { create } from 'zustand';
 
-/** The four main screens, in order: swipe between them like tabs. */
-export const PAGES = ['home', 'calendar', 'insights', 'library'] as const;
+/** The main screens, in order: swipe between them like tabs (`insights` is the Progress page). */
+export const PAGES = ['home', 'calendar', 'insights'] as const;
 export type PageId = (typeof PAGES)[number];
 
-const ROUTES: Record<PageId, '/' | '/calendar' | '/analytics' | '/library'> = {
+const ROUTES: Record<PageId, '/' | '/calendar' | '/analytics'> = {
   home: '/',
   calendar: '/calendar',
   insights: '/analytics',
-  library: '/library',
 };
 
 interface PagerState {
