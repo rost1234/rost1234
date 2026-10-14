@@ -91,7 +91,7 @@ const coursePlan = {
     await page.goto(`${APP}/course/physics`);
     await page.waitForTimeout(1200);
     await shot('02-map-top');
-    for (const t of ['יסודות', 'יחידה 1', 'על מה המסלול מבוסס']) await expectText(t, 'course map');
+    for (const t of ['יסודות', 'תנועה וכוחות', 'כאן עצרתי', 'על מה המסלול מבוסס']) await expectText(t, 'course map');
 
     if (scheme === 'light') {
       // Placement: answer the foundations questions right, then "don't know" → placed at level 2.
@@ -357,6 +357,7 @@ const coursePlan = {
       await page.goto(`${APP}/import`);
       await page.waitForTimeout(1000);
       const field = page.getByTestId('import-json');
+      await field.waitFor({ timeout: 15000 });
       await field.fill('[{"topic": "x",}]');
       await page.getByRole('button', { name: 'לייבא את הטקסט' }).click();
       await page.waitForTimeout(400);

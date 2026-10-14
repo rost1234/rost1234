@@ -51,7 +51,7 @@ hashed from the concept. Cards are kept in check: a lesson gets the automatic "e
 cards of its own (and the switch is on; otherwise the station is `lean`), and the AI's full lesson adds at most
 `AI_UPGRADE_CARDS` (3), none at `ENOUGH_CARDS` (4), never twice. Missing lessons of any course are written by
 `data/lessonQueue.ts` (`LessonQueueCard` on the map: 2 at a time, waits out the server's hourly limit, skips failures).
-The notebook looks draw course/subject maps as a checklist (`features/learn/ChecklistRow`), classic keeps the path.
+The notebook looks draw course/subject maps as a bullet-journal list (`features/learn/ChecklistRow`: a dot per station, done = struck out by hand, mastered = small star, current = highlighter + "here I stopped" note; `ChecklistHeading` for units), classic keeps the path.
 The card store (`cards/index.tsx`, from the Review tab) shows counts and the cards by subject/concept, with bulk delete. Stations with a `reference` run as `features/lesson/SelfCheck.tsx`: explain → reveal
 the reference and key points → rate 1–5 (`addSelfCheck`, mastery = rating × 20) → full lesson. The full lesson
 comes from the file (optional `hook`/`sections`/`example`/`misconception`/`connection`/`check`/`cards`, validated with

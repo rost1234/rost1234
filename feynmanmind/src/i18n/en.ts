@@ -416,6 +416,7 @@ export const en = {
   'plan.myDay': "My day",
   'plan.minutesOf': "{minutes}/{goal} min",
   'plan.now': "Now",
+  'plan.leftOff': "I'm here",
   'quick.title': "Add",
   'quick.concept': "New concept",
   'quick.course': "Build a course with AI",

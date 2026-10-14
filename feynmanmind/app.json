@@ -2,7 +2,7 @@
   "expo": {
     "name": "FeynmanMind",
     "slug": "feynmanmind",
-    "version": "2.10.0",
+    "version": "2.11.0",
     "scheme": "feynmanmind",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,10 +16,10 @@
     },
     "android": {
       "package": "com.feynmanmind.app",
-      "versionCode": 23,
+      "versionCode": 24,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#4F46E5"
+        "backgroundColor": "#F4EBD6"
       },
       "predictiveBackGestureEnabled": false
     },
@@ -51,10 +51,10 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 180,
           "resizeMode": "contain",
-          "backgroundColor": "#4F46E5",
+          "backgroundColor": "#F4EBD6",
           "dark": {
             "image": "./assets/splash-icon.png",
-            "backgroundColor": "#141427"
+            "backgroundColor": "#26302B"
           }
         }
       ],

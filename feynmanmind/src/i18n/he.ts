@@ -402,6 +402,7 @@ export const he: Record<TranslationKey, string> = {
   'plan.myDay': "היום שלי",
   'plan.minutesOf': "{minutes}/{goal} דק׳",
   'plan.now': "עכשיו",
+  'plan.leftOff': "כאן עצרתי",
   'quick.title': "הוספה מהירה",
   'quick.concept': "מושג חדש",
   'quick.course': "קורס חדש עם AI",

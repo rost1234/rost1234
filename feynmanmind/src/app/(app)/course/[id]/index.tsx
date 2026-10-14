@@ -10,7 +10,7 @@ import { useT } from '@/i18n';
 import { confirmAsync } from '@/lib/dialogs';
 import { errorMessage } from '@/lib/errors';
 import { useReduceMotion } from '@/lib/motion';
-import { ChecklistRow } from '@/features/learn/ChecklistRow';
+import { ChecklistHeading, ChecklistRow } from '@/features/learn/ChecklistRow';
 import { LessonQueueCard } from '@/features/learn/LessonQueueCard';
 import type { StationProgress } from '@/local/logic';
 import { SketchBorder, SketchCircle, useSeed } from '@/components/sketch';
@@ -101,18 +101,22 @@ export default function CourseMapScreen() {
       const unitProgress = unit.stations.map((s) => byKey.get(s.key)!.p);
       const unitDone = unitProgress.filter(isDone).length;
       const complete = unitDone === unit.stations.length;
+      const unitTitle = unit.title ?? t(`level.${level.key}`);
       rows.push(
-        <View key={`unit-${unitNumber}`} style={[styles.unitHeader, look === 'chalk' ? null : { borderColor: palette.main }]}>
-          {look === 'chalk' ? <SketchBorder color={palette.main} seed={unitNumber * 7 + 3} radius={14} /> : null}
-          <View style={[styles.unitBadge, { backgroundColor: palette.main }]}>
-            {complete && look !== 'classic' ? <Ionicons name="checkmark" size={20} color={map.onFill} /> : <Text style={styles.unitBadgeText}>{unitNumber}</Text>}
+        look !== 'classic' ? (
+          <ChecklistHeading key={`unit-${unitNumber}`} title={unitTitle} done={unitDone} total={unit.stations.length} />
+        ) : (
+          <View key={`unit-${unitNumber}`} style={[styles.unitHeader, { borderColor: palette.main }]}>
+            <View style={[styles.unitBadge, { backgroundColor: palette.main }]}>
+              <Text style={styles.unitBadgeText}>{unitNumber}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[typography.caption, { color: palette.main, fontWeight: '800' }]}>{t('course.unit', { n: unitNumber })}</Text>
+              <Text style={typography.subheading}>{unitTitle}</Text>
+            </View>
+            <Text style={typography.caption}>{t('course.unitProgress', { done: unitDone, total: unit.stations.length })}</Text>
           </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[typography.caption, { color: palette.main, fontWeight: '800' }]}>{t('course.unit', { n: unitNumber })}</Text>
-            <Text style={typography.subheading}>{unit.title ?? t(`level.${level.key}`)}</Text>
-          </View>
-          <Text style={typography.caption}>{t('course.unitProgress', { done: unitDone, total: unit.stations.length })}</Text>
-        </View>,
+        ),
       );
       unit.stations.forEach((station, si) => {
         const { p, n } = byKey.get(station.key)!;
@@ -123,14 +127,10 @@ export default function CourseMapScreen() {
             <ChecklistRow
               key={station.key}
               title={station.title}
-              subtitle={station.summary}
               state={p.status === 'mastered' ? 'mastered' : p.status === 'known' ? 'done' : p.status === 'started' ? 'started' : 'new'}
-              score={p.mastery}
               current={current}
               needsAi={!p.hasLesson && p.status !== 'known'}
-              accent={palette.main}
               first={si === 0}
-              last={si === unit.stations.length - 1}
               onPress={() => open(station.key)}
               onLayout={current ? onCurrentLayout : undefined}
               a11yLabel={`${t('course.station', { n })}: ${station.title}`}

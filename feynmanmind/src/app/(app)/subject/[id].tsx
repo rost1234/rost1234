@@ -11,8 +11,8 @@ import { errorMessage } from '@/lib/errors';
 import { haptics } from '@/lib/haptics';
 import { subjectPath, type PathConcept } from '@/local/logic';
 import { useDBStore } from '@/local/store';
-import { SketchBorder, SketchCircle, useSeed } from '@/components/sketch';
-import { ChecklistRow } from '@/features/learn/ChecklistRow';
+import { SketchCircle, useSeed } from '@/components/sketch';
+import { ChecklistHeading, ChecklistRow } from '@/features/learn/ChecklistRow';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
 const WIND = [0, 48, 72, 48, 0, -48, -72, -48];
@@ -56,11 +56,14 @@ export default function SubjectMapScreen() {
           const unitDone = unit.filter((c) => c.status === 'mastered').length;
           return (
             <View key={u} style={{ gap: spacing.md }}>
-              <View style={[styles.unit, look === 'classic' ? { backgroundColor: palette.main } : look === 'chalk' ? null : { borderColor: palette.main }]}>
-                {look === 'chalk' ? <SketchBorder color={palette.main} seed={u * 7 + 5} radius={14} /> : null}
-                <Text style={[styles.unitTitle, { color: look === 'classic' ? map.onFill : palette.main }]}>{t('course.unit', { n: u + 1 })}</Text>
-                <Text style={styles.unitSub}>{t('course.unitProgress', { done: unitDone, total: unit.length })}</Text>
-              </View>
+              {look !== 'classic' ? (
+                <ChecklistHeading title={t('course.unit', { n: u + 1 })} done={unitDone} total={unit.length} />
+              ) : (
+                <View style={[styles.unit, { backgroundColor: palette.main }]}>
+                  <Text style={[styles.unitTitle, { color: map.onFill }]}>{t('course.unit', { n: u + 1 })}</Text>
+                  <Text style={styles.unitSub}>{t('course.unitProgress', { done: unitDone, total: unit.length })}</Text>
+                </View>
+              )}
               {look === 'classic' ? (
                 <>
                   {unit.map((c) => (
@@ -82,11 +85,8 @@ export default function SubjectMapScreen() {
                       key={c.id}
                       title={c.title}
                       state={c.status}
-                      score={c.mastery}
                       current={c.id === path.nextId}
-                      accent={palette.main}
                       first={i === 0}
-                      last={i === unit.length - 1}
                       flush
                       onPress={() => router.push(`/concept/${c.id}`)}
                       a11yLabel={`${c.title}, ${t('concept.mastery')} ${c.mastery}%`}
