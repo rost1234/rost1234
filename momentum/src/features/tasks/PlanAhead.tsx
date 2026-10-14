@@ -33,7 +33,8 @@ export function DayTaskInput({ date, today, onAdded }: { date: LocalDateString; 
   const styles = useStyles();
   const planTask = useTaskStore((s) => s.planTask);
   const [draft, setDraft] = useState('');
-  const [problem, setProblem] = useState<'full' | 'failed' | null>(null);
+  // A note about the day it was for (switching days in the planner keeps the text, not the note).
+  const [problem, setProblem] = useState<{ kind: 'full' | 'failed'; date: LocalDateString } | null>(null);
   const day = dayLabel(date, today, t);
 
   const add = () => {
@@ -43,7 +44,7 @@ export function DayTaskInput({ date, today, onAdded }: { date: LocalDateString; 
     runDetached(
       planTask(title, date).then((result) => {
         if (!result || result === 'full') {
-          setProblem(result ?? 'failed');
+          setProblem({ kind: result ?? 'failed', date });
           setDraft(title);
           return;
         }
@@ -73,9 +74,9 @@ export function DayTaskInput({ date, today, onAdded }: { date: LocalDateString; 
           <Ionicons name="add" size={24} color={colors.onPrimary} />
         </Pressable>
       </View>
-      {problem ? (
-        <Text style={[typography.caption, problem === 'failed' && { color: colors.danger }]} accessibilityLiveRegion="polite">
-          {problem === 'full' ? t('tasks.dayFull', { day }) : t('plan.failed')}
+      {problem?.date === date ? (
+        <Text style={[typography.caption, problem.kind === 'failed' && { color: colors.danger }]} accessibilityLiveRegion="polite">
+          {problem.kind === 'full' ? t('tasks.dayFull', { day }) : t('plan.failed')}
         </Text>
       ) : null}
     </View>
@@ -146,7 +147,7 @@ export function PlanAhead({ today }: { today: LocalDateString }) {
         ))}
         {tasks !== null && tasks.length === 0 ? <Text style={typography.caption}>{t('plan.empty')}</Text> : null}
       </View>
-      <DayTaskInput key={date} date={date} today={today} onAdded={added} />
+      <DayTaskInput date={date} today={today} onAdded={added} />
     </View>
   );
 }

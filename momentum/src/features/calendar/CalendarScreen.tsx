@@ -44,6 +44,7 @@ import type { DailyReflection, FocusSession, Habit, HabitLog, Pause, Task } from
 import { MOOD_OPTIONS } from '@/features/reflection/mood';
 import { DayTaskInput } from '@/features/tasks/PlanAhead';
 import { useReflectionAccess } from '@/features/reflection/ReflectionLock';
+import { useKeyboardHeight } from '@/hooks/useKeyboardOpen';
 import { useLocalDate } from '@/hooks/useLocalDate';
 import { useHabitStore } from '@/state/habitStore';
 import { useSettingsStore } from '@/state/settingsStore';
@@ -448,8 +449,12 @@ function DaySheet({
   const t = useT();
   const { colors, typography } = useTheme();
   const styles = useStyles();
-  const bottom = useSafeAreaInsets().bottom;
-  const maxHeight = useWindowDimensions().height * 0.7;
+  const insets = useSafeAreaInsets();
+  const bottom = insets.bottom;
+  const screenHeight = useWindowDimensions().height;
+  // Typing a task for a day to come: the sheet rides up above the keyboard and its list gets shorter.
+  const keyboard = useKeyboardHeight();
+  const maxHeight = keyboard > 0 ? Math.max(140, Math.min(screenHeight * 0.7, screenHeight - keyboard - insets.top - 150)) : screenHeight * 0.7;
   const scrollRef = useRef<ScrollView>(null);
   const rowY = useRef<Record<string, number>>({});
   const [note, setNote] = useState<TranslationKey | null>(null);
@@ -533,7 +538,7 @@ function DaySheet({
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent navigationBarTranslucent>
       <Pressable style={styles.scrim} accessibilityRole="button" accessibilityLabel={t('common.cancel')} onPress={onClose} />
-      <View style={[styles.sheet, { paddingBottom: bottom + spacing.lg }]}>
+      <View style={[styles.sheet, keyboard > 0 ? { bottom: keyboard, paddingBottom: spacing.md } : { paddingBottom: bottom + spacing.lg }]}>
         <View style={styles.grab} />
         <View style={styles.sheetHeader}>
           <View style={{ flex: 1, gap: 2 }}>

@@ -122,7 +122,10 @@ export function TaskList() {
   const today = useTaskStore((s) => s.today);
   const mainId = useHighlightStore((s) => highlightFor(s, today));
   const [draft, setDraft] = useState('');
-  const [hint, setHint] = useState<string | null>(null);
+  // A note after adding, for the day it was written (a "saved for tomorrow" doesn't outlive midnight).
+  const [note, setNote] = useState<{ text: string; on: LocalDateString } | null>(null);
+  const hint = note && note.on === today ? note.text : null;
+  const setHint = (text: string | null) => setNote(text && today ? { text, on: today } : null);
   const [focused, setFocused] = useState(false);
   // Which day a new task goes to; a day that has come (after midnight) means today.
   const [target, setTarget] = useState<LocalDateString | null>(null);
@@ -194,6 +197,14 @@ export function TaskList() {
           ) : null}
         </Pressable>
       ))}
+      {/* Above the field, so the keyboard (which keeps only the field in view) doesn't cover them. */}
+      {showDays && today ? (
+        <View style={styles.days} accessibilityLabel={t('tasks.whenA11y')}>
+          <Chip label={t('tasks.whenToday')} selected={!forDay} onPress={() => setTarget(null)} />
+          <Chip label={t('plan.tomorrow')} selected={forDay !== null && forDay === tomorrow} onPress={() => setTarget(tomorrow)} />
+          <Chip label={otherDay ? dayLabel(otherDay, today, t) : t('tasks.moveDay')} selected={otherDay !== null} onPress={pickOtherDay} />
+        </View>
+      ) : null}
       <View style={styles.inputRow}>
         <TextInput
           value={draft}
@@ -217,13 +228,6 @@ export function TaskList() {
           <Text style={styles.addText}>＋</Text>
         </Pressable>
       </View>
-      {showDays && today ? (
-        <View style={styles.days} accessibilityLabel={t('tasks.whenA11y')}>
-          <Chip label={t('tasks.whenToday')} selected={!forDay} onPress={() => setTarget(null)} />
-          <Chip label={t('plan.tomorrow')} selected={forDay !== null && forDay === tomorrow} onPress={() => setTarget(tomorrow)} />
-          <Chip label={otherDay ? dayLabel(otherDay, today, t) : t('tasks.moveDay')} selected={otherDay !== null} onPress={pickOtherDay} />
-        </View>
-      ) : null}
       {hint ? (
         <Text style={[typography.caption, styles.hint]} accessibilityLiveRegion="polite">
           {hint}
@@ -262,10 +266,10 @@ const useStyles = makeStyles(({ colors, typography, flat }) => ({
   add: { padding: spacing.sm },
   addText: { fontSize: 22, color: colors.primary, fontWeight: '700' },
   hint: { paddingBottom: spacing.sm },
-  days: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, paddingBottom: spacing.sm },
+  days: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, paddingTop: spacing.sm },
   upcoming: { gap: spacing.sm, paddingTop: spacing.md, paddingBottom: spacing.sm, borderTopWidth: 1, borderTopColor: colors.border },
   upcomingDay: { gap: 2 },
-  upcomingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 40 },
+  upcomingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 44 },
   upcomingDot: { width: 8, height: 8, borderRadius: 4, borderWidth: 2, borderColor: colors.primary },
   main: {
     fontSize: 11,

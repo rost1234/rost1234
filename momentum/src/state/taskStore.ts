@@ -148,7 +148,9 @@ export const useTaskStore = create<TaskState>((set, get) => {
       if (!today || isPending(taskId)) return;
       // Planned further ahead than the lists reach (e.g. from the reflection): drop it all the same.
       if (!found) {
-        if (decision === 'drop') runDetached(repositories.tasks.delete(taskId), rollback(snapshot(), t('err.dropTask')));
+        if (decision === 'drop') {
+          runDetached(repositories.tasks.delete(taskId), (error: unknown) => set({ error: `${t('err.dropTask')} ${toErrorMessage(error)}` }));
+        }
         return;
       }
       if (decision === 'today' && found.bucket !== 'today' && !hasRoomToday(get().tasks, today)) {
