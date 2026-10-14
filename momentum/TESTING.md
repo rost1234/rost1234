@@ -341,3 +341,16 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Their chip rows scroll sideways, pull-to-refresh works on Insights, and the Insights heatmap scrolls sideways (a swipe above or below it turns the page)
 - [ ] Swiping between pages still slides, both directions, and the page in view is the one that takes taps
 
+## The sprout tells the research, notebook, Progress tab (build 41)
+- [ ] Tab bar: Today · Month · Progress (no Library); the charts page is titled Progress; swiping goes Today → Month → Progress and resists past it
+- [ ] Garden Today: the sprout sits on the start side (right in Hebrew) and the bubble beside it tells today's insight in its own words ("קראתי מחקר מ…"); no source or "Source" button on Today
+- [ ] Bubble buttons are small: "What do we do?" swaps the line for the sprout's suggestion (the mouth moves), "Thanks" brings back its usual lines until tomorrow, the star fills and the card shows as starred in the notebook
+- [ ] Mark a habit done while the insight shows: the thank-you reaction shows for a few seconds, then the insight comes back
+- [ ] "Not today" on a habit (Garden): the sprout opens with "לא היום? זה בסדר גמור." and tells a study about missing a day. Do it on a second habit: no second card today
+- [ ] Also once a day each (on another day): a reflection with mood 1–2, a focus session stopped before the end, a new habit — each brings one fitting card when you're back on Today
+- [ ] Regular look: no moment cards; the insight card is as before plus "All insights ›" opening the notebook ("מחברת התובנות", plain cards)
+- [ ] Notebook (Garden pill "המחברת"): newest first, grouped by day, with why ("אחרי יום כבד", "התובנה של היום"); "What to do & source" opens the suggestion, the source, the caveat, the evidence and "Open the source"
+- [ ] Starred filter shows only starred cards (and an empty message when none); stars survive closing the app
+- [ ] All 100 studies by topic: a topic shows what was told plus teasers of the rest; "Hear it now" moves it to the told list (and to Today's date in the notebook) without changing today's own insight on Home
+- [ ] Hebrew: the sprout never addresses you in a gendered form; RTL bubble tail points at the sprout; largest font: the sprout goes above the bubble and the buttons wrap
+- [ ] TalkBack: the bubble's buttons read as buttons ("What do we do?", "Thanks", star with its state); a moment card is announced when it appears
