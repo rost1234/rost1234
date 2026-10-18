@@ -221,7 +221,7 @@ export function NewHabitScreen() {
         ) : null}
       </ScrollView>
       {added ? (
-        <Toast id={added.at} message={t('hf.addedToday', { title: added.title })} actionLabel={t('common.cancel')} onAction={undoIdea} onHide={hideToast} durationMs={5000} />
+        <Toast id={added.at} message={t('hf.addedToday', { title: added.title })} actionLabel={t('common.undo')} onAction={undoIdea} onHide={hideToast} durationMs={5000} />
       ) : null}
     </KeyboardAvoidingView>
   );
@@ -268,7 +268,7 @@ function QuitSteps({ draft, patch, step, setStep, saving, onSave, onBack }: Quit
     <>
       <View style={styles.stepBar}>
         <Pressable accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={onBack} hitSlop={8} style={styles.back}>
-          <Ionicons name={t.language === 'he' ? 'arrow-forward' : 'arrow-back'} size={20} color={colors.text} />
+          <Ionicons name={t.isRTL ? 'arrow-forward' : 'arrow-back'} size={20} color={colors.text} />
         </Pressable>
         <Text style={typography.caption}>{t('hf.stepOf', { step, total: 3 })}</Text>
       </View>
@@ -315,7 +315,7 @@ function QuitSteps({ draft, patch, step, setStep, saving, onSave, onBack }: Quit
           <Text style={typography.caption}>{t('form.quitCostHint')}</Text>
           <View style={styles.twoButtons}>
             <Button
-              label={t('common.skip')}
+              label={t('hf.skip')}
               onPress={() => onSave({ quitCost: null, quitMinutes: null })}
               variant="secondary"
               style={{ flex: 1 }}

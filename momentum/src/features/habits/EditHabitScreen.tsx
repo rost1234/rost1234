@@ -42,7 +42,7 @@ function Row({ label, value, onPress, last }: { label: string; value: string; on
       <Text style={[typography.body, { flex: 1 }]} numberOfLines={2}>
         {value}
       </Text>
-      <Ionicons name={t.language === 'he' ? 'chevron-back' : 'chevron-forward'} size={18} color={colors.textMuted} />
+      <Ionicons name={t.isRTL ? 'chevron-back' : 'chevron-forward'} size={18} color={colors.textMuted} />
     </Pressable>
   );
 }
@@ -167,13 +167,13 @@ export function EditHabitScreen({ habit, open }: { habit: Habit; open?: ExtraId 
 
         {habit.isQuit ? null : (
           <>
-            <Text style={[typography.label, styles.section]}>{t.plural('hf.extrasTitle', extrasCount(draft))}</Text>
+            <Text style={[typography.label, styles.section]}>{extrasCount(draft) > 0 ? t.plural('hf.extrasTitle', extrasCount(draft)) : t('hf.extrasHeading')}</Text>
             <ExtrasList draft={draft} onApply={(p) => void persist(p)} anchors={anchors} groups={groupNames} initialOpen={open ?? null} />
           </>
         )}
 
         <Box>
-          <Pressable accessibilityRole="button" onPress={() => setSheet('pause')} style={[styles.action, styles.divider]}>
+          <Pressable accessibilityRole="button" accessibilityState={{ selected: activePause !== undefined }} onPress={() => setSheet('pause')} style={[styles.action, styles.divider]}>
             <Ionicons name="pause-circle-outline" size={20} color={colors.text} />
             <Text style={[typography.body, { flex: 1 }]}>{activePause ? t('hf.pausedUntil', { date: formatFriendlyDate(activePause.endDate, t.locale) }) : t('hf.pause')}</Text>
           </Pressable>

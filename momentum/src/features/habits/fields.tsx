@@ -28,7 +28,7 @@ export function Stepper({ value, onChange, min = 0, max = 999, step: by = 1, uni
     }
   };
   return (
-    <View style={styles.stepper} accessibilityLabel={label}>
+    <View style={styles.stepper}>
       <Pressable accessibilityRole="button" accessibilityLabel={t('hf.less', { label })} onPress={() => step(-by)} onLongPress={() => step(-5 * by)} style={styles.stepButton} disabled={value <= min}>
         <Ionicons name="remove" size={22} color={value <= min ? colors.border : colors.text} />
       </Pressable>
@@ -51,6 +51,7 @@ function Choice({ icon, label, selected, onPress }: { icon: string; label: strin
     <Pressable
       accessibilityRole="radio"
       accessibilityState={{ checked: selected }}
+      accessibilityLabel={label}
       onPress={() => {
         haptics.select();
         onPress();
@@ -223,9 +224,9 @@ export function GrowField({ draft, onChange }: { draft: HabitDraft; onChange: Pa
   return (
     <View style={styles.group}>
       <Text style={typography.caption}>{t('hf.growFrom')}</Text>
-      <Stepper value={draft.targetCount} min={1} onChange={(targetCount) => onChange({ targetCount, goalCount: Math.max(goal, targetCount + 1) })} unit={unit} label={t('hf.growFrom')} />
+      <Stepper value={draft.targetCount} min={1} onChange={(targetCount) => onChange({ targetCount, goalCount: Math.max(goal, targetCount + 1) })} unit={unit} label={t('hf.startPoint')} />
       <Text style={typography.caption}>{t('hf.growTo')}</Text>
-      <Stepper value={goal} min={draft.targetCount + 1} onChange={(goalCount) => onChange({ goalCount })} unit={unit} label={t('hf.growTo')} />
+      <Stepper value={goal} min={draft.targetCount + 1} onChange={(goalCount) => onChange({ goalCount })} unit={unit} label={t('hf.goal')} />
       <View style={[styles.noteBox, { backgroundColor: colors.successSoft }]}>
         <Text style={typography.caption}>{t('atomic.growHint')}</Text>
       </View>
