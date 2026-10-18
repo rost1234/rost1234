@@ -6,6 +6,7 @@ import { applyPrimaryAction, decrementProgress, progressOf, reevaluateProgress, 
 import type { Habit, HabitLog, NewHabit } from '@/domain/models';
 import { applyDayEdit } from '@/domain/calendar';
 import { applyPauses } from '@/domain/pauses';
+import { isHabitDueOn } from '@/domain/habitSchedule';
 import { computeStreak } from '@/domain/streaks';
 import { MAX_STREAK_FREEZES, refundsFreeze } from '@/domain/freezeRewards';
 import { offerMomentLater } from '@/services/sproutMoments';
@@ -50,7 +51,13 @@ interface HabitState {
   completeOnDate: (habitId: string, date: LocalDateString) => Promise<void>;
   /** Sets what a habit holds on `date` (today or earlier), e.g. from the calendar; a freeze spent on that day comes back when it becomes done. Resolves true when a freeze came back. */
   setProgressOnDate: (habitId: string, date: LocalDateString, next: LogProgress) => Promise<boolean>;
-  addHabit: (input: NewHabit) => Promise<void>;
+  /** Saves a new habit and marks it as just added (Today highlights it once). */
+  addHabit: (input: NewHabit) => Promise<Habit>;
+  /** Deletes a habit that was added a moment ago (the "Undo" right after adding). */
+  removeNewHabit: (habitId: string) => Promise<void>;
+  /** The habit added most recently in this session, until Today has shown it. */
+  justAdded: string | null;
+  clearJustAdded: () => void;
   /** Saves edits; today's log is re-evaluated against a changed target. Streak history is kept. */
   updateHabit: (habitId: string, changes: Partial<NewHabit>) => Promise<void>;
   archiveHabit: (habitId: string) => Promise<void>;
@@ -80,6 +87,15 @@ function describeChange(before: LogProgress, after: LogProgress, unit: string, n
   if (after.currentCount < before.currentCount && after.currentCount > 0 && !binary) return t('undo.amount', { count: after.currentCount, unit }).trim();
   if (after.currentCount < before.currentCount || before.status === 'completed') return t('undo.undone');
   return t('undo.updated');
+}
+
+/** The first habit stacked right after `habitId` that is due today and not done yet. */
+export function nextInChain(habits: readonly Habit[], logs: LogIndex, habitId: string, today: LocalDateString): Habit | undefined {
+  return habits.find((h) => {
+    if (h.afterHabitId !== habitId || h.id === habitId || !isHabitDueOn(h, today)) return false;
+    const status = logs[h.id]?.[today]?.status;
+    return status !== 'completed' && status !== 'skipped';
+  });
 }
 
 function indexLogs(logs: readonly HabitLog[]): LogIndex {
@@ -114,7 +130,13 @@ export const useHabitStore = create<HabitState>((set, get) => {
     if (options.recordUndo) {
       const before = progressOf(previous);
       const nth = (get().completedBefore[habitId] ?? 0) + 1;
-      set({ lastChange: { habitId, previous: before, label: t('undo.label', { title: habit.title, change: describeChange(before, next, habit.unit, nth, !habit.isQuantitative) }), at: Date.now() } });
+      let label = t('undo.label', { title: habit.title, change: describeChange(before, next, habit.unit, nth, !habit.isQuantitative) });
+      // Habit stacking: finishing the anchor names the habit that comes right after it.
+      if (next.status === 'completed' && before.status !== 'completed') {
+        const following = nextInChain(habits, logs, habitId, today);
+        if (following) label = t('undo.withNext', { label, title: following.title });
+      }
+      set({ lastChange: { habitId, previous: before, label, at: Date.now() } });
     }
     const optimistic: HabitLog = {
       id: previous?.id ?? `pending-${habitId}-${today}`,
@@ -172,6 +194,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
     lastForgivenDays: 0,
     lastFreezeAwarded: false,
     lastChange: null,
+    justAdded: null,
 
     load: async (today) => {
       // Keep existing data visible during refreshes (e.g. midnight rollover).
@@ -288,9 +311,24 @@ export const useHabitStore = create<HabitState>((set, get) => {
         habits: [...get().habits, habit],
         streaks: { ...get().streaks, [habit.id]: today ? streakFor(habit, logs, today) : 0 },
       });
+      set({ justAdded: habit.id });
       // The Garden sprout has a study for a fresh start.
       offerMomentLater('newHabit', today ?? undefined);
+      return habit;
     },
+
+    removeNewHabit: async (habitId) => {
+      const before = get().habits;
+      set({ habits: before.filter((h) => h.id !== habitId), justAdded: get().justAdded === habitId ? null : get().justAdded });
+      try {
+        await repositories.habits.delete(habitId);
+        refreshTodayWidget();
+      } catch (error) {
+        set({ habits: before, error: t('err.removeNew', { error: toErrorMessage(error) }) });
+      }
+    },
+
+    clearJustAdded: () => set({ justAdded: null }),
 
     updateHabit: async (habitId, changes) => {
       const current = get().habits.find((h) => h.id === habitId);

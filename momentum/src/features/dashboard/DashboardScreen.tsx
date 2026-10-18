@@ -40,6 +40,7 @@ import { useHomePromptSlot } from './homePrompts';
 import { YesterdayCard } from './YesterdayCard';
 import { FoldedSection } from './FoldedSection';
 import { EmptyHabits } from './EmptyHabits';
+import { JustAddedCard } from './JustAddedCard';
 import { HardDayBar } from './HardDayBar';
 import { HomeTopBar } from './HomeChrome';
 import { LevelCard } from './LevelCard';
@@ -232,6 +233,7 @@ export function DashboardScreen() {
                 <HabitCard key={item.habit.id} habit={item.habit} />
               ),
             )}
+            <JustAddedCard />
             {aside.length > 0 ? (
               <FoldedSection icon="🌙" title={t('aside.title')} summary={t.plural('aside.summary', aside.length)} hint={t('aside.hint')}>
                 {aside.map((habit) => (

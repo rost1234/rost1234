@@ -158,6 +158,8 @@ function HabitCardComponent({ habit, passed = false }: HabitCardProps) {
   // Each card subscribes only to its own slice, so a tap re-renders one card.
   const log = useHabitStore((s) => (s.today ? s.logs[habit.id]?.[s.today] : undefined));
   const streak = useHabitStore((s) => s.streaks[habit.id] ?? 0);
+  // Just added: marked for a moment so it's easy to spot.
+  const isNew = useHabitStore((s) => s.justAdded === habit.id);
   const anchorTitle = useHabitStore((s) => (habit.afterHabitId ? s.habits.find((h) => h.id === habit.afterHabitId)?.title : undefined));
   // "Fresh start" instead of a bare zero when the user is coming back after a break.
   const isComeback = useHabitStore((s) => {
@@ -256,7 +258,7 @@ function HabitCardComponent({ habit, passed = false }: HabitCardProps) {
     // Small counts show as drops (5 of 8), bigger ones as a bar.
     const drops = habit.isQuantitative && habit.targetCount <= 12;
     return (
-      <View style={[styles.card, styles.gCard, isDone && styles.gCardDone, isSkipped && styles.cardSkipped]}>
+      <View style={[styles.card, styles.gCard, isDone && styles.gCardDone, isSkipped && styles.cardSkipped, isNew && styles.cardNew]}>
         <View style={styles.row}>
           <Pressable
             onPress={onTap}
@@ -374,7 +376,7 @@ function HabitCardComponent({ habit, passed = false }: HabitCardProps) {
   }
 
   return (
-    <View style={[styles.card, isDone && styles.cardDone, isSkipped && styles.cardSkipped]}>
+    <View style={[styles.card, isDone && styles.cardDone, isSkipped && styles.cardSkipped, isNew && styles.cardNew]}>
       <View style={styles.row}>
       <Pressable
         onPress={onTap}
@@ -500,6 +502,7 @@ const useStyles = makeStyles(({ colors, typography, flat }) => ({
   halfFill: { position: 'absolute', top: 0, bottom: 0, start: 0, width: '50%' },
   cardDone: { backgroundColor: colors.doneCard },
   cardSkipped: { opacity: 0.55 },
+  cardNew: { borderWidth: 3, borderColor: colors.warning },
   main: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   checkCircle: {
     width: 42,

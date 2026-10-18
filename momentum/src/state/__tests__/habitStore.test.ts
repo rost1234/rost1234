@@ -1,16 +1,19 @@
 import type { Habit } from '@/domain/models';
 import { makeHabit } from '@/testing/fixtures';
 // jest.mock calls below are hoisted above this import by babel-jest.
-import { useHabitStore } from '../habitStore';
+import { nextInChain, useHabitStore } from '../habitStore';
 
 const mockUpsert = jest.fn();
 const mockGetForDate = jest.fn();
 const mockRefund = jest.fn();
+const mockCreateHabit = jest.fn();
+const mockDeleteHabit = jest.fn();
 
 jest.mock('@/data/repositories', () => {
   const repos = {
     habitLogs: { upsert: (...args: unknown[]) => mockUpsert(...args), getForDate: (...args: unknown[]) => mockGetForDate(...args) },
     settings: { refundStreakFreezes: (...args: unknown[]) => mockRefund(...args) },
+    habits: { create: (...args: unknown[]) => mockCreateHabit(...args), delete: (...args: unknown[]) => mockDeleteHabit(...args) },
   };
   return { repositories: repos, inTransaction: (_op: string, work: (r: typeof repos) => unknown) => work(repos) };
 });
@@ -123,5 +126,50 @@ describe('setProgressOnDate (editing a day from the calendar)', () => {
     await useHabitStore.getState().setProgressOnDate('water', '2026-09-20', { currentCount: 2, status: 'completed' });
     expect(mockUpsert).not.toHaveBeenCalled();
     expect(load).not.toHaveBeenCalled();
+  });
+});
+
+describe('adding a habit', () => {
+  it('returns the new habit and marks it as just added; Undo deletes it', async () => {
+    const stretch = makeHabit({ id: 'stretch', title: 'Stretch' });
+    mockCreateHabit.mockResolvedValue(stretch);
+    mockDeleteHabit.mockResolvedValue(undefined);
+    const added = await useHabitStore.getState().addHabit({ title: 'Stretch', microStep: '', isQuantitative: false, targetCount: 1, unit: '', targetFrequency: 'daily', targetDays: [] });
+    expect(added.id).toBe('stretch');
+    expect(useHabitStore.getState().justAdded).toBe('stretch');
+    expect(useHabitStore.getState().habits.map((h) => h.id)).toEqual(['water', 'stretch']);
+
+    await useHabitStore.getState().removeNewHabit('stretch');
+    expect(mockDeleteHabit).toHaveBeenCalledWith('stretch');
+    expect(useHabitStore.getState().habits.map((h) => h.id)).toEqual(['water']);
+    expect(useHabitStore.getState().justAdded).toBeNull();
+  });
+
+  it('puts the habit back when deleting fails', async () => {
+    const stretch = makeHabit({ id: 'stretch', title: 'Stretch' });
+    useHabitStore.setState({ habits: [water, stretch] });
+    mockDeleteHabit.mockRejectedValue(new Error('locked'));
+    await useHabitStore.getState().removeNewHabit('stretch');
+    expect(useHabitStore.getState().habits.map((h) => h.id)).toEqual(['water', 'stretch']);
+    expect(useHabitStore.getState().error).toContain('locked');
+  });
+});
+
+describe('habit stacking hint', () => {
+  const coffee = makeHabit({ id: 'coffee', title: 'Coffee' });
+  const stretch = makeHabit({ id: 'stretch', title: 'Stretch', afterHabitId: 'coffee' });
+
+  it('finishing the anchor names the habit that comes next', () => {
+    mockUpsert.mockResolvedValue({ id: 'db-1', habitId: 'coffee', logDate: TODAY, currentCount: 1, status: 'completed', updatedAt: 'x' });
+    useHabitStore.setState({ habits: [coffee, stretch] });
+    useHabitStore.getState().tapHabit('coffee');
+    expect(useHabitStore.getState().lastChange?.label).toContain('Stretch');
+  });
+
+  it('says nothing about a next habit that is already done', () => {
+    expect(
+      nextInChain([coffee, stretch], { stretch: { [TODAY]: { id: 'l', habitId: 'stretch', logDate: TODAY, currentCount: 1, status: 'completed', updatedAt: 'x', source: 'app' } } }, 'coffee', TODAY),
+    ).toBeUndefined();
+    expect(nextInChain([coffee, stretch], {}, 'coffee', TODAY)?.id).toBe('stretch');
   });
 });

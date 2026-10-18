@@ -1,5 +1,5 @@
-import { HabitFormScreen } from '@/features/habits/HabitFormScreen';
+import { NewHabitScreen } from '@/features/habits/NewHabitScreen';
 
 export default function NewHabitRoute() {
-  return <HabitFormScreen />;
+  return <NewHabitScreen />;
 }
