@@ -31,7 +31,7 @@ export function FormSheet({ title, hint, children, onClose, doneLabel, onDone, d
   const screenHeight = useWindowDimensions().height;
   // A Modal with a translucent navigation bar is edge to edge, so the keyboard isn't avoided for us.
   const keyboard = useKeyboardHeight();
-  const maxHeight = keyboard > 0 ? Math.max(160, screenHeight - keyboard - insets.top - 170) : screenHeight * 0.65;
+  const maxHeight = keyboard > 0 ? Math.max(160, screenHeight - keyboard - insets.top - 240) : screenHeight * 0.65;
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent navigationBarTranslucent>

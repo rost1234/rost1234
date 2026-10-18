@@ -67,13 +67,20 @@ export function NewHabitScreen() {
   const anchors = habits.filter((h) => !h.isQuit);
   const groupNames = [...new Set(habits.map((h) => h.groupName).filter((g) => g.length > 0))];
 
+  // Ideas being saved right now, so a quick second tap doesn't add the same one twice.
+  const pendingIdeas = useRef(new Set<string>());
+
   const addIdea = async (preset: HabitPreset) => {
+    if (pendingIdeas.current.has(preset.habit.title) || hasHabitTitled(useHabitStore.getState().habits, preset.habit.title)) return;
+    pendingIdeas.current.add(preset.habit.title);
     haptics.success();
     try {
       const habit = await addHabit(preset.habit);
       setAdded({ key: preset.key, habitId: habit.id, title: habit.title, at: ++toastSeq.current });
     } catch (e) {
       setError(t('form.saveError', { error: toErrorMessage(e) }));
+    } finally {
+      pendingIdeas.current.delete(preset.habit.title);
     }
   };
 

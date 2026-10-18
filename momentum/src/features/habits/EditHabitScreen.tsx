@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -66,6 +66,7 @@ export function EditHabitScreen({ habit, open }: { habit: Habit; open?: ExtraId 
   const pauses = usePlanningStore((s) => s.pauses);
   const addPause = usePlanningStore((s) => s.addPause);
   const endPause = usePlanningStore((s) => s.endPause);
+  const reloadHabits = useHabitStore((s) => s.load);
 
   const draft = draftFromHabit(habit);
   const [sheet, setSheet] = useState<SheetId | null>(null);
@@ -79,12 +80,17 @@ export function EditHabitScreen({ habit, open }: { habit: Habit; open?: ExtraId 
   const groupNames = [...new Set(habits.map((h) => h.groupName).filter((g) => g.length > 0))];
   const activePause = today ? pauses.find((p) => p.habitId === habit.id && p.startDate <= today && p.endDate >= today) : undefined;
 
+  // Saves build on each other: a second change made before the first one lands keeps the first.
+  const latest = useRef<HabitDraft | null>(null);
   const persist = async (changes: Partial<HabitDraft>) => {
-    const next = toNewHabit({ ...draftFromHabit(habit), ...changes });
+    const merged = { ...(latest.current ?? draftFromHabit(habit)), ...changes };
+    latest.current = merged;
+    const next = toNewHabit(merged);
     if (!next.title) return;
     try {
       await updateHabit(habit.id, next);
     } catch (e) {
+      latest.current = null;
       setError(t('form.saveError', { error: toErrorMessage(e) }));
     }
   };
@@ -104,6 +110,8 @@ export function EditHabitScreen({ habit, open }: { habit: Habit; open?: ExtraId 
     setSheet(null);
     try {
       await addPause(today, addDays(today, pauseDays - 1), 'other', habit.id);
+      // Streaks and reminders depend on pauses.
+      await reloadHabits(today);
     } catch (e) {
       setError(t('pause.saveError', { error: toErrorMessage(e) }));
     }
@@ -114,6 +122,7 @@ export function EditHabitScreen({ habit, open }: { habit: Habit; open?: ExtraId 
     setSheet(null);
     try {
       await endPause(activePause.id, today);
+      await reloadHabits(today);
     } catch (e) {
       setError(t('pause.saveError', { error: toErrorMessage(e) }));
     }
