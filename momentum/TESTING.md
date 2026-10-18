@@ -366,3 +366,18 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Reflection step 4 still plans tasks; removing one there removes it from Coming up too
 - [ ] Next day: yesterday's "tomorrow" tasks are today's tasks; Coming up moves on
 - [ ] Hebrew: day names read naturally ("מחר", "יום שישי 16"); TalkBack reads a Coming up task with its day and a hint
+
+## Simpler habit add and edit (build 43)
+- [ ] "+ הרגל" opens two cards (משהו לבנות / משהו לעזוב) and the ready-made ideas, with topic chips that filter them
+- [ ] "+" on an idea adds it at once; "נוסף להיום" shows with "ביטול", and ביטול removes it again. An idea already on the list shows "כבר יש ✓" and can't be added twice
+- [ ] "הרגל משלי": the keyboard opens; typing two letters shows matching ideas; the summary line changes when using "לשנות" (amount, days, part of day, reminder); "להוסיף" works with only a name
+- [ ] "עוד אפשרויות": each extra opens its own sheet above the keyboard; "שמירה" fills the row, "בלי" clears it
+- [ ] Back on Today the new habit has a yellow frame for a moment; with no tiny step, the sprout card asks once: "כן, לקבוע" opens the tiny-step sheet on the edit screen, "לא עכשיו" hides it
+- [ ] "משהו לעזוב": three steps with a back arrow; "לשמור עכשיו" in step 2 and "דלג" in step 3 both save; the card shows as a quit habit (no reminder)
+- [ ] Edit (⋯ → עריכת הרגל): rows for name, how much, when; the reminder switch; the extras list; each change saves at once and the streak stays
+- [ ] Changing a habit from amount to yes/no and back keeps its history; a growing habit keeps its goal after unrelated edits
+- [ ] Pause from the edit screen for a week: the row says "בהשהיה עד …"; "להחזיר עכשיו" ends it; the pause also appears in Streaks
+- [ ] Archive from the edit screen asks first, then closes the screen
+- [ ] Stacking: with Stretch after Coffee, checking Coffee shows "… · הבא בתור: Stretch" in the undo toast
+- [ ] English and Hebrew, light and dark, Garden and Calm look; TalkBack reads the idea buttons, the kind cards as radio buttons and the steppers
+
