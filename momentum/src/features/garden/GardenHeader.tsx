@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, Animated, Platform, Pressable, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Text } from '@/components/AppText';
 import { ProgressRing } from '@/components/ProgressRing';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
-import { formatFriendlyDate, type LocalDateString } from '@/core/localDate';
+import { formatFriendlyDate, formatLocalDate, type LocalDateString } from '@/core/localDate';
+import { perfectDaysTowardNextFreeze, PERFECT_WEEK_DAYS } from '@/domain/freezeRewards';
+import { statusesByHabit } from '@/services/streakService';
 import { haptics } from '@/core/haptics';
 import { accessoryFor, hillFlowers, isNight, isRainyDay, sproutMood, visitorEmoji, visitorsEarned, yearsSince, type VisitorId } from '@/domain/garden';
 import { holidayOn } from '@/domain/holidays';
@@ -211,8 +213,17 @@ export function GardenHeader({
   const plantedOn = useGardenStore((s) => s.plantedOn);
   const visitors = useGardenStore((s) => s.visitors);
   const gardenReady = useGardenStore((s) => s.isHydrated);
-  const createdOn = useSettingsStore((s) => s.settings?.createdAt.slice(0, 10) ?? null);
-  const perfectWeek = useSettingsStore((s) => s.settings?.lastFreezeAwardDate != null);
+  // createdAt is a UTC timestamp: the local day it was is the install day.
+  const createdAt = useSettingsStore((s) => s.settings?.createdAt ?? null);
+  const createdOn = createdAt ? formatLocalDate(new Date(createdAt)) : null;
+  const awarded = useSettingsStore((s) => s.settings?.lastFreezeAwardDate != null);
+  const habits = useHabitStore((s) => s.habits);
+  const logs = useHabitStore((s) => s.logs);
+  // A perfect week counts even when freezes were already full (no award then).
+  const perfectWeek = useMemo(
+    () => awarded || perfectDaysTowardNextFreeze(habits, statusesByHabit(Object.values(logs).flatMap((byDate) => Object.values(byDate))), today, null) >= PERFECT_WEEK_DAYS,
+    [awarded, habits, logs, today],
+  );
   const holidaysOn = usePrefsStore((s) => s.holidays) ?? t.language === 'he';
   const birthday = plantedOn ?? createdOn;
   const special = accessoryFor(today, holidaysOn ? holidayOn(today) : null, birthday);
@@ -351,7 +362,9 @@ export function GardenHeader({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={
-            totalCount === 0 ? t('garden.headerA11yQuiet', { stage: stageName, quiet: t('today.quietDay') }) : t('garden.headerA11y', { stage: stageName, percent })
+            totalCount === 0
+              ? t('garden.headerA11yQuiet', { stage: sproutName ? `${sproutName}, ${stageName}` : stageName, quiet: t('today.quietDay') })
+              : t('garden.headerA11y', { stage: sproutName ? `${sproutName}, ${stageName}` : stageName, percent })
           }
           accessibilityHint={t('garden.sproutHint')}
           onPress={poke}

@@ -9,6 +9,9 @@ const KEY = 'momentum.garden.v1';
 
 export const SPROUT_NAME_MAX = 16;
 
+/** The "day" of visitors who came before visitors were recorded (shown without a date). */
+export const EARLIER = '0000-01-01';
+
 interface GardenState {
   /** The highest stage the sprout ever reached (-1 until known). It never goes down. */
   reached: number;
@@ -18,6 +21,8 @@ interface GardenState {
   visitors: Partial<Record<VisitorId, LocalDateString>>;
   /** The day the seed was planted at the end of onboarding (null on older installs). */
   plantedOn: LocalDateString | null;
+  /** The day visitors started being recorded: ones already earned then came "earlier", quietly. */
+  visitorsSince: LocalDateString | null;
   isHydrated: boolean;
   hydrate: () => Promise<void>;
   /** Records a stage if it's higher than before; true when it was. */
@@ -35,8 +40,8 @@ const isDate = (v: unknown): v is LocalDateString => typeof v === 'string' && /^
 /** The Garden sprout's high-water mark, name and visitors (per device, like the look itself). */
 export const useGardenStore = create<GardenState>((set, get) => {
   const persist = () => {
-    const { reached, name, visitors, plantedOn } = get();
-    runDetached(AsyncStorage.setItem(KEY, JSON.stringify({ stage: reached, name, visitors, plantedOn })));
+    const { reached, name, visitors, plantedOn, visitorsSince } = get();
+    runDetached(AsyncStorage.setItem(KEY, JSON.stringify({ stage: reached, name, visitors, plantedOn, visitorsSince })));
   };
 
   return {
@@ -44,6 +49,7 @@ export const useGardenStore = create<GardenState>((set, get) => {
     name: '',
     visitors: {},
     plantedOn: null,
+    visitorsSince: null,
     isHydrated: false,
 
     hydrate: () => {
@@ -52,7 +58,7 @@ export const useGardenStore = create<GardenState>((set, get) => {
           const raw = await AsyncStorage.getItem(KEY);
           const parsed: unknown = raw ? JSON.parse(raw) : null;
           if (parsed && typeof parsed === 'object') {
-            const { stage, name, visitors, plantedOn } = parsed as Record<string, unknown>;
+            const { stage, name, visitors, plantedOn, visitorsSince } = parsed as Record<string, unknown>;
             if (typeof stage === 'number' && Number.isFinite(stage)) set({ reached: Math.max(get().reached, stage) });
             if (typeof name === 'string') set({ name: name.slice(0, SPROUT_NAME_MAX) });
             if (visitors && typeof visitors === 'object') {
@@ -60,6 +66,7 @@ export const useGardenStore = create<GardenState>((set, get) => {
               set({ visitors: { ...kept, ...get().visitors } });
             }
             if (isDate(plantedOn)) set({ plantedOn });
+            if (isDate(visitorsSince)) set({ visitorsSince });
           }
         } catch {
           // Unknown: the sprout shows what the history says.
@@ -87,10 +94,20 @@ export const useGardenStore = create<GardenState>((set, get) => {
       if (!get().isHydrated) return [];
       const known = get().visitors;
       const fresh = ids.filter((id) => !known[id]);
-      if (fresh.length === 0) return [];
-      set({ visitors: { ...known, ...Object.fromEntries(fresh.map((id) => [id, today])) } });
+      // The first time ever (an update on a phone with history): what was already earned came
+      // earlier, without a day and without an announcement, so they don't all arrive at once.
+      const first = get().visitorsSince === null;
+      if (fresh.length === 0) {
+        if (first) {
+          set({ visitorsSince: today });
+          persist();
+        }
+        return [];
+      }
+      const day = first ? EARLIER : today;
+      set({ visitors: { ...known, ...Object.fromEntries(fresh.map((id) => [id, day])) }, visitorsSince: get().visitorsSince ?? today });
       persist();
-      return fresh;
+      return first ? [] : fresh;
     },
 
     plant: (today) => {

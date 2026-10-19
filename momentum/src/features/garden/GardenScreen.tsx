@@ -9,7 +9,7 @@ import { Button, Card, ProgressBar, SectionTitle } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { useBottomSpace } from '@/components/useBottomSpace';
 import { GROWTH_STAGES, habitPotStage, sproutMood, VISITORS, type GrowthStage } from '@/domain/garden';
-import { SPROUT_NAME_MAX, useGardenStore } from '@/state/gardenStore';
+import { EARLIER, SPROUT_NAME_MAX, useGardenStore } from '@/state/gardenStore';
 import { formatFriendlyDate } from '@/core/localDate';
 import { haptics } from '@/core/haptics';
 import { dailyProgressPercent, progressOf } from '@/domain/habitProgress';
@@ -128,7 +128,7 @@ function NameCard() {
         value={draft}
         onChangeText={setDraft}
         placeholder={t('garden.namePh')}
-        accessibilityLabel={t('garden.nameAsk')}
+        accessibilityLabel={t('garden.nameLabel')}
         maxLength={SPROUT_NAME_MAX}
         autoFocus
         onSubmitEditing={save}
@@ -158,7 +158,7 @@ function Visitors() {
         <>
           <View style={styles.visitors}>
             {came.map((v) => (
-              <View key={v.id} style={styles.visitorTile} accessible accessibilityLabel={`${t(`garden.visitor.${v.id}` as const)}, ${formatFriendlyDate(visitors[v.id] ?? '', t.locale)}`}>
+              <View key={v.id} style={styles.visitorTile} accessible accessibilityLabel={visitors[v.id] === EARLIER ? t(`garden.visitor.${v.id}` as const) : `${t(`garden.visitor.${v.id}` as const)}, ${formatFriendlyDate(visitors[v.id] ?? '', t.locale)}`}>
                 <Text style={styles.visitorEmoji}>{v.emoji}</Text>
                 <Text style={[typography.caption, styles.center]} numberOfLines={2}>
                   {t(`garden.visitor.${v.id}` as const)}
@@ -166,7 +166,7 @@ function Visitors() {
               </View>
             ))}
           </View>
-          <Text style={[typography.caption, styles.potsLead]}>{t('garden.visitorsMore')}</Text>
+          {came.length < VISITORS.length ? <Text style={[typography.caption, styles.potsLead]}>{t('garden.visitorsMore')}</Text> : null}
         </>
       )}
     </>

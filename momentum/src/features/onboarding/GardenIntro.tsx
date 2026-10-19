@@ -88,6 +88,7 @@ export function PlantSeed({ onPlanted, disabled }: { onPlanted: () => void; disa
     if (planted || disabled) return;
     setPlanted(true);
     haptics.success();
+    AccessibilityInfo.announceForAccessibility(t('onb.planted'));
     sink.setValue(1);
     onPlanted();
   };
@@ -112,8 +113,14 @@ export function PlantSeed({ onPlanted, disabled }: { onPlanted: () => void; disa
         onLongPress={plant}
         onPress={() => {
           // A screen reader's double tap, or reduced motion, plants right away; otherwise say to hold.
-          if (reader.current || reduce) plant();
-          else setHint(true);
+          if (reader.current || reduce) {
+            plant();
+            return;
+          }
+          AccessibilityInfo.isScreenReaderEnabled().then(
+            (on) => (on ? plant() : setHint(true)),
+            () => setHint(true),
+          );
         }}
         style={[styles.plot, { backgroundColor: colors.surface }]}
       >

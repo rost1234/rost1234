@@ -64,9 +64,9 @@ const line = (pool: TalkPool, seed: number): TalkLine => ({ key: `talk.${pool}.$
 export function ambientLine(c: TalkContext, seed: number): TalkLine {
   // "I'm still a seed" only while it really is one (it never shrinks, even if every habit is removed).
   if (c.noHabits && c.stage === 0) return line('seed', seed);
-  if (c.comeback) return line('comeback', seed);
-  // A first visit or a special day is told all day, until a habit's reaction takes the bubble.
+  // A first visit is told all day (the bird comes exactly when coming back), until a habit's reaction takes the bubble.
   if (c.visitor) return { key: `talk.visitor.${c.visitor}` };
+  if (c.comeback) return line('comeback', seed);
   if (c.special === 'party') return { key: 'talk.special.party', plural: Math.max(1, c.years ?? 1) };
   if (c.special) return { key: `talk.special.${c.special}` };
   if (c.plantedToday && c.doneCount === 0) return { key: 'talk.planted' };

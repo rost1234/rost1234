@@ -94,8 +94,9 @@ export function OnboardingWizard() {
             <Button label={t('common.skip')} variant="ghost" onPress={() => void finish()} disabled={isAsking} loading={isSaving} />
             <Button label={t('onb.allowNotifications')} onPress={() => void askPermission()} loading={isAsking} />
           </View>
-        ) : look === 'garden' ? null : (
-          <Button label={t('onb.start')} onPress={() => void finish()} loading={isSaving} />
+        ) : (
+          // Garden: the seed above is the way to start, and this one plants it too (it may be below the fold).
+          <Button label={look === 'garden' ? t('onb.plant') : t('onb.start')} onPress={() => void finish()} loading={isSaving} />
         )}
       </View>
     </SafeAreaView>

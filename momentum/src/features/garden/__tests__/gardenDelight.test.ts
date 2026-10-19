@@ -82,8 +82,9 @@ describe('what the sprout says on special days', () => {
     expect(ambientLine({ ...base, special: 'party', years: 2 }, 1)).toEqual({ key: 'talk.special.party', plural: 2 });
     expect(ambientLine({ ...base, plantedToday: true }, 1).key).toBe('talk.planted');
     expect(ambientLine({ ...base, plantedToday: true, doneCount: 1 }, 0).key).toMatch(/^talk\.morning\./);
-    // Coming back still comes first.
-    expect(ambientLine({ ...base, comeback: true, visitor: 'bird' }, 1).key).toMatch(/^talk\.comeback\./);
+    // The bird comes on the day of coming back, and says so.
+    expect(ambientLine({ ...base, comeback: true, visitor: 'bird' }, 1).key).toBe('talk.visitor.bird');
+    expect(ambientLine({ ...base, comeback: true }, 1).key).toMatch(/^talk\.comeback\./);
   });
 
   it('says its name when tapped, if it has one', () => {

@@ -11,6 +11,14 @@ import { useT } from '@/i18n';
 
 /** Stays unlocked until the app goes to the background. */
 let unlockedThisVisit = false;
+/** One fingerprint / PIN prompt at a time (the PIN screen itself can send the app to the background). */
+let prompting: Promise<boolean> | null = null;
+function unlockOnce(): Promise<boolean> {
+  prompting ??= unlock().finally(() => {
+    prompting = null;
+  });
+  return prompting;
+}
 /** Open screens close their reflections again when the app leaves the foreground. */
 const relockers = new Set<() => void>();
 AppState.addEventListener('change', (state) => {
@@ -38,7 +46,7 @@ export function useReflectionAccess(): { canRead: boolean; ask: () => Promise<bo
   const locked = useDevicePrefsStore((s) => s.lockReflections || !s.isHydrated);
   const [open, setOpen] = useUnlockedThisVisit();
   const ask = () =>
-    unlock().then((ok) => {
+    unlockOnce().then((ok) => {
       unlockedThisVisit = ok;
       setOpen(ok);
       return ok;
@@ -58,7 +66,7 @@ export function ReflectionLock({ children }: { children: ReactNode }) {
 
   const tryUnlock = () =>
     runDetached(
-      unlock().then((ok) => {
+      unlockOnce().then((ok) => {
         unlockedThisVisit = ok;
         setOpen(ok);
       }),
@@ -68,7 +76,7 @@ export function ReflectionLock({ children }: { children: ReactNode }) {
     if (locked && !unlockedThisVisit) tryUnlock();
     // Prompt once when the screen opens, and again when coming back to it from the background.
     const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active' && locked && !unlockedThisVisit) tryUnlock();
+      if (state === 'active' && locked && !unlockedThisVisit && !prompting) tryUnlock();
     });
     return () => sub.remove();
     // eslint-disable-next-line react-hooks/exhaustive-deps
