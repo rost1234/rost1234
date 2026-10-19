@@ -363,7 +363,7 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Coming up shows up to 3 days with up to 3 tasks each, then "ועוד N" / "ועוד N משימות בשבוע הקרוב"
 - [ ] Tap a task in Coming up: Move to today (respects the 3-task cap), Another day, Later, Drop; each updates the list at once
 - [ ] Month: tap a future day: "Tasks for this day" comes first with its tasks and a field to add one; it shows in Coming up when within a week. Past days and today look as before
-- [ ] Reflection step 4 still plans tasks; removing one there removes it from Coming up too
+- [ ] (Build 45: planning moved to Month; the reflection has 3 steps.)
 - [ ] Next day: yesterday's "tomorrow" tasks are today's tasks; Coming up moves on
 - [ ] Hebrew: day names read naturally ("מחר", "יום שישי 16"); TalkBack reads a Coming up task with its day and a hint
 
@@ -392,4 +392,12 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Weekly summary in the Garden look starts with the sprout's postcard; the Calm look doesn't show it
 - [ ] Reflections lock on: open one, go to Home screen, come back — it's locked again and asks for the fingerprint
 - [ ] Settings → Your data: the last line mentions Android's backup to Google
+
+## Plan ahead from Month (build 45)
+- [ ] Month: future days can be tapped; the sheet shows only "משימות ליום הזה" with a field to add (no habits, reflection or focus)
+- [ ] The arrow moves forward to the next months (up to a year ahead) and back to this month
+- [ ] A day with planned tasks shows a small dot; after adding in the sheet and closing it, the dot appears at once
+- [ ] A 4th task on the same future day says the day is full
+- [ ] Tasks within the next 7 days show in Today's "בימים הקרובים"; later ones only in Month
+- [ ] The evening reflection has 3 steps ("שלב 1 מתוך 3") and no planning step
 

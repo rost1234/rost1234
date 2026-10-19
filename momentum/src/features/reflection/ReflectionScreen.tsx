@@ -9,15 +9,14 @@ import { SkeletonBlock } from '@/components/Skeleton';
 import { Banner, Button, Chip } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import type { DailyReflection, MoodScore } from '@/domain/models';
-import { PlanAhead } from '@/features/tasks/PlanAhead';
 import { useReflectionStore } from '@/state/reflectionStore';
 import { MOOD_OPTIONS } from './mood';
 import { type TranslationKey, useT } from '@/i18n';
 import { useBottomSpace } from '@/components/useBottomSpace';
 
 /** 1 mood and sleep, 2 gratitude, 3 lesson, 4 plan the coming days (optional). */
-type Step = 1 | 2 | 3 | 4;
-const LAST_STEP: Step = 4;
+type Step = 1 | 2 | 3;
+const LAST_STEP: Step = 3;
 
 /** Whole hours of sleep to pick from (the last one means "or more"). */
 const SLEEP_HOURS = [4, 5, 6, 7, 8, 9, 10] as const;
@@ -135,12 +134,6 @@ function ReflectionForm({ logDate, initial }: { logDate: LocalDateString; initia
                 />
               ))}
             </View>
-          </>
-        ) : step === 4 ? (
-          <>
-            <Text style={typography.title}>{t('refl.planTitle')}</Text>
-            <Text style={typography.caption}>{t('refl.planLead')}</Text>
-            <PlanAhead today={logDate} />
           </>
         ) : (
           <>

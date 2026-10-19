@@ -52,6 +52,8 @@ import { useT, type TranslationKey } from '@/i18n';
 
 /** How far back the arrows go. */
 const MAX_MONTHS_BACK = 24;
+/** Months ahead that can be opened to plan tasks. */
+const MAX_MONTHS_FORWARD = 12;
 const WEEKDAYS: Weekday[] = [0, 1, 2, 3, 4, 5, 6];
 const RING = 36;
 const STROKE = 3;
@@ -63,6 +65,8 @@ interface MonthData {
   pauses: Pause[];
   reflections: DailyReflection[];
   sessions: FocusSession[];
+  /** Open tasks planned for each day of the month (a small dot on the day). */
+  planned: Record<LocalDateString, number>;
 }
 
 async function loadMonth(month: LocalDateString): Promise<MonthData> {
@@ -71,14 +75,17 @@ async function loadMonth(month: LocalDateString): Promise<MonthData> {
   const end = days[days.length - 1] ?? month;
   const startIso = new Date(parseLocalDate(start).setHours(0, 0, 0, 0)).toISOString();
   const endIso = new Date(parseLocalDate(addDays(end, 1)).setHours(0, 0, 0, 0)).toISOString();
-  const [habits, logs, pauses, reflections, sessions] = await Promise.all([
+  const [habits, logs, pauses, reflections, sessions, tasks] = await Promise.all([
     repositories.habits.getAll({ includeArchived: true }),
     repositories.habitLogs.getInRange(start, end),
     repositories.pauses.getAll(),
     repositories.reflections.getInRange(start, end),
     repositories.focusSessions.getInRange(startIso, endIso),
+    repositories.tasks.getUpcoming(addDays(start, -1), end).catch((): Task[] => []),
   ]);
-  return { month, habits, logs, pauses, reflections, sessions };
+  const planned: Record<LocalDateString, number> = {};
+  for (const task of tasks) if (task.dueDate) planned[task.dueDate] = (planned[task.dueDate] ?? 0) + 1;
+  return { month, habits, logs, pauses, reflections, sessions, planned };
 }
 
 function DayRing({ day, isToday }: { day: CalendarDay; isToday: boolean }) {
@@ -139,8 +146,9 @@ const REASON_ICON: Record<Pause['reason'], keyof typeof Ionicons.glyphMap> = {
   other: 'pause-outline',
 };
 
-function dayA11y(day: CalendarDay, t: ReturnType<typeof useT>): string {
+function dayA11y(day: CalendarDay, t: ReturnType<typeof useT>, planned = 0): string {
   const parts = [formatLongDate(day.date, t.locale)];
+  if (planned > 0) parts.push(t.plural('cal.a11yPlanned', planned));
   if (day.pause) parts.push(t('cal.a11yPaused'));
   if (!day.future && day.percent !== null) parts.push(`${day.percent}%`);
   if (day.freezes > 0) parts.push(t.plural('cal.a11yFreezes', day.freezes));
@@ -152,11 +160,13 @@ function MonthGrid({
   today,
   selected,
   onSelect,
+  planned,
 }: {
   days: ReadonlyMap<LocalDateString, CalendarDay>;
   today: LocalDateString;
   selected: LocalDateString | null;
   onSelect: (date: LocalDateString) => void;
+  planned: Readonly<Record<LocalDateString, number>>;
 }) {
   const t = useT();
   const { colors, typography } = useTheme();
@@ -186,9 +196,9 @@ function MonthGrid({
               <Pressable
                 key={date}
                 accessibilityRole="button"
-                accessibilityLabel={dayA11y(day, t)}
+                accessibilityLabel={dayA11y(day, t, planned[date] ?? 0)}
+                accessibilityHint={day.future ? t('cal.planHint') : undefined}
                 accessibilityState={{ selected: date === selected }}
-                disabled={day.future && !isPaused}
                 onPress={() => onSelect(date)}
                 style={[
                   styles.cell,
@@ -200,6 +210,7 @@ function MonthGrid({
               >
                 {startsBand && day.pause ? <Ionicons name={REASON_ICON[day.pause.reason]} size={11} color={colors.primary} style={styles.bandIcon} /> : null}
                 <DayRing day={day} isToday={date === today} />
+                {(planned[date] ?? 0) > 0 && date >= today ? <View style={[styles.plannedDot, { backgroundColor: colors.primary }]} /> : null}
               </Pressable>
             );
           })}
@@ -559,9 +570,11 @@ function DaySheet({
               ))}
               {tasks.length === 0 ? <Text style={[typography.caption, { paddingVertical: spacing.xs }]}>{t('plan.empty')}</Text> : null}
               <DayTaskInput date={date} today={today} onAdded={(task) => setTasks((list) => [...list, task])} />
-              <View style={styles.sectionGap} />
             </>
           ) : null}
+          {/* A day to come is only for planning: habits, reflection and focus belong to days that happened. */}
+          {isFuture ? null : (
+            <>
           <Text style={typography.overline}>{t('cal.habitsTitle')}</Text>
           {error ? <Banner message={error} onDismiss={() => setError(null)} /> : null}
           {note ? (
@@ -613,6 +626,8 @@ function DaySheet({
               <Text style={typography.caption}>{t('cal.focus')}</Text>
             </View>
           ) : null}
+            </>
+          )}
         </ScrollView>
       </View>
     </Modal>
@@ -664,7 +679,7 @@ export function CalendarScreen() {
   // Archived habits still count toward past days, but can't be picked as a filter.
   const activeHabits = useMemo(() => data?.habits.filter((h) => !h.isArchived) ?? [], [data]);
   const canGoBack = month > addMonths(thisMonth, -MAX_MONTHS_BACK);
-  const canGoForward = month < thisMonth;
+  const canGoForward = month < addMonths(thisMonth, MAX_MONTHS_FORWARD);
   const prevIcon = t.isRTL ? 'chevron-forward' : 'chevron-back';
   const nextIcon = t.isRTL ? 'chevron-back' : 'chevron-forward';
 
@@ -719,6 +734,7 @@ export function CalendarScreen() {
               days={days.byDate}
               today={today}
               selected={highlight}
+              planned={data?.planned ?? {}}
               onSelect={(date) => {
                 setHighlight(date);
                 setSelected(date);
@@ -743,7 +759,13 @@ export function CalendarScreen() {
           onPress={() => router.push({ pathname: '/print', params: habitId ? { habitId, month } : { month } })}
         />
       </ScrollView>
-      {data && selected ? <DaySheet date={selected} data={data} today={today} habitId={habitId} onChanged={refresh} onClose={() => setSelected(null)} /> : null}
+      {data && selected ? <DaySheet date={selected} data={data} today={today} habitId={habitId} onChanged={refresh}
+          onClose={() => {
+            setSelected(null);
+            // Tasks planned in the sheet show as dots right away.
+            runDetached(refresh());
+          }}
+        /> : null}
     </SafeAreaView>
   );
 }
@@ -762,6 +784,7 @@ const useStyles = makeStyles(({ colors, typography }) => ({
   bandStart: { borderTopStartRadius: 14, borderBottomStartRadius: 14 },
   bandEnd: { borderTopEndRadius: 14, borderBottomEndRadius: 14 },
   bandIcon: { position: 'absolute', top: 0, start: 3, fontSize: 10 },
+  plannedDot: { position: 'absolute', bottom: 0, alignSelf: 'center', width: 5, height: 5, borderRadius: 3 },
   ringLabel: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, alignItems: 'center', justifyContent: 'center' },
   dayNumber: { fontSize: 13, fontWeight: '600', color: colors.text, fontVariant: ['tabular-nums'] },
   freezeBadge: {
