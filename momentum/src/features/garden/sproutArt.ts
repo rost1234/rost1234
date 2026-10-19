@@ -1,4 +1,4 @@
-import type { GrowthStage, SproutMood } from '@/domain/garden';
+import type { Accessory, GrowthStage, SproutMood } from '@/domain/garden';
 
 /**
  * The sprout drawn as plain shapes in a 100×100 box, so the same art renders in React Native
@@ -51,7 +51,7 @@ function stem(d: string, width = 4.5): Shape {
 }
 
 /** A round flower: `count` petals around a center. */
-function flower(cx: number, cy: number, size: number, petal: string = ART.petal, count = 6): Shape[] {
+export function flower(cx: number, cy: number, size: number, petal: string = ART.petal, count = 6): Shape[] {
   const petals: Shape[] = [];
   for (let i = 0; i < count; i += 1) {
     const a = (Math.PI * 2 * i) / count - Math.PI / 2;
@@ -174,13 +174,86 @@ function face(mood: SproutMood, state: FaceState = {}): Shape[] {
   }
 }
 
+const ACC = {
+  apple: '#D9433B',
+  honey: '#F2B33D',
+  matzah: '#E8C891',
+  matzahDot: '#B98A4A',
+  blue: '#2F62C9',
+  white: '#FFFFFF',
+  pole: '#8A6A4F',
+  hat: '#8E6BD8',
+  hatStripe: '#F7B731',
+  confetti: '#F28DB2',
+} as const;
+
+/** What the sprout wears on a special day, drawn in front of it in the same 100×100 box. */
+export function accessoryShapes(accessory: Accessory): Shape[] {
+  switch (accessory) {
+    case 'apple':
+      return [
+        { kind: 'circle', cx: 85, cy: 84, r: 7.5, fill: ACC.apple },
+        { kind: 'path', d: 'M85 77Q85 73 87 71', stroke: ART.stem, strokeWidth: 1.6, fill: 'none' },
+        leaf(86, 74, 92, 71, 2, ART.leafLight),
+        // A drop of honey.
+        { kind: 'path', d: 'M13 76Q9 82 13 86Q17 82 13 76Z', fill: ACC.honey },
+      ];
+    case 'lulav':
+      return [
+        { kind: 'path', d: 'M10 94Q12 60 16 28', stroke: ART.stem, strokeWidth: 2.4, fill: 'none' },
+        leaf(13, 62, 5, 52, 2.4),
+        leaf(14, 54, 23, 44, 2.4, ART.leafLight),
+        leaf(15, 46, 7, 36, 2.4, ART.leafLight),
+        leaf(15.5, 38, 23, 28, 2.2),
+      ];
+    case 'flags':
+      return [
+        { kind: 'path', d: 'M86 95V44', stroke: ACC.pole, strokeWidth: 2, fill: 'none' },
+        { kind: 'rect', x: 86, y: 44, width: 13, height: 10, rx: 1, fill: ACC.white },
+        { kind: 'rect', x: 86, y: 45.4, width: 13, height: 1.4, rx: 0, fill: ACC.blue },
+        { kind: 'rect', x: 86, y: 51.2, width: 13, height: 1.4, rx: 0, fill: ACC.blue },
+        { kind: 'path', d: 'M92.5 47.4L94.2 50.4H90.8Z', stroke: ACC.blue, strokeWidth: 0.7, fill: 'none' },
+      ];
+    case 'matzah':
+      return [
+        { kind: 'rect', x: 76, y: 76, width: 20, height: 16, rx: 2, fill: ACC.matzah },
+        ...[0, 1, 2].flatMap((row) =>
+          [0, 1, 2].map((col): Shape => ({ kind: 'circle', cx: 80 + col * 6, cy: 80 + row * 4.5, r: 0.8, fill: ACC.matzahDot })),
+        ),
+      ];
+    case 'wreath':
+      return [24, 37, 50, 63, 76].flatMap((x, i) => flower(x, 50, 2.2, i % 2 === 0 ? ART.petal : ART.petalPink, 5));
+    case 'party':
+      return [
+        { kind: 'path', d: 'M70 51L79 27L88 53Z', fill: ACC.hat },
+        { kind: 'path', d: 'M74 41L84 43', stroke: ACC.hatStripe, strokeWidth: 2, fill: 'none' },
+        { kind: 'circle', cx: 79, cy: 26, r: 2.6, fill: ACC.hatStripe },
+        { kind: 'circle', cx: 12, cy: 20, r: 1.6, fill: ACC.confetti },
+        { kind: 'circle', cx: 20, cy: 10, r: 1.3, fill: ACC.hatStripe },
+        { kind: 'circle', cx: 92, cy: 14, r: 1.5, fill: ART.wing },
+      ];
+  }
+}
+
 /** Every shape of the sprout, back to front. */
-export function sproutShapes(stage: GrowthStage, mood: SproutMood, withFace = true, state: FaceState = {}): Shape[] {
+export function sproutShapes(stage: GrowthStage, mood: SproutMood, withFace = true, state: FaceState = {}, accessory: Accessory | null = null): Shape[] {
   const pot: Shape[] = [
     { kind: 'path', d: 'M24 56H76L70 90Q69 94 64 94H36Q31 94 30 90Z', fill: ART.pot },
     { kind: 'rect', x: 20, y: 50, width: 60, height: 12, rx: 6, fill: ART.potRim },
     { kind: 'ellipse', cx: 50, cy: 51.5, rx: 25, ry: 2.6, fill: ART.soil },
   ];
   const sparkles = withFace && mood === 'joy' ? [sparkle(13, 30, 5), sparkle(88, 40, 4), sparkle(16, 60, 3.2)] : [];
-  return [...pot, ...plant(stage), ...(withFace ? face(mood, state) : []), ...sparkles];
+  return [...pot, ...plant(stage), ...(withFace ? face(mood, state) : []), ...sparkles, ...(accessory ? accessoryShapes(accessory) : [])];
+}
+
+const HILL_PETALS = [ART.petal, ART.petalPink, ART.shine, ART.petal, ART.wing, ART.petalPink, ART.petal];
+
+/** A small flower on Home's hill, one per habit done today; `index` picks its color. */
+export function hillFlowerShapes(index: number): Shape[] {
+  return [
+    { kind: 'path', d: 'M50 98Q48 70 50 46', stroke: ART.stem, strokeWidth: 6, fill: 'none' },
+    leaf(50, 80, 30, 66, 8),
+    leaf(50, 74, 70, 60, 8, ART.leafLight),
+    ...flower(50, 32, 11, HILL_PETALS[index % HILL_PETALS.length], 6),
+  ];
 }

@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import Svg, { Circle, Ellipse, Path, Rect } from 'react-native-svg';
-import type { GrowthStage, SproutMood } from '@/domain/garden';
-import { sproutShapes, type FaceState } from './sproutArt';
+import type { Accessory, GrowthStage, SproutMood } from '@/domain/garden';
+import { sproutShapes, type FaceState, type Shape } from './sproutArt';
 
 interface SproutProps {
   stage: GrowthStage;
@@ -12,14 +12,15 @@ interface SproutProps {
   /** Eyes shut mid-blink, mouth open mid-word (see `LiveSprout`). */
   blink?: boolean;
   mouthOpen?: boolean;
+  /** Something worn on a special day (a holiday, the planting anniversary). */
+  accessory?: Accessory | null;
 }
 
-/** The Garden look's sprout. Decorative: the screen around it says the same thing in words. */
-function SproutComponent({ stage, mood = 'calm', size, face = true, blink = false, mouthOpen = false }: SproutProps) {
-  const state: FaceState = { blink, mouthOpen };
+/** Draws art shapes (in a 100×100 box) as a decorative SVG. */
+export function ArtShapes({ shapes, size }: { shapes: readonly Shape[]; size: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100" accessible={false} importantForAccessibility="no-hide-descendants">
-      {sproutShapes(stage, mood, face, state).map((s, i) => {
+      {shapes.map((s, i) => {
         switch (s.kind) {
           case 'path':
             return (
@@ -42,6 +43,14 @@ function SproutComponent({ stage, mood = 'calm', size, face = true, blink = fals
         }
       })}
     </Svg>
+  );
+}
+
+/** The Garden look's sprout. Decorative: the screen around it says the same thing in words. */
+function SproutComponent({ stage, mood = 'calm', size, face = true, blink = false, mouthOpen = false, accessory = null }: SproutProps) {
+  const state: FaceState = { blink, mouthOpen };
+  return (
+    <ArtShapes shapes={sproutShapes(stage, mood, face, state, accessory)} size={size} />
   );
 }
 

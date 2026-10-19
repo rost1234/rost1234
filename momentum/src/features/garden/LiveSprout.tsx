@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Easing } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import type { GrowthStage, SproutMood } from '@/domain/garden';
+import type { Accessory, GrowthStage, SproutMood } from '@/domain/garden';
 import { usePageShown } from '@/features/pager/pager';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { Sprout } from './Sprout';
@@ -18,6 +18,8 @@ interface LiveSproutProps {
   pokeKey?: number;
   /** Hop once as soon as it appears (celebrations). */
   cheerOnMount?: boolean;
+  /** Something worn on a special day. */
+  accessory?: Accessory | null;
 }
 
 const BLINK_MS = 130;
@@ -30,7 +32,7 @@ const FLAP_MS = 110;
  * moves its mouth when it speaks, hops when a habit is done and wiggles when poked.
  * With "reduce motion" on, it stays still (the face still changes).
  */
-export function LiveSprout({ stage, mood, size, cheerKey = 0, talkKey = 0, pokeKey = 0, cheerOnMount = false }: LiveSproutProps) {
+export function LiveSprout({ stage, mood, size, cheerKey = 0, talkKey = 0, pokeKey = 0, cheerOnMount = false, accessory = null }: LiveSproutProps) {
   const reduce = useReduceMotion();
   // Still when it's off screen (Today swiped away in the pager).
   const shown = usePageShown('home');
@@ -140,7 +142,7 @@ export function LiveSprout({ stage, mood, size, cheerKey = 0, talkKey = 0, pokeK
 
   return (
     <Animated.View style={{ transformOrigin: 'bottom', transform: [{ translateY: hop }, { rotate: sway }, { scaleY }] }}>
-      <Sprout stage={stage} mood={cheering && mood !== 'joy' ? 'joy' : mood} size={size} blink={blink && !cheering} mouthOpen={mouthOpen} />
+      <Sprout stage={stage} mood={cheering && mood !== 'joy' ? 'joy' : mood} size={size} blink={blink && !cheering} mouthOpen={mouthOpen} accessory={accessory} />
     </Animated.View>
   );
 }

@@ -7,7 +7,11 @@ import { ProgressRing } from '@/components/ProgressRing';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { formatFriendlyDate, type LocalDateString } from '@/core/localDate';
 import { haptics } from '@/core/haptics';
-import { isNight, sproutMood } from '@/domain/garden';
+import { accessoryFor, hillFlowers, isNight, isRainyDay, sproutMood, visitorEmoji, visitorsEarned, yearsSince, type VisitorId } from '@/domain/garden';
+import { holidayOn } from '@/domain/holidays';
+import { useGardenStore } from '@/state/gardenStore';
+import { usePrefsStore } from '@/state/prefsStore';
+import { useSettingsStore } from '@/state/settingsStore';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { useT, type TranslationKey } from '@/i18n';
 import { useHabitStore } from '@/state/habitStore';
@@ -16,6 +20,8 @@ import type { Insight } from '@/content/insightSchema';
 import { useNotebookStore, type MomentReason } from '@/state/notebookStore';
 import { useSproutTipStore } from '@/state/sproutTipStore';
 import { LiveSprout } from './LiveSprout';
+import { ArtShapes } from './Sprout';
+import { hillFlowerShapes } from './sproutArt';
 import { ambientLine, doneLine, tapLine, type TalkContext, type TalkLine } from './sproutTalk';
 import { stageKey, useGardenGrowth } from './useGarden';
 
@@ -44,9 +50,20 @@ function greetingKey(hour: number): TranslationKey {
 }
 
 /** The sun by day, a moon and a few stars at night. Purely decorative. */
-function Sky({ night }: { night: boolean }) {
+function Sky({ night, rain = false }: { night: boolean; rain?: boolean }) {
   const { scenery } = useTheme();
   const styles = useStyles();
+  // A winter day: a cloud with a few drops instead of the sun.
+  if (rain) {
+    return (
+      <View pointerEvents="none" style={styles.sky}>
+        <View style={[styles.cloud, styles.rainCloud, { backgroundColor: scenery.cloud }]} />
+        {RAIN_DROPS.map((d, i) => (
+          <View key={i} style={[styles.drop, { backgroundColor: scenery.skyText, top: d.top, end: d.end }]} />
+        ))}
+      </View>
+    );
+  }
   if (!night) {
     return (
       <View pointerEvents="none" style={styles.sky}>
@@ -63,6 +80,28 @@ function Sky({ night }: { night: boolean }) {
       <View style={[styles.star, { backgroundColor: scenery.sun, top: 46, end: 10 }]} />
       <View style={[styles.star, { backgroundColor: scenery.sun, top: 8, end: 120 }]} />
       <View style={[styles.star, { backgroundColor: scenery.sun, top: 30, end: 170, width: 3, height: 3 }]} />
+    </View>
+  );
+}
+
+const RAIN_DROPS = [
+  { top: 40, end: 34 },
+  { top: 50, end: 50 },
+  { top: 44, end: 66 },
+  { top: 54, end: 82 },
+];
+
+/** One small flower on the hill for each habit done today; a full day fills the hill. Decorative. */
+function HillFlowers({ count }: { count: number }) {
+  const styles = useStyles();
+  if (count === 0) return null;
+  return (
+    <View pointerEvents="none" style={styles.flowers} accessible={false} importantForAccessibility="no-hide-descendants">
+      {Array.from({ length: count }, (_, i) => (
+        <View key={i} style={[styles.flower, { marginTop: (i % 3) * 4 }]}>
+          <ArtShapes shapes={hillFlowerShapes(i)} size={22} />
+        </View>
+      ))}
     </View>
   );
 }
@@ -167,6 +206,22 @@ export function GardenHeader({
     : tip !== null && tipDismissedOn !== today
       ? { insight: tip, moment: null }
       : null;
+  // Its name, special days and visitors.
+  const sproutName = useGardenStore((s) => s.name);
+  const plantedOn = useGardenStore((s) => s.plantedOn);
+  const visitors = useGardenStore((s) => s.visitors);
+  const gardenReady = useGardenStore((s) => s.isHydrated);
+  const createdOn = useSettingsStore((s) => s.settings?.createdAt.slice(0, 10) ?? null);
+  const perfectWeek = useSettingsStore((s) => s.settings?.lastFreezeAwardDate != null);
+  const holidaysOn = usePrefsStore((s) => s.holidays) ?? t.language === 'he';
+  const birthday = plantedOn ?? createdOn;
+  const special = accessoryFor(today, holidaysOn ? holidayOn(today) : null, birthday);
+  const fullDay = countedCount > 0 && doneCount >= countedCount;
+  useEffect(() => {
+    if (!gardenReady) return;
+    useGardenStore.getState().welcome(visitorsEarned({ days: growth.days, fullDay, bestStreak, comeback, perfectWeek }), today);
+  }, [gardenReady, growth.days, fullDay, bestStreak, comeback, perfectWeek, today]);
+  const visitorToday = (Object.entries(visitors) as [VisitorId, string][]).find(([, date]) => date === today)?.[0] ?? null;
   const [actionFor, setActionFor] = useState<string | null>(null);
   const showingAction = told !== null && actionFor === told.insight.id;
   const ctx: TalkContext = {
@@ -182,6 +237,11 @@ export function GardenHeader({
     nextName: growth.next === null ? null : t(stageKey(growth.next)),
     toNext: growth.toNext,
     days: growth.days,
+    special,
+    years: special === 'party' && birthday ? yearsSince(birthday, today) : undefined,
+    visitor: visitorToday,
+    plantedToday: plantedOn === today,
+    name: sproutName,
   };
 
   // A reaction (a habit done, a tap) shows for a while, then the everyday line comes back.
@@ -249,7 +309,8 @@ export function GardenHeader({
 
   return (
     <View style={[styles.hill, { backgroundColor: scenery.hill }]}>
-      <Sky night={isNight(hour)} />
+      <Sky night={isNight(hour)} rain={!isNight(hour) && isRainyDay(today)} />
+      <HillFlowers count={hillFlowers(doneCount)} />
       {/* Settings and Focus (the month and progress are tabs below). */}
       <View style={styles.corner}>
         <Pressable
@@ -304,11 +365,16 @@ export function GardenHeader({
         >
           <ProgressRing value={percent / 100} size={148} stroke={10} track={colors.border} from={colors.primary} to={colors.primary}>
             <View style={[styles.ringInner, { backgroundColor: colors.surface }]}>
-              <LiveSprout stage={growth.stage} mood={mood} size={104} cheerKey={cheerKey} talkKey={lineId} pokeKey={pokeKey} />
+              <LiveSprout stage={growth.stage} mood={mood} size={104} cheerKey={cheerKey} talkKey={lineId} pokeKey={pokeKey} accessory={special} />
             </View>
           </ProgressRing>
+          {visitorToday ? (
+            <Text style={styles.visitor} accessible={false} importantForAccessibility="no">
+              {visitorEmoji(visitorToday)}
+            </Text>
+          ) : null}
           <Text style={styles.stage} numberOfLines={1}>
-            {stageName}
+            {sproutName ? `${sproutName} · ${stageName}` : stageName}
           </Text>
         </Pressable>
         <Bubble text={said} id={lineId} stacked={stacked} live={event !== null || (telling && told?.moment != null)} long={telling}>
@@ -402,7 +468,8 @@ const useStyles = makeStyles(({ colors }) => ({
     marginBottom: spacing.md,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.xl + spacing.sm,
-    paddingBottom: spacing.xl,
+    // Room under the pills for the day's flowers.
+    paddingBottom: spacing.xl + spacing.md,
     borderBottomLeftRadius: 44,
     borderBottomRightRadius: 44,
     overflow: 'hidden',
@@ -451,6 +518,11 @@ const useStyles = makeStyles(({ colors }) => ({
   },
   pillText: { fontSize: 14 },
   ringWrap: { alignItems: 'center', gap: 4 },
+  visitor: { position: 'absolute', top: -4, end: -2, fontSize: 26 },
+  flowers: { position: 'absolute', bottom: 4, start: spacing.xl, end: spacing.xl, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end' },
+  flower: { width: 22, height: 22 },
+  rainCloud: { top: 18, end: 28, width: 80, height: 24, borderRadius: 12 },
+  drop: { position: 'absolute', width: 3, height: 9, borderRadius: 2, opacity: 0.7 },
   ringInner: { width: 126, height: 126, borderRadius: 63, alignItems: 'center', justifyContent: 'center' },
   stage: { fontSize: 13, color: colors.text, maxWidth: 148, textAlign: 'center' },
 }));

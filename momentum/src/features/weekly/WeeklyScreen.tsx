@@ -15,12 +15,37 @@ import { InsightView } from '@/features/insights/InsightCard';
 import { useSettingsStore } from '@/state/settingsStore';
 import { useT } from '@/i18n';
 import { useBottomSpace } from '@/components/useBottomSpace';
+import { Sprout } from '@/features/garden/Sprout';
+import { stageKey, useGardenGrowth } from '@/features/garden/useGarden';
+import { useGardenStore } from '@/state/gardenStore';
+
+/** Garden look: the week opens with a short postcard from the sprout, then the numbers. */
+function Postcard({ wateredDays }: { wateredDays: number }) {
+  const t = useT();
+  const { colors, scenery } = useTheme();
+  const styles = useStyles();
+  const growth = useGardenGrowth();
+  const name = useGardenStore((s) => s.name);
+  const stage = t(stageKey(growth.stage));
+  const text = wateredDays > 0 ? t.plural('weekly.postcard', wateredDays) : t('weekly.postcardQuiet');
+  return (
+    <View style={[styles.postcard, { backgroundColor: scenery.hill, borderColor: colors.surface }]} accessible accessibilityLabel={`${text} ${name ? `${name}, ` : ''}${stage}`}>
+      <Sprout stage={growth.stage} mood="happy" size={72} />
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={styles.postcardText}>{text}</Text>
+        <Text style={styles.postcardSign}>{name ? `${name} · ${stage}` : stage}</Text>
+      </View>
+    </View>
+  );
+}
 
 interface WeeklyData {
   summary: WeeklySummary;
   shown: Record<string, LocalDateString>;
   /** Every habit completion up to the end of the week, all history. */
   pathTotal: number;
+  /** Days of the week with at least one habit done (the sprout's postcard). */
+  wateredDays: number;
 }
 
 async function loadSummary(): Promise<WeeklyData> {
@@ -35,13 +60,14 @@ async function loadSummary(): Promise<WeeklyData> {
     repositories.habitLogs.countCompletedBefore(addDays(week.end, 1)).catch((): Record<string, number> => ({})),
   ]);
   const pathTotal = Object.values(totals).reduce((sum, n) => sum + n, 0);
-  return { summary: buildWeeklySummary(habits, logs, sessions, week), shown, pathTotal };
+  const wateredDays = new Set(logs.filter((l) => l.status === 'completed').map((l) => l.logDate)).size;
+  return { summary: buildWeeklySummary(habits, logs, sessions, week), shown, pathTotal, wateredDays };
 }
 
 /** A 30-second look back at last week: what worked, one thing to adjust. */
 export function WeeklyScreen() {
   const t = useT();
-  const { colors, typography } = useTheme();
+  const { colors, typography, look } = useTheme();
   const styles = useStyles();
   const bottomSpace = useBottomSpace();
   const goal = useSettingsStore((s) => s.settings?.goal ?? null);
@@ -75,6 +101,7 @@ export function WeeklyScreen() {
 
   return (
     <ScrollView style={styles.flex} contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}>
+      {look === 'garden' ? <Postcard wateredDays={data.wateredDays} /> : null}
       <Text style={typography.caption}>
         {formatFriendlyDate(summary.start, t.locale)} – {formatFriendlyDate(summary.end, t.locale)}
       </Text>
@@ -141,6 +168,9 @@ export function WeeklyScreen() {
 }
 
 const useStyles = makeStyles(({ colors }) => ({
+  postcard: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderRadius: 22, borderWidth: 3 },
+  postcardText: { fontSize: 16, lineHeight: 23, color: colors.text },
+  postcardSign: { fontSize: 13, color: colors.textMuted },
   flex: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, gap: spacing.md, backgroundColor: colors.background, flexGrow: 1 },
   tiles: { flexDirection: 'row', gap: spacing.sm },

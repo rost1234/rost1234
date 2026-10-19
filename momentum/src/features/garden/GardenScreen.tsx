@@ -1,13 +1,17 @@
-import { Pressable, ScrollView, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text } from '@/components/AppText';
+import { Text, TextInput } from '@/components/AppText';
 import { SheetHeader } from '@/components/SheetHeader';
-import { Card, ProgressBar, SectionTitle } from '@/components/ui';
+import { Button, Card, ProgressBar, SectionTitle } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { useBottomSpace } from '@/components/useBottomSpace';
-import { GROWTH_STAGES, habitPotStage, sproutMood, type GrowthStage } from '@/domain/garden';
+import { GROWTH_STAGES, habitPotStage, sproutMood, VISITORS, type GrowthStage } from '@/domain/garden';
+import { SPROUT_NAME_MAX, useGardenStore } from '@/state/gardenStore';
+import { formatFriendlyDate } from '@/core/localDate';
+import { haptics } from '@/core/haptics';
 import { dailyProgressPercent, progressOf } from '@/domain/habitProgress';
 import { habitsDueOn } from '@/domain/habitSchedule';
 import type { Habit } from '@/domain/models';
@@ -86,6 +90,89 @@ function HabitPot({ habit }: { habit: Habit }) {
   );
 }
 
+/** "Do I have a name?": an optional name the sprout goes by on Home. */
+function NameCard() {
+  const t = useT();
+  const { colors, typography } = useTheme();
+  const styles = useStyles();
+  const name = useGardenStore((s) => s.name);
+  const [draft, setDraft] = useState(name);
+  const [editing, setEditing] = useState(false);
+  const save = () => {
+    haptics.success();
+    useGardenStore.getState().setName(draft);
+    setEditing(false);
+  };
+  if (!editing) {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={name ? t('garden.nameIs', { name }) : t('garden.nameAsk')}
+        accessibilityHint={t('garden.nameHint')}
+        onPress={() => {
+          setDraft(name);
+          setEditing(true);
+        }}
+        style={({ pressed }) => [styles.nameRow, pressed && { opacity: 0.8 }]}
+      >
+        <Ionicons name="pricetag-outline" size={18} color={colors.primary} />
+        <Text style={[typography.label, { flex: 1 }]}>{name ? t('garden.nameIs', { name }) : t('garden.nameAsk')}</Text>
+        <Text style={[typography.caption, { color: colors.primary }]}>{name ? t('garden.nameChange') : t('garden.nameGive')}</Text>
+      </Pressable>
+    );
+  }
+  return (
+    <Card style={styles.card}>
+      <Text style={typography.label}>{t('garden.nameAsk')}</Text>
+      <TextInput
+        value={draft}
+        onChangeText={setDraft}
+        placeholder={t('garden.namePh')}
+        accessibilityLabel={t('garden.nameAsk')}
+        maxLength={SPROUT_NAME_MAX}
+        autoFocus
+        onSubmitEditing={save}
+        style={styles.nameInput}
+      />
+      <View style={styles.nameButtons}>
+        <Button label={t('common.save')} onPress={save} style={{ flex: 1 }} />
+        <Button label={t('common.cancel')} onPress={() => setEditing(false)} variant="ghost" style={{ flex: 1 }} />
+      </View>
+    </Card>
+  );
+}
+
+/** "Who visited me": the visitors who came so far, each with the day it came. No empty slots. */
+function Visitors() {
+  const t = useT();
+  const { typography } = useTheme();
+  const styles = useStyles();
+  const visitors = useGardenStore((s) => s.visitors);
+  const came = VISITORS.filter((v) => visitors[v.id]);
+  return (
+    <>
+      <SectionTitle>{t('garden.visitors')}</SectionTitle>
+      {came.length === 0 ? (
+        <Text style={[typography.caption, styles.potsLead]}>{t('garden.visitorsNone')}</Text>
+      ) : (
+        <>
+          <View style={styles.visitors}>
+            {came.map((v) => (
+              <View key={v.id} style={styles.visitorTile} accessible accessibilityLabel={`${t(`garden.visitor.${v.id}` as const)}, ${formatFriendlyDate(visitors[v.id] ?? '', t.locale)}`}>
+                <Text style={styles.visitorEmoji}>{v.emoji}</Text>
+                <Text style={[typography.caption, styles.center]} numberOfLines={2}>
+                  {t(`garden.visitor.${v.id}` as const)}
+                </Text>
+              </View>
+            ))}
+          </View>
+          <Text style={[typography.caption, styles.potsLead]}>{t('garden.visitorsMore')}</Text>
+        </>
+      )}
+    </>
+  );
+}
+
 /** "Your sprout": how far it grew, what comes next, and each habit's own pot. */
 export function GardenScreen() {
   const t = useT();
@@ -113,6 +200,8 @@ export function GardenScreen() {
           </Text>
         </View>
 
+        <NameCard />
+
         <Card style={styles.card}>
           {growth.next !== null ? (
             <>
@@ -131,6 +220,8 @@ export function GardenScreen() {
             <StageRow key={i} stage={i as GrowthStage} current={growth.stage} days={growth.days} />
           ))}
         </View>
+
+        <Visitors />
 
         {habits.length > 0 ? (
           <>
@@ -190,6 +281,12 @@ const useStyles = makeStyles(({ colors, typography, flat }) => ({
   potTile: { width: '31%', flexGrow: 1, alignItems: 'center', gap: 4, padding: spacing.sm, borderRadius: radius.lg, backgroundColor: colors.surface, ...flat },
   potArt: { width: 76, height: 76, borderRadius: 38, alignItems: 'center', justifyContent: 'center' },
   potTitle: { textAlign: 'center', fontSize: 14 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 52, paddingHorizontal: spacing.md, borderRadius: radius.lg, backgroundColor: colors.surface, marginBottom: spacing.md, ...flat },
+  nameInput: { ...typography.body, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border, borderRadius: radius.md, paddingHorizontal: spacing.md, paddingVertical: spacing.md },
+  nameButtons: { flexDirection: 'row', gap: spacing.sm },
+  visitors: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.sm },
+  visitorTile: { width: 84, alignItems: 'center', gap: 2, padding: spacing.sm, borderRadius: radius.lg, backgroundColor: colors.surface, ...flat },
+  visitorEmoji: { fontSize: 32 },
   switchBack: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs, paddingVertical: spacing.lg, marginTop: spacing.md },
   switchBackText: { ...typography.label, color: colors.primary },
 }));

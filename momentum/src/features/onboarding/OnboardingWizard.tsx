@@ -1,4 +1,4 @@
-import { useReducer, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,13 +9,17 @@ import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { requestNotificationPermission } from '@/services/notifications';
 import { useSettingsStore } from '@/state/settingsStore';
 import { GoalStep, NotificationStep, PresetStep } from './OnboardingSteps';
+import { LookChoice, PlantSeed, SproutHello } from './GardenIntro';
+import { getLocalDeviceDate } from '@/core/localDate';
+import { useGardenStore } from '@/state/gardenStore';
+import { usePrefsStore } from '@/state/prefsStore';
 import { canAdvance, initialWizardState, selectedPresets, wizardReducer } from './wizardState';
 import { useT } from '@/i18n';
 import { useBottomSpace } from '@/components/useBottomSpace';
 
 export function OnboardingWizard() {
   const t = useT();
-  const { typography } = useTheme();
+  const { typography, look } = useTheme();
   const styles = useStyles();
   const bottomSpace = useBottomSpace();
   const [state, dispatch] = useReducer(wizardReducer, initialWizardState);
@@ -24,6 +28,11 @@ export function OnboardingWizard() {
   const [error, setError] = useState<string | null>(null);
   const completeOnboarding = useSettingsStore((s) => s.completeOnboarding);
   const presets = selectedPresets(state, t.language);
+
+  // A new start opens in the Garden look, so the sprout can say hello; the choice is right below.
+  useEffect(() => {
+    usePrefsStore.getState().setLook('garden');
+  }, []);
 
   const askPermission = async () => {
     setIsAsking(true);
@@ -38,6 +47,8 @@ export function OnboardingWizard() {
     setError(null);
     try {
       await completeOnboarding(presets.map((p) => p.habit), state.goal);
+      // The planting day, for the sprout's anniversary.
+      useGardenStore.getState().plant(getLocalDeviceDate());
       router.replace('/(main)');
     } catch (e) {
       setError(t('onb.saveError', { error: toErrorMessage(e) }));
@@ -57,10 +68,18 @@ export function OnboardingWizard() {
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomSpace }]}>
         {error ? <Banner message={error} onDismiss={() => setError(null)} /> : null}
         {state.step === 1 ? (
-          <GoalStep goal={state.goal} onSelect={(goal) => dispatch({ type: 'selectGoal', goal })} />
+          <>
+            <SproutHello />
+            <GoalStep goal={state.goal} onSelect={(goal) => dispatch({ type: 'selectGoal', goal })} />
+            <LookChoice />
+          </>
         ) : null}
         {state.step === 2 ? <PresetStep state={state} onToggle={(key) => dispatch({ type: 'togglePreset', key })} /> : null}
         {state.step === 3 ? <NotificationStep state={state} habitCount={presets.length} /> : null}
+        {/* Garden look: the setup ends by planting the seed. */}
+        {state.step === 3 && look === 'garden' && state.notificationStatus !== 'unknown' ? (
+          <PlantSeed key={error ?? 'seed'} onPlanted={() => void finish()} disabled={isSaving} />
+        ) : null}
       </ScrollView>
 
       <View style={styles.footer}>
@@ -75,7 +94,7 @@ export function OnboardingWizard() {
             <Button label={t('common.skip')} variant="ghost" onPress={() => void finish()} disabled={isAsking} loading={isSaving} />
             <Button label={t('onb.allowNotifications')} onPress={() => void askPermission()} loading={isAsking} />
           </View>
-        ) : (
+        ) : look === 'garden' ? null : (
           <Button label={t('onb.start')} onPress={() => void finish()} loading={isSaving} />
         )}
       </View>
