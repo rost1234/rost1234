@@ -1,5 +1,6 @@
 import { getLocales } from 'expo-localization';
 import { usePrefsStore, type LanguagePref } from '@/state/prefsStore';
+import { lastStrong, RLM } from '@/lib/bidi';
 import { en, type TranslationKey } from './en';
 import { he } from './he';
 
@@ -26,11 +27,20 @@ export function localeFor(language: Language): string {
   return language === 'he' ? 'he-IL' : 'en-US';
 }
 
-/** Replaces {name} placeholders. Missing keys fall back to English, then the key. */
+/**
+ * Replaces {name} placeholders. Missing keys fall back to English, then the key. In Hebrew, a value that ends in
+ * English and is followed by more of the sentence gets a right-to-left mark after it, so the punctuation after it
+ * ("…על ROP?") stays where it belongs.
+ */
 export function translate(language: Language, key: TranslationKey, params?: TranslationParams): string {
   const template = DICTIONARIES[language][key] || en[key] || key;
   if (!params) return template;
-  return template.replace(/\{(\w+)\}/g, (match, name: string) => (name in params ? String(params[name]) : match));
+  return template.replace(/\{(\w+)\}/g, (match, name: string, offset: number) => {
+    if (!(name in params)) return match;
+    const value = String(params[name]);
+    const rest = template.slice(offset + match.length);
+    return language === 'he' && rest.trim() && lastStrong(value) === 'ltr' ? value + RLM : value;
+  });
 }
 
 type PluralBase<K extends string> = K extends `${infer B}_one` ? B : never;

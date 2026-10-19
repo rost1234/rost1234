@@ -74,7 +74,10 @@ Three looks (`useTheme().look`): **paper** (lab notebook, light), **chalk** (cha
 on `isDark`, for styling (isDark is only light vs dark). Fonts are bundled per weight (`assets/fonts`,
 expo-font plugin in app.json, `@font-face` on web via `lib/fonts.web.ts`): Frank Ruhl Libre (paper), Rubik
 (chalk body, classic), Amatic SC (handwriting/chalk headings — its Latin letters are all caps). Always use
-`Text`/`TextInput` from `@/components/Text`. `components/Backdrop` draws ruled paper with binder holes and
+`Text`/`TextInput` from `@/components/Text`: its plain-text children go through `lib/bidi.ts` `fixBidi` (a paragraph
+with Hebrew words reads right to left even when it starts with an English term; an RLM/LRM mark is added), and in
+Hebrew `translate` puts an RLM after an English `{value}` in mid-sentence so punctuation stays put. Don't force
+`textAlign: 'left'` on mixed text. `components/Backdrop` draws ruled paper with binder holes and
 margin doodles / the chalkboard with faded formulas (nothing in classic); `components/sketch.tsx` has the
 hand-drawn SVG shapes (`SketchBorder`, `SketchCircle`, `Squiggle`, `SketchCheck`, `Stamp`, `useSeed`);
 `components/Pinned` is the taped sheet / chalk frame. Textures are generated images in `assets/textures`.

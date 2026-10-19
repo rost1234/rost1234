@@ -190,10 +190,10 @@ export default function CardStoreScreen() {
                 ) : null}
                 <View style={{ flex: 1, gap: 2 }}>
                   {item.where ? <Text style={typography.caption}>{item.where}</Text> : null}
-                  <Text style={[typography.body, styles.start, { fontWeight: '700' }]} numberOfLines={2}>
+                  <Text style={[typography.body, { fontWeight: '700' }]} numberOfLines={2}>
                     {item.card.question}
                   </Text>
-                  <Text style={[typography.caption, styles.start]} numberOfLines={2}>
+                  <Text style={[typography.caption]} numberOfLines={2}>
                     {item.card.answer}
                   </Text>
                 </View>
@@ -212,10 +212,10 @@ export default function CardStoreScreen() {
                 >
                   <Ionicons name={item.open ? 'chevron-down' : t.isRTL ? 'chevron-back' : 'chevron-forward'} size={18} color={colors.textMuted} />
                   <View style={{ flex: 1 }}>
-                    <Text style={[item.kind === 'subject' ? typography.subheading : typography.body, styles.start]} numberOfLines={2}>
+                    <Text style={[item.kind === 'subject' ? typography.subheading : typography.body]} numberOfLines={2}>
                       {item.title}
                     </Text>
-                    <Text style={[typography.caption, styles.start]}>{item.due ? t('cards.countDue', { n: item.total, due: item.due }) : t('cards.count', { n: item.total })}</Text>
+                    <Text style={[typography.caption]}>{item.due ? t('cards.countDue', { n: item.total, due: item.due }) : t('cards.count', { n: item.total })}</Text>
                   </View>
                 </Pressable>
                 <IconButton icon="trash-outline" label={t('common.delete')} color={colors.danger} onPress={() => void confirmDelete(item.title, item.ids)} />
@@ -236,8 +236,6 @@ export default function CardStoreScreen() {
 }
 
 const useStyles = makeStyles(({ colors, sheet }) => ({
-  // Text at the start edge even when it begins with English letters.
-  start: { textAlign: 'left', writingDirection: 'auto' },
   list: { padding: spacing.lg, paddingBottom: 96, gap: spacing.sm },
   tiles: { flexDirection: 'row', gap: spacing.md },
   search: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, ...sheet, paddingHorizontal: spacing.md, minHeight: 48 },

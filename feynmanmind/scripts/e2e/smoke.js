@@ -365,7 +365,7 @@ const coursePlan = {
       await field.fill(JSON.stringify([{ topic: 'x', concept: 'y' }]));
       await page.getByRole('button', { name: 'לייבא את הטקסט' }).click();
       await page.waitForTimeout(400);
-      await expectText('בשיעור 1 חסר השדה "reference"', 'missing field error');
+      await expectText('בשיעור 1 חסר השדה "reference\u200F"', 'missing field error');
       const rop = {
         topic: 'Buffer Overflow',
         concept: 'ROP (Return-Oriented Programming)',
@@ -515,6 +515,20 @@ const coursePlan = {
         await page.waitForTimeout(600);
         if ((await total()) !== before - 1) failures.push(`review drop: ${before} → ${await total()}`);
         await shot('16d-review-drop');
+        // Mixed Hebrew and English: a Hebrew sentence that starts with an English term still reads right to left.
+        await page.evaluate((id) => {
+          const raw = JSON.parse(localStorage.getItem('feynmanmind.db'));
+          const review = { ease_factor: 2.5, interval_days: 0, repetitions: 0, next_review_date: null, last_reviewed_at: null, last_quality: null };
+          raw.state.db.cards['bidi-1'] = { id: 'bidi-1', concept_id: id, question: 'ROP (Return-Oriented Programming) הוא טכניקה של מה?', answer: 'NX חוסם הרצת shellcode, ולכן משתמשים ב-gadgets.', created_at: new Date().toISOString(), review };
+          localStorage.setItem('feynmanmind.db', JSON.stringify(raw));
+        }, conceptId);
+        await page.goto(`${APP}/cards`);
+        await page.waitForTimeout(1200);
+        await page.getByLabel('חיפוש בשאלות ובתשובות').fill('Return-Oriented');
+        await page.waitForTimeout(400);
+        const marked = await page.evaluate(() => [...document.querySelectorAll('div')].some((d) => d.childElementCount === 0 && d.textContent.startsWith('\u200FROP (Return-Oriented')));
+        if (!marked) failures.push('mixed Hebrew/English text did not get a right-to-left mark');
+        await shot('16e-mixed-text');
       }
     }
     await ctx.close();
