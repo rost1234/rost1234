@@ -14,7 +14,7 @@ import { MOOD_OPTIONS } from './mood';
 import { type TranslationKey, useT } from '@/i18n';
 import { useBottomSpace } from '@/components/useBottomSpace';
 
-/** 1 mood and sleep, 2 gratitude, 3 lesson, 4 plan the coming days (optional). */
+/** 1 mood and sleep, 2 gratitude, 3 lesson. (Planning ahead lives in Month.) */
 type Step = 1 | 2 | 3;
 const LAST_STEP: Step = 3;
 

@@ -554,7 +554,7 @@ function DaySheet({
         <View style={styles.sheetHeader}>
           <View style={{ flex: 1, gap: 2 }}>
             <Text style={typography.heading}>{formatLongDate(date, t.locale)}</Text>
-            {summary ? <Text style={typography.caption}>{summary}</Text> : null}
+            {summary && !isFuture ? <Text style={typography.caption}>{summary}</Text> : null}
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel={t('sheet.close')} onPress={onClose} hitSlop={10} style={styles.close}>
             <Ionicons name="close" size={20} color={colors.text} />
@@ -582,7 +582,6 @@ function DaySheet({
               <Text style={typography.body}>{t(note)}</Text>
             </View>
           ) : null}
-          {date > today ? <Text style={[typography.caption, { paddingVertical: spacing.sm }]}>{t('cal.notYet')}</Text> : null}
           {details.length === 0 && date <= today ? (
             <Text style={[typography.caption, { paddingVertical: spacing.md }]}>
               {later.length > 0 ? t.plural('cal.createdLater', later.length, { title: later[0]?.title ?? '', date: createdOn(later[0]) }) : t('cal.nothingDue')}

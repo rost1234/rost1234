@@ -81,13 +81,7 @@ export function DayTaskInput({ date, today, onAdded }: { date: LocalDateString; 
   );
 }
 
-
 const useStyles = makeStyles(({ colors, typography, flat }) => ({
-  container: { gap: spacing.md },
-  days: { gap: spacing.sm, paddingVertical: spacing.xs },
-  list: { gap: spacing.sm, padding: spacing.md, borderRadius: radius.lg, backgroundColor: colors.surface, ...flat },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 36 },
-  dot: { width: 10, height: 10, borderRadius: 5, borderWidth: 2, borderColor: colors.primary },
   inputBlock: { gap: spacing.xs },
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   input: {

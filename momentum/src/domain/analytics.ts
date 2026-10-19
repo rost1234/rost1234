@@ -124,3 +124,58 @@ export function averageOf(values: readonly (number | null)[]): number | null {
   if (present.length === 0) return null;
   return present.reduce((sum, v) => sum + v, 0) / present.length;
 }
+
+/** How one habit went in the range, in plain counts. */
+export interface HabitTally {
+  habitId: string;
+  title: string;
+  done: number;
+  /** Days it was asked for (skipped, paused and future days don't count). */
+  due: number;
+}
+
+const COUNTED: ReadonlySet<HeatCellState> = new Set(['completed', 'partial', 'missed', 'forgiven']);
+
+/** Done out of due for each habit (a freeze-kept day counts as kept). */
+export function habitTallies(rows: readonly HeatRow[]): HabitTally[] {
+  return rows.map((row) => ({
+    habitId: row.habitId,
+    title: row.title,
+    done: row.cells.filter((c) => c.state === 'completed' || c.state === 'forgiven').length,
+    due: row.cells.filter((c) => COUNTED.has(c.state)).length,
+  }));
+}
+
+/** The range in a few plain facts, for sentences instead of charts. */
+export interface ProgressStory {
+  /** Days with anything done. */
+  activeDays: number;
+  /** Days in the range so far (today included). */
+  days: number;
+  /** The habit that went best (asked for 3+ times). */
+  best: HabitTally | null;
+  /** The habit that was hardest (asked for 3+ times, under 60%). */
+  hardest: HabitTally | null;
+  /** Mood on fuller days minus mood on lighter days, when there's enough to say (≥3 of each). */
+  moodLift: number | null;
+}
+
+const MIN_DUE = 3;
+
+export function progressStory(rows: readonly HeatRow[], trend: readonly TrendPoint[]): ProgressStory {
+  const tallies = habitTallies(rows).filter((h) => h.due >= MIN_DUE);
+  const ratio = (h: HabitTally) => h.done / h.due;
+  const sorted = [...tallies].sort((a, b) => ratio(b) - ratio(a) || b.due - a.due);
+  const best = sorted[0] && ratio(sorted[0]) > 0 ? sorted[0] : null;
+  const last = sorted[sorted.length - 1];
+  const hardest = last && last !== best && ratio(last) < 0.6 ? last : null;
+
+  const past = trend.filter((p) => p.completionPercent !== null);
+  const activeDays = past.filter((p) => (p.completionPercent ?? 0) > 0).length;
+  const fuller = trend.filter((p) => p.mood !== null && (p.completionPercent ?? 0) >= 50).map((p) => p.mood as number);
+  const lighter = trend.filter((p) => p.mood !== null && p.completionPercent !== null && p.completionPercent < 50).map((p) => p.mood as number);
+  const avg = (xs: number[]) => xs.reduce((s, x) => s + x, 0) / xs.length;
+  const moodLift = fuller.length >= 3 && lighter.length >= 3 ? Math.round((avg(fuller) - avg(lighter)) * 10) / 10 : null;
+
+  return { activeDays, days: past.length, best, hardest, moodLift };
+}
