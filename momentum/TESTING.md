@@ -381,3 +381,15 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Stacking: with Stretch after Coffee, checking Coffee shows "… · הבא בתור: Stretch" in the undo toast
 - [ ] English and Hebrew, light and dark, Garden and Calm look; TalkBack reads the idea buttons, the kind cards as radio buttons and the steppers
 
+## A more inviting garden (build 44)
+- [ ] Fresh install (or clear app data): setup opens in the Garden look; the sprout says hello; the Garden / Calm cards switch the look live
+- [ ] Garden: the last step shows the seed; a short tap says to hold; holding plants it (haptic), and Home opens with "נשתלתי!" until the first habit. TalkBack: one double tap plants it. Calm: the regular Start button
+- [ ] Your sprout → "יש לי שם?": give a name; it shows under the sprout on Home ("שם · שלב"); tapping the sprout a few times it says its name. Clearing the field removes it
+- [ ] Mark habits: one small flower appears on the hill per habit done, up to seven; they don't cover the pills, also with large text
+- [ ] Visitors: the first full day brings the ladybug (emoji by the ring and a line in the bubble); it's listed under "מי ביקר אותי" with its day; it doesn't come again. After the update, visitors already earned (e.g. 30+ days) arrive on the first open
+- [ ] Holidays (with holidays on): set the phone date to 2027-10-16 (Sukkot) — lulav and a holiday line; Yom Kippur shows nothing. Anniversary: a year after planting — a party hat
+- [ ] Winter: on 2026-12-03 the sky has a cloud with drops instead of the sun (daytime only)
+- [ ] Weekly summary in the Garden look starts with the sprout's postcard; the Calm look doesn't show it
+- [ ] Reflections lock on: open one, go to Home screen, come back — it's locked again and asks for the fingerprint
+- [ ] Settings → Your data: the last line mentions Android's backup to Google
+
