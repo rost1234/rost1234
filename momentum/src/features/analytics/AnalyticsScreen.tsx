@@ -13,6 +13,7 @@ import { FoldedSection } from '@/features/dashboard/FoldedSection';
 import { Sprout } from '@/features/garden/Sprout';
 import { makeStyles, spacing, useTheme } from '@/components/theme';
 import { useLocalDate } from '@/hooks/useLocalDate';
+import { useHabitStore } from '@/state/habitStore';
 import { useAnalyticsStore, type AnalyticsData, type AnalyticsRange } from '@/state/analyticsStore';
 import { Heatmap } from './Heatmap';
 import { TrendCharts } from './TrendCharts';
@@ -24,21 +25,26 @@ import { useT } from '@/i18n';
 import { useBottomSpace } from '@/components/useBottomSpace';
 
 /** The range in a few plain sentences: how much, what went best, what was hard, and mood. */
-function Story({ story, average }: { story: ProgressStory; average: number | null }) {
+function Story({ story, mood }: { story: ProgressStory; mood: number | null }) {
   const t = useT();
   const { typography, look } = useTheme();
   const styles = useStyles();
   const lines = [
-    average === null ? t('prog.noData') : t('prog.average', { percent: Math.round(average) }),
-    story.days > 0 ? t('prog.activeDays', { active: story.activeDays, days: story.days }) : null,
+    story.percent === null ? t('prog.noData') : t('prog.average', { percent: story.percent }),
+    story.activeDays > 0 ? t('prog.activeDays', { active: story.activeDays, days: story.days }) : null,
     story.best ? t('prog.best', { title: story.best.title, done: story.best.done, due: story.best.due }) : null,
-    story.hardest ? t('prog.hardest', { title: story.hardest.title, done: story.hardest.done, due: story.hardest.due }) : null,
+    story.hardest ? t('prog.hardest', { title: story.hardest.title }) : null,
+    mood !== null ? t('prog.mood', { mood: mood.toFixed(1) }) : null,
     story.moodLift !== null && story.moodLift >= 0.5 ? t('prog.moodLift') : null,
   ].filter((l): l is string => l !== null);
   return (
     <Card style={styles.story}>
       <View style={styles.storyRow}>
-        {look === 'garden' ? <Sprout stage={3} mood="happy" size={48} /> : null}
+        {look === 'garden' ? (
+          <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <Sprout stage={3} mood="happy" size={48} />
+          </View>
+        ) : null}
         <Text style={[typography.heading, { flex: 1 }]}>{t('prog.storyTitle')}</Text>
       </View>
       {lines.map((line) => (
@@ -80,18 +86,21 @@ function HabitBars({ tallies }: { tallies: HabitTally[] }) {
 function ProgressBody({ data, range, today }: { data: AnalyticsData; range: AnalyticsRange; today: LocalDateString }) {
   const t = useT();
   const styles = useStyles();
-  const story = progressStory(data.heatmap, data.trend);
+  const habits = useHabitStore((s) => s.habits);
+  const quitIds = new Set(habits.filter((h) => h.isQuit).map((h) => h.id));
+  const story = progressStory(data.heatmap, data.trend, quitIds);
   return (
     <>
-      <Story story={story} average={data.averageCompletion} />
+      <Story story={story} mood={data.averageMood} />
       <View style={styles.tiles}>
-        <StatTile value={data.averageCompletion === null ? '—' : `${Math.round(data.averageCompletion)}%`} label={t('ins.avgCompletion')} />
+        <StatTile value={story.percent === null ? '—' : `${story.percent}%`} label={t('ins.avgCompletion')} />
         <StatTile value={`${story.activeDays}`} label={t('prog.activeTile')} />
         <StatTile value={`${data.focusMinutes}`} label={t('ins.focusMin')} />
       </View>
 
       <SectionTitle>{t('prog.perHabit')}</SectionTitle>
-      <HabitBars tallies={habitTallies(data.heatmap)} />
+      {/* Habits to quit have their own clean-days card below. */}
+      <HabitBars tallies={habitTallies(data.heatmap).filter((h) => !quitIds.has(h.habitId))} />
 
       <QuitSection today={today} />
 
@@ -121,8 +130,10 @@ function StatTile({ value, label, tint }: { value: string; label: string; tint?:
   const styles = useStyles();
   return (
     <Card style={styles.tile}>
+      <View accessible accessibilityLabel={`${label}: ${value}`}>
       <Text style={[styles.tileValue, tint ? { color: tint } : null]}>{value}</Text>
       <Text style={typography.caption}>{label}</Text>
+      </View>
     </Card>
   );
 }

@@ -148,13 +148,15 @@ export function habitTallies(rows: readonly HeatRow[]): HabitTally[] {
 
 /** The range in a few plain facts, for sentences instead of charts. */
 export interface ProgressStory {
+  /** Done out of due across all habits, 0–100 (null when nothing was due): the same counts as the bars. */
+  percent: number | null;
   /** Days with anything done. */
   activeDays: number;
-  /** Days in the range so far (today included). */
+  /** Days on which something was due (paused and fully skipped days don't count). */
   days: number;
   /** The habit that went best (asked for 3+ times). */
   best: HabitTally | null;
-  /** The habit that was hardest (asked for 3+ times, under 60%). */
+  /** The habit that was hardest (asked for 3+ times, under 60%; never a habit to quit). */
   hardest: HabitTally | null;
   /** Mood on fuller days minus mood on lighter days, when there's enough to say (≥3 of each). */
   moodLift: number | null;
@@ -162,20 +164,30 @@ export interface ProgressStory {
 
 const MIN_DUE = 3;
 
-export function progressStory(rows: readonly HeatRow[], trend: readonly TrendPoint[]): ProgressStory {
-  const tallies = habitTallies(rows).filter((h) => h.due >= MIN_DUE);
+export function progressStory(rows: readonly HeatRow[], trend: readonly TrendPoint[], quitIds: ReadonlySet<string> = new Set()): ProgressStory {
+  const all = habitTallies(rows);
+  const due = all.reduce((sum, h) => sum + h.due, 0);
+  const done = all.reduce((sum, h) => sum + h.done, 0);
+  const tallies = all.filter((h) => h.due >= MIN_DUE);
   const ratio = (h: HabitTally) => h.done / h.due;
   const sorted = [...tallies].sort((a, b) => ratio(b) - ratio(a) || b.due - a.due);
   const best = sorted[0] && ratio(sorted[0]) > 0 ? sorted[0] : null;
-  const last = sorted[sorted.length - 1];
-  const hardest = last && last !== best && ratio(last) < 0.6 ? last : null;
+  const hardest = [...sorted].reverse().find((h) => h !== best && !quitIds.has(h.habitId) && ratio(h) < 0.6) ?? null;
 
-  const past = trend.filter((p) => p.completionPercent !== null);
-  const activeDays = past.filter((p) => (p.completionPercent ?? 0) > 0).length;
+  // Days come from the same cells as the bars, so pauses and skips never count against a day.
+  const dueDays = new Set<string>();
+  const activeDays = new Set<string>();
+  for (const row of rows) {
+    for (const cell of row.cells) {
+      if (COUNTED.has(cell.state)) dueDays.add(cell.date);
+      if (cell.state === 'completed' || cell.state === 'forgiven') activeDays.add(cell.date);
+    }
+  }
+
   const fuller = trend.filter((p) => p.mood !== null && (p.completionPercent ?? 0) >= 50).map((p) => p.mood as number);
   const lighter = trend.filter((p) => p.mood !== null && p.completionPercent !== null && p.completionPercent < 50).map((p) => p.mood as number);
   const avg = (xs: number[]) => xs.reduce((s, x) => s + x, 0) / xs.length;
   const moodLift = fuller.length >= 3 && lighter.length >= 3 ? Math.round((avg(fuller) - avg(lighter)) * 10) / 10 : null;
 
-  return { activeDays, days: past.length, best, hardest, moodLift };
+  return { percent: due > 0 ? Math.round((done / due) * 100) : null, activeDays: activeDays.size, days: dueDays.size, best, hardest, moodLift };
 }

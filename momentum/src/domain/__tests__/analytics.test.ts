@@ -17,10 +17,20 @@ describe('progress in plain words', () => {
     const story = progressStory(rows, trend);
     expect(story.best?.habitId).toBe('read');
     expect(story.hardest?.habitId).toBe('run');
-    expect(story.activeDays).toBe(6);
-    expect(story.days).toBe(7);
+    // Days come from the bars' cells: 4 days had something due, all 4 had something done.
+    expect(story.activeDays).toBe(4);
+    expect(story.days).toBe(4);
+    expect(story.percent).toBe(67);
     expect(story.moodLift).toBe(2);
     expect(progressStory(rows, trend.slice(0, 3)).moodLift).toBeNull();
+  });
+
+  it('leaves paused and skipped days out, and never calls a habit to quit the hardest', () => {
+    const rows = [row('rest', ['paused', 'paused', 'skipped']), row('smoke', ['missed', 'missed', 'missed', 'completed'])];
+    const story = progressStory(rows, [], new Set(['smoke']));
+    expect(story.days).toBe(4);
+    expect(story.percent).toBe(25);
+    expect(story.hardest).toBeNull();
   });
 
   it('does not call a habit hardest when everything went well', () => {

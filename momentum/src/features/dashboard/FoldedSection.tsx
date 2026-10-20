@@ -7,8 +7,8 @@ import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { useT } from '@/i18n';
 
 /**
- * A section shown as one line ("📋 3 for today · 1 open") until tapped. Used on
- * days off, so work waits quietly instead of leading the screen.
+ * A section shown as one line ("📋 3 for today · 1 open") until tapped, then open. Used on
+ * days off, so work waits quietly instead of leading the screen, and for Progress details.
  */
 export function FoldedSection({
   icon,

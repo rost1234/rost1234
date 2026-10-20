@@ -197,7 +197,7 @@ function MonthGrid({
                 key={date}
                 accessibilityRole="button"
                 accessibilityLabel={dayA11y(day, t, planned[date] ?? 0)}
-                accessibilityHint={day.future ? t('cal.planHint') : undefined}
+                accessibilityHint={day.future ? t('cal.planHint') : t('cal.pastHint')}
                 accessibilityState={{ selected: date === selected }}
                 onPress={() => onSelect(date)}
                 style={[

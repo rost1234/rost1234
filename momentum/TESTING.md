@@ -401,3 +401,10 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Tasks within the next 7 days show in Today's "בימים הקרובים"; later ones only in Month
 - [ ] The evening reflection has 3 steps ("שלב 1 מתוך 3") and no planning step
 
+## Progress in plain words (build 45)
+- [ ] Progress opens with "בקצרה": % done, active days, what went best, what's hardest right now, average mood, and (with enough days) whether mood was better on fuller days
+- [ ] The % on top matches the bars ("5 מתוך 7"); paused or skipped days don't lower it or count as days
+- [ ] Habits to quit aren't in the bars or called "hardest"; their own card still shows
+- [ ] "פירוט וגרפים" and "ניסויים" open on tap and show the day map, mood chart, screen time, sleep and sounds
+- [ ] With 0 active days the "ימים פעילים" line doesn't show; a brand-new install says there isn't enough yet
+
