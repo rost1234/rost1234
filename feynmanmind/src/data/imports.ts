@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { generateLesson } from '@/api/functions';
 import { parseLessonImport } from '@/content/import';
 import { findStation, stationsOf } from '@/content/types';
-import { addSelfCheck, importLessons, isImportedCourse, saveImportedLesson, type ImportTexts } from '@/local/logic';
+import { importLessons, isImportedCourse, saveImportedLesson, type ImportTexts } from '@/local/logic';
 import { commit, getDB, newId, useDBStore } from '@/local/store';
 import { NotFoundError } from '@/local/types';
 import { read } from './local';
@@ -15,14 +15,6 @@ export function useImportLessons() {
         const items = parseLessonImport(text);
         return commit((db) => importLessons(db, items, texts, new Date()));
       }),
-  });
-}
-
-/** Saves a self-rated explanation of an imported lesson (sets the concept's mastery). */
-export function useSelfCheck() {
-  return useMutation({
-    mutationFn: ({ conceptId, explanation, rating }: { conceptId: string; explanation: string; rating: number }) =>
-      read(() => commit((db) => addSelfCheck(db, conceptId, explanation, rating, newId, new Date()))),
   });
 }
 

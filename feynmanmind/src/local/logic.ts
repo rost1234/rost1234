@@ -844,23 +844,6 @@ export function saveImportedLesson(db: LocalDB, courseId: string, key: string, l
   return next;
 }
 
-/**
- * Self-check on an imported lesson: the learner explained it, compared with the
- * reference and rated themselves 1–5. Saved like a tutor session (no AI): the
- * concept's mastery becomes rating × 20, so 4 or 5 counts as mastered.
- */
-export function addSelfCheck(db: LocalDB, conceptId: string, explanation: string, rating: number, newId: NewId, now: Date): [LocalDB, string] {
-  const score = Math.max(1, Math.min(5, Math.round(rating))) * 20;
-  return addSession(
-    db,
-    conceptId,
-    explanation,
-    { comprehension_score: score, mastery_verdict: score >= MASTERED_AT ? 'mastered' : 'developing', jargon_detected: [], misconceptions: [], primary_gap: '', socratic_question: '', encouragement: '' },
-    newId,
-    now,
-  );
-}
-
 // ---------------------------------------------------------------------------
 // Lessons still to write, and the card store
 // ---------------------------------------------------------------------------

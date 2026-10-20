@@ -1,6 +1,5 @@
 import {
   addCards,
-  addSelfCheck,
   addSession,
   cardsOf,
   courseProgress,
@@ -17,7 +16,6 @@ import {
   saveImportedLesson,
   saveLesson,
   stationsNeedingLessons,
-  sessionsOf,
   startStation,
   computeStats,
   dayKey,
@@ -583,7 +581,7 @@ describe('imported lessons', () => {
     expect(stations(a).map((s) => s.key).sort()).toEqual(stations(b).map((s) => s.key).sort());
   });
 
-  it('keeps existing courses and progress, starts like any station and saves a self-rating', () => {
+  it('keeps existing courses and progress, and starts like any station', () => {
     const { db: seeded, conceptId } = seed();
     let [db] = importLessons(seeded, [lesson('BOF', 'ROP', ['NX'])], texts, NOW);
     expect(db.concepts[conceptId]).toEqual(seeded.concepts[conceptId]);
@@ -593,10 +591,7 @@ describe('imported lessons', () => {
     let id: string;
     [db, id] = startStation(db, course, key, newId, NOW);
     expect(cardsOf(db, id)).toHaveLength(1);
-    [db] = addSelfCheck(db, id, 'my words', 4, newId, NOW);
-    expect(db.concepts[id]!.mastery_level).toBe(80);
-    expect(courseProgress(db, course).stations[0]!.status).toBe('mastered');
-    expect(sessionsOf(db, id)[0]!.user_explanation).toBe('my words');
+    expect(courseProgress(db, course).stations[0]!.status).toBe('started');
   });
 
   it('a full lesson from the file or the AI becomes the third step, and its cards join the reviews', () => {

@@ -601,6 +601,8 @@ export const he: Record<TranslationKey, string> = {
   'import.skipped': "{n} כבר היו קיימים ודולגו.",
   'import.nothing': "אין שיעורים חדשים: כל {n} השיעורים כבר קיימים.",
   'import.openCourse': "לפתוח את הקורס",
+  'import.writeBody': "ה-AI יכתוב שיעור מלא על בסיס הסבר הייחוס שבקובץ: חלקים, דוגמה, טעות נפוצה ושאלות לבדיקה עצמית. אחר כך הוא יישמר במכשיר.",
+  'import.referenceOnly': "להמשיך רק עם הסבר הייחוס",
   'import.courseTitle': "שיעורים מיובאים",
   'import.courseDescription': "שיעורים שייבאתם. מסבירים כל מושג במילים שלכם ואז משווים להסבר הייחוס.",
   'import.cardPrompt': "הסבירו במילים שלכם: {concept}",

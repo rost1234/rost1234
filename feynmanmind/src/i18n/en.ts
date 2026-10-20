@@ -615,6 +615,8 @@ export const en = {
   'import.skipped': "{n} were already there and were skipped.",
   'import.nothing': "Nothing new: all {n} lessons were already there.",
   'import.openCourse': "Open the course",
+  'import.writeBody': "The AI will write a full lesson from the file's reference: sections, an example, a common mistake and self-check questions. It's then saved on the device.",
+  'import.referenceOnly': "Go on with the reference only",
   'import.courseTitle': "Imported lessons",
   'import.courseDescription': "Lessons you imported. Explain each concept in your own words, then compare with the reference.",
   'import.cardPrompt': "Explain in your own words: {concept}",

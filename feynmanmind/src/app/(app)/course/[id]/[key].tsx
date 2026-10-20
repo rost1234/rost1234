@@ -7,12 +7,12 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ScoreRing } from '@/components/ScoreRing';
 import { Button, Card, Chip, ErrorState, InlineError, LoadingState, Screen } from '@/components/ui';
 import { useStartStation, useStation, useWriteStationLesson } from '@/data/courses';
+import { useUpgradeImported } from '@/data/imports';
 import { useT, type TranslationKey } from '@/i18n';
 import { AskButton } from '@/features/lesson/AskSheet';
 import { CheckQuiz } from '@/features/lesson/CheckQuiz';
 import { LessonCard } from '@/features/lesson/LessonCard';
 import { LessonView } from '@/features/lesson/LessonView';
-import { SelfCheckStation } from '@/features/lesson/SelfCheck';
 import { useAiConfigured } from '@/lib/env';
 import { errorMessage } from '@/lib/errors';
 import { haptics } from '@/lib/haptics';
@@ -44,7 +44,10 @@ export default function StationScreen() {
   const query = useStation(id, key);
   const start = useStartStation();
   const write = useWriteStationLesson();
+  const upgradeImported = useUpgradeImported();
   const [step, setStep] = useState(0);
+  // An imported lesson without a full lesson yet: the learner chose to go on with the file's reference text only.
+  const [referenceOnly, setReferenceOnly] = useState(false);
   const reduceMotion = useReduceMotion();
   const [width, setWidth] = useState(0);
 
@@ -103,28 +106,52 @@ export default function StationScreen() {
     );
   }
 
-  if (station.reference) {
+  // Imported lessons run like any other station. Without a full lesson (from the file or the AI) yet,
+  // first offer to have the AI write one from the file's reference, or to go on with the reference alone.
+  const imported = !!station.reference;
+  if (imported && !lesson.parts && !referenceOnly) {
     return (
-      <SelfCheckStation
-        courseId={course.id}
-        courseTitle={course.title}
-        station={{ ...station, reference: station.reference }}
-        index={ref.index}
-        total={total}
-        levelKey={level.key}
-        next={next}
-        progress={p}
-        lesson={lesson}
-      />
+      <>
+        <Stack.Screen options={{ title: t('course.station', { n: ref.index + 1 }) }} />
+        <Screen>
+          {header}
+          <Text style={[typography.body, { color: colors.textMuted }]}>{station.summary}</Text>
+          <View style={styles.cta}>
+            <View style={styles.row}>
+              <Ionicons name="sparkles" size={20} color={colors.primary} />
+              <Text style={[typography.subheading, { flex: 1 }]}>{t('lesson.missingTitle')}</Text>
+            </View>
+            <Text style={typography.body}>{t('import.writeBody')}</Text>
+            <InlineError message={!aiReady ? t('error.aiNotConfigured') : upgradeImported.error ? errorMessage(upgradeImported.error, t) : null} />
+            {upgradeImported.isPending ? (
+              <LoadingState label={t('lesson.writing')} />
+            ) : (
+              <Button
+                label={t('lesson.write')}
+                icon="create-outline"
+                disabled={!aiReady}
+                onPress={() => upgradeImported.mutate({ courseId: course.id, key: station.key }, { onSuccess: () => haptics.success() })}
+              />
+            )}
+            <Button label={t('import.referenceOnly')} icon="document-text-outline" variant="ghost" onPress={() => setReferenceOnly(true)} />
+          </View>
+        </Screen>
+      </>
     );
   }
 
-  const upgrade = () => write.mutate({ courseId: course.id, key: station.key, language: 'he', upgrade: true }, { onSuccess: () => haptics.success() });
+  const upgrade = () =>
+    imported
+      ? upgradeImported.mutate({ courseId: course.id, key: station.key }, { onSuccess: () => haptics.success() })
+      : write.mutate({ courseId: course.id, key: station.key, language: 'he', upgrade: true }, { onSuccess: () => haptics.success() });
+  const upgradeError = imported ? upgradeImported.error : write.error;
   const pages: ReactNode[] = [
     <Fragment key="read">
       <Text style={[typography.body, { color: colors.textMuted }]}>{station.summary}</Text>
       <LessonView title={station.title} explanation={lesson.explanation} parts={lesson.parts} keyPoints={lesson.cards} />
-      {!lesson.parts && !station.explanation ? <UpgradeLesson onPress={upgrade} busy={write.isPending} error={write.error ? errorMessage(write.error, t) : null} /> : null}
+      {!lesson.parts && !station.explanation ? (
+        <UpgradeLesson onPress={upgrade} busy={write.isPending || upgradeImported.isPending} error={upgradeError ? errorMessage(upgradeError, t) : null} />
+      ) : null}
     </Fragment>,
     <Fragment key="check">
       {lesson.parts?.check.length ? (

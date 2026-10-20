@@ -54,8 +54,8 @@ all sources — the file's first 3, else the automatic "explain it" card (if the
 `data/lessonQueue.ts` (`LessonQueueCard` on the map: 2 at a time, waits out the server's hourly limit, skips failures).
 The notebook looks draw course/subject maps as a bullet-journal list (`features/learn/ChecklistRow`: a dot per station, done = struck out by hand, mastered = small star, current = highlighter + "here I stopped" note; `ChecklistHeading` for units), classic keeps the path.
 The card store (`cards/index.tsx`, from the Review tab) shows counts and the cards by subject/concept; delete one card
-(bin), a group, or a long-press selection. Cards can also be deleted from the card editor and mid-review ("I don't need this card"). Stations with a `reference` run as `features/lesson/SelfCheck.tsx`: explain → reveal
-the reference and key points → rate 1–5 (`addSelfCheck`, mastery = rating × 20) → full lesson. The full lesson
+(bin), a group, or a long-press selection. Cards can also be deleted from the card editor and mid-review ("I don't need this card"). Stations with a `reference` (imported) run through the same four steps as any station. Without a full lesson yet,
+the station screen first offers to have the AI write it, or to go on with the reference (+ key points) as the lesson. The full lesson
 comes from the file (optional `hook`/`sections`/`example`/`misconception`/`connection`/`check`/`cards`, validated with
 `lessonProblems`; `RICH_FORMAT_PROMPT` is the copyable AI instruction) or from `generate-lesson` with `reference` +
 `key_points` as the source of truth (`upgradeOne`, saved by

@@ -353,7 +353,7 @@ const coursePlan = {
     }
     if (scheme === 'light') {
       // Import lessons from JSON: a bad paste shows an error, a good one adds lessons (a duplicate is skipped),
-      // and an imported station runs explain → reveal the reference → rate yourself.
+      // and an imported station runs through the regular steps.
       await page.goto(`${APP}/import`);
       await page.waitForTimeout(1000);
       const field = page.getByTestId('import-json');
@@ -395,28 +395,31 @@ const coursePlan = {
       await expectText('ROP (Return-Oriented Programming)', 'imported lessons survive a reload');
       await page.goto(`${APP}/course/imported/${await page.evaluate(() => JSON.parse(localStorage.getItem('feynmanmind.db')).state.db.courses.imported.levels[0].stations[0].key)}`);
       await page.waitForTimeout(1000);
-      if ((await page.getByTestId('self-reference').count()) !== 0) failures.push('reference visible before explaining');
-      await page.getByTestId('self-explanation').fill('משתמשים בקטעי קוד שכבר קיימים בזיכרון במקום להזריק קוד.');
-      await page.getByRole('button', { name: 'לחשוף את הסבר הייחוס' }).click();
-      await page.waitForTimeout(700);
-      await expectText('gadgets ומשרשרים', 'reference revealed');
-      await page.getByRole('checkbox', { name: /gadget מסתיים/ }).click();
-      await expectText('1 מתוך 3 נקודות מפתח', 'key points ticked');
-      await page.getByRole('button', { name: '4 מתוך 5 כוכבים' }).click();
-      await page.getByRole('button', { name: 'לשמור דירוג' }).click();
-      await page.waitForTimeout(600);
-      await expectText('נשמר: 80/100', 'self rating saved');
-      await shot('15c-self-check');
-      // Third step: no full lesson yet → the (mocked) AI writes one from the reference and key points.
-      await page.getByRole('button', { name: 'שיעור מלא (AI)' }).click();
-      await page.waitForTimeout(400);
-      await page.getByRole('button', { name: 'לכתוב שיעור מלא עם AI' }).click();
-      await page.waitForTimeout(1200);
+      // An imported station runs like any other; with no full lesson yet, the AI writes one from the reference first.
+      await expectText('השיעור הזה עוד לא נכתב', 'imported station offers to write the full lesson');
+      await expectText('להמשיך רק עם הסבר הייחוס', 'reference-only option');
+      await shot('15c-imported-write');
+      await page.getByRole('button', { name: 'לכתוב את השיעור עם AI' }).click();
+      await page.waitForTimeout(1500);
       const up = requests['/functions/v1/generate-lesson']?.at(-1);
       if (!up?.reference?.includes('gadgets') || up?.key_points?.length !== 3) failures.push(`upgrade request lacks the reference: ${JSON.stringify(up)}`);
-      await expectText('למה ROP (Return-Oriented Programming) חשוב בכלל?', 'upgraded lesson hook');
-      await expectText('שאלת בדיקה 1?', 'upgraded lesson check questions');
+      await expectText('למה ROP (Return-Oriented Programming) חשוב בכלל?', 'full lesson hook on the read step');
+      if ((await page.getByRole('tab').count()) !== 4) failures.push('imported station lacks the four regular steps');
+      if ((await page.getByTestId('self-explanation').count()) !== 0) failures.push('imported station still starts with the comparison');
       await shot('15d-full-lesson');
+      // Moving on to "explain" starts the station (its concept and cards join the library).
+      await page.getByRole('tab').nth(2).click();
+      await page.waitForTimeout(800);
+      const startedImported = await page.evaluate(() => Object.values(JSON.parse(localStorage.getItem('feynmanmind.db')).state.db.concepts).some((c) => c.title.startsWith('ROP')));
+      if (!startedImported) failures.push('imported station did not start on the explain step');
+      // Going on with the reference only: the regular steps, the reference as the lesson.
+      await page.goto(`${APP}/course/imported/${await page.evaluate(() => JSON.parse(localStorage.getItem('feynmanmind.db')).state.db.courses.imported.levels[0].stations.find((x) => x.title === 'XSS').key)}`);
+      await page.waitForTimeout(1000);
+      await page.getByRole('button', { name: 'להמשיך רק עם הסבר הייחוס' }).click();
+      await page.waitForTimeout(500);
+      await expectText('הזרקת סקריפט לדף של אתר אחר', 'reference as the lesson');
+      if ((await page.getByRole('tab').count()) !== 4) failures.push('reference-only station lacks the four steps');
+      await shot('15d2-reference-only');
       // The map offers to upgrade the rest (XSS, CSRF).
       await page.goto(`${APP}/course/imported`);
       await page.waitForTimeout(1000);
