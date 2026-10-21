@@ -34,12 +34,13 @@ describe('set aside for today', () => {
   const statuses: Record<string, 'completed' | 'skipped' | 'in_progress'> = { dm: 'completed' };
   const ids = (list: { id: string }[]) => list.map((h) => h.id);
 
-  it('a morning habit not done goes aside after noon; done ones stay', () => {
+  it('a morning habit not done stays on the list after noon, last and marked late; done ones stay', () => {
     const before = setAsideToday([morning, evening, any, doneMorning], (id) => statuses[id], [], 9);
-    expect(ids(before.aside)).toEqual([]);
+    expect(ids(before.late)).toEqual([]);
     const after = setAsideToday([morning, evening, any, doneMorning], (id) => statuses[id], [], 13);
     expect(ids(after.open)).toEqual(['e', 'a', 'dm']);
-    expect(ids(after.aside)).toEqual(['m']);
+    expect(ids(after.late)).toEqual(['m']);
+    expect(ids(after.aside)).toEqual([]);
   });
 
   it('"I didn\'t do it today" and skipped habits go aside at any hour', () => {

@@ -29,6 +29,10 @@ interface TaskState {
   upcoming: Task[];
   isLoaded: boolean;
   error: string | null;
+  /** A calm note about the lists (e.g. today already has three), shown by the task field, not as an error. */
+  notice: string | null;
+  /** The task dropped a moment ago, so it can be brought back from a toast. */
+  lastDropped: { task: Task; at: number } | null;
 
   load: (today: LocalDateString) => Promise<void>;
   /** Adds to today while there's room (max 3 open), otherwise to Later. Returns where it went. */
@@ -45,6 +49,10 @@ interface TaskState {
   /** Moves a task to a day after today. */
   moveToDate: (taskId: string, date: LocalDateString) => void;
   clearError: () => void;
+  clearNotice: () => void;
+  /** Brings back the task dropped a moment ago. */
+  undoDrop: () => void;
+  dismissDropped: () => void;
 }
 
 const isPending = (id: string) => id.startsWith('pending-');
@@ -84,6 +92,8 @@ export const useTaskStore = create<TaskState>((set, get) => {
     upcoming: [],
     isLoaded: false,
     error: null,
+    notice: null,
+    lastDropped: null,
 
     load: async (today) => {
       set({ today });
@@ -94,7 +104,7 @@ export const useTaskStore = create<TaskState>((set, get) => {
           repositories.tasks.getBacklog(),
           repositories.tasks.getUpcoming(today, addDays(today, UPCOMING_DAYS)),
         ]);
-        if (get().today === today) set({ tasks, overdue, later, upcoming, isLoaded: true, error: null });
+        if (get().today === today) set({ tasks, overdue, later, upcoming, isLoaded: true, error: null, notice: null });
       } catch (error) {
         set({ isLoaded: true, error: toErrorMessage(error) });
       }
@@ -132,7 +142,7 @@ export const useTaskStore = create<TaskState>((set, get) => {
       const isCompleted = !task.isCompleted;
       // Re-opening a task must respect the daily cap.
       if (!isCompleted && !hasRoomToday(tasks, today)) {
-        set({ error: t('err.todayFull') });
+        set({ notice: t('err.todayFull') });
         return;
       }
       const before = snapshot();
@@ -154,14 +164,14 @@ export const useTaskStore = create<TaskState>((set, get) => {
         return;
       }
       if (decision === 'today' && found.bucket !== 'today' && !hasRoomToday(get().tasks, today)) {
-        set({ error: t('err.todayFull') });
+        set({ notice: t('err.todayFull') });
         return;
       }
       const before = snapshot();
       const rest = without(taskId);
 
       if (decision === 'drop') {
-        set(rest);
+        set({ ...rest, lastDropped: { task: found.task, at: Date.now() } });
         runDetached(repositories.tasks.delete(taskId), rollback(before, t('err.dropTask')));
         return;
       }
@@ -194,7 +204,7 @@ export const useTaskStore = create<TaskState>((set, get) => {
       const found = findTask(taskId);
       if (!today || !found || isPending(taskId) || date <= today) return;
       if (isUpcoming(date, today) && found.task.dueDate !== date && !hasRoomToday(get().upcoming, date)) {
-        set({ error: t('err.dayFull') });
+        set({ notice: t('err.dayFull') });
         return;
       }
       const before = snapshot();
@@ -204,5 +214,19 @@ export const useTaskStore = create<TaskState>((set, get) => {
     },
 
     clearError: () => set({ error: null }),
+    clearNotice: () => set({ notice: null }),
+    dismissDropped: () => set({ lastDropped: null }),
+
+    undoDrop: () => {
+      const dropped = get().lastDropped;
+      const { today } = get();
+      if (!dropped || !today) return;
+      set({ lastDropped: null });
+      const { title, habitId, dueDate } = dropped.task;
+      runDetached(
+        repositories.tasks.create({ title, habitId, dueDate }).then(() => get().load(today)),
+        (error: unknown) => set({ error: `${t('err.addTask')} ${toErrorMessage(error)}` }),
+      );
+    },
   };
 });

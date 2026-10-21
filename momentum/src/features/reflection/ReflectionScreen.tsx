@@ -11,6 +11,7 @@ import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import type { DailyReflection, MoodScore } from '@/domain/models';
 import { useReflectionStore } from '@/state/reflectionStore';
 import { MOOD_OPTIONS } from './mood';
+import { ReflectionLock } from './ReflectionLock';
 import { type TranslationKey, useT } from '@/i18n';
 import { useBottomSpace } from '@/components/useBottomSpace';
 
@@ -71,8 +72,15 @@ export function ReflectionScreen() {
       </View>
     );
   }
-  // Prefilled when editing today's existing entry.
-  return <ReflectionForm logDate={logDate} initial={existing} />;
+  // Prefilled when editing today's existing entry: that's reading private text, so it's behind the lock.
+  if (existing) {
+    return (
+      <ReflectionLock>
+        <ReflectionForm logDate={logDate} initial={existing} />
+      </ReflectionLock>
+    );
+  }
+  return <ReflectionForm logDate={logDate} initial={null} />;
 }
 
 function ReflectionForm({ logDate, initial }: { logDate: LocalDateString; initial: DailyReflection | null }) {

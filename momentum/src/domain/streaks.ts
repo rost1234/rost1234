@@ -84,14 +84,18 @@ export function planStreakFreezes(
   let remaining = Math.max(0, freezesAvailable);
   const items: FreezePlanItem[] = [];
 
-  for (const habit of habits) {
-    if (remaining === 0) break;
-    const statuses = statusesByHabit.get(habit.id) ?? new Map<LocalDateString, HabitLogStatus>();
-    const gap = findTrailingGap(habit, statuses, today, remaining);
-    if (!gap) continue;
+  // When there aren't enough freezes for every habit, the longest streaks are kept first:
+  // losing a long run is what makes people give up on a habit altogether.
+  const candidates = habits
+    .map((habit) => ({ habit, gap: findTrailingGap(habit, statusesByHabit.get(habit.id) ?? new Map<LocalDateString, HabitLogStatus>(), today, remaining) }))
+    .filter((c): c is { habit: StreakHabit; gap: TrailingGap } => c.gap !== null)
+    .sort((a, b) => b.gap.streak - a.gap.streak);
 
-    items.push({ habitId: habit.id, dates: gap });
-    remaining -= gap.length;
+  for (const { habit, gap } of candidates) {
+    if (remaining === 0) break;
+    if (gap.dates.length > remaining) continue;
+    items.push({ habitId: habit.id, dates: gap.dates });
+    remaining -= gap.dates.length;
   }
 
   return { items, freezesUsed: Math.max(0, freezesAvailable) - remaining };
@@ -101,12 +105,18 @@ export function planStreakFreezes(
  * Returns the missed scheduled dates between the last resolved day and today,
  * or `null` when there is nothing to protect or not enough freezes.
  */
+interface TrailingGap {
+  dates: LocalDateString[];
+  /** The streak the gap would keep. */
+  streak: number;
+}
+
 function findTrailingGap(
   habit: StreakHabit,
   statuses: StatusByDate,
   today: LocalDateString,
   budget: number,
-): LocalDateString[] | null {
+): TrailingGap | null {
   const start = habitStartDate(habit);
   const missed: LocalDateString[] = [];
   let cursor = addDays(today, -1);
@@ -117,7 +127,8 @@ function findTrailingGap(
       if (status === 'completed' || (status && BRIDGING.has(status))) {
         // Found the anchor: only protect if a real streak lives behind the gap.
         if (missed.length === 0) return null;
-        return computeStreak(habit, statuses, cursor) > 0 ? missed.reverse() : null;
+        const streak = computeStreak(habit, statuses, cursor);
+        return streak > 0 ? { dates: missed.reverse(), streak } : null;
       }
       missed.push(cursor);
       if (missed.length > budget) return null;

@@ -61,6 +61,8 @@ interface HabitState {
   /** Saves edits; today's log is re-evaluated against a changed target. Streak history is kept. */
   updateHabit: (habitId: string, changes: Partial<NewHabit>) => Promise<void>;
   archiveHabit: (habitId: string) => Promise<void>;
+  /** Brings an archived habit back to Today, history and all. */
+  restoreHabit: (habitId: string) => Promise<void>;
   clearError: () => void;
   /** Restores the habit's state from before `lastChange`. */
   undoLast: () => void;
@@ -358,6 +360,13 @@ export const useHabitStore = create<HabitState>((set, get) => {
       } catch (error) {
         set({ habits: before, error: t('err.archive', { error: toErrorMessage(error) }) });
       }
+    },
+
+    restoreHabit: async (habitId) => {
+      await repositories.habits.setArchived(habitId, false);
+      refreshTodayWidget();
+      const { today } = get();
+      if (today) await get().load(today);
     },
 
     clearError: () => set({ error: null }),

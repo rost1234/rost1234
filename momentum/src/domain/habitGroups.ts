@@ -31,23 +31,25 @@ export function groupForHome(habits: readonly Habit[]): HomeItem[] {
 }
 
 /**
- * Today's habits split into the open list and the ones set aside for today: skipped, put away
- * with "I didn't do it today", or kept for a part of the day that's over (a morning habit after
- * noon). Done habits always stay in the open list, so the day's wins stay in view.
+ * Today's habits split into the open list, the "late" ones (kept for a part of the day that's over,
+ * e.g. a morning habit after noon: still on the list, last, with a note that it can still be done)
+ * and the ones set aside for today (skipped, or put away with "I didn't do it today").
+ * Done habits always stay in the open list, so the day's wins stay in view.
  */
 export function setAsideToday<T extends Pick<Habit, 'id' | 'timeOfDay'>>(
   habits: readonly T[],
   statusOf: (habitId: string) => HabitLogStatus | undefined,
   closedIds: readonly string[],
   hour: number,
-): { open: T[]; aside: T[] } {
+): { open: T[]; late: T[]; aside: T[] } {
   const open: T[] = [];
+  const late: T[] = [];
   const aside: T[] = [];
   for (const habit of habits) {
     const status = statusOf(habit.id);
-    const away =
-      status === 'skipped' || (status !== 'completed' && (closedIds.includes(habit.id) || partOfDayPassed(habit.timeOfDay, hour)));
-    (away ? aside : open).push(habit);
+    if (status === 'skipped' || (status !== 'completed' && closedIds.includes(habit.id))) aside.push(habit);
+    else if (status !== 'completed' && partOfDayPassed(habit.timeOfDay, hour)) late.push(habit);
+    else open.push(habit);
   }
-  return { open, aside };
+  return { open, late, aside };
 }

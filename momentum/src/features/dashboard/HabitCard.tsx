@@ -3,7 +3,7 @@ import { Animated, I18nManager, Pressable, useWindowDimensions, View } from 'rea
 import { Text } from '@/components/AppText';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { showActionSheet, type SheetAction } from '@/components/Overlay';
+import { showActionSheet, showConfirm, type SheetAction } from '@/components/Overlay';
 import { ProgressBar } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { haptics } from '@/core/haptics';
@@ -81,7 +81,21 @@ function openHabitMenu(habit: Habit) {
   actions.push(
     { label: t('habit.edit'), icon: 'create-outline', run: () => router.push({ pathname: '/habit/[id]', params: { id: habit.id } }) },
     { label: t('habit.pause'), icon: 'pause-circle-outline', run: () => router.push({ pathname: '/streaks', params: { habitId: habit.id } }) },
-    { label: t('habit.archive'), icon: 'archive-outline', destructive: true, run: () => void archiveHabit(habit.id) },
+    {
+      label: t('habit.archive'),
+      icon: 'archive-outline',
+      destructive: true,
+      // Asked first: it leaves Today (it can be brought back from Settings → Archived habits).
+      run: () =>
+        showConfirm({
+          title: t('hf.archiveTitle', { title: habit.title }),
+          message: t('hf.archiveBody'),
+          confirmLabel: t('habit.archive'),
+          destructive: true,
+          icon: 'archive-outline',
+          onConfirm: () => void archiveHabit(habit.id),
+        }),
+    },
   );
   // Counted habits: set the amount right here ("I did 2 of 3 sets").
   const stepper =

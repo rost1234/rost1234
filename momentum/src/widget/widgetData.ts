@@ -27,10 +27,12 @@ export async function tapHabitFromWidget(habitId: string): Promise<void> {
   if (!habit || habit.isArchived || !isHabitDueOn(habit, today)) return;
   const log = (await repositories.habitLogs.getForDate(today)).find((l) => l.habitId === habitId);
   const progress = progressOf(log);
+  // Already done: a second tap on the home screen does nothing (undoing happens in the app, with Undo).
+  if (progress.status === 'completed') return;
   // Same low-energy-day rule as the app: the tiny step completes the habit.
   const minimumDay = (await repositories.dayModes.get(today)) === 'minimum';
   const next =
-    minimumDay && progress.status !== 'completed'
+    minimumDay
       ? { currentCount: Math.max(1, progress.currentCount), status: 'completed' as const }
       : applyPrimaryAction(habit, progress);
   await repositories.habitLogs.upsert({ habitId, logDate: today, currentCount: next.currentCount, status: next.status });

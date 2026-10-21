@@ -8,13 +8,17 @@ const FLUSH_INTERVAL_MS = 60_000;
 let segmentStart: number | null = null;
 let interval: ReturnType<typeof setInterval> | null = null;
 let subscription: NativeEventSubscription | null = null;
+/** Time that isn't screen time (a focus session running): measured but not written. */
+let excluded: () => boolean = () => false;
 
 /** Writes the time since the last flush (capped) and starts a new segment. */
 function flush(now: number, keepRunning: boolean): void {
   if (segmentStart === null) return;
   const end = Math.min(now, segmentStart + MAX_SESSION_SECONDS * 1000);
-  for (const slice of splitByLocalDay(segmentStart, end)) {
-    runDetached(repositories.usage.addSeconds(slice.logDate, slice.seconds));
+  if (!excluded()) {
+    for (const slice of splitByLocalDay(segmentStart, end)) {
+      runDetached(repositories.usage.addSeconds(slice.logDate, slice.seconds));
+    }
   }
   segmentStart = keepRunning ? now : null;
 }
@@ -32,7 +36,8 @@ function onChange(state: AppStateStatus): void {
  * Measures foreground time only (no content, no analytics, never leaves the
  * device). Flushes every minute so a killed app loses at most ~60 seconds.
  */
-export function startUsageTracking(): void {
+export function startUsageTracking(isExcluded?: () => boolean): void {
+  if (isExcluded) excluded = isExcluded;
   if (subscription) return;
   if (AppState.currentState === 'active') segmentStart = Date.now();
   subscription = AppState.addEventListener('change', onChange);

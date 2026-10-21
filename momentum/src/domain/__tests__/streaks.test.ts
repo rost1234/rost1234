@@ -28,6 +28,19 @@ describe('computeStreak', () => {
 });
 
 describe('planStreakFreezes', () => {
+  it('keeps the longest streak first when there are not enough freezes for all', () => {
+    const old = { ...daily, id: 'old', createdAt: '2026-08-01T08:00:00' };
+    const long = { ...daily, id: 'long', createdAt: '2026-09-02T08:00:00' };
+    const days = (from: number, to: number) => Object.fromEntries(Array.from({ length: to - from + 1 }, (_, i) => [`2026-09-${String(from + i).padStart(2, '0')}`, 'completed' as const]));
+    const s = new Map([
+      ['old', statuses(days(19, 21))],
+      ['long', statuses(days(2, 21))],
+    ]);
+    // Two days missed (22, 23) and only two freezes: the 20-day streak gets them, not the older habit's 3.
+    const plan = planStreakFreezes([old, long], s, TODAY, 2);
+    expect(plan.items).toEqual([{ habitId: 'long', dates: ['2026-09-22', '2026-09-23'] }]);
+  });
+
   it('forgives a missed day that interrupts a live streak', () => {
     const s = new Map([['h1', statuses({ '2026-09-21': 'completed', '2026-09-22': 'completed' })]]);
     const plan = planStreakFreezes([daily], s, TODAY, 2);

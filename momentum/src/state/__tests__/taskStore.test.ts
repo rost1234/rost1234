@@ -70,7 +70,8 @@ describe('planning tasks for the coming days', () => {
     useTaskStore.setState({ tasks: [task('a', TODAY)], upcoming: [task('x', '2026-10-15'), task('y', '2026-10-15'), task('z', '2026-10-15')] });
     useTaskStore.getState().moveToDate('a', '2026-10-15');
     expect(useTaskStore.getState().tasks.map((t) => t.id)).toEqual(['a']);
-    expect(useTaskStore.getState().error).toBeTruthy();
+    expect(useTaskStore.getState().notice).toBeTruthy();
+    expect(useTaskStore.getState().error).toBeNull();
   });
 
   it('drops a planned task even when it is beyond the lists (the reflection plans a week ahead)', () => {

@@ -124,7 +124,9 @@ export function TaskList() {
   const [draft, setDraft] = useState('');
   // A note after adding, for the day it was written (a "saved for tomorrow" doesn't outlive midnight).
   const [note, setNote] = useState<{ text: string; on: LocalDateString } | null>(null);
-  const hint = note && note.on === today ? note.text : null;
+  // A note from the store (e.g. today already has three) shows here, by the field, not as an error.
+  const notice = useTaskStore((s) => s.notice);
+  const hint = note && note.on === today ? note.text : notice;
   const setHint = (text: string | null) => setNote(text && today ? { text, on: today } : null);
   const [focused, setFocused] = useState(false);
   // Which day a new task goes to; a day that has come (after midnight) means today.
@@ -136,6 +138,7 @@ export function TaskList() {
   const isFull = openCount >= MAX_OPEN_TASKS_PER_DAY;
 
   const submit = () => {
+    useTaskStore.getState().clearNotice();
     const title = draft.trim();
     if (title.length === 0 || !today) return;
     setDraft('');

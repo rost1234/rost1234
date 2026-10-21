@@ -98,6 +98,7 @@ export function DashboardScreen() {
   const dismissLastChange = useHabitStore((s) => s.dismissLastChange);
   const taskError = useTaskStore((s) => s.error);
   const clearTaskError = useTaskStore((s) => s.clearError);
+  const dropped = useTaskStore((s) => s.lastDropped);
   // The evening check-in only takes space on the main screen when it's relevant.
   const hour = useNow(true, 60_000).getHours();
   const isEvening = hour >= EVENING_HOUR;
@@ -110,7 +111,7 @@ export function DashboardScreen() {
   const logs = useHabitStore((s) => s.logs);
   const closedDate = useDayCloseStore((s) => s.date);
   const closedIds = useDayCloseStore((s) => s.ids);
-  const { open: openHabits, aside } = useMemo(
+  const { open: openHabits, late, aside } = useMemo(
     () => setAsideToday(dueToday, (id) => logs[id]?.[today]?.status, closedDate === today ? closedIds : [], hour),
     [dueToday, logs, today, closedDate, closedIds, hour],
   );
@@ -234,6 +235,10 @@ export function DashboardScreen() {
               ),
             )}
             <JustAddedCard />
+            {/* A part of the day that's over: still here, last, and still possible. */}
+            {late.map((habit) => (
+              <HabitCard key={habit.id} habit={habit} passed />
+            ))}
             {aside.length > 0 ? (
               <FoldedSection icon="🌙" title={t('aside.title')} summary={t.plural('aside.summary', aside.length)} hint={t('aside.hint')}>
                 {aside.map((habit) => (
@@ -281,6 +286,16 @@ export function DashboardScreen() {
           bottomOffset={DOCK_CLEARANCE + (focusRunning ? 60 : 0)}
           // Garden: the sprout cheers in the corner of the toast.
           leading={garden && lastWasDone ? <Sprout stage={sproutStage} mood="joy" size={34} /> : undefined}
+        />
+      ) : null}
+      {dropped && !lastChange ? (
+        <Toast
+          id={dropped.at}
+          message={t('tasks.dropped', { title: dropped.task.title })}
+          actionLabel={t('common.undo')}
+          onAction={() => useTaskStore.getState().undoDrop()}
+          onHide={() => useTaskStore.getState().dismissDropped()}
+          bottomOffset={DOCK_CLEARANCE + (focusRunning ? 60 : 0)}
         />
       ) : null}
       <Celebration />

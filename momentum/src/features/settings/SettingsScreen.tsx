@@ -163,6 +163,13 @@ export function SettingsScreen() {
             title={t('set.sec.privacy')}
             status={locked ? t('set.st.privacyLocked') : t('set.st.privacyOpen')}
             href="/settings/privacy"
+          />
+          <Row
+            icon="archive-outline"
+            tint={[colors.surfaceMuted, colors.text]}
+            title={t('set.sec.archive')}
+            status={t('set.st.archive')}
+            href="/settings/archive"
             last
           />
         </View>

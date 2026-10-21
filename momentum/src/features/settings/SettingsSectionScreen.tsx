@@ -7,6 +7,7 @@ import { makeStyles, spacing } from '@/components/theme';
 import { useBottomSpace } from '@/components/useBottomSpace';
 import { type TranslationKey, useT } from '@/i18n';
 import { AppearanceSetting } from './AppearanceSetting';
+import { ArchivedHabits } from './ArchivedHabits';
 import { BackupSetting } from './BackupSetting';
 import { DayOffSetting } from './DayOffSetting';
 import { DataTransparency } from './DataTransparency';
@@ -14,7 +15,7 @@ import { NotificationSetting } from './NotificationSetting';
 import { AutoBackupSetting, ReflectionLockSetting } from './PrivacySetting';
 import { ReminderSetting } from './ReminderSetting';
 
-export type SettingsSection = 'appearance' | 'dayoff' | 'notifications' | 'backup' | 'privacy';
+export type SettingsSection = 'appearance' | 'dayoff' | 'notifications' | 'backup' | 'privacy' | 'archive';
 
 const SECTIONS: Record<SettingsSection, { title: TranslationKey; content: () => ReactNode }> = {
   appearance: { title: 'set.sec.appearance', content: () => <AppearanceSetting /> },
@@ -37,6 +38,7 @@ const SECTIONS: Record<SettingsSection, { title: TranslationKey; content: () => 
       </>
     ),
   },
+  archive: { title: 'set.sec.archive', content: () => <ArchivedHabits /> },
   privacy: {
     title: 'set.sec.privacy',
     content: () => (
