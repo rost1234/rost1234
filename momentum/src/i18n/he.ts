@@ -1078,7 +1078,7 @@ export const he: Record<TranslationKey, string> = {
   "urge.notThisTime": "לא הפעם",
   "urge.passedNth_one": "הדחף הראשון שעבר החודש 🌊",
   "urge.passedNth_other": "כבר {count} דחפים עברו החודש 🌊",
-  "urge.slip": "זה קורה, וזה לא מוחק כלום. ממשיכים מכאן.",
+  "urge.slip": "זה קורה. הימים הנקיים שהיו נשארים שלך, וממשיכים מכאן.",
   "urge.slipWithPicture": "זה קורה, וזה לא מוחק כלום: {done} מתוך {due} הימים האחרונים עדיין שלך.",
   "urge.whatBrought": "מה הביא את זה?",
   "urge.optional": "(לא חובה)",

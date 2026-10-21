@@ -34,7 +34,8 @@ export function habitActionTarget(data: Record<string, unknown> | undefined): { 
 /**
  * Scheduled (or shown) notifications that became pointless once `doneIds` were completed on
  * `date`: every habit they ask about is done. Notifications with other habits
- * still open, other days, or no habits (morning plan, reflection) stay.
+ * still open, other days, or no habits (morning plan, reflection) stay. An evening note that also
+ * carries the reflection reminder stays too: with the app closed nothing would schedule it again.
  */
 export function notificationsToCancel(
   scheduled: readonly ScheduledHabitNotification[],
@@ -44,7 +45,7 @@ export function notificationsToCancel(
   return scheduled
     .filter(({ data }) => {
       const ids = habitIdsOf(data);
-      return data?.date === date && ids.length > 0 && ids.every((id) => doneIds.has(id));
+      return data?.date === date && data?.withReflection !== true && ids.length > 0 && ids.every((id) => doneIds.has(id));
     })
     .map((n) => n.identifier);
 }

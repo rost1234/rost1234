@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { setDayStartHour } from '@/core/localDate';
+import { getDayStartHour, setDayStartHour } from '@/core/localDate';
 
 const KEY = 'momentum.dayStart.v1';
 
@@ -8,9 +8,10 @@ export async function loadDayStart(): Promise<void> {
   try {
     const raw = await AsyncStorage.getItem(KEY);
     const hour = raw === null ? NaN : Number(raw);
-    if (Number.isFinite(hour)) setDayStartHour(hour);
+    setDayStartHour(Number.isFinite(hour) ? hour : getDayStartHour());
   } catch {
     // The default stays.
+    setDayStartHour(getDayStartHour());
   }
 }
 

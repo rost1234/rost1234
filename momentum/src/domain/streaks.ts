@@ -84,14 +84,15 @@ export function computeQuitStreak(
 ): number {
   const start = habitStartDate(habit);
   let streak = 0;
+  // A recorded slip outranks a ✓ on the same day: the ✓ may have come before the slip.
+  if (slips.has(today)) return 0;
   if (isHabitDueOn(habit, today) && statuses.get(today) === 'completed') streak += 1;
-  else if (slips.has(today)) return 0;
 
   let cursor = addDays(today, -1);
   for (let i = 0; i < MAX_LOOKBACK_DAYS && cursor >= start; i += 1) {
     if (isHabitDueOn(habit, cursor)) {
+      if (slips.has(cursor)) break;
       if (statuses.get(cursor) === 'completed') streak += 1;
-      else if (slips.has(cursor)) break;
     }
     cursor = addDays(cursor, -1);
   }

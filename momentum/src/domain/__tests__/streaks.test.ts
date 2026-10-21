@@ -105,4 +105,9 @@ describe('habits to quit', () => {
     expect(computeQuitStreak(daily, st({ '2026-09-21': 'completed', '2026-09-23': 'completed' }), new Set(['2026-09-22']), TODAY)).toBe(1);
     expect(computeQuitStreak(daily, st({ '2026-09-23': 'completed' }), new Set([TODAY]), TODAY)).toBe(0);
   });
+
+  it('a slip outranks a ✓ on the same day (the ✓ may have come first)', () => {
+    expect(computeQuitStreak(daily, st({ '2026-09-22': 'completed', '2026-09-23': 'completed' }), new Set(['2026-09-23']), TODAY)).toBe(0);
+    expect(computeQuitStreak(daily, st({ [TODAY]: 'completed', '2026-09-23': 'completed' }), new Set([TODAY]), TODAY)).toBe(0);
+  });
 });

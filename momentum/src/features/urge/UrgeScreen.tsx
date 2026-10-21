@@ -12,7 +12,7 @@ import { Sprout } from '@/features/garden/Sprout';
 import { useGardenGrowth } from '@/features/garden/useGarden';
 import { haptics } from '@/core/haptics';
 import { runDetached, toErrorMessage } from '@/core/errors';
-import { addDays, localDateFromIso } from '@/core/localDate';
+import { addDays, getLocalDeviceDate } from '@/core/localDate';
 import { repositories } from '@/data/repositories';
 import type { Habit, UrgeLog, UrgeMode, UrgeOutcome, UrgeTrigger } from '@/domain/models';
 import { formatClock } from '@/domain/focusTimer';
@@ -162,13 +162,15 @@ export function UrgeScreen() {
       const log = await repositories.urges.create({
         habitId: session.habitId,
         startedAt: session.startedAt,
-        logDate: localDateFromIso(session.startedAt),
+        // The app's day (until 03:00 it's still the evening before), like every other record.
+        logDate: getLocalDeviceDate(new Date(session.startedAt)),
         outcome,
         trigger: null,
         mode: session.mode,
       });
       const month = await repositories.urges.getInRange(addDays(today, -31), today).catch(() => [log]);
       useUrgeStore.getState().clear();
+      if (outcome === 'slipped' && log.habitId) useHabitStore.getState().noteSlip(log.habitId, log.logDate);
       if (outcome === 'passed') haptics.success();
       setResult({ log, passedCount: Math.max(1, passedThisMonth(month, session.habitId, today)) });
     } catch (e) {

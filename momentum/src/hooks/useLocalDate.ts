@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
-import { getLocalDeviceDate, msUntilNextDayStart, type LocalDateString } from '@/core/localDate';
+import { getDayStartHour, getLocalDeviceDate, isDayStartKnown, msUntilNextDayStart, subscribeDayStart, type LocalDateString } from '@/core/localDate';
 
 /**
  * The app's current day (it starts at the day-start hour, 03:00 by default), kept fresh across that hour while the app is open and
@@ -31,11 +31,28 @@ export function useLocalDate(): LocalDateString {
       }
     });
 
+    // A new day-start hour (from Settings, or read at launch) can move "today".
+    const stopDayStart = subscribeDayStart(() => {
+      refresh();
+      scheduleMidnight();
+    });
+
     return () => {
       if (timeout) clearTimeout(timeout);
       subscription.remove();
+      stopDayStart();
     };
   }, []);
 
   return today;
+}
+
+/** The day-start hour, kept fresh when it changes. */
+export function useDayStartHour(): number {
+  return useSyncExternalStore(subscribeDayStart, getDayStartHour);
+}
+
+/** False until the chosen day-start hour was read at launch. */
+export function useDayStartKnown(): boolean {
+  return useSyncExternalStore(subscribeDayStart, isDayStartKnown);
 }

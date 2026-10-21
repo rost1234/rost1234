@@ -7,7 +7,6 @@ import { runDetached } from '@/core/errors';
 import { DAY_START_CHOICES, getDayStartHour } from '@/core/localDate';
 import { useT } from '@/i18n';
 import { saveDayStart } from '@/services/dayStart';
-import { useHabitStore } from '@/state/habitStore';
 
 export const dayStartLabel = (hour: number): string => `${String(hour).padStart(2, '0')}:00`;
 
@@ -18,14 +17,8 @@ export function DayStartSetting() {
   const [hour, setHour] = useState(getDayStartHour());
   const pick = (next: number) => {
     setHour(next);
-    runDetached(
-      saveDayStart(next).then(() => {
-        // "Today" may have changed (e.g. at 01:00): reload so everything shows the right day.
-        const today = useHabitStore.getState().today;
-        if (today) return useHabitStore.getState().load(today);
-        return undefined;
-      }),
-    );
+    // "Today" may move (e.g. at 01:00): every useLocalDate re-reads it, and Home reloads for it.
+    runDetached(saveDayStart(next));
   };
   return (
     <Card style={{ gap: spacing.sm }}>

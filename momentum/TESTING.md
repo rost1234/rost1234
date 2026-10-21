@@ -422,14 +422,17 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] Next morning (until 13:00) the "yesterday" card asks "{habit}: אתמול היה נקי?" with "נקי ✓" and "הייתה מעידה"
 - [ ] "נקי ✓" adds a clean day for yesterday; "הייתה מעידה" starts the run over (kindly) and the question goes away
 - [ ] Today: "מעידה, לא נפילה" records the slip (run 0) and puts the habit aside for today
-- [ ] A slip from the "urge now" screen ("לא הפעם") also starts the run over after the next reload
+- [ ] A slip from the "urge now" screen ("לא הפעם") starts the run over right away; at 01:00 it lands on the evening's day
+- [ ] A slip after a ✓ on the same day still starts the run over
+- [ ] Urge answers saved before this version don't break a run after the update
 - [ ] Habits to build are unchanged: unmarked days still may use a freeze
 
 ## End of the day and one evening note (build 47)
 - [ ] Settings → "סוף היום": 03:00 by default; at 00:30 Today still shows yesterday's date and habits; a check-off counts for that day
 - [ ] A reflection written at 00:30 belongs to the evening before; tomorrow evening's reflection opens empty
 - [ ] No freeze is spent at midnight; after 03:00 the new day starts (and freezes, if any, apply then)
-- [ ] Changing it to "בחצות" switches back at once; the widget and "Done ✓" on a notification use the same day
-- [ ] In the evening there's one notification (not two or three): "עוד N הרגלים פתוחים להיום", the streaks at risk first, and "ורפלקציה קצרה, כשנוח" when the reflection reminder is on
+- [ ] Changing it to "בחצות" at 01:00 switches Today, the settings row and the widget at once; "Done ✓" on a notification uses the same day
+- [ ] In the evening there's one notification (not two or three): "עוד N הרגלים פתוחים להיום", the streaks at risk first, and "אפשר גם רפלקציה קצרה, כשנוח" on its own line when the reflection reminder is on
+- [ ] "Done ✓" on that note with the app closed doesn't remove it if it also reminds about the reflection
 - [ ] With 3 smart reminders and a limit of 4, the habit reminders all arrive (the evening note doesn't push them out)
 

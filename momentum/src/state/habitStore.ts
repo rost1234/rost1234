@@ -11,6 +11,7 @@ import { computeQuitStreak, computeStreak, restDaysLeft } from '@/domain/streaks
 import { MAX_STREAK_FREEZES, refundsFreeze } from '@/domain/freezeRewards';
 import { offerMomentLater } from '@/services/sproutMoments';
 import { historyStart, reconcileStreakFreezes, statusesByHabit } from '@/services/streakService';
+import { slipsCountSince } from '@/services/slipsSince';
 import { refreshTodayWidget } from '@/widget/refreshWidget';
 import { usePlanningStore } from './planningStore';
 import { useSettingsStore } from './settingsStore';
@@ -50,6 +51,8 @@ interface HabitState {
   slips: Record<string, LocalDateString[]>;
   /** Records a slip on a habit to quit (today, or yesterday from the morning question). */
   recordSlip: (habitId: string, date: LocalDateString) => Promise<void>;
+  /** Shows a slip that was already saved (from the urge screen) on the habit's clean run. */
+  noteSlip: (habitId: string, date: LocalDateString) => void;
   /** Rest days this habit can still take today (2 in any 7 days). */
   restDaysLeft: (habitId: string) => number;
   /** Today's mark set directly (an amount, "in part"), with Undo. */
@@ -227,9 +230,12 @@ export const useHabitStore = create<HabitState>((set, get) => {
           repositories.habitLogs.countCompletedDaysBefore(today).catch(() => 0),
           repositories.urges.getInRange(historyStart(today), today).catch((): UrgeLog[] => []),
         ]);
+        const since = await slipsCountSince();
         if (get().today !== today) return; // a newer load superseded this one
         slipDates = {};
-        for (const u of urges) if (u.outcome === 'slipped' && u.habitId) (slipDates[u.habitId] ??= new Set()).add(u.logDate);
+        for (const u of urges) {
+          if (u.outcome === 'slipped' && u.habitId && u.startedAt >= since) (slipDates[u.habitId] ??= new Set()).add(u.logDate);
+        }
         set({ slips: Object.fromEntries(Object.entries(slipDates).map(([id, dates]) => [id, [...dates]])) });
         set({
           habits,
@@ -295,10 +301,17 @@ export const useHabitStore = create<HabitState>((set, get) => {
     },
 
     recordSlip: async (habitId, date) => {
-      const { today, logs, habits } = get();
+      const { today, habits } = get();
       const habit = habits.find((h) => h.id === habitId);
       if (!today || !habit) return;
       await repositories.urges.create({ habitId, startedAt: new Date().toISOString(), logDate: date, outcome: 'slipped', trigger: null, mode: null });
+      get().noteSlip(habitId, date);
+    },
+
+    noteSlip: (habitId, date) => {
+      const { today, logs, habits } = get();
+      const habit = habits.find((h) => h.id === habitId);
+      if (!today || !habit) return;
       (slipDates[habitId] ??= new Set()).add(date);
       set({
         slips: { ...get().slips, [habitId]: [...slipDates[habitId]] },

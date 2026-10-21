@@ -25,10 +25,23 @@ export function formatLocalDate(date: Date): LocalDateString {
  */
 let dayStartHour = 3;
 export const DAY_START_CHOICES = [0, 2, 3, 4] as const;
-export function setDayStartHour(hour: number): void {
+let dayStartKnown = false;
+const dayStartListeners = new Set<() => void>();
+/** `known`: it was read from storage (or chosen), so "today" can be trusted. */
+export function setDayStartHour(hour: number, known = true): void {
   dayStartHour = Math.max(0, Math.min(6, Math.floor(hour)));
+  dayStartKnown = dayStartKnown || known;
+  dayStartListeners.forEach((listener) => listener());
 }
 export const getDayStartHour = (): number => dayStartHour;
+export const isDayStartKnown = (): boolean => dayStartKnown;
+/** Called whenever the day-start hour is set (so "today" can be re-read). */
+export function subscribeDayStart(listener: () => void): () => void {
+  dayStartListeners.add(listener);
+  return () => {
+    dayStartListeners.delete(listener);
+  };
+}
 
 export function getLocalDeviceDate(now: Date = new Date()): LocalDateString {
   if (dayStartHour === 0) return formatLocalDate(now);

@@ -9,11 +9,11 @@ import { SheetHeader } from '@/components/SheetHeader';
 import { SectionTitle } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { useBottomSpace } from '@/components/useBottomSpace';
-import { formatFriendlyDate, getDayStartHour, weekdayLabel } from '@/core/localDate';
+import { formatFriendlyDate, weekdayLabel } from '@/core/localDate';
 import { defaultWeekendDays } from '@/domain/dayOff';
 import { activePause } from '@/domain/pauses';
 import { formatMinutesOfDay } from '@/domain/usage';
-import { useLocalDate } from '@/hooks/useLocalDate';
+import { useDayStartHour, useLocalDate } from '@/hooks/useLocalDate';
 import { type TranslationKey, useT } from '@/i18n';
 import { useDevicePrefsStore } from '@/state/devicePrefsStore';
 import { useNotificationPrefsStore } from '@/state/notificationPrefsStore';
@@ -74,6 +74,7 @@ export function SettingsScreen() {
   const styles = useStyles();
   const bottomSpace = useBottomSpace();
   const today = useLocalDate();
+  const dayStartHour = useDayStartHour();
   const theme = usePrefsStore((s) => s.theme);
   const look = usePrefsStore((s) => s.look);
   const language = usePrefsStore((s) => s.language);
@@ -137,7 +138,7 @@ export function SettingsScreen() {
             icon="moon-outline"
             tint={[colors.primarySoft, colors.primary]}
             title={t('daystart.title')}
-            status={getDayStartHour() === 0 ? t('daystart.midnight') : t('daystart.status', { time: dayStartLabel(getDayStartHour()) })}
+            status={dayStartHour === 0 ? t('daystart.midnight') : t('daystart.status', { time: dayStartLabel(dayStartHour) })}
             href="/settings/daystart"
             last
           />

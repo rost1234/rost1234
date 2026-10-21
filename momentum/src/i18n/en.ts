@@ -1076,7 +1076,7 @@ export const en = {
   "urge.notThisTime": "Not this time",
   "urge.passedNth_one": "Your first urge that passed this month 🌊",
   "urge.passedNth_other": "{count} urges have passed this month 🌊",
-  "urge.slip": "It happens, and it doesn't erase anything. Carry on from here.",
+  "urge.slip": "It happens. The clean days you had stay yours. Carry on from here.",
   "urge.slipWithPicture": "It happens, and it doesn't erase anything: {done} of the last {due} days are still yours.",
   "urge.whatBrought": "What brought it on?",
   "urge.optional": "(optional)",

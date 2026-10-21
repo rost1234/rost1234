@@ -139,7 +139,9 @@ async function syncNow(): Promise<void> {
       content: {
         ...text,
         ...(category ? { categoryIdentifier: category } : {}),
-        data: category ? { kind: item.kind, habitIds: item.habitIds, date: item.date } : { kind: item.kind },
+        data: category
+          ? { kind: item.kind, habitIds: item.habitIds, date: item.date, ...(item.withReflection ? { withReflection: true } : {}) }
+          : { kind: item.kind },
       },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: when, channelId: REMINDER_CHANNEL_ID },
     });

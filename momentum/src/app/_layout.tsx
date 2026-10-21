@@ -31,6 +31,7 @@ import { useHighlightStore } from '@/state/highlightStore';
 import { usePrefsStore } from '@/state/prefsStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { resolveLanguage , useT } from '@/i18n';
+import { useDayStartKnown } from '@/hooks/useLocalDate';
 
 /** Route-level error boundary: catches render errors anywhere below the root. */
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
@@ -52,6 +53,8 @@ function Bootstrap() {
   const styles = useStyles();
   const status = useSettingsStore((s) => s.status);
   const prefsReady = usePrefsStore((s) => s.isHydrated);
+  // Which day is "today" depends on the chosen day-start hour, read at launch.
+  const dayStartKnown = useDayStartKnown();
   const error = useSettingsStore((s) => s.error);
   // Assistant (Hebrew + Latin). If it fails to load, the system font is used instead.
   const [fontsLoaded, fontError] = useFonts(FONT_FILES);
@@ -115,7 +118,7 @@ function Bootstrap() {
     );
   }
 
-  if (status !== 'ready' || !prefsReady || (!fontsLoaded && !fontError)) {
+  if (status !== 'ready' || !prefsReady || !dayStartKnown || (!fontsLoaded && !fontError)) {
     return (
       <View style={styles.loading}>
         <DashboardSkeleton />

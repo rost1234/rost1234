@@ -16,6 +16,11 @@ describe('after "Done ✓" on a notification', () => {
     expect(notificationsToCancel(scheduled, new Set(), today)).toEqual([]);
   });
 
+  it('keeps an evening note that also carries the reflection reminder', () => {
+    const evening = [{ identifier: 'evening', data: { kind: 'evening', habitIds: ['water'], date: today, withReflection: true } }];
+    expect(notificationsToCancel(evening, new Set(['water']), today)).toEqual([]);
+  });
+
   it('reads the habits and day from new and older notification data', () => {
     expect(habitActionTarget({ habitIds: ['a', 'b', 3], date: today, kind: 'checkin' })).toEqual({ habitIds: ['a', 'b'], date: today, kind: 'checkin' });
     expect(habitActionTarget({ habitId: 'a' }).habitIds).toEqual(['a']);
