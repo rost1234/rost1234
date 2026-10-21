@@ -143,6 +143,8 @@ export function dayEditActions(
   state: HeatCellState,
   count: number,
   isToday: boolean,
+  /** A rest day is still available today (capped, and never for a habit to quit). */
+  canRest = true,
 ): DayEditAction[] {
   if (state === 'not_scheduled') return [];
   if (state === 'forgiven') return ['done'];
@@ -154,7 +156,8 @@ export function dayEditActions(
     if (count > 0) actions.push('minus');
   }
   if (state === 'completed' || count > 0) actions.push('undo');
-  if (isToday) actions.push('skip');
+  // A rest day is for a day with nothing done yet (a small step already counts), within the week's two.
+  if (isToday && canRest && state !== 'completed' && count === 0) actions.push('skip');
   return actions;
 }
 

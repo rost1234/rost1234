@@ -252,7 +252,7 @@ function HabitCardComponent({ habit, passed = false }: HabitCardProps) {
       ? habit.isQuit
         ? t('habit.quitClosed')
         : t('habit.closedToday')
-      : passed && !isDone
+      : passed && !isDone && !partial
         ? habit.timeOfDay === 'morning'
           ? t('habit.timePassedMorning')
           : habit.timeOfDay === 'afternoon'

@@ -77,7 +77,10 @@ function Bootstrap() {
     const stopPlanner = startNotificationPlanner();
     configureNotifications();
     // A focus session isn't screen time: the phone is on, but it's helping.
-    startUsageTracking(() => useFocusStore.getState().timer !== null);
+    startUsageTracking(() => {
+      const timer = useFocusStore.getState().timer;
+      return timer !== null && timer.pausedAt === null;
+    });
     runDetached(useSettingsStore.getState().load());
     runDetached(useFocusSoundStore.getState().hydrate());
     runDetached(useFocusStore.getState().hydrate());

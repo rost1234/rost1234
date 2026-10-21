@@ -51,7 +51,7 @@ export function ArchivedHabits() {
         <Card key={habit.id} style={{ gap: spacing.sm }}>
           <Text style={typography.label}>{habit.title}</Text>
           <Text style={typography.caption}>{t('arch.since', { date: formatFriendlyDate(localDateFromIso(habit.createdAt), t.locale) })}</Text>
-          <Button label={t('arch.restore')} variant="secondary" onPress={() => restore(habit)} />
+          <Button label={t('arch.restore')} accessibilityHint={t('arch.restoreA11y', { title: habit.title })} variant="secondary" onPress={() => restore(habit)} />
         </Card>
       ))}
     </View>

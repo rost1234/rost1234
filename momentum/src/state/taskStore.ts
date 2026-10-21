@@ -31,8 +31,8 @@ interface TaskState {
   error: string | null;
   /** A calm note about the lists (e.g. today already has three), shown by the task field, not as an error. */
   notice: string | null;
-  /** The task dropped a moment ago, so it can be brought back from a toast. */
-  lastDropped: { task: Task; at: number } | null;
+  /** The task dropped a moment ago: it's deleted when the toast goes away, so Undo brings it back as it was. */
+  lastDropped: { task: Task; bucket: Bucket; at: number } | null;
 
   load: (today: LocalDateString) => Promise<void>;
   /** Adds to today while there's room (max 3 open), otherwise to Later. Returns where it went. */
@@ -62,6 +62,18 @@ export const useTaskStore = create<TaskState>((set, get) => {
   const snapshot = (): Lists => ({ tasks: get().tasks, overdue: get().overdue, later: get().later, upcoming: get().upcoming });
   // Soonest first, then in the order they were added.
   const byDay = (list: Task[]) => [...list].sort((a, b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? '') || a.createdAt.localeCompare(b.createdAt));
+  /** Deletes the task dropped a moment ago (its Undo time is over). */
+  const commitDrop = () => {
+    const dropped = get().lastDropped;
+    if (!dropped) return;
+    set({ lastDropped: null });
+    runDetached(repositories.tasks.delete(dropped.task.id), (error: unknown) => {
+      set({ error: `${t('err.dropTask')} ${toErrorMessage(error)}` });
+      const { today } = get();
+      if (today) runDetached(get().load(today));
+    });
+  };
+
   const rollback = (lists: Lists, message: string) => (error: unknown) =>
     set({ ...lists, error: `${message} ${toErrorMessage(error)}` });
 
@@ -171,8 +183,10 @@ export const useTaskStore = create<TaskState>((set, get) => {
       const rest = without(taskId);
 
       if (decision === 'drop') {
-        set({ ...rest, lastDropped: { task: found.task, at: Date.now() } });
-        runDetached(repositories.tasks.delete(taskId), rollback(before, t('err.dropTask')));
+        // One pending drop at a time: an earlier one is deleted now.
+        commitDrop();
+        void before;
+        set({ ...rest, lastDropped: { task: found.task, bucket: found.bucket, at: Date.now() } });
         return;
       }
       const dueDate = decision === 'today' ? today : null;
@@ -215,18 +229,20 @@ export const useTaskStore = create<TaskState>((set, get) => {
 
     clearError: () => set({ error: null }),
     clearNotice: () => set({ notice: null }),
-    dismissDropped: () => set({ lastDropped: null }),
+    dismissDropped: () => commitDrop(),
 
     undoDrop: () => {
       const dropped = get().lastDropped;
       const { today } = get();
       if (!dropped || !today) return;
       set({ lastDropped: null });
-      const { title, habitId, dueDate } = dropped.task;
-      runDetached(
-        repositories.tasks.create({ title, habitId, dueDate }).then(() => get().load(today)),
-        (error: unknown) => set({ error: `${t('err.addTask')} ${toErrorMessage(error)}` }),
-      );
+      // Back where it was, unchanged (done or open, same id). An open task for today that no longer fits waits in Later.
+      const { task } = dropped;
+      const toToday = dropped.bucket === 'today' && (task.isCompleted || hasRoomToday(get().tasks, today));
+      const bucket: Bucket = dropped.bucket === 'today' && !toToday ? 'later' : dropped.bucket;
+      const key = bucket === 'today' ? 'tasks' : bucket;
+      set({ [key]: [...get()[key], bucket === 'later' ? { ...task, dueDate: null } : task] });
+      if (bucket === 'later' && task.dueDate) runDetached(repositories.tasks.setDueDate(task.id, null));
     },
   };
 });

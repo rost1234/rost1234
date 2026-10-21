@@ -58,8 +58,23 @@ describe('planning tasks for the coming days', () => {
     expect(useTaskStore.getState().tasks.map((t) => [t.id, t.dueDate])).toEqual([['b', TODAY]]);
     useTaskStore.getState().decide('a', 'drop');
     expect(useTaskStore.getState().upcoming).toEqual([]);
+    // Deleted once the Undo toast is gone.
+    await flush();
+    expect(mockDelete).not.toHaveBeenCalled();
+    useTaskStore.getState().dismissDropped();
     await flush();
     expect(mockDelete).toHaveBeenCalledWith('a');
+  });
+
+  it('Undo after dropping brings the task back as it was, done or not', async () => {
+    const done = { ...task('d', TODAY), isCompleted: true };
+    useTaskStore.setState({ tasks: [done, task('x', TODAY)], lastDropped: null });
+    useTaskStore.getState().decide('d', 'drop');
+    expect(useTaskStore.getState().tasks.map((t) => t.id)).toEqual(['x']);
+    useTaskStore.getState().undoDrop();
+    expect(useTaskStore.getState().tasks.find((t) => t.id === 'd')?.isCompleted).toBe(true);
+    await flush();
+    expect(mockDelete).not.toHaveBeenCalled();
   });
 
   it('keeps three open tasks a day for planned days too', async () => {

@@ -91,8 +91,9 @@ export function fitQuietHours(minutes: number, start: number, end: number): numb
   return sinceStart + 15 <= untilEnd ? (start - 15 + 1440) % 1440 : end;
 }
 
+/** Done, a rest day, or a small step (which already keeps the streak): no more nudges today. */
 function isDoneOrSkipped(log: HabitLog | undefined): boolean {
-  return log?.status === 'completed' || log?.status === 'skipped';
+  return log?.status === 'completed' || log?.status === 'skipped' || (log?.status === 'in_progress' && log.currentCount > 0);
 }
 
 /**

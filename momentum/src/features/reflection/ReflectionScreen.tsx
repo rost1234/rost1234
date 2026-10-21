@@ -73,14 +73,24 @@ export function ReflectionScreen() {
     );
   }
   // Prefilled when editing today's existing entry: that's reading private text, so it's behind the lock.
-  if (existing) {
+  return <ReflectionGate logDate={logDate} initial={existing} />;
+}
+
+/**
+ * Whether to lock is decided once, when the screen opens: an entry that already exists is private
+ * reading (behind the lock); saving a new one must not turn into "reading" and ask.
+ */
+function ReflectionGate({ logDate, initial }: { logDate: LocalDateString; initial: DailyReflection | null }) {
+  const [locked] = useState(initial !== null);
+  const [start] = useState(initial);
+  if (locked) {
     return (
       <ReflectionLock>
-        <ReflectionForm logDate={logDate} initial={existing} />
+        <ReflectionForm logDate={logDate} initial={start} />
       </ReflectionLock>
     );
   }
-  return <ReflectionForm logDate={logDate} initial={null} />;
+  return <ReflectionForm logDate={logDate} initial={start} />;
 }
 
 function ReflectionForm({ logDate, initial }: { logDate: LocalDateString; initial: DailyReflection | null }) {

@@ -312,7 +312,8 @@ function DetailRow({
       : habit.isQuantitative
         ? `${habit.targetCount}${habit.unit ? ` ${habit.unit}` : ''}`
         : habit.microStep;
-  const actions = editable ? dayEditActions(habit, detail.state, detail.count, isToday) : [];
+  const canRest = isToday && !habit.isQuit && useHabitStore.getState().restDaysLeft(habit.id) > 0;
+  const actions = editable ? dayEditActions(habit, detail.state, detail.count, isToday, canRest) : [];
   const canEdit = editable && !habit.isArchived;
   // One tap on the circle: mark it done, or clear it when it already is.
   const quick: DayEditAction | null = actions.includes('done') ? 'done' : actions.includes('undo') ? 'undo' : null;

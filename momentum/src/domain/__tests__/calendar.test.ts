@@ -162,9 +162,11 @@ describe('editing a day', () => {
 
   it('offers actions that fit the day', () => {
     expect(dayEditActions(binary, 'missed', 0, true)).toEqual(['done', 'skip']);
-    expect(dayEditActions(binary, 'completed', 1, true)).toEqual(['undo', 'skip']);
-    expect(dayEditActions(water, 'partial', 2, true)).toEqual(['done', 'plus', 'minus', 'undo', 'skip']);
-    expect(dayEditActions(water, 'completed', 4, true)).toEqual(['minus', 'undo', 'skip']);
+    // A done day isn't turned into a rest day; with the week's rest days used, there's none to offer.
+    expect(dayEditActions(binary, 'completed', 1, true)).toEqual(['undo']);
+    expect(dayEditActions(binary, 'missed', 0, true, false)).toEqual(['done']);
+    expect(dayEditActions(water, 'partial', 2, true)).toEqual(['done', 'plus', 'minus', 'undo']);
+    expect(dayEditActions(water, 'completed', 4, true)).toEqual(['minus', 'undo']);
     expect(dayEditActions(binary, 'skipped', 0, true)).toEqual(['unskip', 'done']);
     expect(dayEditActions(binary, 'forgiven', 0, true)).toEqual(['done']);
     expect(dayEditActions(binary, 'not_scheduled', 0, true)).toEqual([]);
