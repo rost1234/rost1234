@@ -1,6 +1,6 @@
 import { addDays, dateRange, type LocalDateString } from '@/core/localDate';
-import type { HabitLogStatus, Pause } from './models';
-import type { StatusByDate } from './streaks';
+import type { Pause } from './models';
+import type { DayStatus, StatusByDate } from './streaks';
 
 /**
  * Does this pause cover the habit? A pause without a habit covers every habit.
@@ -53,14 +53,14 @@ export function applyPauses(
   pauses: readonly Pause[],
   until: LocalDateString,
   habitId?: string,
-): Map<LocalDateString, HabitLogStatus> {
+): Map<LocalDateString, DayStatus> {
   const result = new Map(statuses);
   for (const pause of pauses) {
     if (pause.startDate > until || !pauseAppliesTo(pause, habitId)) continue;
     const end = pause.endDate < until ? pause.endDate : until;
     for (const date of dateRange(pause.startDate, end)) {
       const status = result.get(date);
-      if (status !== 'completed' && status !== 'forgiven') result.set(date, 'skipped');
+      if (status !== 'completed' && status !== 'forgiven' && status !== 'small') result.set(date, 'skipped');
     }
   }
   return result;
@@ -72,8 +72,8 @@ export function applyPausesToAll(
   habitIds: readonly string[],
   pauses: readonly Pause[],
   until: LocalDateString,
-): Map<string, Map<LocalDateString, HabitLogStatus>> {
-  const result = new Map<string, Map<LocalDateString, HabitLogStatus>>();
+): Map<string, Map<LocalDateString, DayStatus>> {
+  const result = new Map<string, Map<LocalDateString, DayStatus>>();
   for (const id of habitIds) {
     result.set(id, applyPauses(byHabit.get(id) ?? new Map(), pauses, until, id));
   }

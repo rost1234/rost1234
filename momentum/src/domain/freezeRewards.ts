@@ -22,9 +22,9 @@ export function refundsFreeze(
 type RewardHabit = Pick<Habit, 'id' | 'createdAt' | 'targetFrequency' | 'targetDays'>;
 
 /**
- * A perfect day: at least one habit was scheduled, every scheduled habit was
- * completed or deliberately skipped, and at least one was actually completed.
- * Forgiven (frozen) days are never perfect — freezes can't earn freezes.
+ * A perfect day: at least one habit was scheduled and every scheduled habit was fully
+ * completed. Rewards come from doing: a rest day, a small step or a frozen day is fine for the
+ * streak but doesn't make the day perfect (freezes can't earn freezes).
  */
 export function isPerfectDay(
   habits: readonly RewardHabit[],
@@ -37,7 +37,7 @@ export function isPerfectDay(
   for (const habit of due) {
     const status = statusesByHabit.get(habit.id)?.get(date);
     if (status === 'completed') completed += 1;
-    else if (status !== 'skipped') return false;
+    else return false;
   }
   return completed > 0;
 }

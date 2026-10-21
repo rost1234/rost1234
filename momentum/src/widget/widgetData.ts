@@ -1,7 +1,7 @@
 import { getLocalDeviceDate } from '@/core/localDate';
 import { currentLocale, t } from '@/i18n';
 import { repositories } from '@/data/repositories';
-import { applyPrimaryAction, progressOf } from '@/domain/habitProgress';
+import { applyPrimaryAction, smallStep, progressOf } from '@/domain/habitProgress';
 import { isHabitDueOn } from '@/domain/habitSchedule';
 import { clearDoneHabitNotifications } from '@/services/habitActions';
 import { buildTodayWidgetModel, type TodayWidgetModel } from './widgetModel';
@@ -29,12 +29,9 @@ export async function tapHabitFromWidget(habitId: string): Promise<void> {
   const progress = progressOf(log);
   // Already done: a second tap on the home screen does nothing (undoing happens in the app, with Undo).
   if (progress.status === 'completed') return;
-  // Same low-energy-day rule as the app: the tiny step completes the habit.
+  // Same low-energy-day rule as the app: the first tap is the small step.
   const minimumDay = (await repositories.dayModes.get(today)) === 'minimum';
-  const next =
-    minimumDay
-      ? { currentCount: Math.max(1, progress.currentCount), status: 'completed' as const }
-      : applyPrimaryAction(habit, progress);
+  const next = minimumDay && progress.currentCount === 0 && !habit.isQuit ? smallStep(habit) : applyPrimaryAction(habit, progress);
   await repositories.habitLogs.upsert({ habitId, logDate: today, currentCount: next.currentCount, status: next.status });
   // Done from the widget: its reminders for today shouldn't still ask.
   if (next.status === 'completed') await clearDoneHabitNotifications(today).catch(() => undefined);

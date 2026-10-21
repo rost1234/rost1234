@@ -1,9 +1,9 @@
 import { addDays, type LocalDateString } from '@/core/localDate';
 import { inTransaction, repositories } from '@/data/repositories';
-import type { Habit, HabitLog, HabitLogStatus } from '@/domain/models';
+import type { Habit, HabitLog } from '@/domain/models';
 import { MAX_STREAK_FREEZES, shouldAwardFreeze } from '@/domain/freezeRewards';
 import { applyPausesToAll } from '@/domain/pauses';
-import { planStreakFreezes, type StatusByDate } from '@/domain/streaks';
+import { dayStatusOf, planStreakFreezes, type DayStatus, type StatusByDate } from '@/domain/streaks';
 
 /** How much history the dashboard keeps in memory for streak maths. */
 export const STREAK_HISTORY_DAYS = 400;
@@ -12,15 +12,15 @@ export function historyStart(today: LocalDateString): LocalDateString {
   return addDays(today, -STREAK_HISTORY_DAYS);
 }
 
-export function statusesByHabit(logs: readonly HabitLog[]): Map<string, Map<LocalDateString, HabitLogStatus>> {
-  const result = new Map<string, Map<LocalDateString, HabitLogStatus>>();
+export function statusesByHabit(logs: readonly HabitLog[]): Map<string, Map<LocalDateString, DayStatus>> {
+  const result = new Map<string, Map<LocalDateString, DayStatus>>();
   for (const log of logs) {
     let byDate = result.get(log.habitId);
     if (!byDate) {
       byDate = new Map();
       result.set(log.habitId, byDate);
     }
-    byDate.set(log.logDate, log.status);
+    byDate.set(log.logDate, dayStatusOf(log));
   }
   return result;
 }

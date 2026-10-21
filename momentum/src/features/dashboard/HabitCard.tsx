@@ -8,7 +8,7 @@ import { ProgressBar } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { haptics } from '@/core/haptics';
 import { formatShortDate } from '@/core/localDate';
-import { completionRatio, isPartialBinary, PARTIAL_BINARY, progressOf, setAmount } from '@/domain/habitProgress';
+import { completionRatio, isPartialBinary, smallStep, progressOf, setAmount } from '@/domain/habitProgress';
 import type { Habit } from '@/domain/models';
 import { habitPotStage } from '@/domain/garden';
 import { consistency, showConsistency } from '@/domain/motivation';
@@ -49,14 +49,30 @@ function openHabitMenu(habit: Habit) {
 
   if (!habit.isQuantitative && !isDone && !isSkipped) {
     actions.push({ label: habit.isQuit ? t('mark.quitDone') : t('mark.done'), icon: 'checkmark-circle-outline', run: () => tapHabit(habit.id) });
-    if (!partial && !habit.isQuit) actions.push({ label: t('mark.partial'), icon: 'contrast-outline', run: () => setTodayProgress(habit.id, PARTIAL_BINARY) });
+  }
+  // A small step: a bit of the habit keeps it going (and the streak with it). Offered before rest.
+  if (!habit.isQuit && !isDone && !isSkipped && !partial && progress.currentCount === 0) {
+    actions.push({ label: t('mark.partial'), icon: 'contrast-outline', run: () => setTodayProgress(habit.id, smallStep(habit)) });
   }
   if (isDone || partial || (habit.isQuantitative && progress.currentCount > 0)) {
     actions.push({ label: t('habit.resetToday'), icon: 'refresh-outline', run: () => setTodayProgress(habit.id, { currentCount: 0, status: 'in_progress' }) });
   }
   if (isSkipped) actions.push({ label: t('habit.unskipToday'), icon: 'arrow-undo-outline', run: () => skipHabit(habit.id) });
-  else if (!isDone) actions.push({ label: t('mark.skip'), icon: 'play-skip-forward-outline', run: () => skipHabit(habit.id) });
-  if (today && !isDone && !isSkipped) {
+  // A rest day: the streak waits (no freeze spent). Two in any 7 days; after that, "not today" is just that.
+  const restLeft = useHabitStore.getState().restDaysLeft(habit.id);
+  const canRest = !habit.isQuit && !isDone && !isSkipped && !partial && restLeft > 0;
+  if (canRest && today) {
+    actions.push({
+      label: tPlural(currentLanguage(), 'mark.rest', restLeft),
+      icon: 'cafe-outline',
+      run: () => {
+        skipHabit(habit.id);
+        // The Garden sprout has a study about a day off.
+        offerMomentLater('notToday', today);
+      },
+    });
+  }
+  if (today && !isDone && !isSkipped && !canRest) {
     actions.push(
       closed
         ? {
@@ -65,7 +81,7 @@ function openHabitMenu(habit: Habit) {
             run: () => useDayCloseStore.getState().reopen(habit.id, today),
           }
         : {
-            label: habit.isQuit ? t('mark.quitMissed') : t('mark.missed'),
+            label: habit.isQuit ? t('mark.quitMissed') : t('mark.notTodayNoRest'),
             icon: 'moon-outline',
             run: () => {
               useDayCloseStore.getState().close(habit.id, today);

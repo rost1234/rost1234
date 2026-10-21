@@ -1,5 +1,5 @@
 import type { HabitLogStatus } from '../models';
-import { computeStreak, planStreakFreezes } from '../streaks';
+import { computeStreak, planStreakFreezes, restDaysLeft, type DayStatus } from '../streaks';
 
 const TODAY = '2026-09-24'; // Thursday
 const daily = { id: 'h1', createdAt: '2026-09-01T08:00:00', targetFrequency: 'daily' as const, targetDays: [] };
@@ -70,5 +70,26 @@ describe('planStreakFreezes', () => {
     const plan = planStreakFreezes([daily, h2], s, TODAY, 1);
     expect(plan.freezesUsed).toBe(1);
     expect(plan.items.map((i) => i.habitId)).toEqual(['h1']);
+  });
+});
+
+describe('small steps and rest days', () => {
+  const st = (entries: Record<string, DayStatus>) => new Map(Object.entries(entries));
+
+  it('a small step counts toward the streak, today and before', () => {
+    expect(computeStreak(daily, st({ '2026-09-22': 'completed', '2026-09-23': 'small' }), TODAY)).toBe(2);
+    expect(computeStreak(daily, st({ '2026-09-23': 'completed', [TODAY]: 'small' }), TODAY)).toBe(2);
+  });
+
+  it('a rest day keeps the streak without adding to it', () => {
+    expect(computeStreak(daily, st({ '2026-09-21': 'completed', '2026-09-22': 'skipped', '2026-09-23': 'completed' }), TODAY)).toBe(2);
+  });
+
+  it('allows two rest days in any 7 days', () => {
+    expect(restDaysLeft(st({}), TODAY)).toBe(2);
+    expect(restDaysLeft(st({ '2026-09-22': 'skipped' }), TODAY)).toBe(1);
+    expect(restDaysLeft(st({ '2026-09-19': 'skipped', '2026-09-22': 'skipped' }), TODAY)).toBe(0);
+    // A week ago no longer counts.
+    expect(restDaysLeft(st({ '2026-09-17': 'skipped', '2026-09-22': 'skipped' }), TODAY)).toBe(1);
   });
 });

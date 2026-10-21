@@ -408,3 +408,12 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] "פירוט וגרפים" and "ניסויים" open on tap and show the day map, mood chart, screen time, sleep and sounds
 - [ ] With 0 active days the "ימים פעילים" line doesn't show; a brand-new install says there isn't enough yet
 
+## Small step and rest days (build 46)
+- [ ] Habit menu (⋯ / long press) on a habit not done: "צעד קטן (נחשב להיום)" and "יום מנוחה · נשארו 2 השבוע"; there's no separate "דילוג" or "לא היום" anymore
+- [ ] Small step: the card says "צעד קטן · נחשב להיום", the streak counts today, the ring shows it as partial, and the day is not "perfect"
+- [ ] Rest day: the card says "יום מנוחה · הרצף מחכה"; the streak stays (doesn't grow); no freeze is spent the next day
+- [ ] After two rest days in 7 days, the menu offers "לא היום (ימי המנוחה של השבוע נוצלו)" instead — the habit goes aside, and the day is open (a freeze may cover it)
+- [ ] Low-energy day on: the first tap is a small step (not "done"); a second tap goes on as usual
+- [ ] A habit to quit: no small step and no rest day; "מעידה, לא נפילה" as before
+- [ ] Perfect week: a week with a rest day doesn't earn a freeze; a week of full days does
+

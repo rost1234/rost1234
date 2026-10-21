@@ -26,14 +26,19 @@ describe('perfect-week freeze rewards', () => {
     expect(shouldAwardFreeze([habit], week('completed'), TODAY, 1, '2026-09-16')).toBe(true);
   });
 
-  it('treats skipped as neutral but needs at least one completion per day', () => {
+  it('a perfect day needs every habit fully done: a rest day or a small step is fine for the streak, but not perfect', () => {
     expect(isPerfectDay([habit], week('skipped'), '2026-09-20')).toBe(false);
     const h2 = { ...habit, id: 'h2' };
     const statuses = new Map([
       ['h1', new Map<string, HabitLogStatus>([['2026-09-20', 'completed']])],
       ['h2', new Map<string, HabitLogStatus>([['2026-09-20', 'skipped']])],
     ]);
-    expect(isPerfectDay([habit, h2], statuses, '2026-09-20')).toBe(true);
+    expect(isPerfectDay([habit, h2], statuses, '2026-09-20')).toBe(false);
+    const both = new Map([
+      ['h1', new Map<string, HabitLogStatus>([['2026-09-20', 'completed']])],
+      ['h2', new Map<string, HabitLogStatus>([['2026-09-20', 'completed']])],
+    ]);
+    expect(isPerfectDay([habit, h2], both, '2026-09-20')).toBe(true);
   });
 });
 

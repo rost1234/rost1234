@@ -53,6 +53,12 @@ export function applyPrimaryAction(habit: ProgressHabit, current: LogProgress): 
  */
 export const PARTIAL_BINARY: LogProgress = { currentCount: 1, status: 'in_progress' };
 
+/** A small step: a bit of the habit (half a yes/no habit, or 1 of a count). It keeps the streak. */
+export function smallStep(habit: ProgressHabit): LogProgress {
+  if (!habit.isQuantitative || habit.targetCount <= 1) return habit.isQuantitative ? { currentCount: 1, status: 'completed' } : PARTIAL_BINARY;
+  return { currentCount: 1, status: 'in_progress' };
+}
+
 export const isPartialBinary = (habit: ProgressHabit, progress: LogProgress): boolean =>
   !habit.isQuantitative && progress.status === 'in_progress' && progress.currentCount > 0;
 

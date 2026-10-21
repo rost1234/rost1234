@@ -2,12 +2,12 @@ import { create } from 'zustand';
 import { runDetached, toErrorMessage } from '@/core/errors';
 import type { LocalDateString } from '@/core/localDate';
 import { inTransaction, repositories } from '@/data/repositories';
-import { applyPrimaryAction, decrementProgress, progressOf, reevaluateProgress, type LogProgress } from '@/domain/habitProgress';
+import { applyPrimaryAction, decrementProgress, progressOf, reevaluateProgress, smallStep, type LogProgress } from '@/domain/habitProgress';
 import type { Habit, HabitLog, NewHabit } from '@/domain/models';
 import { applyDayEdit } from '@/domain/calendar';
 import { applyPauses } from '@/domain/pauses';
 import { isHabitDueOn } from '@/domain/habitSchedule';
-import { computeStreak } from '@/domain/streaks';
+import { computeStreak, restDaysLeft } from '@/domain/streaks';
 import { MAX_STREAK_FREEZES, refundsFreeze } from '@/domain/freezeRewards';
 import { offerMomentLater } from '@/services/sproutMoments';
 import { historyStart, reconcileStreakFreezes, statusesByHabit } from '@/services/streakService';
@@ -44,7 +44,10 @@ interface HabitState {
   load: (today: LocalDateString) => Promise<void>;
   tapHabit: (habitId: string) => void;
   undoHabitStep: (habitId: string) => void;
+  /** A rest day for today (or takes it back); refused when the week's rest days are used. */
   skipHabit: (habitId: string) => void;
+  /** Rest days this habit can still take today (2 in any 7 days). */
+  restDaysLeft: (habitId: string) => number;
   /** Today's mark set directly (an amount, "in part"), with Undo. */
   setTodayProgress: (habitId: string, next: LogProgress) => void;
   /** Marks a past day done ("done yesterday too"); a freeze spent on that day comes back. */
@@ -233,11 +236,11 @@ export const useHabitStore = create<HabitState>((set, get) => {
       const habit = get().habits.find((h) => h.id === habitId);
       const progress = currentProgress(habitId);
       if (!habit || !progress) return;
-      // Low-energy day: one tap on the micro-step completes any habit.
+      // Low-energy day: the first tap is the small step (it keeps the streak); more taps go on as usual.
       const minimumDay = usePlanningStore.getState().dayMode === 'minimum';
       const next =
-        minimumDay && progress.status !== 'completed'
-          ? { currentCount: Math.max(1, progress.currentCount), status: 'completed' as const }
+        minimumDay && progress.status !== 'completed' && progress.currentCount === 0 && !habit.isQuit
+          ? smallStep(habit)
           : applyPrimaryAction(habit, progress);
       commitProgress(habitId, next, { recordUndo: true });
     },
@@ -263,6 +266,8 @@ export const useHabitStore = create<HabitState>((set, get) => {
       const habit = get().habits.find((h) => h.id === habitId);
       const progress = currentProgress(habitId);
       if (!progress || !habit) return;
+      // A rest day is capped (two in any 7 days): a little slack helps, unlimited slack doesn't.
+      if (progress.status !== 'skipped' && get().restDaysLeft(habitId) === 0) return;
       commitProgress(
         habitId,
         progress.status === 'skipped'
@@ -271,6 +276,14 @@ export const useHabitStore = create<HabitState>((set, get) => {
           : { currentCount: progress.currentCount, status: 'skipped' },
         { recordUndo: true },
       );
+    },
+
+    restDaysLeft: (habitId) => {
+      const { today, logs, habits } = get();
+      const habit = habits.find((h) => h.id === habitId);
+      if (!today || !habit || habit.isQuit) return 0;
+      const statuses = statusesByHabit(Object.values(logs[habitId] ?? {})).get(habitId) ?? new Map();
+      return restDaysLeft(statuses, today);
     },
 
     completeOnDate: async (habitId, date) => {

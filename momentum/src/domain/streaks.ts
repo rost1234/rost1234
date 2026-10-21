@@ -4,14 +4,38 @@ import type { Habit, HabitLogStatus } from './models';
 
 type StreakHabit = Pick<Habit, 'id' | 'createdAt' | 'targetFrequency' | 'targetDays'>;
 
+/**
+ * A day's status for streak maths: the log's status, or `small` for a small step (part of the
+ * habit done, e.g. 2 of 8 glasses or "did a bit"). Showing up with a small step keeps the habit
+ * going, so it counts toward the streak; only a full completion makes a day "perfect".
+ */
+export type DayStatus = HabitLogStatus | 'small';
+
 /** Status of each logged day for a single habit. Missing dates = no log. */
-export type StatusByDate = ReadonlyMap<LocalDateString, HabitLogStatus>;
+export type StatusByDate = ReadonlyMap<LocalDateString, DayStatus>;
+
+/** The day was done, fully or with a small step. */
+export const countsAsDone = (status: DayStatus | undefined): boolean => status === 'completed' || status === 'small';
+
+/** A day's status from its log: an unfinished day with something done is a small step. */
+export const dayStatusOf = (log: { status: HabitLogStatus; currentCount: number }): DayStatus =>
+  log.status === 'in_progress' && log.currentCount > 0 ? 'small' : log.status;
+
+/** Rest days ("not today, and that's fine") a habit can take in any 7 days. */
+export const REST_DAYS_PER_WEEK = 2;
+
+/** Rest days left today: the cap minus the ones taken in the 6 days before. */
+export function restDaysLeft(statuses: StatusByDate, today: LocalDateString): number {
+  let used = 0;
+  for (let i = 1; i <= 6; i += 1) if (statuses.get(addDays(today, -i)) === 'skipped') used += 1;
+  return Math.max(0, REST_DAYS_PER_WEEK - used);
+}
 
 /** Hard stop so a corrupted clock can never cause an unbounded walk. */
 const MAX_LOOKBACK_DAYS = 3660;
 
 /** Statuses that keep a streak alive without adding to it. */
-const BRIDGING: ReadonlySet<HabitLogStatus> = new Set<HabitLogStatus>(['forgiven', 'skipped']);
+const BRIDGING: ReadonlySet<DayStatus> = new Set<DayStatus>(['forgiven', 'skipped']);
 
 /**
  * Consecutive scheduled days completed, ending at `today`.
@@ -28,7 +52,7 @@ export function computeStreak(
   const start = habitStartDate(habit);
   let streak = 0;
 
-  if (isHabitDueOn(habit, today) && statuses.get(today) === 'completed') {
+  if (isHabitDueOn(habit, today) && countsAsDone(statuses.get(today))) {
     streak += 1;
   }
 
@@ -36,7 +60,7 @@ export function computeStreak(
   for (let i = 0; i < MAX_LOOKBACK_DAYS && cursor >= start; i += 1) {
     if (isHabitDueOn(habit, cursor)) {
       const status = statuses.get(cursor);
-      if (status === 'completed') {
+      if (countsAsDone(status)) {
         streak += 1;
       } else if (!status || !BRIDGING.has(status)) {
         break;
@@ -50,7 +74,7 @@ export function computeStreak(
 /** True when the habit was completed at least once before `date` (for "fresh start" copy). */
 export function hasCompletionBefore(statuses: StatusByDate, date: LocalDateString): boolean {
   for (const [logDate, status] of statuses) {
-    if (logDate < date && status === 'completed') return true;
+    if (logDate < date && countsAsDone(status)) return true;
   }
   return false;
 }
@@ -124,7 +148,7 @@ function findTrailingGap(
   for (let i = 0; i < MAX_LOOKBACK_DAYS && cursor >= start; i += 1) {
     if (isHabitDueOn(habit, cursor)) {
       const status = statuses.get(cursor);
-      if (status === 'completed' || (status && BRIDGING.has(status))) {
+      if (countsAsDone(status) || (status && BRIDGING.has(status))) {
         // Found the anchor: only protect if a real streak lives behind the gap.
         if (missed.length === 0) return null;
         const streak = computeStreak(habit, statuses, cursor);
