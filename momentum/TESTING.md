@@ -417,3 +417,11 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] A habit to quit: no small step and no rest day; "מעידה, לא נפילה" as before
 - [ ] Perfect week: a week with a rest day doesn't earn a freeze; a week of full days does
 
+## Habits to quit, honestly (build 47)
+- [ ] A day without opening the app doesn't break the clean run and doesn't use a freeze
+- [ ] Next morning (until 13:00) the "yesterday" card asks "{habit}: אתמול היה נקי?" with "נקי ✓" and "הייתה מעידה"
+- [ ] "נקי ✓" adds a clean day for yesterday; "הייתה מעידה" starts the run over (kindly) and the question goes away
+- [ ] Today: "מעידה, לא נפילה" records the slip (run 0) and puts the habit aside for today
+- [ ] A slip from the "urge now" screen ("לא הפעם") also starts the run over after the next reload
+- [ ] Habits to build are unchanged: unmarked days still may use a freeze
+

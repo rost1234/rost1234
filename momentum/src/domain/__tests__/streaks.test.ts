@@ -1,5 +1,5 @@
 import type { HabitLogStatus } from '../models';
-import { computeStreak, planStreakFreezes, restDaysLeft, type DayStatus } from '../streaks';
+import { computeQuitStreak, computeStreak, planStreakFreezes, restDaysLeft, type DayStatus } from '../streaks';
 
 const TODAY = '2026-09-24'; // Thursday
 const daily = { id: 'h1', createdAt: '2026-09-01T08:00:00', targetFrequency: 'daily' as const, targetDays: [] };
@@ -91,5 +91,18 @@ describe('small steps and rest days', () => {
     expect(restDaysLeft(st({ '2026-09-19': 'skipped', '2026-09-22': 'skipped' }), TODAY)).toBe(0);
     // A week ago no longer counts.
     expect(restDaysLeft(st({ '2026-09-17': 'skipped', '2026-09-22': 'skipped' }), TODAY)).toBe(1);
+  });
+});
+
+describe('habits to quit', () => {
+  const st = (entries: Record<string, DayStatus>) => new Map(Object.entries(entries));
+
+  it('a day nobody marked waits: it neither adds nor breaks the clean run', () => {
+    expect(computeQuitStreak(daily, st({ '2026-09-21': 'completed', '2026-09-23': 'completed' }), new Set(), TODAY)).toBe(2);
+  });
+
+  it('a recorded slip starts the run over, today or before', () => {
+    expect(computeQuitStreak(daily, st({ '2026-09-21': 'completed', '2026-09-23': 'completed' }), new Set(['2026-09-22']), TODAY)).toBe(1);
+    expect(computeQuitStreak(daily, st({ '2026-09-23': 'completed' }), new Set([TODAY]), TODAY)).toBe(0);
   });
 });

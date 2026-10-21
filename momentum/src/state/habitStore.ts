@@ -3,11 +3,11 @@ import { runDetached, toErrorMessage } from '@/core/errors';
 import type { LocalDateString } from '@/core/localDate';
 import { inTransaction, repositories } from '@/data/repositories';
 import { applyPrimaryAction, decrementProgress, progressOf, reevaluateProgress, smallStep, type LogProgress } from '@/domain/habitProgress';
-import type { Habit, HabitLog, NewHabit } from '@/domain/models';
+import type { Habit, HabitLog, NewHabit, UrgeLog } from '@/domain/models';
 import { applyDayEdit } from '@/domain/calendar';
 import { applyPauses } from '@/domain/pauses';
 import { isHabitDueOn } from '@/domain/habitSchedule';
-import { computeStreak, restDaysLeft } from '@/domain/streaks';
+import { computeQuitStreak, computeStreak, restDaysLeft } from '@/domain/streaks';
 import { MAX_STREAK_FREEZES, refundsFreeze } from '@/domain/freezeRewards';
 import { offerMomentLater } from '@/services/sproutMoments';
 import { historyStart, reconcileStreakFreezes, statusesByHabit } from '@/services/streakService';
@@ -46,6 +46,10 @@ interface HabitState {
   undoHabitStep: (habitId: string) => void;
   /** A rest day for today (or takes it back); refused when the week's rest days are used. */
   skipHabit: (habitId: string) => void;
+  /** habitId → days with a recorded slip (habits to quit). */
+  slips: Record<string, LocalDateString[]>;
+  /** Records a slip on a habit to quit (today, or yesterday from the morning question). */
+  recordSlip: (habitId: string, date: LocalDateString) => Promise<void>;
   /** Rest days this habit can still take today (2 in any 7 days). */
   restDaysLeft: (habitId: string) => number;
   /** Today's mark set directly (an amount, "in part"), with Undo. */
@@ -111,7 +115,14 @@ function indexLogs(logs: readonly HabitLog[]): LogIndex {
   return index;
 }
 
+/** habitId → days with a recorded slip (habits to quit), from the "urge now" log. */
+let slipDates: Record<string, Set<LocalDateString>> = {};
+
 function streakFor(habit: Habit, logs: LogIndex, today: LocalDateString): number {
+  if (habit.isQuit) {
+    const statuses = statusesByHabit(Object.values(logs[habit.id] ?? {})).get(habit.id) ?? new Map();
+    return computeQuitStreak(habit, statuses, slipDates[habit.id] ?? new Set(), today);
+  }
   const statuses = statusesByHabit(Object.values(logs[habit.id] ?? {})).get(habit.id) ?? new Map();
   // Planned pauses (vacation / sick) count as neutral days.
   return computeStreak(habit, applyPauses(statuses, usePlanningStore.getState().pauses, today, habit.id), today);
@@ -200,6 +211,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
     lastFreezeAwarded: false,
     lastChange: null,
     justAdded: null,
+    slips: {},
 
     load: async (today) => {
       // Keep existing data visible during refreshes (e.g. midnight rollover).
@@ -209,12 +221,16 @@ export const useHabitStore = create<HabitState>((set, get) => {
         await usePlanningStore.getState().load(today);
         const reconcile = await reconcileStreakFreezes(habits, today);
         useSettingsStore.getState().setFreezesAvailable(reconcile.freezesRemaining);
-        const [logs, completedBefore, completedDaysBefore] = await Promise.all([
+        const [logs, completedBefore, completedDaysBefore, urges] = await Promise.all([
           repositories.habitLogs.getInRange(historyStart(today), today).then(indexLogs),
           repositories.habitLogs.countCompletedBefore(today).catch(() => ({})),
           repositories.habitLogs.countCompletedDaysBefore(today).catch(() => 0),
+          repositories.urges.getInRange(historyStart(today), today).catch((): UrgeLog[] => []),
         ]);
         if (get().today !== today) return; // a newer load superseded this one
+        slipDates = {};
+        for (const u of urges) if (u.outcome === 'slipped' && u.habitId) (slipDates[u.habitId] ??= new Set()).add(u.logDate);
+        set({ slips: Object.fromEntries(Object.entries(slipDates).map(([id, dates]) => [id, [...dates]])) });
         set({
           habits,
           logs,
@@ -276,6 +292,18 @@ export const useHabitStore = create<HabitState>((set, get) => {
           : { currentCount: progress.currentCount, status: 'skipped' },
         { recordUndo: true },
       );
+    },
+
+    recordSlip: async (habitId, date) => {
+      const { today, logs, habits } = get();
+      const habit = habits.find((h) => h.id === habitId);
+      if (!today || !habit) return;
+      await repositories.urges.create({ habitId, startedAt: new Date().toISOString(), logDate: date, outcome: 'slipped', trigger: null, mode: null });
+      (slipDates[habitId] ??= new Set()).add(date);
+      set({
+        slips: { ...get().slips, [habitId]: [...slipDates[habitId]] },
+        streaks: { ...get().streaks, [habitId]: streakFor(habit, logs, today) },
+      });
     },
 
     restDaysLeft: (habitId) => {

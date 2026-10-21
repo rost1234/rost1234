@@ -71,6 +71,33 @@ export function computeStreak(
   return streak;
 }
 
+/**
+ * Clean days in a row for a habit to quit. Not opening the app isn't a slip, so a day nobody
+ * marked waits (it neither adds nor breaks); only a recorded slip breaks the run. A clean day (✓)
+ * adds one. No freezes are ever spent on these habits.
+ */
+export function computeQuitStreak(
+  habit: StreakHabit,
+  statuses: StatusByDate,
+  slips: ReadonlySet<LocalDateString>,
+  today: LocalDateString,
+): number {
+  const start = habitStartDate(habit);
+  let streak = 0;
+  if (isHabitDueOn(habit, today) && statuses.get(today) === 'completed') streak += 1;
+  else if (slips.has(today)) return 0;
+
+  let cursor = addDays(today, -1);
+  for (let i = 0; i < MAX_LOOKBACK_DAYS && cursor >= start; i += 1) {
+    if (isHabitDueOn(habit, cursor)) {
+      if (statuses.get(cursor) === 'completed') streak += 1;
+      else if (slips.has(cursor)) break;
+    }
+    cursor = addDays(cursor, -1);
+  }
+  return streak;
+}
+
 /** True when the habit was completed at least once before `date` (for "fresh start" copy). */
 export function hasCompletionBefore(statuses: StatusByDate, date: LocalDateString): boolean {
   for (const [logDate, status] of statuses) {

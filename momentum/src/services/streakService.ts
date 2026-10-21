@@ -65,7 +65,8 @@ export async function reconcileStreakFreezes(
     freezes = await repositories.settings.awardStreakFreeze(today, MAX_STREAK_FREEZES);
   }
 
-  const plan = planStreakFreezes(habits, statuses, today, freezes);
+  // Habits to quit don't use freezes: a day nobody marked simply waits for an answer.
+  const plan = planStreakFreezes(habits.filter((h) => !h.isQuit), statuses, today, freezes);
   if (plan.freezesUsed === 0) {
     return { forgivenDays: 0, freezesRemaining: freezes, freezeAwarded };
   }

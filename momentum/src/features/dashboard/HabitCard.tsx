@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { showActionSheet, showConfirm, type SheetAction } from '@/components/Overlay';
 import { ProgressBar } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
+import { runDetached } from '@/core/errors';
 import { haptics } from '@/core/haptics';
 import { formatShortDate } from '@/core/localDate';
 import { completionRatio, isPartialBinary, smallStep, progressOf, setAmount } from '@/domain/habitProgress';
@@ -85,6 +86,8 @@ function openHabitMenu(habit: Habit) {
             icon: 'moon-outline',
             run: () => {
               useDayCloseStore.getState().close(habit.id, today);
+              // A slip is recorded honestly (the clean-days run starts over, kindly); the habit carries on.
+              if (habit.isQuit) runDetached(useHabitStore.getState().recordSlip(habit.id, today));
               // The Garden sprout has a study about a missed day (a slip on a quit habit is the urge flow's).
               if (!habit.isQuit) offerMomentLater('notToday', today);
             },

@@ -43,6 +43,8 @@ export function YesterdayCard({ today, hour }: { today: LocalDateString; hour: n
   const logs = useHabitStore((s) => s.logs);
   const ready = useHabitStore((s) => s.today === today && s.status === 'ready');
   const completeOnDate = useHabitStore((s) => s.completeOnDate);
+  const recordSlip = useHabitStore((s) => s.recordSlip);
+  const slips = useHabitStore((s) => s.slips);
   const pauses = usePlanningStore((s) => s.pauses);
 
   useEffect(() => {
@@ -51,7 +53,10 @@ export function YesterdayCard({ today, hour }: { today: LocalDateString; hour: n
       .catch(() => setClosedOn(today));
   }, [today]);
 
-  const open = openYesterday(habits, logs, yesterday, pauses);
+  // A habit to quit with a slip already recorded for yesterday has its answer.
+  const open = openYesterday(habits, logs, yesterday, pauses).filter((h) => !(h.isQuit && slips[h.id]?.includes(yesterday)));
+  const toBuild = open.filter((h) => !h.isQuit);
+  const toQuit = open.filter((h) => h.isQuit);
   const wants = ready && hour < UNTIL_HOUR && closedOn !== undefined && closedOn !== today && open.length > 0;
   const isMine = useHomePromptSlot('yesterday', wants);
   if (!isMine) return null;
@@ -69,9 +74,40 @@ export function YesterdayCard({ today, hour }: { today: LocalDateString; hour: n
           <Ionicons name="close" size={18} color={colors.textMuted} />
         </Pressable>
       </View>
-      <Text style={typography.caption}>{t('yday.lead')}</Text>
+      {toBuild.length > 0 ? <Text style={typography.caption}>{t('yday.lead')}</Text> : null}
+      {/* Habits to quit: not opening the app isn't a slip, so yesterday waits for an honest answer. */}
+      {toQuit.map((habit) => (
+        <View key={habit.id} style={styles.quitRow}>
+          <Text style={[typography.body, { flex: 1 }]}>{t('yday.quitAsk', { title: habit.title })}</Text>
+          <View style={styles.chips}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('yday.markQuitA11y', { title: habit.title })}
+              onPress={() => {
+                haptics.success();
+                runDetached(completeOnDate(habit.id, yesterday));
+              }}
+              style={({ pressed }) => [styles.chip, pressed && { opacity: 0.7 }]}
+            >
+              <Ionicons name="shield-checkmark" size={14} color={colors.primary} />
+              <Text style={styles.chipText}>{t('yday.quitClean')}</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('yday.quitSlipA11y', { title: habit.title })}
+              onPress={() => {
+                haptics.tap();
+                runDetached(recordSlip(habit.id, yesterday));
+              }}
+              style={({ pressed }) => [styles.chip, styles.chipQuiet, pressed && { opacity: 0.7 }]}
+            >
+              <Text style={styles.chipText}>{t('yday.quitSlip')}</Text>
+            </Pressable>
+          </View>
+        </View>
+      ))}
       <View style={styles.chips}>
-        {open.map((habit) => (
+        {toBuild.map((habit) => (
           <Pressable
             key={habit.id}
             accessibilityRole="button"
@@ -96,6 +132,8 @@ export function YesterdayCard({ today, hour }: { today: LocalDateString; hour: n
 const useStyles = makeStyles(({ colors, typography }) => ({
   card: { gap: spacing.sm, padding: spacing.lg, marginBottom: spacing.md, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  quitRow: { gap: spacing.xs },
+  chipQuiet: { backgroundColor: colors.surfaceMuted },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   chip: {
     flexDirection: 'row',
