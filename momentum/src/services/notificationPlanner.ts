@@ -96,8 +96,8 @@ export function describePlanned(item: PlannedNotification, habits: readonly Habi
       // One calm evening note: what's still open, and the reflection when it's part of it.
       const reflect = item.withReflection ? t('notif.eveningAndReflect') : '';
       if (titles.length === 0) return { title: t('notif.evening'), body: t('notif.eveningBody') };
-      if (titles.length === 1 && first) return { title: t('notif.checkinOne', { title: first.title }), body: [first.microStep ? t('notif.rescueStep', { step: first.microStep }) : t('notif.checkinOneBody'), reflect].filter(Boolean).join(' ') };
-      return { title: tPlural(lang, 'notif.eveningOpen', titles.length), body: [titles.join(' · '), reflect].filter(Boolean).join(' · ') };
+      if (titles.length === 1 && first) return { title: t('notif.checkinOne', { title: first.title }), body: [first.microStep ? t('notif.rescueStep', { step: first.microStep }) : t('notif.checkinOneBody'), reflect].filter(Boolean).join('\n') };
+      return { title: tPlural(lang, 'notif.eveningOpen', titles.length), body: [titles.join(' · '), reflect].filter(Boolean).join('\n') };
     }
   }
 }

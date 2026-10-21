@@ -30,7 +30,7 @@ export function DayStartSetting() {
   return (
     <Card style={{ gap: spacing.sm }}>
       <Text style={typography.label}>{t('daystart.title')}</Text>
-      <Text style={typography.caption}>{t('daystart.lead')}</Text>
+      {hour > 0 ? <Text style={typography.caption}>{t('daystart.lead')}</Text> : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }} accessibilityRole="radiogroup">
         {DAY_START_CHOICES.map((h) => (
           <Chip key={h} label={h === 0 ? t('daystart.midnight') : dayStartLabel(h)} selected={hour === h} onPress={() => pick(h)} />
