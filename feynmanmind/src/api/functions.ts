@@ -56,6 +56,8 @@ export type ApiErrorCode =
   | 'unreadable_pdf'
   | 'invalid_topic'
   | 'rate_limited'
+  /** The AI provider refused every attempt with 429 (Gemini's per-minute or daily quota). */
+  | 'ai_quota'
   | 'llm_error'
   | 'internal'
   | 'network';

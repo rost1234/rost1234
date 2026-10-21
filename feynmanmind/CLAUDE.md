@@ -61,6 +61,12 @@ comes from the file (optional `hook`/`sections`/`example`/`misconception`/`conne
 `key_points` as the source of truth (`upgradeOne`, saved by
 `saveImportedLesson`). Everything else
 (course maps, stations, concept pages, the review session) is a stack screen in `src/app/(app)/`.
+Safety on the phone: `services/backup.ts` writes a weekly backup into a folder picked once (Android folder picker,
+`prefs.backupDirUri`; keeps 5; run on launch and on going to the background), `features/today/BackupReminder` nags
+when there's no folder or no backup for 14 days; `services/errorLog.ts` keeps the last 30 errors (global handler,
+error boundary, backup, lesson queue) with a copy button in Settings → About. The DB store saves in batches
+(`batchedStorage` in `local/store.ts`, flushed on background). The lesson queue keeps the screen awake and is
+resumed on return (`useQueueResume`, at most 3 times). Gemini 429 on every attempt → `ai_quota` (QuotaError).
 Review limits and accessibility live in `src/state/prefsStore.ts`; the theme reads text size and
 contrast from it (`useTheme().textScale`), `useReduceMotion()` covers animations.
 

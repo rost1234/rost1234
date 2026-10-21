@@ -1,5 +1,5 @@
 import { assertEquals, assertRejects } from 'jsr:@std/assert@1';
-import { createStructuredLlm, LlmError, type StructuredRequest } from './llm.ts';
+import { createStructuredLlm, LlmError, QuotaError, type StructuredRequest } from './llm.ts';
 
 type Reply = { status: number; body: unknown };
 
@@ -99,4 +99,19 @@ Deno.test('refusal surfaces as LlmError without retry', async () => {
   const llm = createStructuredLlm({ provider: 'openai', apiKey: 'k', model: 'm', fetchImpl: f.impl, sleep: noSleep });
   await assertRejects(() => llm(req), LlmError, 'declined');
   assertEquals(f.calls.length, 1);
+});
+
+Deno.test('429 on every attempt (main and fallback) is reported as a used-up quota', async () => {
+  const f = fakeFetch([{ status: 429, body: { error: { status: 'RESOURCE_EXHAUSTED' } } }]);
+  const llm = createStructuredLlm({ provider: 'gemini', apiKey: 'g', model: 'main', fallbackModel: 'lite', fetchImpl: f.impl, sleep: noSleep });
+  const err = await assertRejects(() => llm(req), QuotaError);
+  assertEquals((err as QuotaError).status, 429);
+  assertEquals((err as QuotaError).code, 'ai_quota');
+  assertEquals(f.calls.length, 2);
+});
+
+Deno.test('429 then 503 is a temporary outage, not the quota', async () => {
+  const f = fakeFetch([{ status: 429, body: {} }, { status: 503, body: {} }]);
+  const llm = createStructuredLlm({ provider: 'openai', apiKey: 'k', model: 'm', fetchImpl: f.impl, sleep: noSleep });
+  await assertRejects(() => llm(req), LlmError, 'unavailable');
 });

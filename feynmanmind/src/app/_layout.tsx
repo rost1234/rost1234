@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { I18nManager, Platform, View } from 'react-native';
+import { AppState, I18nManager, Platform, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -12,6 +12,9 @@ import { resolveLanguage, useT } from '@/i18n';
 import { loadAppFonts } from '@/lib/fonts';
 import { queryClient } from '@/lib/queryClient';
 import { useDBStore } from '@/local/store';
+import { resumeLessonQueues } from '@/data/lessonQueue';
+import { autoBackupIfDue } from '@/services/backup';
+import { installErrorLog, recordError } from '@/services/errorLog';
 import { configureNotifications, syncDailyReminder } from '@/services/reminders';
 import { useHydrated, usePrefsStore } from '@/state/prefsStore';
 import { spacing, useTheme } from '@/theme';
@@ -19,11 +22,13 @@ import { spacing, useTheme } from '@/theme';
 SplashScreen.preventAutoHideAsync().catch(() => {});
 configureNotifications();
 loadAppFonts();
+installErrorLog();
 
 /** Route-level error boundary: catches render errors anywhere below the root. */
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   const t = useT();
   const { colors, typography } = useTheme();
+  useEffect(() => recordError('screen', error), [error]);
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.md, padding: spacing.xl, backgroundColor: colors.background }}>
       <Text style={typography.heading}>{t('error.title')}</Text>
@@ -63,6 +68,19 @@ function RootNavigator() {
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync().catch(() => {});
+  }, [ready]);
+
+  // A weekly backup into the chosen folder: checked on launch and whenever the app goes to the background.
+  // Coming back (or relaunching) also resumes lesson queues the phone interrupted.
+  useEffect(() => {
+    if (!ready) return;
+    autoBackupIfDue();
+    resumeLessonQueues();
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'background') autoBackupIfDue();
+      if (state === 'active') resumeLessonQueues();
+    });
+    return () => sub.remove();
   }, [ready]);
 
   // Keep the daily reminder in sync with settings and the UI language.

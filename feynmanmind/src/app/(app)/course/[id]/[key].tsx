@@ -8,6 +8,7 @@ import { ScoreRing } from '@/components/ScoreRing';
 import { Button, Card, Chip, ErrorState, InlineError, LoadingState, Screen } from '@/components/ui';
 import { useStartStation, useStation, useWriteStationLesson } from '@/data/courses';
 import { useUpgradeImported } from '@/data/imports';
+import { confirmAsync } from '@/lib/dialogs';
 import { useT, type TranslationKey } from '@/i18n';
 import { AskButton } from '@/features/lesson/AskSheet';
 import { CheckQuiz } from '@/features/lesson/CheckQuiz';
@@ -145,12 +146,33 @@ export default function StationScreen() {
       ? upgradeImported.mutate({ courseId: course.id, key: station.key }, { onSuccess: () => haptics.success() })
       : write.mutate({ courseId: course.id, key: station.key, language: 'he', upgrade: true }, { onSuccess: () => haptics.success() });
   const upgradeError = imported ? upgradeImported.error : write.error;
+  // Lessons the AI wrote (not built-in ones, not the full lesson that came in the file) can be written again.
+  const aiWritten = !!lesson.parts && !station.explanation && !station.parts;
+  const rewrite = async () => {
+    const ok = await confirmAsync({
+      title: t('lesson.rewriteConfirm'),
+      message: t('lesson.rewriteBody'),
+      confirmLabel: t('lesson.rewrite'),
+      cancelLabel: t('common.cancel'),
+    });
+    if (ok) upgrade();
+  };
   const pages: ReactNode[] = [
     <Fragment key="read">
       <Text style={[typography.body, { color: colors.textMuted }]}>{station.summary}</Text>
       <LessonView title={station.title} explanation={lesson.explanation} parts={lesson.parts} keyPoints={lesson.cards} />
       {!lesson.parts && !station.explanation ? (
         <UpgradeLesson onPress={upgrade} busy={write.isPending || upgradeImported.isPending} error={upgradeError ? errorMessage(upgradeError, t) : null} />
+      ) : null}
+      {aiWritten ? (
+        write.isPending || upgradeImported.isPending ? (
+          <LoadingState label={t('lesson.writing')} />
+        ) : (
+          <>
+            <Button label={t('lesson.rewrite')} icon="refresh-outline" variant="ghost" disabled={!aiReady} onPress={() => void rewrite()} />
+            <InlineError message={upgradeError ? errorMessage(upgradeError, t) : null} />
+          </>
+        )
       ) : null}
     </Fragment>,
     <Fragment key="check">

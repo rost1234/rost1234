@@ -71,7 +71,22 @@ export function llmConfigFromEnv(): LlmConfig {
 }
 
 /** HTTP status that is worth one retry. */
-class RetryableError extends Error {}
+class RetryableError extends Error {
+  constructor(
+    message: string,
+    public readonly status = 0,
+  ) {
+    super(message);
+  }
+}
+
+/** Every attempt was refused with 429: the AI provider's quota (or rate) is used up for now. */
+export class QuotaError extends HttpError {
+  constructor() {
+    super(429, 'AI quota is used up for now, try again later', 'ai_quota');
+    this.name = 'QuotaError';
+  }
+}
 
 export function createStructuredLlm(config: LlmConfig): StructuredLlm {
   const fetchImpl = config.fetchImpl ?? fetch;
@@ -95,7 +110,7 @@ export function createStructuredLlm(config: LlmConfig): StructuredLlm {
     }
 
     if (res.status === 429 || res.status >= 500) {
-      throw new RetryableError(`provider returned ${res.status}`);
+      throw new RetryableError(`provider returned ${res.status}`, res.status);
     }
     const payload = await res.json().catch(() => null);
     // Gemini: if the current structured-output fields are rejected, try the
@@ -113,6 +128,7 @@ export function createStructuredLlm(config: LlmConfig): StructuredLlm {
 
   return async function generate<T>(req: StructuredRequest<T>): Promise<T> {
     let lastError: unknown;
+    let quotaHits = 0;
     // Up to 2 attempts: one retry on transient errors or malformed output.
     // When the main model is overloaded, the retry goes to the fallback model.
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -123,10 +139,12 @@ export function createStructuredLlm(config: LlmConfig): StructuredLlm {
         return req.parse(JSON.parse(text));
       } catch (err) {
         if (err instanceof LlmError) throw err;
+        if (err instanceof RetryableError && err.status === 429) quotaHits++;
         lastError = err;
         console.warn(`[llm] ${req.name} attempt ${attempt + 1} failed:`, (err as Error).message);
       }
     }
+    if (quotaHits === 2) throw new QuotaError();
     throw new LlmError(
       lastError instanceof RetryableError
         ? 'AI provider is unavailable, try again shortly'

@@ -40,6 +40,10 @@ interface PrefsState {
   printPerDay: number;
   printMode: 'full' | 'saver' | 'max' | 'track';
   printColor: boolean;
+  /** Android folder (picked once) where a backup is written automatically every week; '' = off. */
+  backupDirUri: string;
+  /** When the last backup (automatic or exported) was made, ISO; '' = never. */
+  lastBackupAt: string;
   set: (patch: Partial<Omit<PrefsState, 'set'>>) => void;
 }
 
@@ -68,6 +72,8 @@ export const usePrefsStore = create<PrefsState>()(
       printPerDay: 1,
       printMode: 'saver',
       printColor: true,
+      backupDirUri: '',
+      lastBackupAt: '',
       set: (patch) => set(patch),
     }),
     {

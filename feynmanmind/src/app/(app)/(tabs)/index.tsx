@@ -2,6 +2,7 @@ import { View } from 'react-native';
 import { Screen } from '@/components/ui';
 import { TabHeader } from '@/components/TabHeader';
 import { ContinueCard } from '@/features/home/ContinueCard';
+import { BackupReminder } from '@/features/today/BackupReminder';
 import { DailyPlan } from '@/features/today/DailyPlan';
 import { QuickAdd } from '@/features/today/QuickAdd';
 import { useT } from '@/i18n';
@@ -16,6 +17,7 @@ export default function TodayTab() {
         <TabHeader title={t(greetingKey())} caption={new Date().toLocaleDateString(t.locale, { weekday: 'long', day: 'numeric', month: 'long' })} />
         <DailyPlan />
         <ContinueCard />
+        <BackupReminder />
       </Screen>
       <QuickAdd />
     </View>

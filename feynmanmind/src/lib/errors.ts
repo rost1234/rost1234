@@ -5,6 +5,7 @@ import type { TranslationKey, Translator } from '@/i18n';
 const API_MESSAGES: Partial<Record<ApiErrorCode, TranslationKey>> = {
   network: 'error.network',
   rate_limited: 'error.rateLimited',
+  ai_quota: 'ai.quota',
   llm_error: 'error.llm',
   source_too_short: 'error.sourceTooShort',
   unreadable_pdf: 'error.unreadablePdf',

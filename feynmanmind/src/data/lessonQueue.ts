@@ -1,5 +1,9 @@
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { ApiError } from '@/api/functions';
+import { storage } from '@/lib/storage';
+import { recordError } from '@/services/errorLog';
 import { isImportedCourse, stationsNeedingLessons } from '@/local/logic';
 import { getDB } from '@/local/store';
 import { findCourse, writeStationLesson } from './courses';
@@ -35,6 +39,25 @@ export const useLessonQueue = create<QueueState>((set) => ({
     }),
 }));
 
+/**
+ * Queues to pick up again: Android (Samsung especially) pauses apps in the background, so lessons can fail
+ * while you're away. A queue that was asked for is remembered (course → lessons still to write, null = all)
+ * and resumed when the app comes back, a few times at most.
+ */
+interface ResumeState {
+  pending: Record<string, { left: number | null; resumes: number }>;
+}
+export const useQueueResume = create<ResumeState>()(
+  persist(() => ({ pending: {} }), { name: 'feynmanmind.lessonQueue', storage: createJSONStorage(() => storage) }),
+);
+const MAX_RESUMES = 3;
+function setPending(courseId: string, value: { left: number | null; resumes: number } | null) {
+  useQueueResume.setState((s) => {
+    const { [courseId]: _old, ...rest } = s.pending;
+    return { pending: value ? { ...rest, [courseId]: value } : rest };
+  });
+}
+
 /** Two lessons at a time: faster than one by one, gentle on the AI server. */
 const CONCURRENCY = 2;
 /** The server allows a limited number of lessons per hour; when it says "too many", wait and try again, for up to about an hour. */
@@ -67,7 +90,7 @@ async function writeOne(courseId: string, key: string): Promise<void> {
       else await writeStationLesson(courseId, key, 'he');
       return;
     } catch (e) {
-      if (e instanceof ApiError && e.code === 'rate_limited' && rate < RATE_TRIES) {
+      if (e instanceof ApiError && (e.code === 'rate_limited' || e.code === 'ai_quota') && rate < RATE_TRIES) {
         rate++;
         waiters.set(courseId, (waiters.get(courseId) ?? 0) + 1);
         set(courseId, { waitUntil: Date.now() + RATE_WAIT_MS });
@@ -94,15 +117,22 @@ async function writeOne(courseId: string, key: string): Promise<void> {
  * A lesson that fails is skipped and listed, not a reason to stop; the rest continue.
  * Running it again picks up what is still missing.
  */
-export async function startLessonQueue(courseId: string, limit = Infinity): Promise<void> {
+export async function startLessonQueue(courseId: string, limit = Infinity, resumes = 0): Promise<void> {
   const state = useLessonQueue.getState();
   if (state.jobs[courseId]?.running) return;
   const course = findCourse(courseId);
   if (!course) return;
   const todo = stationsNeedingLessons(getDB(), course).slice(0, limit).map((s) => s.key);
-  if (!todo.length) return;
+  if (!todo.length) {
+    setPending(courseId, null);
+    return;
+  }
   cancelled.delete(courseId);
+  let left = Number.isFinite(limit) ? todo.length : null;
+  setPending(courseId, { left, resumes });
   state.set(courseId, { total: todo.length, done: 0, failed: [], waitUntil: null, running: true });
+  // Keep the screen on while lessons are being written, so the phone doesn't put the app to sleep.
+  activateKeepAwakeAsync(`lesson-queue-${courseId}`).catch(() => {});
   let next = 0;
   const worker = async () => {
     while (!cancelled.has(courseId)) {
@@ -110,8 +140,13 @@ export async function startLessonQueue(courseId: string, limit = Infinity): Prom
       if (key === undefined) return;
       try {
         await writeOne(courseId, key);
+        if (left !== null) {
+          left--;
+          setPending(courseId, { left, resumes });
+        }
       } catch (e) {
         const stopped = cancelled.has(courseId);
+        if (!stopped) recordError('lesson-queue', e);
         // Without an AI connection nothing else will work either: stop. A cancel isn't a failure.
         if (e instanceof ApiError && e.code === 'not_configured') cancelled.add(courseId);
         if (!stopped || (e instanceof ApiError && e.code === 'not_configured')) {
@@ -124,11 +159,28 @@ export async function startLessonQueue(courseId: string, limit = Infinity): Prom
     }
   };
   await Promise.all(Array.from({ length: Math.min(CONCURRENCY, todo.length) }, worker));
+  Promise.resolve(deactivateKeepAwake(`lesson-queue-${courseId}`)).catch(() => {});
   useLessonQueue.getState().set(courseId, { running: false, waitUntil: null });
+  const failed = useLessonQueue.getState().jobs[courseId]?.failed.length ?? 0;
+  // All written (or stopped by hand): nothing to resume. Otherwise it stays pending for the next return to the app.
+  if (!failed || cancelled.has(courseId)) setPending(courseId, null);
 }
 
 export function cancelLessonQueue(courseId: string) {
   cancelled.add(courseId);
+  setPending(courseId, null);
+}
+
+/** Picks up queues that were interrupted (failures while the app was in the background, or the app was closed). */
+export function resumeLessonQueues(): void {
+  for (const [courseId, { left, resumes }] of Object.entries(useQueueResume.getState().pending)) {
+    if (useLessonQueue.getState().jobs[courseId]?.running) continue;
+    if (resumes >= MAX_RESUMES || left === 0 || !findCourse(courseId)) {
+      setPending(courseId, null);
+      continue;
+    }
+    void startLessonQueue(courseId, left ?? Infinity, resumes + 1);
+  }
 }
 
 export function clearLessonJob(courseId: string) {

@@ -14,6 +14,8 @@ import { confirmAsync } from '@/lib/dialogs';
 import { formatHour } from '@/lib/format';
 import { useDBStore } from '@/local/store';
 import { AiConnection } from './AiConnection';
+import { BackupSettings } from './BackupSettings';
+import { BatteryHint, ErrorLogView } from './ErrorLogView';
 import { LookPicker } from './LookPicker';
 import { emptyDB } from '@/local/types';
 import { exportBackup, pickBackup } from '@/services/backup';
@@ -135,6 +137,7 @@ export function SettingsContent() {
               </View>
             ) : null}
             {reminderDenied ? <Text style={[typography.caption, { color: colors.danger }]}>{t('settings.reminderDenied')}</Text> : null}
+            <BatteryHint />
           </>
         ) : (
           <Text style={typography.caption}>{t('settings.reminderUnavailable')}</Text>
@@ -185,6 +188,7 @@ export function SettingsContent() {
         <Text style={typography.caption}>{t('settings.dataNote')}</Text>
         <Button label={t('settings.export')} variant="secondary" icon="share-outline" onPress={() => void exportData()} />
         <Button label={t('settings.import')} variant="secondary" icon="download-outline" onPress={() => void importData()} />
+        <BackupSettings />
         <Button label={t('settings.deleteAccount')} variant="danger" icon="trash-outline" onPress={() => void deleteAll()} />
         {notice ? (
           <Text style={[typography.caption, { color: colors.success }]} accessibilityLiveRegion="polite">
@@ -202,6 +206,7 @@ export function SettingsContent() {
             version: Constants.expoConfig?.version ?? '1.0.0',
           })}
         </Text>
+        <ErrorLogView />
       </Collapsible>
     </CollapsibleGroup>
   );
