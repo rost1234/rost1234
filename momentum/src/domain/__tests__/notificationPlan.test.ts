@@ -163,16 +163,14 @@ describe('planNotifications', () => {
     expect(today[0]?.habitIds).toEqual(['a']);
   });
 
-  it('asks in the evening about due habits not logged yet, leaving out rescued ones', () => {
+  it('asks once in the evening about due habits not logged yet, the rescued streak first', () => {
     const habits = [makeHabit({ id: 'a' }), makeHabit({ id: 'b' }), makeHabit({ id: 'c' }), makeHabit({ id: 'd' })];
     const prefs = { ...DEFAULT_NOTIFICATION_PREFS, checkIn: true, streakRescue: true };
     const logs = index([log('a', TODAY, 'completed'), log('b', TODAY, 'skipped')]);
     const plan = planNotifications(input({ habits, prefs, logsByHabit: logs, streaks: { d: 4 } }));
     const today = plan.filter((n) => n.date === TODAY);
-    expect(today).toEqual([
-      expect.objectContaining({ kind: 'rescue', habitIds: ['d'] }),
-      expect.objectContaining({ kind: 'checkin', minutes: 21 * 60, habitIds: ['c'] }),
-    ]);
+    // The streak rescue (20:30) and the check-in (21:00) are one evening notification at 20:30.
+    expect(today).toEqual([expect.objectContaining({ kind: 'evening', minutes: 20 * 60 + 30, habitIds: ['d', 'c'], withReflection: false })]);
     expect(plan.find((n) => n.date === addDays(TODAY, 1))).toMatchObject({ kind: 'checkin', habitIds: ['a', 'b', 'c', 'd'] });
   });
 
@@ -183,6 +181,13 @@ describe('planNotifications', () => {
     const plan = planNotifications(input({ habits, prefs: late, logsByHabit: logs }));
     expect(plan.some((n) => n.date === TODAY)).toBe(false);
     expect(plan[0]).toMatchObject({ kind: 'checkin', date: addDays(TODAY, 1), minutes: 21 * 60 + 45 });
+  });
+
+  it('folds the reflection reminder into the one evening notification', () => {
+    const habits = [makeHabit({ id: 'a' })];
+    const prefs = { ...DEFAULT_NOTIFICATION_PREFS, checkIn: true, streakRescue: false };
+    const plan = planNotifications(input({ habits, prefs, reflectionMinutes: 21 * 60 }));
+    expect(plan.filter((n) => n.date === TODAY)).toEqual([expect.objectContaining({ kind: 'evening', habitIds: ['a'], withReflection: true })]);
   });
 
   it('plans nothing on paused days', () => {

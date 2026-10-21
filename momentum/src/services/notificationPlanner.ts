@@ -92,12 +92,22 @@ export function describePlanned(item: PlannedNotification, habits: readonly Habi
     case 'checkin':
       if (titles.length === 1 && first) return { title: t('notif.checkinOne', { title: first.title }), body: t('notif.checkinOneBody') };
       return { title: tPlural(lang, 'notif.checkinMany', titles.length), body: titles.join(' · ') };
+    case 'evening': {
+      // One calm evening note: what's still open, and the reflection when it's part of it.
+      const reflect = item.withReflection ? t('notif.eveningAndReflect') : '';
+      if (titles.length === 0) return { title: t('notif.evening'), body: t('notif.eveningBody') };
+      if (titles.length === 1 && first) return { title: t('notif.checkinOne', { title: first.title }), body: [first.microStep ? t('notif.rescueStep', { step: first.microStep }) : t('notif.checkinOneBody'), reflect].filter(Boolean).join(' ') };
+      return { title: tPlural(lang, 'notif.eveningOpen', titles.length), body: [titles.join(' · '), reflect].filter(Boolean).join(' · ') };
+    }
   }
 }
 
 /** Only a notification about exactly one habit can offer "Done ✓"; a check-in about several offers "All done ✓". */
 function categoryOf(item: PlannedNotification): string | null {
-  if (item.kind === 'checkin') return item.habitIds.length === 1 ? HABIT_REMINDER_CATEGORY : CHECKIN_CATEGORY;
+  if (item.kind === 'checkin' || item.kind === 'evening') {
+    if (item.habitIds.length === 0) return null;
+    return item.habitIds.length === 1 ? HABIT_REMINDER_CATEGORY : CHECKIN_CATEGORY;
+  }
   return (item.kind === 'habit' || item.kind === 'rescue') && item.habitIds.length === 1 ? HABIT_REMINDER_CATEGORY : null;
 }
 

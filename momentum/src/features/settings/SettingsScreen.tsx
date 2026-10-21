@@ -4,11 +4,12 @@ import { Text } from '@/components/AppText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, type Href } from 'expo-router';
+import { dayStartLabel } from './DayStartSetting';
 import { SheetHeader } from '@/components/SheetHeader';
 import { SectionTitle } from '@/components/ui';
 import { makeStyles, radius, spacing, useTheme } from '@/components/theme';
 import { useBottomSpace } from '@/components/useBottomSpace';
-import { formatFriendlyDate, weekdayLabel } from '@/core/localDate';
+import { formatFriendlyDate, getDayStartHour, weekdayLabel } from '@/core/localDate';
 import { defaultWeekendDays } from '@/domain/dayOff';
 import { activePause } from '@/domain/pauses';
 import { formatMinutesOfDay } from '@/domain/usage';
@@ -131,6 +132,13 @@ export function SettingsScreen() {
                 : t('set.st.dayoffOff')
             }
             href="/settings/dayoff"
+          />
+          <Row
+            icon="moon-outline"
+            tint={[colors.primarySoft, colors.primary]}
+            title={t('daystart.title')}
+            status={getDayStartHour() === 0 ? t('daystart.midnight') : t('daystart.status', { time: dayStartLabel(getDayStartHour()) })}
+            href="/settings/daystart"
             last
           />
         </View>

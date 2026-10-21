@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
+import { loadDayStart } from './dayStart';
 import { handleHabitAction } from './habitActions';
 
 /**
@@ -12,6 +13,8 @@ import { handleHabitAction } from './habitActions';
 export const HABIT_ACTION_TASK = 'momentum-habit-action';
 
 TaskManager.defineTask<Notifications.NotificationTaskPayload>(HABIT_ACTION_TASK, async ({ data }) => {
+  // Started cold: read the day-start hour first, so "today" is the same day the app shows.
+  await loadDayStart();
   if (data && 'actionIdentifier' in data) await handleHabitAction(data, 'background').catch(() => undefined);
   return Notifications.BackgroundNotificationTaskResult.NoData;
 });

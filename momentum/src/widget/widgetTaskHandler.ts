@@ -1,3 +1,4 @@
+import { loadDayStart } from '@/services/dayStart';
 import type { WidgetTaskHandlerProps } from 'react-native-android-widget';
 import { toErrorMessage } from '@/core/errors';
 import { usePrefsStore } from '@/state/prefsStore';
@@ -14,6 +15,8 @@ import { rowsForHeight } from './widgetModel';
  */
 export async function widgetTaskHandler(props: WidgetTaskHandlerProps): Promise<void> {
   const { widgetInfo, widgetAction, clickAction, clickActionData, renderWidget } = props;
+  // Headless and cold: the day-start hour decides which day "today" is.
+  await loadDayStart();
   if (widgetInfo.widgetName === FOCUS_WIDGET_NAME) return focusWidgetTask(props);
   if (widgetInfo.widgetName !== TODAY_WIDGET_NAME) return;
 

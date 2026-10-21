@@ -1,9 +1,18 @@
-import { addDays, dateRange, getLocalDeviceDate, getWeekday, lastNDays, msUntilNextLocalMidnight } from '@/core/localDate';
+import { msUntilNextDayStart, setDayStartHour, addDays, dateRange, getLocalDeviceDate, getWeekday, lastNDays, msUntilNextLocalMidnight } from '@/core/localDate';
 
 describe('localDate', () => {
   it('formats the local device date as YYYY-MM-DD', () => {
     expect(getLocalDeviceDate(new Date(2026, 0, 5, 23, 59))).toBe('2026-01-05');
+    expect(getLocalDeviceDate(new Date(2026, 11, 31, 3, 0))).toBe('2026-12-31');
+  });
+
+  it("keeps it yesterday until the day-start hour (03:00 by default)", () => {
+    expect(getLocalDeviceDate(new Date(2026, 11, 31, 0, 30))).toBe('2026-12-30');
+    expect(getLocalDeviceDate(new Date(2027, 0, 1, 2, 59))).toBe('2026-12-31');
+    setDayStartHour(0);
     expect(getLocalDeviceDate(new Date(2026, 11, 31, 0, 0))).toBe('2026-12-31');
+    setDayStartHour(3);
+    expect(msUntilNextDayStart(new Date(2026, 11, 31, 1, 0))).toBe(2 * 3600 * 1000);
   });
 
   it('adds days across month and year boundaries', () => {

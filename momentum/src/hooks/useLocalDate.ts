@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { AppState } from 'react-native';
-import { getLocalDeviceDate, msUntilNextLocalMidnight, type LocalDateString } from '@/core/localDate';
+import { getLocalDeviceDate, msUntilNextDayStart, type LocalDateString } from '@/core/localDate';
 
 /**
- * The current local date, kept fresh across midnight while the app is open and
+ * The app's current day (it starts at the day-start hour, 03:00 by default), kept fresh across that hour while the app is open and
  * re-checked whenever the app returns to the foreground (timers are frozen in
  * the background, so the resume check is what catches overnight suspends).
  */
@@ -20,7 +20,7 @@ export function useLocalDate(): LocalDateString {
       timeout = setTimeout(() => {
         refresh();
         scheduleMidnight();
-      }, msUntilNextLocalMidnight() + 1000);
+      }, msUntilNextDayStart() + 1000);
     };
 
     scheduleMidnight();

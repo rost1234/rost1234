@@ -425,3 +425,11 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] A slip from the "urge now" screen ("לא הפעם") also starts the run over after the next reload
 - [ ] Habits to build are unchanged: unmarked days still may use a freeze
 
+## End of the day and one evening note (build 47)
+- [ ] Settings → "סוף היום": 03:00 by default; at 00:30 Today still shows yesterday's date and habits; a check-off counts for that day
+- [ ] A reflection written at 00:30 belongs to the evening before; tomorrow evening's reflection opens empty
+- [ ] No freeze is spent at midnight; after 03:00 the new day starts (and freezes, if any, apply then)
+- [ ] Changing it to "בחצות" switches back at once; the widget and "Done ✓" on a notification use the same day
+- [ ] In the evening there's one notification (not two or three): "עוד N הרגלים פתוחים להיום", the streaks at risk first, and "ורפלקציה קצרה, כשנוח" when the reflection reminder is on
+- [ ] With 3 smart reminders and a limit of 4, the habit reminders all arrive (the evening note doesn't push them out)
+

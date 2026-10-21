@@ -18,8 +18,22 @@ export function formatLocalDate(date: Date): LocalDateString {
 }
 
 /** Returns today's date on the device clock as YYYY-MM-DD. */
+/**
+ * The hour the app's day starts. Until then it's still "yesterday": a habit checked off or a
+ * reflection written at 00:30 belongs to the evening it was part of, and no freeze is spent
+ * before bed. 3 by default; set from Settings (0 = midnight).
+ */
+let dayStartHour = 3;
+export const DAY_START_CHOICES = [0, 2, 3, 4] as const;
+export function setDayStartHour(hour: number): void {
+  dayStartHour = Math.max(0, Math.min(6, Math.floor(hour)));
+}
+export const getDayStartHour = (): number => dayStartHour;
+
 export function getLocalDeviceDate(now: Date = new Date()): LocalDateString {
-  return formatLocalDate(now);
+  if (dayStartHour === 0) return formatLocalDate(now);
+  const shifted = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() - dayStartHour, now.getMinutes(), now.getSeconds());
+  return formatLocalDate(shifted);
 }
 
 const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -66,6 +80,13 @@ export function lastNDays(end: LocalDateString, count: number): LocalDateString[
 /** Milliseconds until the next local midnight. */
 export function msUntilNextLocalMidnight(now: Date = new Date()): number {
   const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+  return next.getTime() - now.getTime();
+}
+
+/** Time until the app's next day starts (at the day-start hour). */
+export function msUntilNextDayStart(now: Date = new Date()): number {
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), dayStartHour, 0, 0, 0);
+  const next = now < todayStart ? todayStart : new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, dayStartHour, 0, 0, 0);
   return next.getTime() - now.getTime();
 }
 

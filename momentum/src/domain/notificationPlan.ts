@@ -42,7 +42,7 @@ export const RESCUE_MIN_STREAK = 3;
 /** Days ahead that are planned; nothing is scheduled beyond, so an unopened app goes quiet on its own. */
 export const PLAN_DAYS = 7;
 
-export type PlannedKind = 'habit' | 'habits' | 'rescue' | 'morning' | 'reflection' | 'checkin';
+export type PlannedKind = 'habit' | 'habits' | 'rescue' | 'morning' | 'reflection' | 'checkin' | 'evening';
 
 export interface PlannedNotification {
   kind: PlannedKind;
@@ -54,6 +54,8 @@ export interface PlannedNotification {
   gentle?: boolean;
   /** Morning plan: how many habits are due that day. */
   count?: number;
+  /** Evening (merged): the reflection is part of it too. */
+  withReflection?: boolean;
 }
 
 export interface PlanInput {
@@ -71,7 +73,41 @@ export interface PlanInput {
   reflectedToday: boolean;
 }
 
-const PRIORITY: Record<PlannedKind, number> = { reflection: 4, rescue: 3, checkin: 3, morning: 2, habit: 1, habits: 1 };
+// The day's own habit reminders come before the extras: a reminder at the usual time is what helps.
+const PRIORITY: Record<PlannedKind, number> = { evening: 4, reflection: 4, rescue: 3, checkin: 3, habit: 2, habits: 2, morning: 1 };
+
+const EVENING_KINDS: ReadonlySet<PlannedKind> = new Set<PlannedKind>(['rescue', 'checkin', 'reflection']);
+
+/**
+ * One evening message a day: the streak rescue, the "did you already…?" check-in and the
+ * reflection reminder become a single notification (at the earliest of their times), instead of
+ * two or three a few minutes apart. Repeated alerts lose their effect; one calm one keeps it.
+ */
+export function mergeEvenings(items: readonly PlannedNotification[]): PlannedNotification[] {
+  const byDate = new Map<LocalDateString, PlannedNotification[]>();
+  const rest: PlannedNotification[] = [];
+  for (const item of items) {
+    if (EVENING_KINDS.has(item.kind)) byDate.set(item.date, [...(byDate.get(item.date) ?? []), item]);
+    else rest.push(item);
+  }
+  for (const [date, evening] of byDate) {
+    if (evening.length === 1) {
+      rest.push(evening[0] as PlannedNotification);
+      continue;
+    }
+    // Streaks at risk first, then the rest of what's still open.
+    const ordered = [...evening].sort((a, b) => (a.kind === 'rescue' ? -1 : b.kind === 'rescue' ? 1 : 0));
+    const habitIds = [...new Set(ordered.flatMap((n) => n.habitIds))];
+    rest.push({
+      kind: 'evening',
+      date,
+      minutes: Math.min(...evening.map((n) => n.minutes)),
+      habitIds,
+      withReflection: evening.some((n) => n.kind === 'reflection'),
+    });
+  }
+  return rest;
+}
 
 function isQuiet(minutes: number, start: number, end: number): boolean {
   if (start === end) return false;
@@ -258,5 +294,5 @@ export function planNotifications(planInput: PlanInput): PlannedNotification[] {
   const all = [...habitReminders(input), ...rescue, ...checkIns(input, rescued), ...morningPlans(input), ...reflections(input)].filter(
     (n) => n.date !== input.today || n.minutes > input.nowMinutes,
   );
-  return applyDailyLimit(all, input.prefs.dailyLimit).sort((a, b) => a.date.localeCompare(b.date) || a.minutes - b.minutes);
+  return applyDailyLimit(mergeEvenings(all), input.prefs.dailyLimit).sort((a, b) => a.date.localeCompare(b.date) || a.minutes - b.minutes);
 }

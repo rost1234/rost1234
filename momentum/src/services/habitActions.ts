@@ -81,7 +81,7 @@ export async function handleHabitAction(response: HabitActionInput, via: LastHab
 
   const target = habitActionTarget(notificationData(content as Record<string, unknown> | undefined));
   const date = typeof target.date === 'string' && isLocalDateString(target.date) ? target.date : getLocalDeviceDate();
-  const source = target.kind === 'checkin' ? 'checkin' : 'reminder';
+  const source = target.kind === 'checkin' || target.kind === 'evening' ? 'checkin' : 'reminder';
   let ok = target.habitIds.length > 0;
   for (const habitId of target.habitIds) {
     if ((await quietly(() => completeFromNotification(habitId, date, source))) === undefined) ok = false;

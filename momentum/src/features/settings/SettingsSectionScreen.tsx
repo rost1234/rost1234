@@ -10,16 +10,18 @@ import { AppearanceSetting } from './AppearanceSetting';
 import { ArchivedHabits } from './ArchivedHabits';
 import { BackupSetting } from './BackupSetting';
 import { DayOffSetting } from './DayOffSetting';
+import { DayStartSetting } from './DayStartSetting';
 import { DataTransparency } from './DataTransparency';
 import { NotificationSetting } from './NotificationSetting';
 import { AutoBackupSetting, ReflectionLockSetting } from './PrivacySetting';
 import { ReminderSetting } from './ReminderSetting';
 
-export type SettingsSection = 'appearance' | 'dayoff' | 'notifications' | 'backup' | 'privacy' | 'archive';
+export type SettingsSection = 'appearance' | 'dayoff' | 'notifications' | 'backup' | 'privacy' | 'archive' | 'daystart';
 
 const SECTIONS: Record<SettingsSection, { title: TranslationKey; content: () => ReactNode }> = {
   appearance: { title: 'set.sec.appearance', content: () => <AppearanceSetting /> },
   dayoff: { title: 'set.sec.dayoff', content: () => <DayOffSetting /> },
+  daystart: { title: 'daystart.title', content: () => <DayStartSetting /> },
   notifications: {
     title: 'set.sec.notifications',
     content: () => (
