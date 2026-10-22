@@ -171,6 +171,8 @@ export const he: Record<TranslationKey, string> = {
   'focus.title': 'פוקוס',
   'focus.tooShort': 'פחות מדקה — לא נשמר כלום.',
   'focus.workingOn': 'עבודה על',
+  'fold.close': 'סגירה',
+  'fold.closeA11y': 'סגירת "{title}"',
   'form.everyDay': 'כל יום',
   'form.groupHint': 'הרגלים מאותה קבוצה מופיעים יחד בכרטיס אחד, וכל אחד שומר על היעד והרצף שלו.',
   'form.groupPh': 'למשל: כושר',

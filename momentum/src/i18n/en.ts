@@ -169,6 +169,8 @@ export const en = {
   'focus.title': 'Focus',
   'focus.tooShort': 'Less than a minute — nothing logged.',
   'focus.workingOn': 'Working on',
+  'fold.close': 'Close',
+  'fold.closeA11y': 'Close "{title}"',
   'form.everyDay': 'Every day',
   'form.groupHint': 'Habits in the same group share one card, and each keeps its own target and streak.',
   'form.groupPh': 'e.g. Fitness',

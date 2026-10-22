@@ -9,6 +9,7 @@ import { useT } from '@/i18n';
 /**
  * A section shown as one line ("📋 3 for today · 1 open") until tapped, then open. Used on
  * days off, so work waits quietly instead of leading the screen, and for Progress details.
+ * Once open, "Close" next to the title folds it back.
  */
 export function FoldedSection({
   icon,
@@ -31,7 +32,23 @@ export function FoldedSection({
   if (open) {
     return (
       <>
-        <SectionTitle>{title}</SectionTitle>
+        <SectionTitle
+          action={
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('fold.closeA11y', { title })}
+              accessibilityState={{ expanded: true }}
+              onPress={() => setOpen(false)}
+              hitSlop={12}
+              style={({ pressed }) => [styles.close, pressed && { opacity: 0.7 }]}
+            >
+              <Text style={typography.caption}>{t('fold.close')}</Text>
+              <Ionicons name="chevron-up" size={16} color={colors.textMuted} />
+            </Pressable>
+          }
+        >
+          {title}
+        </SectionTitle>
         {children}
       </>
     );
@@ -70,4 +87,5 @@ const useStyles = makeStyles(({ colors }) => ({
     backgroundColor: colors.surface,
   },
   icon: { fontSize: 18 },
+  close: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, minHeight: 32, paddingHorizontal: spacing.sm },
 }));

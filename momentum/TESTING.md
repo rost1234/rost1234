@@ -436,3 +436,7 @@ Run on a real Android phone before sharing a new APK. Install **over** the previ
 - [ ] "Done ✓" on that note with the app closed doesn't remove it if it also reminds about the reflection
 - [ ] With 3 smart reminders and a limit of 4, the habit reminders all arrive (the evening note doesn't push them out)
 
+
+## Folded sections close again (build 48)
+- [ ] Progress → "פרטים וגרפים" and "ניסויים": after opening, "סגירה ⌃" next to the title folds it back
+- [ ] Home on a day off / "set aside for today": the same
