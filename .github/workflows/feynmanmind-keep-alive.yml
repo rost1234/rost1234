@@ -1,0 +1,29 @@
+# Keeps the FeynmanMind Supabase project active so the free plan doesn't pause it
+# after a week without activity. Runs every 3 days; spends no AI tokens.
+# The publishable key is public (it ships inside the app).
+name: FeynmanMind keep-alive
+
+on:
+  schedule:
+    - cron: '0 6 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: https://vopuntwfewponxljbrap.supabase.co
+      SUPABASE_KEY: sb_publishable_RnL206_GWv9DpXIaXeiRtw_Fb79WVww
+    steps:
+      - name: Ping the database API
+        run: |
+          curl -s -o /dev/null -w "rest: %{http_code}\n" \
+            -H "apikey: $SUPABASE_KEY" "$SUPABASE_URL/rest/v1/keepalive?select=*&limit=1"
+      - name: Ping an AI function (empty request, answered with 400 without calling the AI)
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" -d '{}' \
+            "$SUPABASE_URL/functions/v1/feynman-evaluate")
+          echo "feynman-evaluate: $code"
+          test "$code" = "400" || { echo "::error::The AI server did not answer as expected ($code). Check the project in Supabase."; exit 1; }
