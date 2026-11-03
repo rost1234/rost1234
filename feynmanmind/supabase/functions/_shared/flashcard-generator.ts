@@ -5,7 +5,7 @@
 
 import { LANGUAGE_RULES } from './language.ts';
 
-export const FLASHCARD_PROMPT_VERSION = 'flashcard-generator@1.1.0';
+export const FLASHCARD_PROMPT_VERSION = 'flashcard-generator@1.2.0';
 
 export const FLASHCARD_SYSTEM_PROMPT = `
 You turn study material into atomic flashcards for spaced repetition.

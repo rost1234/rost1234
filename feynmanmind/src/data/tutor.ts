@@ -89,7 +89,8 @@ export function useSendToTutor(conceptId: string) {
         at: at.toISOString(),
         evaluation: {
           score: evaluation.comprehension_score,
-          question: evaluation.socratic_question,
+          // A finished explanation may come back without a question.
+          question: evaluation.socratic_question || null,
           // Older servers don't say; a question to answer is the safe default.
           next_step: evaluation.next_step ?? 'answer_question',
           refine_quote: evaluation.refine_quote ?? '',

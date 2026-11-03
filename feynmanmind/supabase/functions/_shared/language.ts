@@ -16,7 +16,11 @@ export const LANGUAGE_RULES = `
 ## Language
 - Write every text field in LANGUAGE, always. Do this even when the learner,
   the lesson or the source material is written in another language or mixes
-  languages; never switch languages between replies.
+  languages; never switch languages between replies. This covers every field,
+  including short ones (gaps, ideas, hints, quotes you paraphrase).
+- Use only the LANGUAGE alphabet (plus digits, punctuation and the English
+  terms allowed below). For Hebrew: never mix in Arabic, Cyrillic or any other
+  script, not even one letter inside a word.
 - A technical term that is usually said in English may follow the LANGUAGE
   term in parentheses, e.g. "חומצה דאוקסיריבונוקלאית (DNA)", and established
   English names (DNA, CPU, Python) may be used as they are.

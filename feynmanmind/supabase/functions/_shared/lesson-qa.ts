@@ -6,7 +6,7 @@
 
 import { LANGUAGE_RULES } from './language.ts';
 
-export const QA_PROMPT_VERSION = 'lesson-qa@1.1.0';
+export const QA_PROMPT_VERSION = 'lesson-qa@1.2.0';
 
 export const QA_SYSTEM_PROMPT = `
 You are a patient, precise teacher. A learner is reading LESSON (about CONCEPT,

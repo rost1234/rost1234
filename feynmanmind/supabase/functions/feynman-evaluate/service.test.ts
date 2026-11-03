@@ -123,3 +123,14 @@ Deno.test('level, earlier gaps and the hidden help', async () => {
   assertStringIncludes(evaluation.model_explanation, 'float');
   assertEquals(parseEvaluateInput({ ...body, level: 'phd' }).level, 'standalone');
 });
+
+Deno.test('a finished explanation may come without a question or a gap', async () => {
+  const done = { ...modelOutput, comprehension_score: 95, primary_gap: '', socratic_question: '', next_step: 'answer_question' };
+  const result = await evaluateExplanation(async (req) => req.parse(done), parseEvaluateInput(body));
+  assertEquals(result.evaluation.next_step, 'done');
+  assertEquals(result.evaluation.socratic_question, '');
+  assertEquals(result.evaluation.primary_gap, '');
+  // A weak explanation still needs a question to answer.
+  const weak = { ...done, comprehension_score: 40 };
+  await assertRejects(() => evaluateExplanation(async (req) => req.parse(weak), parseEvaluateInput(body)), Error, 'socratic_question');
+});

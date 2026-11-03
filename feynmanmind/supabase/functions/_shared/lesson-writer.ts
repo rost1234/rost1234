@@ -2,7 +2,7 @@
 
 import { LANGUAGE_RULES } from './language.ts';
 
-export const LESSON_PROMPT_VERSION = 'lesson-writer@2.1.0';
+export const LESSON_PROMPT_VERSION = 'lesson-writer@2.2.0';
 
 export const LESSON_LEVELS = ['foundations', 'advanced', 'bachelor', 'master', 'standalone'] as const;
 export type LessonLevel = (typeof LESSON_LEVELS)[number];

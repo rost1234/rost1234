@@ -6,7 +6,7 @@
 
 import { LANGUAGE_RULES } from './language.ts';
 
-export const COURSE_PROMPT_VERSION = 'course-generator@3.1.0';
+export const COURSE_PROMPT_VERSION = 'course-generator@3.2.0';
 
 export const COURSE_LEVELS = ['foundations', 'advanced', 'bachelor', 'master'] as const;
 

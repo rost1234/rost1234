@@ -10,7 +10,7 @@
 
 import { LANGUAGE_RULES } from './language.ts';
 
-export const FEYNMAN_PROMPT_VERSION = 'feynman-tutor@2.1.0';
+export const FEYNMAN_PROMPT_VERSION = 'feynman-tutor@2.2.0';
 
 export const FEYNMAN_SYSTEM_PROMPT = `
 You are the FeynmanMind Tutor: a patient, rigorous Socratic coach. A learner is
@@ -89,7 +89,7 @@ it is still open, prefer it as the target.
   Use this for a misconception, a wrong or circular sentence, or heavy jargon.
   Put the exact sentence to fix in refine_quote.
 - "done": score 90+ and nothing important missing. socratic_question is then
-  an optional stretch question.
+  an optional stretch question (or ""), and primary_gap may be "".
 refine_quote: for refine_explanation, the shortest verbatim excerpt (≤ 25
 words) from the learner's own messages that must change; otherwise "".
 feedback: 1–2 short sentences, your chat message: one thing that is genuinely
@@ -314,15 +314,20 @@ export function parseFeynmanEvaluation(raw: unknown, learnerText = ''): FeynmanE
   if (!Array.isArray(o.jargon_detected) || !Array.isArray(o.misconceptions)) {
     throw new Error('jargon_detected/misconceptions must be arrays');
   }
-  if (!isStr(o.socratic_question) || !isStr(o.primary_gap)) throw new Error('missing question or gap');
 
   const clamped = Math.min(100, Math.max(0, Math.round(score)));
-  const question = o.socratic_question.trim();
+  // A finished explanation (a strong answer) may come back with no question and no gap.
+  const question = isStr(o.socratic_question) ? o.socratic_question.trim() : '';
   const steps: NextStep[] = ['answer_question', 'refine_explanation', 'done'];
   const refineQuote = isStr(o.refine_quote) ? o.refine_quote.trim().replace(/^["“”'׳״]+|["“”'׳״]+$/g, '') : '';
   // A rewrite needs something to rewrite; without a quote it's a question to answer.
   const requested = steps.includes(o.next_step as NextStep) ? (o.next_step as NextStep) : 'answer_question';
-  const nextStep: NextStep = requested === 'refine_explanation' && !refineQuote ? 'answer_question' : requested;
+  let nextStep: NextStep = requested === 'refine_explanation' && !refineQuote ? 'answer_question' : requested;
+  // Nothing to answer without a question: only "done" works then.
+  if (nextStep === 'answer_question' && !question) {
+    if (clamped < 71) throw new Error('missing socratic_question');
+    nextStep = 'done';
+  }
 
   return {
     comprehension_score: clamped,
@@ -341,8 +346,8 @@ export function parseFeynmanEvaluation(raw: unknown, learnerText = ''): FeynmanE
         user_quote: String(m.user_quote).trim(),
         issue_area: String(m.issue_area ?? '').trim(),
       })),
-    primary_gap: o.primary_gap.trim(),
-    socratic_question: question.endsWith('?') ? question : `${question}?`,
+    primary_gap: isStr(o.primary_gap) ? o.primary_gap.trim() : '',
+    socratic_question: !question || question.endsWith('?') ? question : `${question}?`,
     encouragement: isStr(o.encouragement) ? o.encouragement.trim() : '',
     feedback: isStr(o.feedback) ? o.feedback.trim() : isStr(o.encouragement) ? o.encouragement.trim() : '',
     next_step: nextStep,
