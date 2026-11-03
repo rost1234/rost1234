@@ -1,0 +1,133 @@
+# FeynmanMind
+
+Active learning with the **Feynman Technique** and **spaced repetition (SM-2)**.
+Explain a concept in plain words, get one Socratic question back from an AI tutor
+(never the answer), and turn notes or PDFs into flashcards that come back just
+before you'd forget them.
+
+Expo (React Native, iOS / Android / web). English and Hebrew (RTL), light and dark themes.
+
+**No sign-in, no account, no cloud copy.** Everything is stored on the device.
+The only thing that goes over the network is the text of an AI request.
+
+## Features
+
+The app has four areas, switched from the bar at the bottom **or by swiping left and right**:
+**Today** (a daily-goal ring and a short plan: review what's due → learn the next station → explain
+the weakest concept), **Learn** (continue where you left off, learning paths, library), **Review**
+(the day's queue, focused reviews by subject or hard cards, a month calendar, and the review
+settings: new cards per day, max reviews per day, order) and **Me** (progress, daily goal,
+accessibility — text size, high contrast, reduce motion, vibration — and all other settings).
+Lessons, the Feynman editor, card generation and the review session open on top.
+Every scrolling screen ends with extra space below the last item (plus the device's bottom safe-area
+inset), so nothing is ever stuck under the home indicator.
+
+| Area | What it does |
+|---|---|
+| Learning paths | 6 built-in guided courses in Hebrew (physics, biology, math, computing & AI, economics, psychology), each climbing **four levels: foundations → advanced (high school) → bachelor's → master's**, about 60–75 stations in units. The upper levels follow real curricula: each unit matches a course in a university degree program (MIT, Hebrew University, Stanford, Israeli matriculation syllabi), and every course lists its sources on the map. Foundations lessons and flashcards ship with the app (offline); higher stations are mapped out and their lessons are written by the AI on first visit, pitched at that level and saved on the device. Type any topic and the AI builds a new four-level map. |
+| Placement test | Adaptive multiple-choice test per course (3 questions per level, bottom-up, with "I don't know"). Pass 2 of 3 to climb; the first level you don't pass is where you start. Levels below are marked *known* but stay open. |
+| Standalone concepts | Add any concept without choosing a subject; the AI can write it a lesson and flashcards. |
+| Library | Subjects → concepts. Create, rename, delete. Mastery bar per subject. |
+| Feynman tutor | Write an explanation (drafts are kept per concept). Get a score, verdict, one Socratic question, jargon to unpack and misconceptions, without being told the answer. Revise and resubmit. Past attempts are saved. |
+| Flashcards | Generate from pasted text or a PDF (≤ 10 MB), or add and edit by hand. Duplicates are skipped. |
+| Review | SM-2 queue with all six grades (0–5) and the next interval shown on each button. |
+| Review | Cards due, streak, today's recall rate, totals, a month calendar (days reviewed, cards coming due, tap a day for details) and the weakest concepts to explain next. |
+| Settings | Language, theme, daily reminder, cards per generation, **export / restore backup**, delete all data. |
+
+Offline, everything works except the two AI actions (explain feedback and card generation).
+
+## Architecture
+
+```
+┌──────────────── device ────────────────┐        ┌──── Supabase Edge Functions ────┐
+│ screens (expo-router)                   │        │ feynman-evaluate    (stateless) │
+│   ↕ React Query hooks  (src/data)       │  HTTPS │ generate-flashcards (stateless) │
+│                                         │        │ generate-course     (stateless) │
+│                                         │        │ generate-lesson     (stateless) │
+│                                         │        │ ask-lesson          (stateless) │
+│   ↕ pure logic         (src/local)      │ ─────▶ │   → OpenAI / Gemini             │
+│   ↕ zustand store → SQLite kv / web LS  │        │ no DB, no auth, per-IP limit    │
+└─────────────────────────────────────────┘        └─────────────────────────────────┘
+```
+
+- `src/local/logic.ts` holds every data operation as a pure function (`LocalDB → LocalDB`): uniqueness, cascading deletes, mastery, SM-2 reviews, stats, backup format. It's fully unit-tested.
+- `src/local/store.ts` persists the database with zustand, using the expo-sqlite `localStorage` on iOS/Android and the browser's localStorage on web.
+- Any change to the store refreshes the open screens automatically. The review queue is the exception: it stays stable until the session ends.
+- The AI functions receive all the context they need (concept title, the lesson text, recent Socratic questions, your cards) in the request, and store nothing.
+
+```
+src/app/            screens: onboarding, (app)/(tabs)/{index,learn,review,me} (swipeable tabs),
+                    concept/[id]/{index,explain,generate}, card/[id], session/[id], study
+src/features/today/ daily plan · review/ focused review, review settings · me/ goal, accessibility
+src/features/home/  continue card, learning paths, library, review summary, calendar
+src/features/lesson/ lesson card (copy, key points) and questions to the AI
+src/features/settings/ settings screen content
+src/content/        built-in courses (Hebrew): foundations lessons + four-level maps and placement quizzes
+src/local/          LocalDB types, pure logic, persisted store
+src/data/           React Query hooks over the local store + AI calls
+src/api/functions   client for the two AI functions
+src/services/       daily reminders, backup export/import
+supabase/functions/ stateless AI Edge Functions (Deno)
+supabase/migrations/  Postgres schema + RLS, NOT used by the current local-only app;
+                      kept for a future optional cloud sync
+```
+
+## Setup
+
+### App
+
+```bash
+npm install
+npm start          # press w for web, or scan with a development build
+```
+
+That's all you need for the library, manual cards and reviews.
+
+### AI features (optional)
+
+Step-by-step guide (Hebrew): **[docs/AI-SETUP.md](docs/AI-SETUP.md)**. In short:
+
+```bash
+npx supabase link --project-ref <ref>
+npx supabase secrets set LLM_PROVIDER=gemini GEMINI_API_KEY=...   # or LLM_PROVIDER=openai OPENAI_API_KEY=...
+npx supabase functions deploy feynman-evaluate --no-verify-jwt
+npx supabase functions deploy generate-flashcards --no-verify-jwt
+npx supabase functions deploy generate-course --no-verify-jwt
+npx supabase functions deploy generate-lesson --no-verify-jwt
+npx supabase functions deploy ask-lesson --no-verify-jwt
+```
+
+Then in the app: **Settings → AI connection**, paste the project URL and publishable key and press
+*Save and test*. The values are stored on the device, so a released APK can be connected without
+rebuilding. (Alternatively bake them in at build time via `.env.local`.) No database is needed.
+
+> **Cost and abuse:** with no accounts, the AI functions are public. They only have a best-effort
+> in-memory limit per IP (30 explanations, 15 card generations, 10 course maps, 40 lessons and 60 lesson questions per hour). Set a
+> spending cap with your AI provider before sharing the app.
+
+Reminders use `expo-notifications`, so test them in a development build
+(`npx expo run:ios|android` or `eas build --profile development`).
+
+## Checks
+
+```bash
+npm run typecheck          # tsc (with typed routes)
+npm run lint               # expo lint
+npm test                   # jest: local data logic, SM-2, grades, i18n completeness, errors, formatting
+npm run test:functions     # Deno: AI function services, LLM client, rate limit, chunking
+npm run check:functions    # Deno type-check
+npx expo-doctor
+```
+
+## Development agents
+
+Maintenance is split across Claude Code agents in `/.claude/agents/` (repo root):
+`curriculum-researcher`, `lesson-author`, `content-reviewer`, `ai-functions-engineer`, `qa-tester`
+and `release-builder`. What each one does, and the rules they share, are in [CLAUDE.md](CLAUDE.md).
+Tooling they use: `scripts/e2e/` (browser smoke test with screenshots) and `scripts/android/`
+(SDK setup and APK build).
+
+## Data safety
+
+- **One device only:** data lives on this device. Uninstalling the app or clearing its storage deletes it. Use **Settings → Export backup** to keep a copy or move to another device, and **Restore from backup** to load one.
+- **Delete all my data** wipes the local library and drafts.

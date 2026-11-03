@@ -1,0 +1,12 @@
+{
+  "name": "feynmanmind-e2e",
+  "private": true,
+  "description": "Browser smoke test + screenshots against the exported web build (see README.md here).",
+  "scripts": {
+    "serve": "node serve.js ../../dist 8123",
+    "smoke": "node smoke.js"
+  },
+  "dependencies": {
+    "playwright": "^1.63.0"
+  }
+}

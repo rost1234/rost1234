@@ -1,0 +1,1104 @@
+/**
+ * Pure operations on the local database. Each mutation returns a new LocalDB
+ * (the input is never modified), which keeps the store simple and testable.
+ */
+import { calculateNextReview, initialReviewData, type QualityScore } from '@/srs/sm2';
+import type { FeynmanEvaluation } from '@/api/functions';
+import { findStation, stationsOf, type Course, type CourseConcept, type LevelKey } from '@/content/types';
+import { DuplicateError, LessonMissingError, NotFoundError, type Concept, type Flashcard, type Lesson, type LocalDB, type Placement, type PrintKit, type QaTurn, type Subject, type TutorTurn } from './types';
+import { lessonPlainText } from '@/content/lesson';
+import { conceptKey, type ImportedLesson } from '@/content/import';
+
+type NewId = () => string;
+
+/**
+ * Key for spotting the same question with different case, spacing or
+ * punctuation. Deliberately avoids \p{…} regex classes so it runs on Hermes.
+ */
+export const questionKey = (q: string) =>
+  q.toLocaleLowerCase().replace(/[\s.,;:!?¿¡'"`´“”‘’«»()[\]{}<>\-–—_/\\|*#%&+=~^@$]+/g, '');
+
+const titleKey = (s: string) => s.trim().toLocaleLowerCase();
+
+function assertUniqueTitle(titles: Iterable<{ id: string; title: string }>, title: string, exceptId?: string) {
+  const key = titleKey(title);
+  for (const t of titles) if (t.id !== exceptId && titleKey(t.title) === key) throw new DuplicateError();
+}
+
+function omit<T>(record: Record<string, T>, drop: (value: T, key: string) => boolean): Record<string, T> {
+  return Object.fromEntries(Object.entries(record).filter(([k, v]) => !drop(v, k)));
+}
+
+// ---------------------------------------------------------------------------
+// Subjects & concepts
+// ---------------------------------------------------------------------------
+
+export function saveSubject(db: LocalDB, input: { id?: string; title: string }, newId: NewId, now: Date): [LocalDB, string] {
+  const title = input.title.trim();
+  assertUniqueTitle(Object.values(db.subjects), title, input.id);
+  if (input.id) {
+    const existing = db.subjects[input.id];
+    if (!existing) throw new NotFoundError('Subject');
+    return [{ ...db, subjects: { ...db.subjects, [input.id]: { ...existing, title } } }, input.id];
+  }
+  const id = newId();
+  return [{ ...db, subjects: { ...db.subjects, [id]: { id, title, created_at: now.toISOString() } } }, id];
+}
+
+export function deleteSubject(db: LocalDB, id: string): LocalDB {
+  const conceptIds = new Set(Object.values(db.concepts).filter((c) => c.subject_id === id).map((c) => c.id));
+  return {
+    ...db,
+    subjects: omit(db.subjects, (s) => s.id === id),
+    concepts: omit(db.concepts, (c) => conceptIds.has(c.id)),
+    cards: omit(db.cards, (c) => conceptIds.has(c.concept_id)),
+    sessions: omit(db.sessions, (s) => conceptIds.has(s.concept_id)),
+    questions: omit(db.questions, (_thread, key) => [...conceptIds].some((cid) => key === conceptThreadKey(cid))),
+    tutorChats: omit(db.tutorChats, (_chat, key) => conceptIds.has(key)),
+  };
+}
+
+export function saveConcept(
+  db: LocalDB,
+  input: { id?: string; subjectId: string; title: string },
+  newId: NewId,
+  now: Date,
+): [LocalDB, string] {
+  const title = input.title.trim();
+  const subjectId = input.id ? db.concepts[input.id]?.subject_id : input.subjectId;
+  if (!subjectId || !db.subjects[subjectId]) throw new NotFoundError('Subject');
+  assertUniqueTitle(Object.values(db.concepts).filter((c) => c.subject_id === subjectId), title, input.id);
+  if (input.id) {
+    const existing = db.concepts[input.id]!;
+    return [{ ...db, concepts: { ...db.concepts, [input.id]: { ...existing, title } } }, input.id];
+  }
+  const id = newId();
+  const concept: Concept = { id, subject_id: subjectId, title, mastery_level: 0, created_at: now.toISOString() };
+  return [{ ...db, concepts: { ...db.concepts, [id]: concept } }, id];
+}
+
+export function deleteConcept(db: LocalDB, id: string): LocalDB {
+  return {
+    ...db,
+    concepts: omit(db.concepts, (c) => c.id === id),
+    cards: omit(db.cards, (c) => c.concept_id === id),
+    sessions: omit(db.sessions, (s) => s.concept_id === id),
+    questions: omit(db.questions, (_thread, key) => key === conceptThreadKey(id)),
+    tutorChats: omit(db.tutorChats, (_chat, key) => key === id),
+  };
+}
+
+/** Q&A thread of a standalone concept's lesson (course stations use their lesson key). */
+export const conceptThreadKey = (conceptId: string) => `concept/${conceptId}`;
+
+// ---------------------------------------------------------------------------
+// Flashcards
+// ---------------------------------------------------------------------------
+
+export const cardsOf = (db: LocalDB, conceptId: string) =>
+  Object.values(db.cards)
+    .filter((c) => c.concept_id === conceptId)
+    .sort((a, b) => a.created_at.localeCompare(b.created_at));
+
+/** Adds cards, skipping any whose question already exists for the concept. Returns the added ones. */
+export function addCards(
+  db: LocalDB,
+  conceptId: string,
+  cards: { question: string; answer: string }[],
+  newId: NewId,
+  now: Date,
+): [LocalDB, Flashcard[]] {
+  if (!db.concepts[conceptId]) throw new NotFoundError('Concept');
+  const seen = new Set(cardsOf(db, conceptId).map((c) => questionKey(c.question)));
+  const added: Flashcard[] = [];
+  cards.forEach((c, i) => {
+    const question = c.question.trim();
+    const answer = c.answer.trim();
+    const key = questionKey(question);
+    if (!key || !answer || seen.has(key)) return;
+    seen.add(key);
+    // Stagger timestamps so insertion order is stable when sorting.
+    const created = new Date(now.getTime() + i).toISOString();
+    added.push({ id: newId(), concept_id: conceptId, question, answer, created_at: created, review: initialReviewData(now) });
+  });
+  const next = { ...db.cards };
+  for (const c of added) next[c.id] = c;
+  return [{ ...db, cards: next }, added];
+}
+
+export function updateCard(db: LocalDB, id: string, values: { question: string; answer: string }): LocalDB {
+  const card = db.cards[id];
+  if (!card) throw new NotFoundError('Flashcard');
+  const question = values.question.trim();
+  const key = questionKey(question);
+  if (cardsOf(db, card.concept_id).some((c) => c.id !== id && questionKey(c.question) === key)) throw new DuplicateError();
+  return { ...db, cards: { ...db.cards, [id]: { ...card, question, answer: values.answer.trim() } } };
+}
+
+export function deleteCard(db: LocalDB, id: string): LocalDB {
+  return { ...db, cards: omit(db.cards, (c) => c.id === id) };
+}
+
+// ---------------------------------------------------------------------------
+// Feynman sessions
+// ---------------------------------------------------------------------------
+
+export const sessionsOf = (db: LocalDB, conceptId: string) =>
+  Object.values(db.sessions)
+    .filter((s) => s.concept_id === conceptId)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+
+/** Stores a scored explanation and sets the concept's mastery to the new score. */
+export function addSession(
+  db: LocalDB,
+  conceptId: string,
+  explanation: string,
+  evaluation: FeynmanEvaluation,
+  newId: NewId,
+  now: Date,
+): [LocalDB, string] {
+  const concept = db.concepts[conceptId];
+  if (!concept) throw new NotFoundError('Concept');
+  const id = newId();
+  return [
+    {
+      ...db,
+      sessions: {
+        ...db.sessions,
+        [id]: {
+          id,
+          concept_id: conceptId,
+          user_explanation: explanation,
+          comprehension_score: evaluation.comprehension_score,
+          socratic_question: evaluation.socratic_question,
+          jargon_detected: evaluation.jargon_detected,
+          misconceptions: evaluation.misconceptions,
+          primary_gap: evaluation.primary_gap,
+          created_at: now.toISOString(),
+        },
+      },
+      concepts: { ...db.concepts, [conceptId]: { ...concept, mastery_level: evaluation.comprehension_score } },
+    },
+    id,
+  ];
+}
+
+// ---------------------------------------------------------------------------
+// Reviews & stats
+// ---------------------------------------------------------------------------
+
+/** Local calendar day, YYYY-MM-DD. */
+export function dayKey(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+
+export function dueCards(db: LocalDB, now: Date, conceptId?: string): Flashcard[] {
+  const t = now.getTime();
+  return Object.values(db.cards)
+    .filter((c) => (!conceptId || c.concept_id === conceptId) && Date.parse(c.review.next_review_date) <= t)
+    .sort((a, b) => a.review.next_review_date.localeCompare(b.review.next_review_date));
+}
+
+/** Applies an SM-2 grade to a card and counts it in today's review totals. */
+export interface QueueOptions {
+  conceptId?: string;
+  subjectId?: string;
+  /** Only cards you've found hard (reviewed before, low easiness). */
+  hardOnly?: boolean;
+  /** New (never reviewed) cards allowed per day. */
+  newPerDay: number;
+  /** Reviews allowed per day, new cards included. */
+  maxPerDay: number;
+  order: 'due' | 'hardest';
+}
+
+/** A card counts as hard once reviewed with its easiness below this (default is 2.5). */
+export const HARD_EASINESS = 2.3;
+
+export const isHardCard = (c: Flashcard) => c.review.last_reviewed_at !== null && c.review.easiness_factor < HARD_EASINESS;
+
+/**
+ * Today's review queue: due cards matching the filters, reviews first (by due
+ * date or hardest first), then new cards, within the daily limits left.
+ */
+export function reviewQueue(db: LocalDB, now: Date, opts: QueueOptions): Flashcard[] {
+  const today = db.reviewDays[dayKey(now)] ?? { reviewed: 0, correct: 0 };
+  const newLeft = Math.max(0, opts.newPerDay - (today.introduced ?? 0));
+  const totalLeft = Math.max(0, opts.maxPerDay - today.reviewed);
+  const inSubject = (c: Flashcard) => !opts.subjectId || db.concepts[c.concept_id]?.subject_id === opts.subjectId;
+  const due = dueCards(db, now, opts.conceptId).filter((c) => inSubject(c) && (!opts.hardOnly || isHardCard(c)));
+  const seen = due.filter((c) => c.review.last_reviewed_at !== null);
+  if (opts.order === 'hardest') seen.sort((a, b) => a.review.easiness_factor - b.review.easiness_factor);
+  const fresh = due.filter((c) => c.review.last_reviewed_at === null).slice(0, newLeft);
+  return [...seen, ...fresh].slice(0, totalLeft);
+}
+
+export interface TodayActivity {
+  reviews: number;
+  explanations: number;
+  stationsStarted: number;
+  /** Rough minutes: ~20 s per review, 3 min per explanation, 5 min per station started. */
+  minutes: number;
+}
+
+export function todayActivity(db: LocalDB, now: Date): TodayActivity {
+  const day = dayKey(now);
+  const reviews = db.reviewDays[day]?.reviewed ?? 0;
+  const explanations = Object.values(db.sessions).filter((s) => dayKey(new Date(s.created_at)) === day).length;
+  const stationsStarted = Object.values(db.concepts).filter((c) => c.course_key && dayKey(new Date(c.created_at)) === day).length;
+  return { reviews, explanations, stationsStarted, minutes: Math.round(reviews / 3 + explanations * 3 + stationsStarted * 5) };
+}
+
+export const studyMinutesToday = (db: LocalDB, now: Date) => todayActivity(db, now).minutes;
+
+export function reviewCard(db: LocalDB, cardId: string, quality: QualityScore, now: Date): LocalDB {
+  const card = db.cards[cardId];
+  if (!card) throw new NotFoundError('Flashcard');
+  const day = dayKey(now);
+  const prev = db.reviewDays[day] ?? { reviewed: 0, correct: 0 };
+  const isNew = card.review.last_reviewed_at === null;
+  return {
+    ...db,
+    cards: { ...db.cards, [cardId]: { ...card, review: calculateNextReview(card.review, quality, now) } },
+    reviewDays: {
+      ...db.reviewDays,
+      [day]: { reviewed: prev.reviewed + 1, correct: prev.correct + (quality >= 3 ? 1 : 0), introduced: (prev.introduced ?? 0) + (isNew ? 1 : 0) },
+    },
+  };
+}
+
+export interface StudyStats {
+  due_now: number;
+  due_today: number;
+  reviewed_today: number;
+  correct_today: number;
+  streak_days: number;
+  total_cards: number;
+  total_concepts: number;
+  avg_mastery: number;
+  forecast: { date: string; count: number }[];
+  history: { date: string; count: number }[];
+}
+
+export function computeStats(db: LocalDB, now: Date): StudyStats {
+  const cards = Object.values(db.cards);
+  const concepts = Object.values(db.concepts);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dueTimes = cards.map((c) => Date.parse(c.review.next_review_date));
+  const countBefore = (end: Date) => dueTimes.filter((t) => t < end.getTime()).length;
+  const todayStats = db.reviewDays[dayKey(now)] ?? { reviewed: 0, correct: 0 };
+
+  // Consecutive days with reviews, ending today (or yesterday, so an unfinished
+  // today doesn't show the streak as lost).
+  let cursor = todayStats.reviewed > 0 ? today : addDays(today, -1);
+  let streak = 0;
+  while ((db.reviewDays[dayKey(cursor)]?.reviewed ?? 0) > 0) {
+    streak++;
+    cursor = addDays(cursor, -1);
+  }
+
+  return {
+    due_now: dueTimes.filter((t) => t <= now.getTime()).length,
+    due_today: countBefore(addDays(today, 1)),
+    reviewed_today: todayStats.reviewed,
+    correct_today: todayStats.correct,
+    streak_days: streak,
+    total_cards: cards.length,
+    total_concepts: concepts.length,
+    avg_mastery: concepts.length ? Math.round(concepts.reduce((s, c) => s + c.mastery_level, 0) / concepts.length) : 0,
+    // Day 0 includes everything overdue.
+    forecast: Array.from({ length: 7 }, (_, i) => ({
+      date: dayKey(addDays(today, i)),
+      count: countBefore(addDays(today, i + 1)) - (i === 0 ? 0 : countBefore(addDays(today, i))),
+    })),
+    history: Array.from({ length: 7 }, (_, i) => {
+      const d = dayKey(addDays(today, i - 6));
+      return { date: d, count: db.reviewDays[d]?.reviewed ?? 0 };
+    }),
+  };
+}
+
+export interface CalendarDay {
+  /** Local date, YYYY-MM-DD. */
+  date: string;
+  /** Cards reviewed that day (past and today). */
+  reviewed: number;
+  /** Of those, recalled (grade ≥ 3). */
+  correct: number;
+  /** Cards scheduled for that day (today includes everything overdue; 0 for past days). */
+  due: number;
+  isToday: boolean;
+  isPast: boolean;
+}
+
+/**
+ * One calendar month (month is 0-based): what was reviewed on each past day
+ * and how many cards come due on each coming day.
+ */
+export function calendarMonth(db: LocalDB, year: number, month: number, now: Date): CalendarDay[] {
+  return calendarRange(db, new Date(year, month, 1), new Date(year, month + 1, 0).getDate(), now);
+}
+
+/** `days` consecutive calendar days from `start` (see calendarMonth). */
+export function calendarRange(db: LocalDB, start: Date, days: number, now: Date): CalendarDay[] {
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayKey = dayKey(today);
+  const dueByDay = new Map<string, number>();
+  for (const card of Object.values(db.cards)) {
+    const due = new Date(card.review.next_review_date);
+    // Overdue cards count for today.
+    const key = due < today ? todayKey : dayKey(due);
+    dueByDay.set(key, (dueByDay.get(key) ?? 0) + 1);
+  }
+  return Array.from({ length: days }, (_, i) => {
+    const date = addDays(start, i);
+    const key = dayKey(date);
+    const isPast = date < today;
+    const log = db.reviewDays[key];
+    return {
+      date: key,
+      reviewed: isPast || key === todayKey ? (log?.reviewed ?? 0) : 0,
+      correct: isPast || key === todayKey ? (log?.correct ?? 0) : 0,
+      due: isPast ? 0 : (dueByDay.get(key) ?? 0),
+      isToday: key === todayKey,
+      isPast,
+    };
+  });
+}
+
+/** The current week, Sunday to Saturday. */
+export const calendarWeek = (db: LocalDB, now: Date): CalendarDay[] =>
+  calendarRange(db, addDays(new Date(now.getFullYear(), now.getMonth(), now.getDate()), -now.getDay()), 7, now);
+
+export interface Progress {
+  /** Estimated study minutes over the last 7 days, today included. */
+  weekMinutes: number;
+  /** Share of all reviews ever that were recalled (0–100), or null before the first review. */
+  accuracy: number | null;
+  totalReviews: number;
+  streak: number;
+  bestStreak: number;
+  concepts: number;
+  /** Concepts explained with a mastery of 80 or more. */
+  mastered: number;
+}
+
+export function progressSummary(db: LocalDB, now: Date): Progress {
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let weekMinutes = 0;
+  for (let i = 0; i < 7; i++) weekMinutes += todayActivity(db, addDays(today, -i)).minutes;
+  const logs = Object.values(db.reviewDays);
+  const totalReviews = logs.reduce((s, d) => s + d.reviewed, 0);
+  const correct = logs.reduce((s, d) => s + d.correct, 0);
+  // Longest run of consecutive days with reviews.
+  let bestStreak = 0;
+  for (const key of Object.keys(db.reviewDays).sort()) {
+    if (!db.reviewDays[key]!.reviewed) continue;
+    let run = 0;
+    let d = new Date(`${key}T12:00:00`);
+    while ((db.reviewDays[dayKey(d)]?.reviewed ?? 0) > 0) {
+      run++;
+      d = addDays(d, 1);
+    }
+    bestStreak = Math.max(bestStreak, run);
+  }
+  const concepts = Object.values(db.concepts);
+  return {
+    weekMinutes,
+    accuracy: totalReviews ? Math.round((correct / totalReviews) * 100) : null,
+    totalReviews,
+    streak: computeStats(db, now).streak_days,
+    bestStreak,
+    concepts: concepts.length,
+    mastered: concepts.filter((c) => c.mastery_level >= 80).length,
+  };
+}
+
+export const ACHIEVEMENTS = [
+  { key: 'firstReview', icon: 'albums', earned: (p: Progress) => p.totalReviews >= 1 },
+  { key: 'firstStation', icon: 'flag', earned: (_p: Progress, db: LocalDB) => Object.values(db.concepts).some((c) => c.course_key) },
+  { key: 'firstExplain', icon: 'chatbubbles', earned: (_p: Progress, db: LocalDB) => Object.keys(db.sessions).length > 0 },
+  { key: 'streak3', icon: 'flame', earned: (p: Progress) => p.bestStreak >= 3 },
+  { key: 'streak7', icon: 'bonfire', earned: (p: Progress) => p.bestStreak >= 7 },
+  { key: 'reviews100', icon: 'medal', earned: (p: Progress) => p.totalReviews >= 100 },
+  { key: 'mastered5', icon: 'school', earned: (p: Progress) => p.mastered >= 5 },
+  { key: 'reviews1000', icon: 'trophy', earned: (p: Progress) => p.totalReviews >= 1000 },
+] as const;
+
+export type AchievementKey = (typeof ACHIEVEMENTS)[number]['key'];
+
+/** Every achievement and whether it's earned, earned ones first. */
+export function achievements(db: LocalDB, now: Date): { key: AchievementKey; icon: string; earned: boolean }[] {
+  const p = progressSummary(db, now);
+  const all = ACHIEVEMENTS.map((a) => ({ key: a.key, icon: a.icon, earned: a.earned(p, db) }));
+  return [...all.filter((a) => a.earned), ...all.filter((a) => !a.earned)];
+}
+
+// ---------------------------------------------------------------------------
+// Backup
+// ---------------------------------------------------------------------------
+
+export const BACKUP_FORMAT = 'feynmanmind-backup';
+
+export function toBackup(db: LocalDB, now: Date): string {
+  return JSON.stringify({ format: BACKUP_FORMAT, version: 1, exported_at: now.toISOString(), data: db }, null, 2);
+}
+
+/** Parses and sanity-checks a backup file. Throws on anything that isn't one. */
+export function fromBackup(text: string): LocalDB {
+  const parsed = JSON.parse(text) as { format?: unknown; data?: Partial<LocalDB> };
+  const d = parsed?.data;
+  const isRecord = (v: unknown) => !!v && typeof v === 'object' && !Array.isArray(v);
+  if (parsed?.format !== BACKUP_FORMAT || !d || ![d.subjects, d.concepts, d.cards, d.sessions].every(isRecord)) {
+    throw new Error('Not a FeynmanMind backup');
+  }
+  return {
+    subjects: d.subjects!,
+    concepts: d.concepts!,
+    cards: d.cards!,
+    sessions: d.sessions!,
+    reviewDays: isRecord(d.reviewDays) ? d.reviewDays! : {},
+    courses: isRecord(d.courses) ? d.courses! : {},
+    lessons: isRecord(d.lessons) ? d.lessons! : {},
+    placements: isRecord(d.placements) ? d.placements! : {},
+    questions: isRecord(d.questions) ? d.questions! : {},
+    tutorChats: isRecord(d.tutorChats) ? d.tutorChats! : {},
+    printKits: isRecord(d.printKits) ? d.printKits! : {},
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Questions about a lesson
+// ---------------------------------------------------------------------------
+
+/** How many Q&A turns are kept per lesson (oldest dropped first). */
+export const MAX_QA_TURNS = 30;
+
+export function addQuestion(db: LocalDB, threadKey: string, turn: QaTurn): LocalDB {
+  const thread = [...(db.questions[threadKey] ?? []), turn].slice(-MAX_QA_TURNS);
+  return { ...db, questions: { ...db.questions, [threadKey]: thread } };
+}
+
+export function clearQuestions(db: LocalDB, threadKey: string): LocalDB {
+  if (!db.questions[threadKey]) return db;
+  const { [threadKey]: _removed, ...rest } = db.questions;
+  return { ...db, questions: rest };
+}
+
+// ---------------------------------------------------------------------------
+// The conversation with the Feynman tutor
+// ---------------------------------------------------------------------------
+
+/** How many messages are kept per concept (oldest dropped first, the opening explanation kept). */
+export const MAX_TUTOR_TURNS = 40;
+
+export function addTutorTurns(db: LocalDB, conceptId: string, turns: TutorTurn[]): LocalDB {
+  if (!db.concepts[conceptId]) throw new NotFoundError('Concept');
+  let chat = [...(db.tutorChats[conceptId] ?? []), ...turns];
+  if (chat.length > MAX_TUTOR_TURNS) chat = [chat[0]!, ...chat.slice(-(MAX_TUTOR_TURNS - 1))];
+  return { ...db, tutorChats: { ...db.tutorChats, [conceptId]: chat } };
+}
+
+export function clearTutorChat(db: LocalDB, conceptId: string): LocalDB {
+  if (!db.tutorChats[conceptId]) return db;
+  const { [conceptId]: _removed, ...rest } = db.tutorChats;
+  return { ...db, tutorChats: rest };
+}
+
+/** The chat as the tutor sees it: explanations, answers and its own feedback (clarifications left out). */
+export function tutorConversation(chat: TutorTurn[]): { role: 'learner' | 'tutor'; text: string }[] {
+  return chat
+    .filter((t) => t.kind !== 'clarify' && t.kind !== 'clarification')
+    .map((t) =>
+      t.role === 'learner'
+        ? { role: 'learner' as const, text: t.text }
+        : { role: 'tutor' as const, text: [t.text, t.evaluation?.question].filter(Boolean).join('\n') },
+    );
+}
+
+/** Opens the next hint, the answer, or the model explanation on a feedback turn. */
+export function revealTutorHelp(db: LocalDB, conceptId: string, turnId: string, what: 'hint' | 'answer' | 'model'): LocalDB {
+  const chat = db.tutorChats[conceptId];
+  const turn = chat?.find((t) => t.id === turnId);
+  if (!chat || !turn?.evaluation) throw new NotFoundError('Message');
+  const shown = turn.evaluation.shown ?? { hints: 0, answer: false, model: false };
+  const next = {
+    hints: what === 'hint' ? Math.min((turn.evaluation.hints ?? []).length, shown.hints + 1) : shown.hints,
+    answer: shown.answer || what === 'answer',
+    model: shown.model || what === 'model',
+  };
+  const updated = { ...turn, evaluation: { ...turn.evaluation, shown: next } };
+  return { ...db, tutorChats: { ...db.tutorChats, [conceptId]: chat.map((t) => (t.id === turnId ? updated : t)) } };
+}
+
+/** The newest full explanation (first one or a revision): what "edit the explanation" starts from. */
+export const latestExplanation = (chat: TutorTurn[]): string =>
+  [...chat].reverse().find((t) => t.role === 'learner' && (t.kind === 'explanation' || t.kind === 'revision'))?.text ?? '';
+
+/** The newest feedback turn: decides whether the learner answers, rewrites, or is done. */
+export const lastFeedback = (chat: TutorTurn[]): TutorTurn | undefined => [...chat].reverse().find((t) => t.kind === 'feedback');
+
+// ---------------------------------------------------------------------------
+// Guided courses
+// ---------------------------------------------------------------------------
+
+export const MASTERED_AT = 71;
+
+/** new → not touched · known → skipped by the placement test · started → in the library · mastered → explained at 71+. */
+export type StationStatus = 'new' | 'known' | 'started' | 'mastered';
+
+export interface StationProgress {
+  key: string;
+  levelIndex: number;
+  status: StationStatus;
+  conceptId?: string;
+  mastery: number;
+  /** A lesson is available (built in or already written by the AI). */
+  hasLesson: boolean;
+}
+
+export interface LevelProgress {
+  key: LevelKey;
+  total: number;
+  /** Mastered or known. */
+  done: number;
+  known: boolean;
+}
+
+export interface CourseProgress {
+  stations: StationProgress[];
+  levels: LevelProgress[];
+  total: number;
+  /** Mastered or known through placement. */
+  done: number;
+  mastered: number;
+  started: number;
+  /** First station that isn't mastered or known, in course order. */
+  nextKey: string | null;
+  placement: Placement | null;
+}
+
+const courseSubject = (db: LocalDB, courseId: string) => Object.values(db.subjects).find((s) => s.course_id === courseId);
+export const lessonKey = (courseId: string, stationKey: string) => `${courseId}/${stationKey}`;
+
+/** The station's lesson: built in, or previously written by the AI and saved. */
+export function lessonFor(db: LocalDB, course: Course, station: CourseConcept): Lesson | null {
+  if (!station.reference && station.parts && station.cards?.length) return { explanation: lessonPlainText(station.parts), cards: station.cards, parts: station.parts };
+  if (station.explanation && station.cards?.length) return { explanation: station.explanation, cards: station.cards };
+  if (station.reference) {
+    // Imported: the reference is the explanation; a full lesson comes from the file or an AI upgrade.
+    const upgraded = db.lessons[lessonKey(course.id, station.key)];
+    const parts = station.parts ?? upgraded?.parts;
+    return {
+      explanation: [station.reference, ...(station.keyPoints ?? []).map((p) => `• ${p}`)].join('\n\n'),
+      cards: [...(station.cards ?? []), ...(upgraded?.cards ?? [])].slice(0, CARDS_PER_LESSON),
+      ...(parts ? { parts } : {}),
+    };
+  }
+  return db.lessons[lessonKey(course.id, station.key)] ?? null;
+}
+
+export function saveLesson(db: LocalDB, courseId: string, stationKey: string, lesson: Lesson): LocalDB {
+  return { ...db, lessons: { ...db.lessons, [lessonKey(courseId, stationKey)]: lesson } };
+}
+
+export function courseProgress(db: LocalDB, course: Course): CourseProgress {
+  const subject = courseSubject(db, course.id);
+  const placement = db.placements[course.id] ?? null;
+  const byKey = new Map(
+    subject ? Object.values(db.concepts).filter((c) => c.subject_id === subject.id && c.course_key).map((c) => [c.course_key!, c]) : [],
+  );
+  const stations = stationsOf(course).map(({ station, levelIndex }): StationProgress => {
+    const concept = byKey.get(station.key);
+    const hasLesson = lessonFor(db, course, station) !== null;
+    if (!concept) {
+      const known = placement !== null && levelIndex < placement.levelIndex;
+      return { key: station.key, levelIndex, status: known ? 'known' : 'new', mastery: 0, hasLesson };
+    }
+    return {
+      key: station.key,
+      levelIndex,
+      conceptId: concept.id,
+      mastery: concept.mastery_level,
+      status: concept.mastery_level >= MASTERED_AT ? 'mastered' : 'started',
+      hasLesson,
+    };
+  });
+  const isDone = (s: StationProgress) => s.status === 'mastered' || s.status === 'known';
+  return {
+    stations,
+    levels: course.levels.map((level, i) => {
+      const own = stations.filter((s) => s.levelIndex === i);
+      return { key: level.key, total: own.length, done: own.filter(isDone).length, known: placement !== null && i < placement.levelIndex };
+    }),
+    total: stations.length,
+    done: stations.filter(isDone).length,
+    mastered: stations.filter((s) => s.status === 'mastered').length,
+    started: stations.filter((s) => s.status === 'started' || s.status === 'mastered').length,
+    nextKey: stations.find((s) => !isDone(s))?.key ?? null,
+    placement,
+  };
+}
+
+/**
+ * Starts a station: makes sure the course has its subject in the library,
+ * adds the concept and its flashcards (due now). Idempotent: starting an
+ * already-started station returns the existing concept.
+ */
+export function startStation(db: LocalDB, course: Course, key: string, newId: NewId, now: Date): [LocalDB, string] {
+  const ref = findStation(course, key);
+  if (!ref) throw new NotFoundError('Station');
+
+  let next = db;
+  let subject = courseSubject(next, course.id);
+  const existing = subject && Object.values(next.concepts).find((c) => c.subject_id === subject!.id && c.course_key === key);
+  if (existing) return [next, existing.id];
+
+  const lesson = lessonFor(next, course, ref.station);
+  if (!lesson) throw new LessonMissingError();
+
+  if (!subject) {
+    // Don't collide with a subject the learner already made with the same name.
+    const taken = new Set(Object.values(next.subjects).map((s) => titleKey(s.title)));
+    let title = course.title;
+    for (let n = 2; taken.has(titleKey(title)); n++) title = `${course.title} (${n})`;
+    const id = newId();
+    subject = { id, title, created_at: now.toISOString(), course_id: course.id };
+    next = { ...next, subjects: { ...next.subjects, [id]: subject } };
+  }
+
+  const conceptId = newId();
+  const concept: Concept = {
+    id: conceptId,
+    subject_id: subject.id,
+    title: ref.station.title,
+    mastery_level: 0,
+    // Stagger creation times so the library lists stations in course order.
+    created_at: new Date(now.getTime() + ref.index).toISOString(),
+    course_key: key,
+  };
+  next = { ...next, concepts: { ...next.concepts, [conceptId]: concept } };
+  [next] = addCards(next, conceptId, lesson.cards, newId, now);
+  return [next, conceptId];
+}
+
+/** The course and station (with its lesson, if any) a library concept was started from. */
+export function stationOf(db: LocalDB, conceptId: string, findCourse: (id: string) => Course | undefined) {
+  const concept = db.concepts[conceptId];
+  const courseId = concept && db.subjects[concept.subject_id]?.course_id;
+  const course = courseId ? findCourse(courseId) : undefined;
+  const ref = course && concept?.course_key ? findStation(course, concept.course_key) : undefined;
+  if (!course || !ref) return null;
+  return { course, station: ref.station, lesson: lessonFor(db, course, ref.station) };
+}
+
+export function saveCustomCourse(db: LocalDB, course: Course): LocalDB {
+  return { ...db, courses: { ...db.courses, [course.id]: course } };
+}
+
+/** Removes an AI course from the catalog, with its saved lessons and placement. Library progress stays. */
+export function deleteCustomCourse(db: LocalDB, id: string): LocalDB {
+  return {
+    ...db,
+    courses: omit(db.courses, (c) => c.id === id),
+    lessons: Object.fromEntries(Object.entries(db.lessons).filter(([k]) => !k.startsWith(`${id}/`))),
+    placements: Object.fromEntries(Object.entries(db.placements).filter(([k]) => k !== id)),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Imported lessons
+// ---------------------------------------------------------------------------
+
+/** The course imports go to when no name is given (kept from before imports could be named). */
+export const IMPORTED_COURSE_ID = 'imported';
+
+/** Imported courses: the default one, and one per name (`imp-<hash of the name>`). */
+export const isImportedCourse = (courseId: string) => courseId === IMPORTED_COURSE_ID || courseId.startsWith('imp-');
+
+const hashOf = (text: string) => {
+  let h = 5381;
+  for (const ch of text) h = ((h * 33) ^ ch.codePointAt(0)!) >>> 0;
+  return h.toString(36);
+};
+
+/** The course id for an import name: the same name always gives the same course, so a later import adds to it. */
+export const importedCourseId = (name: string) => (name.trim() ? `imp-${hashOf(conceptKey(name))}` : IMPORTED_COURSE_ID);
+
+/** A station key that depends only on the concept, so re-importing finds the same saved progress. */
+function importedKey(concept: string, taken: Set<string>): string {
+  const base = `imp-${hashOf(conceptKey(concept))}`;
+  let key = base;
+  for (let n = 2; taken.has(key); n++) key = `${base}-${n}`;
+  return key;
+}
+
+export interface ImportTexts {
+  /** The course's name as the learner typed it ('' = the default course, named `defaultTitle`). */
+  name: string;
+  defaultTitle: string;
+  description: string;
+  /** The flashcard's question, e.g. "Explain in your own words: {concept}". */
+  cardPrompt: (concept: string) => string;
+  /** Give each lesson an automatic "explain it" card (default). Off: only cards from the file or the AI. */
+  autoCards?: boolean;
+}
+
+/**
+ * The most flashcards an imported lesson gets, all sources together: the file's own cards (extra ones are
+ * dropped), the automatic "explain it" card, and the AI's cards when it writes the full lesson (only up to
+ * what's left).
+ */
+export const CARDS_PER_LESSON = 3;
+
+/**
+ * Adds pasted-in lessons to an imported course: the one named by `texts.name`
+ * (created on first use), or the default one. Existing lessons and progress are
+ * kept; a concept that is already there, or appears twice in the paste, is
+ * skipped. New stations join the unit of their topic (or start a new one at
+ * the end), so topics stay together on the map. Unless `autoCards` is off, a
+ * lesson whose item has no cards of its own gets one flashcard: explain the
+ * concept, answer = the reference. A lesson with cards in the file keeps just those.
+ */
+export function importLessons(db: LocalDB, items: ImportedLesson[], texts: ImportTexts, now: Date): [LocalDB, { added: number; skipped: number; courseId: string }] {
+  const courseId = importedCourseId(texts.name);
+  const autoCards = texts.autoCards !== false;
+  const existing = db.courses[courseId];
+  const course: Course = existing ?? {
+    id: courseId,
+    title: texts.name.trim() || texts.defaultTitle,
+    description: texts.description,
+    icon: 'download-outline',
+    builtIn: false,
+    created_at: now.toISOString(),
+    levels: [{ key: 'foundations', stations: [], quiz: [] }],
+  };
+  const stations = [...(course.levels[0]?.stations ?? [])];
+  const seen = new Set(stations.map((s) => conceptKey(s.title)));
+  const keys = new Set(stations.map((s) => s.key));
+  let added = 0;
+  for (const item of items) {
+    const ck = conceptKey(item.concept);
+    if (seen.has(ck)) continue;
+    seen.add(ck);
+    const key = importedKey(item.concept, keys);
+    keys.add(key);
+    const points = item.keyPoints ?? [];
+    const own = (item.cards ?? []).slice(0, CARDS_PER_LESSON);
+    const auto = autoCards && !own.length;
+    const cards = auto ? [{ question: texts.cardPrompt(item.concept), answer: [item.reference, ...points.map((p) => `• ${p}`)].join('\n') }] : own;
+    const station: CourseConcept = {
+      key,
+      title: item.concept,
+      summary: item.topic,
+      unit: item.topic,
+      reference: item.reference,
+      ...(points.length ? { keyPoints: points } : {}),
+      ...(item.parts ? { parts: item.parts } : {}),
+      // No automatic first card (turned off, or the file brought its own cards).
+      ...(auto ? {} : { lean: true }),
+      cards,
+    };
+    const lastOfTopic = stations.map((s) => s.unit).lastIndexOf(item.topic);
+    if (lastOfTopic < 0) stations.push(station);
+    else stations.splice(lastOfTopic + 1, 0, station);
+    added++;
+  }
+  if (!added) return [db, { added, skipped: items.length, courseId }];
+  const levels = course.levels.length ? course.levels.map((l, i) => (i === 0 ? { ...l, stations } : l)) : [{ key: 'foundations' as const, stations, quiz: [] }];
+  return [saveCustomCourse(db, { ...course, levels }), { added, skipped: items.length - added, courseId }];
+}
+
+/** Imported stations that have no full lesson yet (neither from the file nor from an AI upgrade), in one imported course or all of them. */
+export function importedWithoutLesson(db: LocalDB, courseId?: string): { courseId: string; station: CourseConcept }[] {
+  return Object.values(db.courses)
+    .filter((c) => isImportedCourse(c.id) && (!courseId || c.id === courseId))
+    .flatMap((course) =>
+      stationsOf(course)
+        .map((r) => r.station)
+        .filter((s) => s.reference && !s.parts && !db.lessons[lessonKey(course.id, s.key)]?.parts)
+        .map((station) => ({ courseId: course.id, station })),
+    );
+}
+
+/**
+ * Saves the full lesson the AI wrote for an imported station. The AI's cards only fill
+ * the lesson up to `CARDS_PER_LESSON` (none if it already has that many of its own),
+ * and writing the lesson again never adds cards a second time. If the station was
+ * already started, its new flashcards join the concept's reviews.
+ */
+export function saveImportedLesson(db: LocalDB, courseId: string, key: string, lesson: Lesson, newId: NewId, now: Date): LocalDB {
+  const course = db.courses[courseId];
+  const station = course && course.levels.flatMap((l) => l.stations).find((s) => s.key === key);
+  const previous = db.lessons[lessonKey(courseId, key)];
+  const own = station?.cards?.length ?? 0;
+  const cards = previous?.cards?.length ? previous.cards : lesson.cards.slice(0, Math.max(0, CARDS_PER_LESSON - own));
+  const kept = { ...lesson, cards };
+  let next = saveLesson(db, courseId, key, kept);
+  const subject = courseSubject(next, courseId);
+  const concept = subject && Object.values(next.concepts).find((c) => c.subject_id === subject.id && c.course_key === key);
+  if (concept && !previous?.cards?.length) [next] = addCards(next, concept.id, kept.cards, newId, now);
+  return next;
+}
+
+// ---------------------------------------------------------------------------
+// Lessons still to write, and the card store
+// ---------------------------------------------------------------------------
+
+/**
+ * Stations of a course whose lesson the AI still has to write: ones with no lesson
+ * yet (AI courses and the upper levels of built-in ones), or, in an imported
+ * course, ones that only have a reference.
+ */
+export function stationsNeedingLessons(db: LocalDB, course: Course): CourseConcept[] {
+  if (isImportedCourse(course.id)) return importedWithoutLesson(db, course.id).map((t) => t.station);
+  return stationsOf(course)
+    .map((r) => r.station)
+    .filter((st) => lessonFor(db, course, st) === null);
+}
+
+export interface CardStats {
+  total: number;
+  /** Due for review now (never-reviewed cards count as due). */
+  due: number;
+  /** Never reviewed yet. */
+  fresh: number;
+  /** Reviewed at least once. */
+  learned: number;
+}
+
+export function cardStats(db: LocalDB, now: Date): CardStats {
+  const all = Object.values(db.cards);
+  const fresh = all.filter((c) => c.review.last_reviewed_at === null).length;
+  return { total: all.length, due: dueCards(db, now).length, fresh, learned: all.length - fresh };
+}
+
+export interface CardGroup {
+  subject: Subject;
+  total: number;
+  due: number;
+  concepts: { concept: Concept; cards: Flashcard[]; due: number }[];
+}
+
+/** All cards grouped by subject (largest first) and concept, for the card store screen. */
+export function cardGroups(db: LocalDB, now: Date): CardGroup[] {
+  const dueIds = new Set(dueCards(db, now).map((c) => c.id));
+  const byConcept = new Map<string, Flashcard[]>();
+  for (const c of Object.values(db.cards)) (byConcept.get(c.concept_id) ?? byConcept.set(c.concept_id, []).get(c.concept_id)!).push(c);
+  const groups = new Map<string, CardGroup>();
+  for (const [conceptId, cards] of byConcept) {
+    const concept = db.concepts[conceptId];
+    const subject = concept && db.subjects[concept.subject_id];
+    if (!concept || !subject) continue;
+    const group = groups.get(subject.id) ?? { subject, total: 0, due: 0, concepts: [] };
+    const due = cards.filter((c) => dueIds.has(c.id)).length;
+    group.concepts.push({ concept, cards: [...cards].sort((a, b) => a.created_at.localeCompare(b.created_at)), due });
+    group.total += cards.length;
+    group.due += due;
+    groups.set(subject.id, group);
+  }
+  return [...groups.values()]
+    .map((g) => ({ ...g, concepts: g.concepts.sort((a, b) => b.cards.length - a.cards.length || a.concept.title.localeCompare(b.concept.title)) }))
+    .sort((a, b) => b.total - a.total);
+}
+
+/** Deletes many cards at once (the concepts stay). */
+/**
+ * Cards of imported lessons beyond `CARDS_PER_LESSON` per lesson that were never reviewed (the one-time clean-up
+ * of lessons imported before the limit). Each lesson keeps the cards already reviewed first, then the oldest;
+ * reviewed cards are never offered for removal, even past the limit.
+ */
+export function excessImportedCards(db: LocalDB): string[] {
+  const imported = new Set(Object.values(db.subjects).filter((s) => s.course_id && isImportedCourse(s.course_id)).map((s) => s.id));
+  const byConcept = new Map<string, Flashcard[]>();
+  for (const c of Object.values(db.cards)) {
+    const concept = db.concepts[c.concept_id];
+    if (!concept?.course_key || !imported.has(concept.subject_id)) continue;
+    (byConcept.get(c.concept_id) ?? byConcept.set(c.concept_id, []).get(c.concept_id)!).push(c);
+  }
+  const reviewed = (c: Flashcard) => c.review.last_reviewed_at !== null;
+  const out: string[] = [];
+  for (const cards of byConcept.values()) {
+    if (cards.length <= CARDS_PER_LESSON) continue;
+    const ordered = [...cards].sort((a, b) => Number(reviewed(b)) - Number(reviewed(a)) || a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id));
+    out.push(...ordered.slice(CARDS_PER_LESSON).filter((c) => !reviewed(c)).map((c) => c.id));
+  }
+  return out;
+}
+
+export function deleteCards(db: LocalDB, ids: string[]): LocalDB {
+  const drop = new Set(ids);
+  return { ...db, cards: Object.fromEntries(Object.entries(db.cards).filter(([id]) => !drop.has(id))) };
+}
+
+// ---------------------------------------------------------------------------
+// Placement test
+// ---------------------------------------------------------------------------
+
+/** A level is "known" when at least two thirds of its questions were answered correctly. */
+export const passesLevel = (correct: number, asked: number) => asked > 0 && correct * 3 >= asked * 2;
+
+export interface PlacementState {
+  /** Level currently being tested. */
+  levelIndex: number;
+  /** Correct answers per finished level. */
+  scores: number[];
+  done: boolean;
+  /** Where the learner lands once done. */
+  resultLevel: number;
+}
+
+export const startPlacement = (): PlacementState => ({ levelIndex: 0, scores: [], done: false, resultLevel: 0 });
+
+/**
+ * Adaptive placement: test the levels bottom-up and stop at the first one the
+ * learner doesn't know. Levels without questions end the test there.
+ */
+export function finishPlacementLevel(course: Course, state: PlacementState, correct: number): PlacementState {
+  const level = course.levels[state.levelIndex];
+  const scores = [...state.scores, correct];
+  const passed = !!level && passesLevel(correct, level.quiz.length);
+  const nextIndex = state.levelIndex + 1;
+  const canContinue = passed && nextIndex < course.levels.length && course.levels[nextIndex]!.quiz.length > 0;
+  if (canContinue) return { levelIndex: nextIndex, scores, done: false, resultLevel: nextIndex };
+  // Passing everything still starts you at the top level: 3 questions don't prove master's-level mastery.
+  const resultLevel = passed ? Math.min(nextIndex, course.levels.length - 1) : state.levelIndex;
+  return { levelIndex: state.levelIndex, scores, done: true, resultLevel };
+}
+
+export function savePlacement(db: LocalDB, courseId: string, state: PlacementState, now: Date): LocalDB {
+  const placement: Placement = { levelIndex: state.resultLevel, scores: state.scores, taken_at: now.toISOString() };
+  return { ...db, placements: { ...db.placements, [courseId]: placement } };
+}
+
+// ---------------------------------------------------------------------------
+// Standalone concepts
+// ---------------------------------------------------------------------------
+
+/**
+ * Adds a concept without choosing a subject. It goes into a catch-all subject
+ * (created on first use, named `looseTitle`). Returns the existing concept if
+ * the same title was already added there.
+ */
+export function addLooseConcept(db: LocalDB, title: string, looseTitle: string, newId: NewId, now: Date): [LocalDB, string] {
+  let next = db;
+  let subject = Object.values(next.subjects).find((s) => s.loose);
+  if (!subject) {
+    const id = newId();
+    subject = { id, title: looseTitle, created_at: now.toISOString(), loose: true };
+    next = { ...next, subjects: { ...next.subjects, [id]: subject } };
+  }
+  const existing = Object.values(next.concepts).find((c) => c.subject_id === subject!.id && titleKey(c.title) === titleKey(title));
+  if (existing) return [next, existing.id];
+  return saveConcept(next, { subjectId: subject.id, title }, newId, now);
+}
+
+/** Stores a lesson written for a concept and adds its flashcards. */
+export function saveConceptLesson(db: LocalDB, conceptId: string, lesson: Lesson, newId: NewId, now: Date): LocalDB {
+  const concept = db.concepts[conceptId];
+  if (!concept) throw new NotFoundError('Concept');
+  const next = { ...db, concepts: { ...db.concepts, [conceptId]: { ...concept, lesson: lesson.explanation, lessonParts: lesson.parts } } };
+  // Rewriting a lesson (upgrade) keeps the cards the learner already has; addCards skips duplicates.
+  return addCards(next, conceptId, lesson.cards, newId, now)[0];
+}
+
+// ---------------------------------------------------------------------------
+// Learning on paper
+// ---------------------------------------------------------------------------
+
+export function savePrintKit(db: LocalDB, kit: PrintKit): LocalDB {
+  return { ...db, printKits: { ...db.printKits, [kit.id]: kit } };
+}
+
+/** The newest printed kit whose results haven't been entered yet. */
+export function openPrintKit(db: LocalDB): PrintKit | null {
+  return Object.values(db.printKits)
+    .filter((k) => !k.applied_at)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))[0] ?? null;
+}
+
+/** First review after learning on paper, by the self-rating (1–5 stars; 0 = not rated). */
+const PAPER_INTERVAL: Record<number, number> = { 0: 1, 1: 1, 2: 1, 3: 3, 4: 7, 5: 14 };
+
+/**
+ * Brings what was done on paper into the app: each lesson marked as learned
+ * starts its station (concept + flashcards), and its new cards are scheduled
+ * by how well you rated yourself — a topic you knew well comes back later,
+ * one you struggled with comes back tomorrow.
+ */
+export function applyPaperResults(
+  db: LocalDB,
+  kitId: string,
+  results: { n: number; done: boolean; stars: number }[],
+  findCourse: (id: string) => Course | undefined,
+  newId: NewId,
+  now: Date,
+): LocalDB {
+  const kit = db.printKits[kitId];
+  if (!kit) throw new NotFoundError('Kit');
+  let next = db;
+  for (const r of results) {
+    const s = kit.stations.find((x) => x.n === r.n);
+    const course = s && findCourse(s.courseId);
+    if (!s || !course || !r.done) continue;
+    let conceptId: string;
+    try {
+      [next, conceptId] = startStation(next, course, s.key, newId, now);
+    } catch (e) {
+      if (e instanceof LessonMissingError) continue;
+      throw e;
+    }
+    const stars = Math.max(0, Math.min(5, Math.round(r.stars)));
+    const days = PAPER_INTERVAL[stars]!;
+    const due = new Date(now.getFullYear(), now.getMonth(), now.getDate() + days, 9).toISOString();
+    const cards = { ...next.cards };
+    for (const card of Object.values(cards)) {
+      // Only cards the app hasn't scheduled from a real review.
+      if (card.concept_id !== conceptId || card.review.last_reviewed_at) continue;
+      cards[card.id] = {
+        ...card,
+        review: { ...card.review, interval_days: days, repetitions: stars >= 3 ? 1 : 0, easiness_factor: stars >= 4 ? 2.6 : stars === 3 ? 2.5 : 2.2, next_review_date: due },
+      };
+    }
+    next = { ...next, cards };
+  }
+  return { ...next, printKits: { ...next.printKits, [kitId]: { ...kit, applied_at: now.toISOString() } } };
+}
+
+// ---------------------------------------------------------------------------
+// Library subjects as a path
+// ---------------------------------------------------------------------------
+
+/** Mastery needed for a concept to count as done on a path (same bar as course stations). */
+export const PATH_MASTERED = 71;
+
+export interface PathConcept {
+  id: string;
+  title: string;
+  mastery: number;
+  status: 'mastered' | 'started' | 'new';
+}
+
+/**
+ * A library subject laid out like a course map: its concepts in the order they
+ * were added, in units of up to `size`, and the first one not yet mastered.
+ */
+export function subjectPath(db: LocalDB, subjectId: string, size = 5): { units: PathConcept[][]; nextId: string | null; done: number; total: number } {
+  const explained = new Set(Object.values(db.sessions).map((s) => s.concept_id));
+  const concepts: PathConcept[] = Object.values(db.concepts)
+    .filter((c) => c.subject_id === subjectId)
+    .sort((a, b) => a.created_at.localeCompare(b.created_at))
+    .map((c) => ({
+      id: c.id,
+      title: c.title,
+      mastery: c.mastery_level,
+      status: c.mastery_level >= PATH_MASTERED ? 'mastered' : explained.has(c.id) || c.mastery_level > 0 ? 'started' : 'new',
+    }));
+  const units: PathConcept[][] = [];
+  for (let i = 0; i < concepts.length; i += size) units.push(concepts.slice(i, i + size));
+  const done = concepts.filter((c) => c.status === 'mastered').length;
+  return { units, nextId: concepts.find((c) => c.status !== 'mastered')?.id ?? null, done, total: concepts.length };
+}

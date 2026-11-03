@@ -1,0 +1,375 @@
+import { Fragment, useState, type ReactNode } from 'react';
+import { Platform, Pressable, View } from 'react-native';
+import { Text } from '@/components/Text';
+import { TabView } from 'react-native-tab-view';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { ScoreRing } from '@/components/ScoreRing';
+import { Button, Card, Chip, ErrorState, InlineError, LoadingState, Screen } from '@/components/ui';
+import { useStartStation, useStation, useWriteStationLesson } from '@/data/courses';
+import { useUpgradeImported } from '@/data/imports';
+import { confirmAsync } from '@/lib/dialogs';
+import { useT, type TranslationKey } from '@/i18n';
+import { AskButton } from '@/features/lesson/AskSheet';
+import { CheckQuiz } from '@/features/lesson/CheckQuiz';
+import { LessonCard } from '@/features/lesson/LessonCard';
+import { LessonView } from '@/features/lesson/LessonView';
+import { useAiConfigured } from '@/lib/env';
+import { errorMessage } from '@/lib/errors';
+import { haptics } from '@/lib/haptics';
+import { useReduceMotion } from '@/lib/motion';
+import { lessonKey } from '@/local/logic';
+import { makeStyles, radius, spacing, useTheme } from '@/theme';
+import { useBottomInset } from '@/lib/safeArea';
+
+const STEPS: TranslationKey[] = ['lesson.step.read', 'lesson.step.check', 'lesson.step.explain', 'lesson.step.practice'];
+const ROUTES = STEPS.map((key) => ({ key }));
+const BAR_HEIGHT = 76;
+
+/**
+ * One station on the map, in four steps: read the lesson (written by the AI on
+ * first visit if it doesn't ship with one), check yourself with a few quick
+ * questions, explain it in your own words, and practice its flashcards. Moving
+ * past the check
+ * starts the station (adds its concept and cards to the library). The steps
+ * are pages of a native pager: swipe sideways (it follows the finger) or use
+ * the bottom bar; the bar's 💬 button opens questions about the lesson.
+ */
+export default function StationScreen() {
+  const { id, key } = useLocalSearchParams<{ id: string; key: string }>();
+  const t = useT();
+  const styles = useStyles();
+  const { colors, typography } = useTheme();
+  const bottomInset = useBottomInset();
+  const aiReady = useAiConfigured();
+  const query = useStation(id, key);
+  const start = useStartStation();
+  const write = useWriteStationLesson();
+  const upgradeImported = useUpgradeImported();
+  const [step, setStep] = useState(0);
+  // An imported lesson without a full lesson yet: the learner chose to go on with the file's reference text only.
+  const [referenceOnly, setReferenceOnly] = useState(false);
+  const reduceMotion = useReduceMotion();
+  const [width, setWidth] = useState(0);
+
+  if (query.isPending) return <LoadingState />;
+  if (query.isError) return <ErrorState message={errorMessage(query.error, t)} onRetry={() => void query.refetch()} />;
+  const { course, ref, total, next, lesson, progress: p } = query.data;
+  const { station, level } = ref;
+
+  const goTo = (target: number) => {
+    if (target === step) return;
+    // Past the key points the station counts as started: its cards join the reviews.
+    if (target >= 2 && !p.conceptId) start.mutate({ courseId: course.id, key: station.key }, { onSuccess: () => haptics.success() });
+    haptics.tap();
+    setStep(target);
+  };
+  const goNextStation = () => (next ? router.replace(`/course/${course.id}/${next.key}`) : router.back());
+  const last = step === STEPS.length - 1;
+  const bottomPad = Math.max(bottomInset, spacing.md);
+
+  const header = (
+    <View style={{ gap: spacing.xs }}>
+      <Text style={typography.caption}>
+        {course.title} · {t('course.stationOf', { n: ref.index + 1, total })} · {t(`level.${level.key}`)}
+      </Text>
+      <Text style={typography.title}>{station.title}</Text>
+    </View>
+  );
+
+  if (!lesson) {
+    return (
+      <>
+        <Stack.Screen options={{ title: t('course.station', { n: ref.index + 1 }) }} />
+        <Screen>
+          {header}
+          <Text style={[typography.body, { color: colors.textMuted }]}>{station.summary}</Text>
+          <View style={styles.cta}>
+            <View style={styles.row}>
+              <Ionicons name="sparkles" size={20} color={colors.primary} />
+              <Text style={[typography.subheading, { flex: 1 }]}>{t('lesson.missingTitle')}</Text>
+            </View>
+            <Text style={typography.body}>{t('lesson.missingBody', { level: t(`level.${level.key}`) })}</Text>
+            <InlineError message={!aiReady ? t('error.aiNotConfigured') : write.error ? errorMessage(write.error, t) : null} />
+            {write.isPending ? (
+              <LoadingState label={t('lesson.writing')} />
+            ) : (
+              <Button
+                label={t('lesson.write')}
+                icon="create-outline"
+                disabled={!aiReady}
+                onPress={() => write.mutate({ courseId: course.id, key: station.key, language: 'he' }, { onSuccess: () => haptics.success() })}
+              />
+            )}
+          </View>
+        </Screen>
+      </>
+    );
+  }
+
+  // Imported lessons run like any other station. Without a full lesson (from the file or the AI) yet,
+  // first offer to have the AI write one from the file's reference, or to go on with the reference alone.
+  const imported = !!station.reference;
+  if (imported && !lesson.parts && !referenceOnly) {
+    return (
+      <>
+        <Stack.Screen options={{ title: t('course.station', { n: ref.index + 1 }) }} />
+        <Screen>
+          {header}
+          <Text style={[typography.body, { color: colors.textMuted }]}>{station.summary}</Text>
+          <View style={styles.cta}>
+            <View style={styles.row}>
+              <Ionicons name="sparkles" size={20} color={colors.primary} />
+              <Text style={[typography.subheading, { flex: 1 }]}>{t('lesson.missingTitle')}</Text>
+            </View>
+            <Text style={typography.body}>{t('import.writeBody')}</Text>
+            <InlineError message={!aiReady ? t('error.aiNotConfigured') : upgradeImported.error ? errorMessage(upgradeImported.error, t) : null} />
+            {upgradeImported.isPending ? (
+              <LoadingState label={t('lesson.writing')} />
+            ) : (
+              <Button
+                label={t('lesson.write')}
+                icon="create-outline"
+                disabled={!aiReady}
+                onPress={() => upgradeImported.mutate({ courseId: course.id, key: station.key }, { onSuccess: () => haptics.success() })}
+              />
+            )}
+            <Button label={t('import.referenceOnly')} icon="document-text-outline" variant="ghost" onPress={() => setReferenceOnly(true)} />
+          </View>
+        </Screen>
+      </>
+    );
+  }
+
+  const upgrade = () =>
+    imported
+      ? upgradeImported.mutate({ courseId: course.id, key: station.key }, { onSuccess: () => haptics.success() })
+      : write.mutate({ courseId: course.id, key: station.key, language: 'he', upgrade: true }, { onSuccess: () => haptics.success() });
+  const upgradeError = imported ? upgradeImported.error : write.error;
+  // Lessons the AI wrote (not built-in ones, not the full lesson that came in the file) can be written again.
+  const aiWritten = !!lesson.parts && !station.explanation && !station.parts;
+  const rewrite = async () => {
+    const ok = await confirmAsync({
+      title: t('lesson.rewriteConfirm'),
+      message: t('lesson.rewriteBody'),
+      confirmLabel: t('lesson.rewrite'),
+      cancelLabel: t('common.cancel'),
+    });
+    if (ok) upgrade();
+  };
+  const pages: ReactNode[] = [
+    <Fragment key="read">
+      <Text style={[typography.body, { color: colors.textMuted }]}>{station.summary}</Text>
+      <LessonView title={station.title} explanation={lesson.explanation} parts={lesson.parts} keyPoints={lesson.cards} />
+      {!lesson.parts && !station.explanation ? (
+        <UpgradeLesson onPress={upgrade} busy={write.isPending || upgradeImported.isPending} error={upgradeError ? errorMessage(upgradeError, t) : null} />
+      ) : null}
+      {aiWritten ? (
+        write.isPending || upgradeImported.isPending ? (
+          <LoadingState label={t('lesson.writing')} />
+        ) : (
+          <>
+            <Button label={t('lesson.rewrite')} icon="refresh-outline" variant="ghost" disabled={!aiReady} onPress={() => void rewrite()} />
+            <InlineError message={upgradeError ? errorMessage(upgradeError, t) : null} />
+          </>
+        )
+      ) : null}
+    </Fragment>,
+    <Fragment key="check">
+      {lesson.parts?.check.length ? (
+        <CheckQuiz questions={lesson.parts.check} />
+      ) : (
+        <>
+          <Text style={typography.caption}>{t('lesson.pointsIntro')}</Text>
+          <LessonCard title={station.title} explanation={lesson.explanation} keyPoints={lesson.cards} part="points" />
+        </>
+      )}
+    </Fragment>,
+    <View key="explain" style={styles.cta}>
+      <View style={styles.row}>
+        <Ionicons name="chatbubbles" size={22} color={colors.primary} />
+        <Text style={[typography.heading, { flex: 1 }]}>{t('lesson.explainTitle')}</Text>
+      </View>
+      <Text style={typography.body}>{t('lesson.explainBody', { title: station.title })}</Text>
+      {p.conceptId ? (
+        <Button label={t('course.explainNow')} icon="mic-outline" onPress={() => router.push(`/concept/${p.conceptId}/explain`)} />
+      ) : (
+        <LoadingState />
+      )}
+      <InlineError message={start.error ? errorMessage(start.error, t) : null} />
+      {p.conceptId && p.mastery > 0 ? <MasteryCard mastery={p.mastery} mastered={p.status === 'mastered'} /> : null}
+    </View>,
+    <Fragment key="practice">
+      {p.conceptId ? (
+        <>
+          <MasteryCard mastery={p.mastery} mastered={p.status === 'mastered'} />
+          <Text style={typography.body}>{t('lesson.practiceBody', { count: lesson.cards.length })}</Text>
+          <Button
+            label={t('course.reviewCards')}
+            icon="albums-outline"
+            onPress={() => router.push({ pathname: '/study', params: { conceptId: p.conceptId! } })}
+          />
+          <Button label={t('course.openConcept')} icon="bulb-outline" variant="ghost" onPress={() => router.push(`/concept/${p.conceptId}`)} />
+        </>
+      ) : (
+        <LoadingState />
+      )}
+      {next ? (
+        <Card onPress={goNextStation} accessibilityLabel={next.title}>
+          <View style={styles.row}>
+            <View style={{ flex: 1 }}>
+              <Text style={typography.label}>{t('course.upNext').toLocaleUpperCase()}</Text>
+              <Text style={typography.subheading}>{next.title}</Text>
+            </View>
+            <Ionicons name={t.isRTL ? 'arrow-back' : 'arrow-forward'} size={20} color={colors.primary} />
+          </View>
+        </Card>
+      ) : null}
+    </Fragment>,
+  ];
+  // On web the pager lays pages out left-to-right while the page is RTL; lay it out LTR there, pages RTL.
+  const webRtl = Platform.OS === 'web' && t.isRTL;
+
+  return (
+    <>
+      <Stack.Screen options={{ title: t('course.station', { n: ref.index + 1 }) }} />
+      <View style={{ flex: 1 }} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+        <View style={styles.top}>
+          {header}
+          <StepBar step={step} onPick={goTo} />
+        </View>
+        <TabView
+          navigationState={{ index: step, routes: ROUTES }}
+          onIndexChange={goTo}
+          renderTabBar={() => null}
+          renderScene={({ route }) => (
+            <View style={[{ flex: 1 }, webRtl && { direction: 'rtl' }]}>
+              <Screen contentStyle={{ paddingTop: spacing.sm, paddingBottom: BAR_HEIGHT + bottomPad + spacing.xl }}>
+                {pages[STEPS.indexOf(route.key as TranslationKey)]}
+              </Screen>
+            </View>
+          )}
+          initialLayout={width ? { width } : undefined}
+          direction={t.isRTL ? 'rtl' : 'ltr'}
+          animationEnabled={!reduceMotion}
+          style={webRtl ? { direction: 'ltr' } : undefined}
+        />
+        <View style={[styles.bottom, { paddingBottom: bottomPad }]}>
+          {step > 0 ? (
+            <Pressable accessibilityRole="button" accessibilityLabel={t('lesson.back')} onPress={() => goTo(step - 1)} style={styles.backBtn} hitSlop={6}>
+              <Ionicons name={t.isRTL ? 'arrow-forward' : 'arrow-back'} size={22} color={colors.primary} />
+            </Pressable>
+          ) : null}
+          <Button
+            style={{ flex: 1 }}
+            label={last ? (next ? t('lesson.nextStation') : t('course.backToMap')) : t('lesson.nextStep', { step: t(STEPS[step + 1]!) })}
+            icon={last ? (next ? 'flag-outline' : 'map-outline') : undefined}
+            onPress={() => (last ? goNextStation() : goTo(step + 1))}
+          />
+          <AskButton
+            context={{
+              threadKey: lessonKey(course.id, station.key),
+              conceptTitle: station.title,
+              lesson: lesson.explanation,
+              level: level.key,
+              language: 'he',
+            }}
+          />
+        </View>
+      </View>
+    </>
+  );
+}
+
+/** The four steps as a segmented progress bar with tappable labels. */
+function StepBar({ step, onPick }: { step: number; onPick: (i: number) => void }) {
+  const t = useT();
+  const styles = useStyles();
+  const { colors } = useTheme();
+  return (
+    <View style={styles.steps} accessibilityRole="tablist">
+      {STEPS.map((label, i) => (
+        <Pressable
+          key={label}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: i === step }}
+          aria-selected={i === step}
+          accessibilityLabel={t('lesson.stepA11y', { n: i + 1, total: STEPS.length, step: t(label) })}
+          onPress={() => onPick(i)}
+          style={styles.stepItem}
+          hitSlop={4}
+        >
+          <View style={[styles.stepBar, { backgroundColor: i < step ? colors.success : i === step ? colors.primary : colors.surfaceMuted }]} />
+          <Text style={[styles.stepText, { color: i === step ? colors.primary : colors.textMuted }]} numberOfLines={1}>
+            {i < step ? '✓ ' : ''}
+            {t(label)}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+/** Older AI lessons are plain text: offer to rewrite them with sections, an example and check questions. */
+function UpgradeLesson({ onPress, busy, error }: { onPress: () => void; busy: boolean; error: string | null }) {
+  const t = useT();
+  const styles = useStyles();
+  const { typography } = useTheme();
+  const aiReady = useAiConfigured();
+  return (
+    <View style={styles.cta}>
+      <Text style={typography.subheading}>✨ {t('lesson.upgradeTitle')}</Text>
+      <Text style={typography.caption}>{t('lesson.upgradeBody')}</Text>
+      {busy ? <LoadingState label={t('lesson.writing')} /> : <Button label={t('lesson.upgrade')} icon="sparkles-outline" variant="secondary" onPress={onPress} disabled={!aiReady} />}
+      <InlineError message={!aiReady ? t('error.aiNotConfigured') : error} />
+    </View>
+  );
+}
+
+function MasteryCard({ mastery, mastered }: { mastery: number; mastered: boolean }) {
+  const t = useT();
+  const styles = useStyles();
+  const { typography } = useTheme();
+  return (
+    <Card style={styles.status}>
+      <ScoreRing score={mastery} size={64} stroke={6} caption={t('concept.mastery')} />
+      <View style={{ flex: 1, gap: spacing.xs }}>
+        <Chip label={mastered ? t('course.mastered', { score: mastery }) : t('course.inProgress')} tone={mastered ? 'success' : 'warning'} />
+        <Text style={typography.caption}>{mastered ? t('course.masteredHint') : t('course.masterHint')}</Text>
+      </View>
+    </Card>
+  );
+}
+
+const useStyles = makeStyles(({ colors, textScale }) => ({
+  top: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.sm, gap: spacing.md, backgroundColor: colors.background },
+  cta: { backgroundColor: colors.primarySoft, borderRadius: radius.lg, padding: spacing.lg, gap: spacing.md },
+  status: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  steps: { flexDirection: 'row', gap: spacing.xs },
+  stepItem: { flex: 1, gap: 6, minHeight: 36 },
+  stepBar: { height: 6, borderRadius: 3 },
+  stepText: { fontSize: Math.round(12 * textScale), fontWeight: '700', textAlign: 'center' },
+  bottom: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  backBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: radius.md,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+}));
